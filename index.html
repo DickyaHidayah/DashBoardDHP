@@ -1402,10 +1402,10 @@ body.is-mod #mod-indicator{display:block}
           </div>
           <div class="ph-acts">
             <select id="reg-filter" class="fi" style="width:auto;padding:9px 36px 9px 12px;font-size:11px" onchange="renderRegs()">
-              <option value="all">All Requests</option>
-              <option value="pending">Pending</option>
-              <option value="approved">Approved</option>
-              <option value="rejected">Rejected</option>
+              <option value="all" data-i18n="allRequests">All Requests</option>
+              <option value="pending" data-i18n="pending">Pending</option>
+              <option value="approved" data-i18n="approved">Approved</option>
+              <option value="rejected" data-i18n="rejected">Rejected</option>
             </select>
           </div>
         </div>
@@ -1496,28 +1496,28 @@ body.is-mod #mod-indicator{display:block}
         <div class="ph">
           <div class="ph-left">
             <div class="pt">
-              <span>Content Studio</span>
+              <span data-i18n="contentStudio">Content Studio</span>
               <span class="role-pill" style="background:rgba(217,142,192,.12);color:#d98ec0;border:1px solid rgba(217,142,192,.3)">
                 <span class="pill-dot" style="background:#d98ec0"></span> Content Creator
               </span>
             </div>
-            <div class="ps">Plan, draft, and publish content for the brand</div>
+            <div class="ps" data-i18n="contentStudioSub">Plan, draft, and publish content for the brand</div>
           </div>
           <div class="ph-acts">
-            <button class="btn-add" onclick="openContentDraft()">+ New Draft</button>
+            <button class="btn-add" onclick="openContentDraft()" data-i18n="newDraft">+ New Draft</button>
           </div>
         </div>
         <div class="studio-grid" id="content-studio-cards"></div>
         <div class="tbl-wrap" style="margin-top:6px">
-          <div class="tbl-head"><div class="tbl-title">Draft Queue</div></div>
+          <div class="tbl-head"><div class="tbl-title" data-i18n="draftQueue">Draft Queue</div></div>
           <div class="tbl-scroll">
             <table>
               <thead><tr>
-                <th>Title</th>
-                <th>Platform</th>
-                <th>Status</th>
-                <th>Scheduled</th>
-                <th>Action</th>
+                <th data-i18n="titleCol">Title</th>
+                <th data-i18n="platformCol">Platform</th>
+                <th data-i18n="statusCol">Status</th>
+                <th data-i18n="scheduledCol">Scheduled</th>
+                <th data-i18n="action">Action</th>
               </tr></thead>
               <tbody id="content-drafts-tbl"></tbody>
             </table>
@@ -1530,28 +1530,28 @@ body.is-mod #mod-indicator{display:block}
         <div class="ph">
           <div class="ph-left">
             <div class="pt">
-              <span>Live Studio</span>
+              <span data-i18n="liveStudio">Live Studio</span>
               <span class="role-pill" style="background:rgba(232,112,112,.12);color:#e87070;border:1px solid rgba(232,112,112,.3)">
                 <span class="pill-dot" style="background:#e87070"></span> Host Live
               </span>
             </div>
-            <div class="ps">Stream control, schedule, and live audience metrics</div>
+            <div class="ps" data-i18n="liveStudioSub">Stream control, schedule, and live audience metrics</div>
           </div>
           <div class="ph-acts">
-            <span class="live-indicator" id="live-status-badge">Off Air</span>
+            <span class="live-indicator" id="live-status-badge" data-i18n="offAir">Off Air</span>
           </div>
         </div>
         <div class="studio-grid" id="live-studio-cards"></div>
         <div class="tbl-wrap" style="margin-top:6px">
-          <div class="tbl-head"><div class="tbl-title">Upcoming Live Schedule</div></div>
+          <div class="tbl-head"><div class="tbl-title" data-i18n="upcomingLiveSchedule">Upcoming Live Schedule</div></div>
           <div class="tbl-scroll">
             <table>
               <thead><tr>
-                <th>Show</th>
-                <th>Host</th>
-                <th>Platform</th>
-                <th>Date & Time</th>
-                <th>Status</th>
+                <th data-i18n="showCol">Show</th>
+                <th data-i18n="hostCol">Host</th>
+                <th data-i18n="platformCol">Platform</th>
+                <th data-i18n="dateTimeCol">Date & Time</th>
+                <th data-i18n="statusCol">Status</th>
               </tr></thead>
               <tbody id="live-schedule-tbl"></tbody>
             </table>
@@ -1564,15 +1564,15 @@ body.is-mod #mod-indicator{display:block}
         <div class="ph">
           <div class="ph-left">
             <div class="pt">
-              <span>B2B Pipeline</span>
+              <span data-i18n="b2bPipeline">B2B Pipeline</span>
               <span class="role-pill" style="background:rgba(126,168,201,.12);color:#7ea8c9;border:1px solid rgba(126,168,201,.3)">
                 <span class="pill-dot" style="background:#7ea8c9"></span> B2B Marketing
               </span>
             </div>
-            <div class="ps">Track partnerships and enterprise deals through the funnel</div>
+            <div class="ps" data-i18n="b2bPipelineSub">Track partnerships and enterprise deals through the funnel</div>
           </div>
           <div class="ph-acts">
-            <button class="btn-add" onclick="openPipelineLead()">+ Add Lead</button>
+            <button class="btn-add" onclick="openPipelineLead()" data-i18n="addLead">+ Add Lead</button>
           </div>
         </div>
         <div class="studio-grid" id="b2b-studio-cards"></div>
@@ -1627,9 +1627,9 @@ body.is-mod #mod-indicator{display:block}
     <button class="np-close" onclick="document.getElementById('pres-panel').classList.remove('open')">✕</button>
   </div>
   <div class="pp-tabs">
-    <button class="pp-tab active" onclick="setPresTab('all',this)" id="pt-all">All</button>
-    <button class="pp-tab" onclick="setPresTab('online',this)" id="pt-online">Online <span id="pt-on-c">0</span></button>
-    <button class="pp-tab" onclick="setPresTab('offline',this)" id="pt-offline">Offline</button>
+    <button class="pp-tab active" onclick="setPresTab('all',this)" id="pt-all" data-i18n="allTab">All</button>
+    <button class="pp-tab" onclick="setPresTab('online',this)" id="pt-online"><span data-i18n="onlineTab">Online</span> <span id="pt-on-c">0</span></button>
+    <button class="pp-tab" onclick="setPresTab('offline',this)" id="pt-offline" data-i18n="offlineTab">Offline</button>
   </div>
   <div class="pp-list" id="pp-list"></div>
   <div class="pp-foot">
@@ -1870,7 +1870,7 @@ function markAllRead() {
 }
 function renderNotifPanel() {
   const body = document.getElementById('notif-body'); if (!body) return;
-  if (!notifications.length) { body.innerHTML = `<div class="notif-empty">No notifications</div>`; return; }
+  if (!notifications.length) { body.innerHTML = `<div class="notif-empty">${t('noNotifications')}</div>`; return; }
   body.innerHTML = notifications.map(n => `
     <div class="notif-item ${n.read?'':'unread'}" onclick="markNotif(${n.id})">
       <div class="ni-type ${n.type}">${n.type.toUpperCase()}</div>
@@ -2024,6 +2024,67 @@ const i18n = {
     brdTitle:'Broadcast', noCustomers:'No customers found', noBroadcasts:'No broadcasts yet',
     noRegistrations:'No registrations found', contentStudio:'Content Studio',
     liveStudio:'Live Studio', b2bPipeline:'B2B Pipeline',
+    // Stats
+    totalCustomers:'Total Customers', onlineNow:'Online Now', realtimePresence:'Realtime presence',
+    broadcastsSent:'Broadcasts Sent', allTime:'All time',
+    pendingRegistrations:'Pending Registrations', awaitingReview:'Awaiting review',
+    active:'active', closedWon:'closed won',
+    // Content Studio
+    inDrafts:'In Drafts', piecesEditing:'Pieces currently being written or edited.',
+    awaitingReviewSub:'Awaiting Review', awaitingReviewBody:'Sent to moderator for approval before publish.',
+    scheduled2:'Scheduled', scheduledBody:'Queued for automatic publish at set times.',
+    ideasCaptured:'Ideas Captured', ideasBody:'Concepts ready to develop into full pieces.',
+    draftQueue:'Draft Queue', newDraft:'+ New Draft',
+    titleCol:'Title', platformCol:'Platform', statusCol:'Status', scheduledCol:'Scheduled',
+    advanceBtn:'Advance', noDraftsYet:'No drafts yet. Click + New Draft to start.',
+    newContentDraft:'New Content Draft', saveDraft:'Save Draft',
+    draftSaved:'Draft saved', draftDeleted:'Draft deleted', titleRequired:'Title required',
+    // Live Studio
+    streamStatus:'Stream Status', liveNow:'LIVE', idleStatus:'Idle',
+    broadcastingNow:'Broadcasting now to connected platforms.',
+    noActiveStream:'No active stream. Use the controls below to go live.',
+    endStream:'⏹ End Stream', goLive:'▶ Go Live', runRehearsal:'Run Rehearsal',
+    upcomingShows:'Upcoming Shows', scheduledLives:'Scheduled lives on the calendar.',
+    inRehearsal:'In Rehearsal', rehearsalBody:'Shows being prepped before going live.',
+    viewersLive:'Viewers (live)', viewersBody:'Concurrent audience across platforms.',
+    upcomingLiveSchedule:'Upcoming Live Schedule',
+    showCol:'Show', hostCol:'Host', dateTimeCol:'Date & Time',
+    noShowsScheduled:'No shows scheduled.',
+    youAreLive:'★ You are live', streamEnded:'Stream ended',
+    rehearsalMode:'Rehearsal mode — viewers cannot see this stream',
+    offAir:'Off Air', onAir:'ON AIR',
+    // B2B Pipeline
+    totalLeads:'Total Leads', pipelineValue:'Pipeline Value',
+    combinedValue:'Combined value of all opportunities.',
+    revenueLockedWon:'Revenue locked from finalized deals.',
+    newB2BLead:'New B2B Lead', companyName:'Company Name',
+    primaryContact:'Primary Contact', estimatedValue:'Estimated Value (IDR)',
+    initialStage:'Initial Stage', saveLead:'Save Lead',
+    leadAdded:'Lead added to pipeline', companyRequired:'Company name required',
+    addLead:'+ Add Lead',
+    // Customers / Modal
+    editCustomer:'Edit Customer', addCustomer:'Add Customer',
+    viewOnly:'View only', save:'Save',
+    fillNameEmail:'Please fill in name and email',
+    // Misc
+    monitoringPortal:'Monitoring portal activity...',
+    sovereignTitle:'Sovereign Moderator', supremeAuth:'SOVEREIGN MODERATOR · SUPREME AUTHORITY',
+    sovereignAuthID:'SOVEREIGN MODERATOR · OTORITAS TERTINGGI',
+    newRegistration:'New registration', pendingReg2:'Pending registration',
+    closedWonMsg:'already Closed Won',
+    broadcastRequiresRole:'Broadcast requires Admin / B2B / Moderator role',
+    noRecentActivity:'No recent activity',
+    noNotifications:'No notifications',
+    onlineNowStat:'Online Now', activeSessions:'Active sessions',
+    offlineStat:'Offline', lastSeenRecently:'Last seen recently',
+    totalUsers:'Total Users', allRoles:'All roles',
+    // Presence page stats
+    presOnline:'Online Now', presOffline:'Offline', presTotal:'Total Users',
+    presActiveSessions:'Active sessions', presLastSeen:'Last seen recently', presAllRoles:'All roles',
+    // Content Studio page header
+    contentStudioSub:'Plan, draft, and publish content for the brand',
+    liveStudioSub:'Stream control, schedule, and live audience metrics',
+    b2bPipelineSub:'Track partnerships and enterprise deals through the funnel',
   },
   id: {
     brandTagline:'Desain · Warisan · Kehadiran', signIn:'Masuk',
@@ -2075,14 +2136,87 @@ const i18n = {
     brdTitle:'Siaran', noCustomers:'Tidak ada pelanggan', noBroadcasts:'Belum ada siaran',
     noRegistrations:'Tidak ada pendaftaran', contentStudio:'Studio Konten',
     liveStudio:'Studio Live', b2bPipeline:'Pipeline B2B',
+    // Stats
+    totalCustomers:'Total Pelanggan', onlineNow:'Online Sekarang', realtimePresence:'Kehadiran realtime',
+    broadcastsSent:'Siaran Terkirim', allTime:'Sepanjang waktu',
+    pendingRegistrations:'Pendaftaran Menunggu', awaitingReview:'Menunggu ditinjau',
+    active:'aktif', closedWon:'deal ditutup',
+    // Content Studio
+    inDrafts:'Dalam Draf', piecesEditing:'Konten yang sedang ditulis atau diedit.',
+    awaitingReviewSub:'Menunggu Peninjauan', awaitingReviewBody:'Dikirim ke moderator untuk persetujuan sebelum dipublikasikan.',
+    scheduled2:'Terjadwal', scheduledBody:'Antrean untuk dipublikasikan otomatis pada waktu yang ditentukan.',
+    ideasCaptured:'Ide Tersimpan', ideasBody:'Konsep yang siap dikembangkan menjadi konten penuh.',
+    draftQueue:'Antrean Draf', newDraft:'+ Draf Baru',
+    titleCol:'Judul', platformCol:'Platform', statusCol:'Status', scheduledCol:'Dijadwalkan',
+    advanceBtn:'Majukan', noDraftsYet:'Belum ada draf. Klik + Draf Baru untuk memulai.',
+    newContentDraft:'Draf Konten Baru', saveDraft:'Simpan Draf',
+    draftSaved:'Draf tersimpan', draftDeleted:'Draf dihapus', titleRequired:'Judul wajib diisi',
+    // Live Studio
+    streamStatus:'Status Siaran', liveNow:'LIVE', idleStatus:'Siaga',
+    broadcastingNow:'Sedang menyiarkan ke platform yang terhubung.',
+    noActiveStream:'Tidak ada siaran aktif. Gunakan kontrol di bawah untuk mulai live.',
+    endStream:'⏹ Akhiri Siaran', goLive:'▶ Mulai Live', runRehearsal:'Jalankan Latihan',
+    upcomingShows:'Acara Mendatang', scheduledLives:'Live terjadwal di kalender.',
+    inRehearsal:'Dalam Latihan', rehearsalBody:'Acara yang sedang dipersiapkan sebelum live.',
+    viewersLive:'Penonton (live)', viewersBody:'Penonton bersamaan di semua platform.',
+    upcomingLiveSchedule:'Jadwal Live Mendatang',
+    showCol:'Acara', hostCol:'Host', dateTimeCol:'Tanggal & Waktu',
+    noShowsScheduled:'Tidak ada acara terjadwal.',
+    youAreLive:'★ Anda sedang live', streamEnded:'Siaran berakhir',
+    rehearsalMode:'Mode latihan — penonton tidak dapat melihat siaran ini',
+    offAir:'Tidak Siaran', onAir:'SIARAN',
+    // B2B Pipeline
+    totalLeads:'Total Lead', pipelineValue:'Nilai Pipeline',
+    combinedValue:'Total nilai semua peluang.',
+    revenueLockedWon:'Pendapatan terkunci dari deal yang selesai.',
+    newB2BLead:'Lead B2B Baru', companyName:'Nama Perusahaan',
+    primaryContact:'Kontak Utama', estimatedValue:'Estimasi Nilai (IDR)',
+    initialStage:'Tahap Awal', saveLead:'Simpan Lead',
+    leadAdded:'Lead ditambahkan ke pipeline', companyRequired:'Nama perusahaan wajib diisi',
+    addLead:'+ Tambah Lead',
+    // Customers / Modal
+    editCustomer:'Edit Pelanggan', addCustomer:'Tambah Pelanggan',
+    viewOnly:'Lihat saja', save:'Simpan',
+    fillNameEmail:'Mohon isi nama dan email',
+    // Misc
+    monitoringPortal:'Memantau aktivitas portal...',
+    sovereignTitle:'Sovereign Moderator', supremeAuth:'SOVEREIGN MODERATOR · SUPREME AUTHORITY',
+    sovereignAuthID:'SOVEREIGN MODERATOR · OTORITAS TERTINGGI',
+    newRegistration:'Pendaftaran baru', pendingReg2:'Pendaftaran menunggu',
+    closedWonMsg:'sudah Closed Won',
+    broadcastRequiresRole:'Siaran memerlukan peran Admin / B2B / Moderator',
+    noRecentActivity:'Tidak ada aktivitas terbaru',
+    noNotifications:'Tidak ada notifikasi',
+    onlineNowStat:'Online Sekarang', activeSessions:'Sesi aktif',
+    offlineStat:'Offline', lastSeenRecently:'Terakhir terlihat baru-baru ini',
+    totalUsers:'Total Pengguna', allRoles:'Semua peran',
+    // Presence page stats
+    presOnline:'Online Sekarang', presOffline:'Offline', presTotal:'Total Pengguna',
+    presActiveSessions:'Sesi aktif', presLastSeen:'Terakhir terlihat baru-baru ini', presAllRoles:'Semua peran',
+    // Content Studio page header
+    contentStudioSub:'Rencanakan, buat draf, dan publikasikan konten merek',
+    liveStudioSub:'Kontrol siaran, jadwal, dan metrik penonton live',
+    b2bPipelineSub:'Lacak kemitraan dan kesepakatan enterprise melalui funnel',
   }
 };
 const t = k => i18n[currentLang][k] || i18n.en[k] || k;
 function applyTranslations() {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const v = t(el.getAttribute('data-i18n'));
-    if (el.children.length === 0 || el.getAttribute('data-i18n-html')) el.textContent = v;
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+      el.placeholder = v;
+    } else if (el.tagName === 'OPTION') {
+      el.textContent = v;
+    } else if (el.children.length === 0 || el.getAttribute('data-i18n-html')) {
+      el.textContent = v;
+    }
   });
+  // Update dynamic placeholders
+  const cs = document.getElementById('cust-search'); if (cs) cs.placeholder = t('searchCustomers');
+  const us = document.getElementById('user-search'); if (us) us.placeholder = t('searchUsers');
+  // Update live status badge
+  const lsb = document.getElementById('live-status-badge');
+  if (lsb && !lsb.getAttribute('data-live-override')) lsb.textContent = liveOnAir ? t('onAir') : t('offAir');
 }
 function toggleLang() {
   currentLang = currentLang === 'en' ? 'id' : 'en';
@@ -2611,7 +2745,9 @@ function closeModal() { document.getElementById('modal-ov').classList.remove('op
    ⑬ ACTIVITY FEED
    ═══════════════════════════════════════════════════════════ */
 let activityLog = [];
-const RT_MSGS = ['System monitoring active', 'Supabase sync enabled', 'Realtime presence online', 'All services operational', 'Data sync complete'];
+const RT_MSGS_EN = ['System monitoring active', 'Supabase sync enabled', 'Realtime presence online', 'All services operational', 'Data sync complete'];
+const RT_MSGS_ID = ['Pemantauan sistem aktif', 'Sinkronisasi Supabase aktif', 'Kehadiran realtime online', 'Semua layanan berjalan', 'Sinkronisasi data selesai'];
+const RT_MSGS = RT_MSGS_EN;
 let rtMsgIdx = 0;
 
 function pushActivity(msg, type = 'info') {
@@ -2624,7 +2760,7 @@ function pushActivity(msg, type = 'info') {
 }
 function renderActivity() {
   const feed = document.getElementById('activity-feed'); if (!feed) return;
-  if (!activityLog.length) { feed.innerHTML = `<div class="tbl-empty">No recent activity</div>`; return; }
+  if (!activityLog.length) { feed.innerHTML = `<div class="tbl-empty">${t('noRecentActivity')}</div>`; return; }
   feed.innerHTML = activityLog.slice(0, 15).map(a => `
     <div class="af-item">
       <div class="af-dot" style="background:${a.color}"></div>
@@ -2885,7 +3021,8 @@ async function initDashboard() {
   document.getElementById('rt-item').classList.add('active');
   window._rtIv = setInterval(() => {
     const item = document.getElementById('rt-item');
-    const msg = activityLog.length ? activityLog[0].msg : RT_MSGS[rtMsgIdx++ % RT_MSGS.length];
+    const msgs = currentLang === 'id' ? RT_MSGS_ID : RT_MSGS_EN;
+    const msg = activityLog.length ? activityLog[0].msg : msgs[rtMsgIdx++ % msgs.length];
     if (item) { item.classList.remove('active'); setTimeout(() => { item.textContent = msg; item.classList.add('active'); }, 200); }
   }, 4000);
   applyTranslations();
@@ -3001,28 +3138,28 @@ function renderStats() {
   let cards = `
     <div class="stat-card">
       <div class="stat-num">${customers.length}</div>
-      <div class="stat-lbl">Total Customers</div>
-      <div class="stat-sub">${active} active</div>
+      <div class="stat-lbl">${t('totalCustomers')}</div>
+      <div class="stat-sub">${active} ${t('active')}</div>
       <div class="stat-trend">◉</div>
     </div>
     <div class="stat-card">
       <div class="stat-num" style="color:var(--green)">${on}</div>
-      <div class="stat-lbl">Online Now</div>
-      <div class="stat-sub">Realtime presence</div>
+      <div class="stat-lbl">${t('onlineNow')}</div>
+      <div class="stat-sub">${t('realtimePresence')}</div>
       <div class="stat-trend" style="color:var(--green)">⊙</div>
     </div>
     <div class="stat-card">
       <div class="stat-num">${broadcasts.length}</div>
-      <div class="stat-lbl">Broadcasts Sent</div>
-      <div class="stat-sub">All time</div>
+      <div class="stat-lbl">${t('broadcastsSent')}</div>
+      <div class="stat-sub">${t('allTime')}</div>
       <div class="stat-trend">◎</div>
     </div>`;
 
   if (isMod) {
     cards += `<div class="stat-card" style="border-color:${pending>0?'rgba(232,184,110,.3)':'var(--border)'}">
       <div class="stat-num" style="color:${pending>0?'var(--amber)':'var(--gold-hi)'}">${pending}</div>
-      <div class="stat-lbl">Pending Registrations</div>
-      <div class="stat-sub">Awaiting review</div>
+      <div class="stat-lbl">${t('pendingRegistrations')}</div>
+      <div class="stat-sub">${t('awaitingReview')}</div>
       <div class="stat-trend" style="color:var(--amber)">◈</div>
     </div>`;
   }
@@ -3057,10 +3194,10 @@ function renderContentStudio() {
         </div>
         <div>
           <div class="studio-card-title">${drafts}</div>
-          <div class="studio-card-sub">In Drafts</div>
+          <div class="studio-card-sub">${t('inDrafts')}</div>
         </div>
       </div>
-      <div class="studio-card-body">Pieces currently being written or edited.</div>
+      <div class="studio-card-body">${t('piecesEditing')}</div>
     </div>
     <div class="studio-card">
       <div class="studio-card-head">
@@ -3069,10 +3206,10 @@ function renderContentStudio() {
         </div>
         <div>
           <div class="studio-card-title">${review}</div>
-          <div class="studio-card-sub">Awaiting Review</div>
+          <div class="studio-card-sub">${t('awaitingReviewSub')}</div>
         </div>
       </div>
-      <div class="studio-card-body">Sent to moderator for approval before publish.</div>
+      <div class="studio-card-body">${t('awaitingReviewBody')}</div>
     </div>
     <div class="studio-card">
       <div class="studio-card-head">
@@ -3081,10 +3218,10 @@ function renderContentStudio() {
         </div>
         <div>
           <div class="studio-card-title">${sched}</div>
-          <div class="studio-card-sub">Scheduled</div>
+          <div class="studio-card-sub">${t('scheduled2')}</div>
         </div>
       </div>
-      <div class="studio-card-body">Queued for automatic publish at set times.</div>
+      <div class="studio-card-body">${t('scheduledBody')}</div>
     </div>
     <div class="studio-card">
       <div class="studio-card-head">
@@ -3093,10 +3230,10 @@ function renderContentStudio() {
         </div>
         <div>
           <div class="studio-card-title">${ideas}</div>
-          <div class="studio-card-sub">Ideas Captured</div>
+          <div class="studio-card-sub">${t('ideasCaptured')}</div>
         </div>
       </div>
-      <div class="studio-card-body">Concepts ready to develop into full pieces.</div>
+      <div class="studio-card-body">${t('ideasBody')}</div>
     </div>`;
 
   const statusColors = {
@@ -3113,31 +3250,31 @@ function renderContentStudio() {
       <td>${d.scheduled}</td>
       <td>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="btn-sm btn-edit" onclick="cycleDraft(${d.id})">Advance</button>
+          <button class="btn-sm btn-edit" onclick="cycleDraft(${d.id})">${t('advanceBtn')}</button>
           <button class="btn-sm btn-del" onclick="deleteDraft(${d.id})">Del</button>
         </div>
       </td>
-    </tr>`).join('') : `<tr><td colspan="5" class="tbl-empty">No drafts yet. Click + New Draft to start.</td></tr>`;
+    </tr>`).join('') : `<tr><td colspan="5" class="tbl-empty">${t('noDraftsYet')}</td></tr>`;
 }
 function saveDrafts(){ localStorage.setItem('dhp_drafts', JSON.stringify(contentDrafts)); }
 function openContentDraft() {
-  document.getElementById('m-title').textContent = 'New Content Draft';
+  document.getElementById('m-title').textContent = t('newContentDraft');
   document.getElementById('m-body').innerHTML = `
-    <div class="fg"><label>Title</label><input class="fi" id="dr-title" placeholder="Behind-the-scenes…"/></div>
-    <div class="fg"><label>Platform</label>
+    <div class="fg"><label>${t('titleCol')}</label><input class="fi" id="dr-title" placeholder="Behind-the-scenes…"/></div>
+    <div class="fg"><label>${t('platformCol')}</label>
       <select class="fi" id="dr-platform">
         <option>Instagram</option><option>TikTok</option><option>YouTube</option><option>X</option><option>LinkedIn</option>
       </select>
     </div>
-    <div class="fg"><label>Status</label>
+    <div class="fg"><label>${t('statusCol')}</label>
       <select class="fi" id="dr-status">
-        <option value="idea">Idea</option><option value="draft" selected>Draft</option><option value="review">Review</option><option value="scheduled">Scheduled</option>
+        <option value="idea">Idea</option><option value="draft" selected>Draft</option><option value="review">Review</option><option value="scheduled">${t('scheduled2')}</option>
       </select>
     </div>
-    <div class="fg"><label>Scheduled (optional)</label><input class="fi" id="dr-sched" placeholder="Fri 19:00"/></div>`;
+    <div class="fg"><label>${t('scheduledCol')} (optional)</label><input class="fi" id="dr-sched" placeholder="Fri 19:00"/></div>`;
   document.getElementById('m-foot').innerHTML = `
-    <button class="btn-sm btn-gold" onclick="saveDraft()">Save Draft</button>
-    <button class="btn-sm" style="border-color:var(--border);color:var(--muted)" onclick="closeModal()">Cancel</button>`;
+    <button class="btn-sm btn-gold" onclick="saveDraft()">${t('saveDraft')}</button>
+    <button class="btn-sm" style="border-color:var(--border);color:var(--muted)" onclick="closeModal()">${t('cancel')}</button>`;
   document.getElementById('modal-ov').classList.add('open');
 }
 function saveDraft() {
@@ -3145,11 +3282,11 @@ function saveDraft() {
   const platform = document.getElementById('dr-platform').value;
   const status   = document.getElementById('dr-status').value;
   const sched    = document.getElementById('dr-sched').value.trim() || '—';
-  if (!title) { toast('Title required'); return; }
+  if (!title) { toast(t('titleRequired')); return; }
   contentDrafts.unshift({ id: Date.now(), title, platform, status, scheduled: sched });
   saveDrafts();
   closeModal();
-  toast('Draft saved');
+  toast(t('draftSaved'));
   pushActivity(`${currentUser.name} added draft: ${title}`, 'info');
   renderContentStudio();
 }
@@ -3166,7 +3303,7 @@ function deleteDraft(id) {
   contentDrafts = contentDrafts.filter(x => x.id !== id);
   saveDrafts();
   renderContentStudio();
-  toast('Draft deleted');
+  toast(t('draftDeleted'));
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -3188,7 +3325,7 @@ function renderLiveStudio() {
   if (!cards || !tbody) return;
 
   if (statusBadge) {
-    statusBadge.textContent = liveOnAir ? 'ON AIR' : 'Off Air';
+    statusBadge.textContent = liveOnAir ? t('onAir') : t('offAir');
     statusBadge.style.opacity = liveOnAir ? '1' : '.55';
   }
 
@@ -3202,16 +3339,16 @@ function renderLiveStudio() {
           <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg>
         </div>
         <div>
-          <div class="studio-card-title">${liveOnAir ? 'LIVE' : 'Idle'}</div>
-          <div class="studio-card-sub">Stream Status</div>
+          <div class="studio-card-title">${liveOnAir ? t('liveNow') : t('idleStatus')}</div>
+          <div class="studio-card-sub">${t('streamStatus')}</div>
         </div>
       </div>
-      <div class="studio-card-body">${liveOnAir ? 'Broadcasting now to connected platforms.' : 'No active stream. Use the controls below to go live.'}</div>
+      <div class="studio-card-body">${liveOnAir ? t('broadcastingNow') : t('noActiveStream')}</div>
       <div class="studio-card-actions">
         ${liveOnAir
-          ? `<button class="btn-sm btn-del" onclick="toggleLive()">⏹ End Stream</button>`
-          : `<button class="btn-sm btn-gold" onclick="toggleLive()">▶ Go Live</button>`}
-        <button class="btn-sm btn-edit" onclick="rehearseLive()">Run Rehearsal</button>
+          ? `<button class="btn-sm btn-del" onclick="toggleLive()">${t('endStream')}</button>`
+          : `<button class="btn-sm btn-gold" onclick="toggleLive()">${t('goLive')}</button>`}
+        <button class="btn-sm btn-edit" onclick="rehearseLive()">${t('runRehearsal')}</button>
       </div>
     </div>
     <div class="studio-card">
@@ -3221,10 +3358,10 @@ function renderLiveStudio() {
         </div>
         <div>
           <div class="studio-card-title">${upcoming}</div>
-          <div class="studio-card-sub">Upcoming Shows</div>
+          <div class="studio-card-sub">${t('upcomingShows')}</div>
         </div>
       </div>
-      <div class="studio-card-body">Scheduled lives on the calendar.</div>
+      <div class="studio-card-body">${t('scheduledLives')}</div>
     </div>
     <div class="studio-card">
       <div class="studio-card-head">
@@ -3233,10 +3370,10 @@ function renderLiveStudio() {
         </div>
         <div>
           <div class="studio-card-title">${rehearsals}</div>
-          <div class="studio-card-sub">In Rehearsal</div>
+          <div class="studio-card-sub">${t('inRehearsal')}</div>
         </div>
       </div>
-      <div class="studio-card-body">Shows being prepped before going live.</div>
+      <div class="studio-card-body">${t('rehearsalBody')}</div>
     </div>
     <div class="studio-card">
       <div class="studio-card-head">
@@ -3245,10 +3382,10 @@ function renderLiveStudio() {
         </div>
         <div>
           <div class="studio-card-title">${liveOnAir ? '128' : '0'}</div>
-          <div class="studio-card-sub">Viewers (live)</div>
+          <div class="studio-card-sub">${t('viewersLive')}</div>
         </div>
       </div>
-      <div class="studio-card-body">Concurrent audience across platforms.</div>
+      <div class="studio-card-body">${t('viewersBody')}</div>
     </div>`;
 
   const statusClass = { upcoming:'b-admin', rehearsal:'b-moderator', completed:'b-guest' };
@@ -3259,16 +3396,16 @@ function renderLiveStudio() {
       <td>${s.platform}</td>
       <td>${s.when}</td>
       <td><span class="badge ${statusClass[s.status]||'b-guest'}">${s.status}</span></td>
-    </tr>`).join('') : `<tr><td colspan="5" class="tbl-empty">No shows scheduled.</td></tr>`;
+    </tr>`).join('') : `<tr><td colspan="5" class="tbl-empty">${t('noShowsScheduled')}</td></tr>`;
 }
 function toggleLive() {
   liveOnAir = !liveOnAir;
   pushActivity(`${currentUser.name} ${liveOnAir ? 'started a live stream' : 'ended the live stream'}`, liveOnAir ? 'join' : 'leave');
-  toast(liveOnAir ? '★ You are live' : 'Stream ended');
+  toast(liveOnAir ? t('youAreLive') : t('streamEnded'));
   renderLiveStudio();
 }
 function rehearseLive() {
-  toast('Rehearsal mode — viewers cannot see this stream');
+  toast(t('rehearsalMode'));
   pushActivity(`${currentUser.name} started a rehearsal`, 'info');
 }
 
@@ -3312,10 +3449,10 @@ function renderPipeline() {
         </div>
         <div>
           <div class="studio-card-title">${b2bLeads.length}</div>
-          <div class="studio-card-sub">Total Leads</div>
+          <div class="studio-card-sub">${t('totalLeads')}</div>
         </div>
       </div>
-      <div class="studio-card-body">${inFlight} active · ${won.length} closed won</div>
+      <div class="studio-card-body">${inFlight} ${t('active')} · ${won.length} ${t('closedWon')}</div>
     </div>
     <div class="studio-card">
       <div class="studio-card-head">
@@ -3324,10 +3461,10 @@ function renderPipeline() {
         </div>
         <div>
           <div class="studio-card-title">${fmtIDR(totalValue)}</div>
-          <div class="studio-card-sub">Pipeline Value</div>
+          <div class="studio-card-sub">${t('pipelineValue')}</div>
         </div>
       </div>
-      <div class="studio-card-body">Combined value of all opportunities.</div>
+      <div class="studio-card-body">${t('combinedValue')}</div>
     </div>
     <div class="studio-card">
       <div class="studio-card-head">
@@ -3336,10 +3473,10 @@ function renderPipeline() {
         </div>
         <div>
           <div class="studio-card-title">${fmtIDR(wonValue)}</div>
-          <div class="studio-card-sub">Closed Won</div>
+          <div class="studio-card-sub">${t('closedWon').charAt(0).toUpperCase() + t('closedWon').slice(1)}</div>
         </div>
       </div>
-      <div class="studio-card-body">Revenue locked from finalized deals.</div>
+      <div class="studio-card-body">${t('revenueLockedWon')}</div>
     </div>`;
 
   board.innerHTML = PIPELINE_STAGES.map(s => {
@@ -3370,19 +3507,19 @@ function advanceLead(id) {
   renderPipeline();
 }
 function openPipelineLead() {
-  document.getElementById('m-title').textContent = 'New B2B Lead';
+  document.getElementById('m-title').textContent = t('newB2BLead');
   document.getElementById('m-body').innerHTML = `
-    <div class="fg"><label>Company Name</label><input class="fi" id="lead-name" placeholder="PT …"/></div>
-    <div class="fg"><label>Primary Contact</label><input class="fi" id="lead-contact" placeholder="Pak/Bu …"/></div>
-    <div class="fg"><label>Estimated Value (IDR)</label><input class="fi" id="lead-value" type="number" placeholder="25000000"/></div>
-    <div class="fg"><label>Initial Stage</label>
+    <div class="fg"><label>${t('companyName')}</label><input class="fi" id="lead-name" placeholder="PT …"/></div>
+    <div class="fg"><label>${t('primaryContact')}</label><input class="fi" id="lead-contact" placeholder="Pak/Bu …"/></div>
+    <div class="fg"><label>${t('estimatedValue')}</label><input class="fi" id="lead-value" type="number" placeholder="25000000"/></div>
+    <div class="fg"><label>${t('initialStage')}</label>
       <select class="fi" id="lead-stage">
         ${PIPELINE_STAGES.map(s => `<option value="${s.key}">${s.label}</option>`).join('')}
       </select>
     </div>`;
   document.getElementById('m-foot').innerHTML = `
-    <button class="btn-sm btn-gold" onclick="saveLead()">Save Lead</button>
-    <button class="btn-sm" style="border-color:var(--border);color:var(--muted)" onclick="closeModal()">Cancel</button>`;
+    <button class="btn-sm btn-gold" onclick="saveLead()">${t('saveLead')}</button>
+    <button class="btn-sm" style="border-color:var(--border);color:var(--muted)" onclick="closeModal()">${t('cancel')}</button>`;
   document.getElementById('modal-ov').classList.add('open');
 }
 function saveLead() {
@@ -3390,11 +3527,11 @@ function saveLead() {
   const contact = document.getElementById('lead-contact').value.trim() || '—';
   const value   = parseInt(document.getElementById('lead-value').value, 10) || 0;
   const stage   = document.getElementById('lead-stage').value;
-  if (!name) { toast('Company name required'); return; }
+  if (!name) { toast(t('companyRequired')); return; }
   b2bLeads.unshift({ id: Date.now(), name, contact, value, stage });
   saveB2B();
   closeModal();
-  toast('Lead added to pipeline');
+  toast(t('leadAdded'));
   pushActivity(`${currentUser.name} added lead: ${name}`, 'info');
   renderPipeline();
 }
@@ -3408,7 +3545,7 @@ function renderCust() {
   const r = currentUser.role;
   const list = customers.filter(c => !q || c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q));
   const tbody = document.getElementById('cust-tbl'); if (!tbody) return;
-  if (!list.length) { tbody.innerHTML = `<tr><td colspan="5" class="tbl-empty">No customers found</td></tr>`; return; }
+  if (!list.length) { tbody.innerHTML = `<tr><td colspan="5" class="tbl-empty">${t('noCustomers')}</td></tr>`; return; }
   tbody.innerHTML = list.map(c => `
     <tr>
       <td style="font-weight:600;color:var(--text)">${c.name}</td>
@@ -3417,19 +3554,19 @@ function renderCust() {
       <td><span class="badge b-${c.status}">${c.status}</span></td>
       <td>
         ${can.editorUp(r)
-          ? `<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn-sm btn-edit" onclick="openCustModal(${c.id})">Edit</button><button class="btn-sm btn-del" onclick="deleteCust(${c.id})">Del</button></div>`
-          : `<span style="color:var(--muted);font-size:10px">View only</span>`}
+          ? `<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn-sm btn-edit" onclick="openCustModal(${c.id})">${currentLang==='id'?'Edit':'Edit'}</button><button class="btn-sm btn-del" onclick="deleteCust(${c.id})">Del</button></div>`
+          : `<span style="color:var(--muted);font-size:10px">${t('viewOnly')}</span>`}
       </td>
     </tr>`).join('');
 }
 function openCustModal(id) {
   editCustId = id || null;
   const c = id ? customers.find(x => x.id === id) : null;
-  document.getElementById('m-title').textContent = c ? 'Edit Customer' : 'Add Customer';
+  document.getElementById('m-title').textContent = c ? t('editCustomer') : t('addCustomer');
   document.getElementById('m-body').innerHTML = `
-    <div class="fg"><label>Name</label><input class="fi" id="cm-name" value="${c?.name||''}"/></div>
+    <div class="fg"><label>${t('name')}</label><input class="fi" id="cm-name" value="${c?.name||''}"/></div>
     <div class="fg"><label>Email</label><input class="fi" id="cm-email" type="email" value="${c?.email||''}"/></div>
-    <div class="fg"><label>Phone</label><input class="fi" id="cm-phone" value="${c?.phone||''}"/></div>
+    <div class="fg"><label>${t('phone')}</label><input class="fi" id="cm-phone" value="${c?.phone||''}"/></div>
     <div class="fg"><label>Status</label>
       <select class="fi" id="cm-status">
         <option value="active" ${c?.status==='active'?'selected':''}>Active</option>
@@ -3437,8 +3574,8 @@ function openCustModal(id) {
       </select>
     </div>`;
   document.getElementById('m-foot').innerHTML = `
-    <button class="btn-sm btn-gold" onclick="saveCust()">Save</button>
-    <button class="btn-sm" style="border-color:var(--border);color:var(--muted)" onclick="closeModal()">Cancel</button>`;
+    <button class="btn-sm btn-gold" onclick="saveCust()">${t('save')}</button>
+    <button class="btn-sm" style="border-color:var(--border);color:var(--muted)" onclick="closeModal()">${t('cancel')}</button>`;
   document.getElementById('modal-ov').classList.add('open');
 }
 async function saveCust() {
@@ -3446,7 +3583,7 @@ async function saveCust() {
   const email = document.getElementById('cm-email').value.trim();
   const phone = document.getElementById('cm-phone').value.trim();
   const status = document.getElementById('cm-status').value;
-  if (!name || !email) { toast('Please fill in name and email'); return; }
+  if (!name || !email) { toast(t('fillNameEmail')); return; }
   if (editCustId) {
     const c = customers.find(x => x.id === editCustId);
     Object.assign(c, { name, email, phone, status });
@@ -3474,7 +3611,7 @@ async function deleteCust(id) {
    ═══════════════════════════════════════════════════════════ */
 function renderBcHistory() {
   const tbody = document.getElementById('bc-tbl'); if (!tbody) return;
-  if (!broadcasts.length) { tbody.innerHTML = `<tr><td colspan="4" class="tbl-empty">No broadcasts yet</td></tr>`; return; }
+  if (!broadcasts.length) { tbody.innerHTML = `<tr><td colspan="4" class="tbl-empty">${t('noBroadcasts')}</td></tr>`; return; }
   tbody.innerHTML = broadcasts.map(b => `
     <tr>
       <td style="font-weight:600">${b.subject}</td>
@@ -3484,7 +3621,7 @@ function renderBcHistory() {
     </tr>`).join('');
 }
 async function sendBroadcast() {
-  if (!can.canBroadcast(currentUser.role)) { toast('Broadcast requires Admin / B2B / Moderator role'); return; }
+  if (!can.canBroadcast(currentUser.role)) { toast(t('broadcastRequiresRole')); return; }
   const sub = document.getElementById('bc-sub').value.trim();
   const body = document.getElementById('bc-body').value.trim();
   if (!sub || !body) { toast(t('fillBroadcast')); return; }
@@ -3747,9 +3884,9 @@ function renderPresencePage() {
   const on  = all.filter(u => u.online).length;
   const ps  = document.getElementById('pres-stats');
   if (ps) ps.innerHTML = `
-    <div class="stat-card"><div class="stat-num" style="color:var(--green)">${on}</div><div class="stat-lbl">Online Now</div><div class="stat-sub">Active sessions</div></div>
-    <div class="stat-card"><div class="stat-num">${all.length-on}</div><div class="stat-lbl">Offline</div><div class="stat-sub">Last seen recently</div></div>
-    <div class="stat-card"><div class="stat-num">${all.length}</div><div class="stat-lbl">Total Users</div><div class="stat-sub">All roles</div></div>`;
+    <div class="stat-card"><div class="stat-num" style="color:var(--green)">${on}</div><div class="stat-lbl">${t('presOnline')}</div><div class="stat-sub">${t('presActiveSessions')}</div></div>
+    <div class="stat-card"><div class="stat-num">${all.length-on}</div><div class="stat-lbl">${t('presOffline')}</div><div class="stat-sub">${t('presLastSeen')}</div></div>
+    <div class="stat-card"><div class="stat-num">${all.length}</div><div class="stat-lbl">${t('presTotal')}</div><div class="stat-sub">${t('presAllRoles')}</div></div>`;
   const pg = document.getElementById('pres-grid'); if (!pg) return;
   pg.innerHTML = all.map(u => {
     const av = u.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
