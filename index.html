@@ -1175,24 +1175,9 @@ const LOCAL_USERS = {
   viewer1:   { pass:'4455',     role:'viewer',    name:'Viewer Satu',      email:'viewer1@dhp.id' },
 };
 
-let customers = [
-  {id:1, name:'Tanaka Hiroshi',  email:'tanaka@example.jp',   phone:'+81-90-1234-5678', status:'active'},
-  {id:2, name:'Sato Yuki',       email:'sato@example.jp',     phone:'+81-90-8765-4321', status:'active'},
-  {id:3, name:'Yamamoto Kenji',  email:'yamamoto@example.jp', phone:'+81-90-5555-0123', status:'inactive'},
-  {id:4, name:'Nakamura Aoi',    email:'nakamura@example.jp', phone:'+81-90-9999-8888', status:'active'},
-  {id:5, name:'Ito Mei',         email:'ito@example.jp',      phone:'+81-90-4444-3333', status:'active'},
-];
-
-let registrations = [
-  {id:1, userId:'jason_dhp', name:'Jason Pratama', email:'jason@dhp.id',   role:'editor', status:'pending',  createdAt:Date.now()-3600000},
-  {id:2, userId:'budi_w',    name:'Budi Santoso',  email:'budi@gmail.com', role:'viewer', status:'pending',  createdAt:Date.now()-7200000},
-  {id:3, userId:'dewi_r',    name:'Dewi Rahayu',   email:'dewi@dhp.id',    role:'editor', status:'approved', createdAt:Date.now()-86400000},
-];
-
-let broadcasts = [
-  {id:1, subject:'Welcome New Clients',    by:'admin1',     date:'2025-05-01', recipients:5},
-  {id:2, subject:'Portfolio Launch Event', by:'moderator',  date:'2025-04-22', recipients:5},
-];
+let customers     = [];
+let registrations = [];
+let broadcasts    = [];
 
 /* ═══════════════════════════════════════════════════════════
    ④ PRESENCE — Realtime multi-user tracking
@@ -1202,15 +1187,7 @@ const guestSlots = {};
 for (let i = 1; i <= MAX_GUEST; i++) guestSlots[i] = null;
 
 const presenceMap = {};
-Object.entries(LOCAL_USERS).forEach(([id, u]) => {
-  presenceMap[id] = {
-    id, role: u.role, name: u.name, online: false, loginAt: 0,
-    lastSeen: Date.now() - (id === 'admin1' ? 2*60000 : id === 'editor1' ? 45*60000 : (30 + Math.random()*120)*60000)
-  };
-});
-presenceMap['admin1'].online  = true;
-presenceMap['admin1'].loginAt = Date.now() - 12*60000;
-presenceMap['admin1'].lastSeen = Date.now();
+// Presence hanya diisi saat user benar-benar login — tidak ada seed palsu
 
 let presChannel = null, presHB = null, presTab = 'all';
 
@@ -1753,10 +1730,7 @@ function closeModal() { document.getElementById('modal-ov').classList.remove('op
 /* ═══════════════════════════════════════════════════════════
    ⑬ ACTIVITY FEED
    ═══════════════════════════════════════════════════════════ */
-let activityLog = [
-  { msg:'Portal initialised', color:'var(--gold-lo)', time:Date.now()-300000 },
-  { msg:'admin1 — connected', color:'var(--green)',   time:Date.now()-12*60000 },
-];
+let activityLog = [];
 const RT_MSGS = ['System monitoring active', 'Supabase sync enabled', 'Realtime presence online', 'All services operational', 'Data sync complete'];
 let rtMsgIdx = 0;
 
@@ -1881,12 +1855,12 @@ function loginSuccess(id, role, name) {
   dbQ(d => d.rpc('update_user_presence', { p_user_id:id, p_event:'login' }));
   const sc = document.getElementById('scene');
   sc.style.opacity = '0';
-  setTimeout(() => {
+  setTimeout(async () => {
     sc.style.display = 'none';
     document.getElementById('ctrl-bar').style.display = 'none';
     document.getElementById('dash').classList.add('active');
     if (role === 'moderator') document.body.classList.add('is-mod');
-    initDashboard();
+    await initDashboard();
     initRealtimePresence(id, role, name);
     showWelcomeBanner(name, role);
     if (role === 'guest') toast(t('guestReadOnly'));
@@ -1933,28 +1907,27 @@ function checkStrength(v) {
 /* ═══════════════════════════════════════════════════════════
    ⑯ DASHBOARD INIT
    ═══════════════════════════════════════════════════════════ */
-function initDashboard() {
+async function initDashboard() {
   const r = currentUser.role;
   document.getElementById('sb-uname').textContent = currentUser.name;
   document.getElementById('sb-rdot').className = `role-dot role-${r}`;
   document.getElementById('sb-rlbl').textContent = rn(r);
-  // Show admin section only for moderator
   const isMod = can.isMod(r);
-  document.getElementById('ns-admin').style.display      = isMod ? '' : 'none';
+  document.getElementById('ns-admin').style.display        = isMod ? '' : 'none';
   document.getElementById('n-registrations').style.display = isMod ? '' : 'none';
-  document.getElementById('n-users').style.display       = isMod ? '' : 'none';
-  document.getElementById('n-settings').style.display    = isMod ? '' : 'none';
-  document.getElementById('notif-bell').style.display    = isMod ? '' : 'none';
-  // Add button: editor and above
-  document.getElementById('btn-add-cust').style.display  = can.editorUp(r) ? '' : 'none';
-  // Topbar greeting
+  document.getElementById('n-users').style.display         = isMod ? '' : 'none';
+  document.getElementById('n-settings').style.display      = isMod ? '' : 'none';
+  document.getElementById('notif-bell').style.display      = isMod ? '' : 'none';
+  document.getElementById('btn-add-cust').style.display    = can.editorUp(r) ? '' : 'none';
   const g = getGreeting();
   document.getElementById('tg-icon').innerHTML = g.icon;
   document.getElementById('tg-text').textContent = (currentLang === 'id' ? g.id : g.en) + ', ' + currentUser.name;
   document.getElementById('tg-sub').textContent = rn(r).toUpperCase();
-  // Presence FAB
   document.getElementById('pres-fab').classList.add('visible');
-  updateRegBadge();
+
+  // Load data real dari Supabase (atau tetap kosong jika offline)
+  await loadDataFromDB(isMod);
+
   renderStats(); renderActivity(); renderCust(); renderBcHistory();
   updateClock();
   window._clockIv = setInterval(updateClock, 1000);
@@ -1965,11 +1938,67 @@ function initDashboard() {
     if (item) { item.classList.remove('active'); setTimeout(() => { item.textContent = msg; item.classList.add('active'); }, 200); }
   }, 4000);
   applyTranslations();
-  // Seed pending reg notifications for moderator
+  // Notif moderator untuk reg pending yang ada di DB
   if (isMod) {
+    updateRegBadge();
     registrations.filter(reg => reg.status === 'pending').forEach(reg => {
       pushNotif({ type:'reg', msg:`Pending registration: ${reg.name||reg.full_name}`, regId:reg.id });
     });
+  }
+}
+
+/* Load semua data dari Supabase — tidak ada dummy, kosong jika DB belum dikonfigurasi */
+async function loadDataFromDB(isMod) {
+  // Customers
+  const cRes = await dbQ(d => d.from('customers').select('*').order('created_at', { ascending:false }));
+  if (cRes?.data) {
+    customers = cRes.data.map(c => ({
+      id:     c.id,
+      name:   c.full_name,
+      email:  c.email,
+      phone:  c.phone || '',
+      status: c.status
+    }));
+  }
+
+  // Broadcasts
+  const bRes = await dbQ(d => d.from('broadcasts').select('*').order('created_at', { ascending:false }));
+  if (bRes?.data) {
+    broadcasts = bRes.data.map(b => ({
+      id:         b.id,
+      subject:    b.subject,
+      by:         b.sent_by,
+      date:       b.created_at?.slice(0,10) || '',
+      recipients: b.recipients
+    }));
+  }
+
+  // Registrations (moderator saja)
+  if (isMod) {
+    const rRes = await dbQ(d => d.from('registrations').select('*').order('created_at', { ascending:false }));
+    if (rRes?.data) {
+      registrations = rRes.data.map(reg => ({
+        id:        reg.id,
+        userId:    reg.user_id,
+        name:      reg.full_name,
+        email:     reg.email,
+        pass:      reg.password_hash,
+        role:      reg.requested_role || 'viewer',
+        status:    reg.status,
+        createdAt: new Date(reg.created_at).getTime()
+      }));
+    }
+  }
+
+  // Activity feed
+  const aRes = await dbQ(d => d.from('activity_feed').select('*').order('created_at', { ascending:false }).limit(30));
+  if (aRes?.data) {
+    const colors = { join:'var(--green)', leave:'var(--muted)', reg:'var(--amber)', error:'var(--red)', info:'var(--text2)' };
+    activityLog = aRes.data.map(a => ({
+      msg:   a.message,
+      color: colors[a.type] || colors.info,
+      time:  new Date(a.created_at).getTime()
+    }));
   }
 }
 
