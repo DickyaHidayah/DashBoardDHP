@@ -584,7 +584,7 @@ body.is-mod #mod-indicator{display:block}
 /* ════════════════════════ RESPONSIVE ════════════════════════ */
 
 /* Overlay for mobile sidebar */
-#sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9998;backdrop-filter:blur(3px);pointer-events:none}
+#sb-overlay{display:block;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9998;backdrop-filter:blur(3px);pointer-events:none;opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s}
 
 @media(max-width:768px){
   :root{--sb-w:var(--sb-w-mobile)}
@@ -613,7 +613,7 @@ body.is-mod #mod-indicator{display:block}
     transform:translateX(0) !important;
   }
   /* Show overlay when sidebar open */
-  #sb-overlay.show{display:block;pointer-events:auto}
+  #sb-overlay.show{opacity:1;visibility:visible;pointer-events:auto}
 
   /* Main area takes full width */
   #dash{flex-direction:row}
@@ -3052,25 +3052,24 @@ function navTo(page, btn) {
 function toggleSidebar() {
   const sb = document.getElementById('sidebar');
   const ov = document.getElementById('sb-overlay');
-  if (!sb || !ov) return;
+  if (!sb || !ov) { console.warn('sidebar or overlay not found'); return; }
   const isExpanded = sb.classList.contains('expanded');
   if (isExpanded) {
     sb.classList.remove('expanded');
     ov.classList.remove('show');
-    ov.style.pointerEvents = 'none';
+    document.body.style.overflow = '';
   } else {
     sb.classList.add('expanded');
     ov.classList.add('show');
-    ov.style.pointerEvents = 'auto';
+    document.body.style.overflow = 'hidden';
   }
 }
 function closeSidebar() {
   const sb = document.getElementById('sidebar');
   const ov = document.getElementById('sb-overlay');
-  if (!sb || !ov) return;
-  sb.classList.remove('expanded');
-  ov.classList.remove('show');
-  ov.style.pointerEvents = 'none';
+  if (sb) sb.classList.remove('expanded');
+  if (ov) ov.classList.remove('show');
+  document.body.style.overflow = '';
 }
 
 /* ═══════════════════════════════════════════════════════════
