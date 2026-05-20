@@ -178,7 +178,7 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3Csvg width=
 
 /* ── SIDEBAR ── */
 .sb{width:var(--sb-w);flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);
-    display:flex;flex-direction:column;overflow:hidden;position:relative;transition:width var(--trans)}
+    display:flex;flex-direction:column;overflow:hidden;position:relative;transition:width var(--trans),transform .3s cubic-bezier(.4,0,.2,1)}
 .sb-head{padding:20px 18px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
 .sb-logo{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .sb-logo-mark{width:32px;height:32px;flex-shrink:0}
@@ -303,16 +303,18 @@ body.is-head-mod .tg-text{
 .nav-item.mod-only{border-left:2px solid rgba(201,169,110,.2)}
 .nav-item.mod-only.active{border-left-color:var(--gold)}
 .sb-foot{padding:10px;border-top:1px solid var(--border);flex-shrink:0}
-.logout-btn{width:100%;display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:6px;
-    background:none;border:none;color:var(--muted);font-family:'Inter',sans-serif;font-size:12px;
-    cursor:pointer;transition:all var(--trans);min-height:40px;white-space:nowrap;overflow:hidden}
-.logout-btn:hover{color:var(--red);background:rgba(232,112,112,.06)}
+.logout-btn{width:100%;display:flex;align-items:center;gap:10px;padding:12px 10px;border-radius:8px;
+    background:rgba(232,112,112,.06);border:1px solid rgba(232,112,112,.2);color:var(--red);
+    font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.05em;
+    cursor:pointer;transition:all var(--trans);min-height:44px;white-space:nowrap;overflow:hidden;
+    touch-action:manipulation}
+.logout-btn:hover,.logout-btn:active{color:#ff6666;background:rgba(232,112,112,.14);border-color:rgba(232,112,112,.4)}
 
 /* Sidebar toggle (mobile) — lives inside topbar, not floating */
-#sb-toggle{display:none;background:none;border:1px solid var(--border);color:var(--gold);
-    width:36px;height:36px;border-radius:8px;cursor:pointer;flex-shrink:0;
-    align-items:center;justify-content:center;transition:all var(--trans)}
-#sb-toggle:hover{border-color:var(--gold);background:rgba(201,169,110,.08)}
+#sb-toggle{display:none;background:rgba(201,169,110,.08);border:1px solid var(--border-hi);color:var(--gold);
+    width:40px;height:40px;border-radius:8px;cursor:pointer;flex-shrink:0;
+    align-items:center;justify-content:center;transition:all var(--trans);touch-action:manipulation}
+#sb-toggle:hover,#sb-toggle:active{border-color:var(--gold);background:rgba(201,169,110,.2)}
 
 /* ── MAIN AREA ── */
 .main{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-width:0}
@@ -555,31 +557,74 @@ body.is-mod #mod-indicator{display:block}
 /* ── PRESENCE PAGE CARDS ── */
 .user-card .uc-badge-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-top:8px}
 
+/* Mobile logout in topbar — only show on mobile */
+.tb-logout-mobile{display:none}
+@media(max-width:768px){
+  .tb-logout-mobile{display:flex!important}
+}
+
+/* On desktop, sidebar always shows full text */
+@media(min-width:769px){
+  .sb .sb-brand,
+  .sb .sb-tagline,
+  .sb .sb-user-card,
+  .sb .nav-sec-lbl,
+  .sb .nav-item>span:not(.nav-icon):not(.nav-badge),
+  .sb .logout-btn>span:not(.nav-icon){display:block}
+  .sb{transform:none!important}
+}
+
 /* ── SHAKE ── */
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 
 /* ════════════════════════ RESPONSIVE ════════════════════════ */
+
+/* Overlay for mobile sidebar */
+#sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:199;backdrop-filter:blur(3px)}
+
 @media(max-width:768px){
   :root{--sb-w:var(--sb-w-mobile)}
-  .sb{width:var(--sb-w-mobile);transition:width .3s ease}
-  .sb.expanded{width:var(--sb-w)}
-  /* Hide text when collapsed */
-  .sb:not(.expanded) .sb-brand,
-  .sb:not(.expanded) .sb-tagline,
-  .sb:not(.expanded) .sb-user-card,
-  .sb:not(.expanded) .nav-sec-lbl,
-  .sb:not(.expanded) .nav-item>span:not(.nav-icon):not(.nav-badge),
-  .sb:not(.expanded) .logout-btn>span:not(.nav-icon){display:none}
-  .sb:not(.expanded) .sb-head{padding:14px 12px}
-  .sb:not(.expanded) .sb-logo{justify-content:center}
-  .sb:not(.expanded) .sb-logo-mark{margin:0}
-  .sb:not(.expanded) .nav-item,.sb:not(.expanded) .logout-btn{justify-content:center;padding:11px 8px}
-  .sb:not(.expanded) .nav-badge{position:absolute;top:4px;right:2px}
+  /* On mobile: sidebar is fixed overlay, hidden by default */
+  .sb{
+    position:fixed;top:0;left:0;bottom:0;
+    width:var(--sb-w)!important;
+    z-index:200;
+    transform:translateX(-100%);
+    transition:transform .3s cubic-bezier(.4,0,.2,1);
+    box-shadow:4px 0 40px rgba(0,0,0,.7);
+    overflow-y:auto;
+  }
+  .sb.expanded{
+    transform:translateX(0);
+    width:240px!important;
+  }
+  /* Sidebar overlay shows when expanded */
+  #sb-overlay.show{display:block}
+  
+  /* Main takes full width since sidebar is floating */
+  #dash{flex-direction:column}
+  .main{flex:1;min-width:0;width:100%}
+  
+  /* Show hamburger button */
   #sb-toggle{display:flex}
+  
+  /* Topbar adjustments */
+  .topbar{padding:10px 12px;gap:8px;flex-wrap:nowrap}
+  .topbar-greeting{min-width:0;flex:1}
+  .tg-text{font-size:13px}
+  .tg-sub{font-size:8px}
+  .tg-icon{display:none}
   .content{padding:14px 12px}
-  .tg-text{font-size:14px}
-  .topbar{padding:12px 14px}
+  
+  /* Show sign out text always on mobile expanded sidebar */
+  .sb.expanded .sb-brand,
+  .sb.expanded .sb-tagline,
+  .sb.expanded .sb-user-card,
+  .sb.expanded .nav-sec-lbl,
+  .sb.expanded .nav-item>span:not(.nav-icon):not(.nav-badge),
+  .sb.expanded .logout-btn>span:not(.nav-icon){display:block!important}
 }
+
 @media(max-width:480px){
   .stats-grid{grid-template-columns:1fr 1fr}
   .user-grid{grid-template-columns:1fr}
@@ -588,17 +633,16 @@ body.is-mod #mod-indicator{display:block}
   .ph{flex-direction:column}
   .ph-acts{width:100%;justify-content:flex-end}
   .clock-date{display:none}
+  .clock-time{font-size:16px}
   .ctrl-bar{top:10px;right:10px;gap:6px}
   .cb{padding:6px 10px;font-size:9px}
-  #pres-fab{bottom:80px;right:16px}
+  #pres-fab{bottom:20px;right:16px}
   #pres-panel{right:12px;width:calc(100vw - 24px)}
   #notif-panel{width:100%}
   .modal{max-width:100%;border-radius:12px}
-}
-/* Overlay for mobile sidebar */
-#sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199;backdrop-filter:blur(2px)}
-@media(max-width:768px){
-  #sb-overlay.show{display:block}
+  /* Topbar right: hide some buttons to save space */
+  #mode-btn-dash{display:none}
+  .topbar-right{gap:6px}
 }
 </style>
 </head>
@@ -971,10 +1015,10 @@ body.is-mod #mod-indicator{display:block}
     <div class="topbar">
       <!-- Hamburger — inside topbar, no floating overlap -->
       <button id="sb-toggle" onclick="toggleSidebar()" title="Toggle menu" aria-label="Toggle sidebar">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <line x1="1" y1="4" x2="15" y2="4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-          <line x1="1" y1="8" x2="15" y2="8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-          <line x1="1" y1="12" x2="15" y2="12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <line x1="2" y1="4.5" x2="16" y2="4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="2" y1="9" x2="16" y2="9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="2" y1="13.5" x2="16" y2="13.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
         </svg>
       </button>
       <div class="topbar-greeting">
@@ -995,6 +1039,14 @@ body.is-mod #mod-indicator{display:block}
             <path d="M6.5 13.5a1.5 1.5 0 003 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
           </svg>
           <span class="badge-dot" id="bell-badge">0</span>
+        </button>
+        <!-- Mobile logout button (visible on small screens) -->
+        <button class="tb-btn tb-logout-mobile" onclick="handleLogout()" title="Sign Out" style="color:var(--red);border-color:rgba(232,112,112,.3)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M10 5l4 3-4 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="14" y1="8" x2="7" y2="8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
         </button>
         <div class="topbar-clock">
           <div class="clock-time" id="clk-time">00:00:00</div>
@@ -2961,12 +3013,20 @@ function navTo(page, btn) {
 function toggleSidebar() {
   const sb = document.getElementById('sidebar');
   const ov = document.getElementById('sb-overlay');
-  sb.classList.toggle('expanded');
-  ov.classList.toggle('show', sb.classList.contains('expanded'));
+  if (!sb) return;
+  const isExpanded = sb.classList.contains('expanded');
+  if (isExpanded) {
+    sb.classList.remove('expanded');
+    ov.classList.remove('show');
+  } else {
+    sb.classList.add('expanded');
+    ov.classList.add('show');
+  }
 }
 function closeSidebar() {
   const sb = document.getElementById('sidebar');
   const ov = document.getElementById('sb-overlay');
+  if (!sb) return;
   sb.classList.remove('expanded');
   ov.classList.remove('show');
 }
