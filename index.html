@@ -1592,8 +1592,6 @@ const LOCAL_USERS = {
 
 // Head Moderator detection (dickya = highest authority above all other moderators)
 const HEAD_MODERATOR_ID = 'dickya';
-const isHeadMod = (u) => u && u.id === HEAD_MODERATOR_ID;
-const MODERATOR_ID = 'firman';
 
 let customers     = [];
 let registrations = [];
@@ -2277,9 +2275,9 @@ async function handleRegister() {
   if (LOCAL_USERS[uid]) { showAlert('reg-al', 'error', t('userIdTaken')); return; }
   const btn = document.querySelector('#panel-register .btn-p');
   btn.classList.add('loading'); await delay(1100); btn.classList.remove('loading');
-  const newReg = { id:Date.now(), userId:uid, name, email, pass:pw, role:'viewer', status:'pending', createdAt:Date.now() };
+  const newReg = { id:Date.now(), userId:uid, name, email, pass:pw, role:'admin', status:'pending', createdAt:Date.now() };
   registrations.unshift(newReg);
-  await dbQ(d => d.from('registrations').insert({ user_id:uid, full_name:name, email, password_hash:pw, status:'pending', requested_role:'viewer' }));
+  await dbQ(d => d.from('registrations').insert({ user_id:uid, full_name:name, email, password_hash:pw, status:'pending', requested_role:'admin' }));
   showAlert('reg-al', 'success', t('regSubmitted'));
   pushActivity(`New registration: ${name}`, 'reg');
   ['rg-name','rg-email','rg-uid','rg-pw','rg-pw2'].forEach(i => document.getElementById(i).value = '');
@@ -2379,9 +2377,6 @@ async function initDashboard() {
     document.getElementById('sb-rlbl').textContent = 'Sovereign Moderator';
     document.getElementById('sb-rlbl').classList.add('head-mod-label');
     document.body.classList.add('is-head-mod');
-  } else if (r === 'moderator' && currentUser.id === MODERATOR_ID) {
-    document.getElementById('sb-rlbl').textContent = rn(r);
-    document.getElementById('sb-rlbl').style.color = 'var(--gold)';
   } else {
     document.getElementById('sb-rlbl').textContent = rn(r);
   }
@@ -2699,7 +2694,7 @@ function openRegModal(id) {
     <div class="fg">
       <label>Assign Role</label>
       <select class="fi" id="reg-role-sel">
-        ${ROLE_KEYS.filter(k => k !== 'moderator' && k !== 'guest').map(k => `<option value="${k}" ${(r.role||'viewer')===k?'selected':''}>${rn(k)}</option>`).join('')}
+        ${ROLE_KEYS.filter(k => !['chief-moderator','moderator','guest'].includes(k)).map(k => `<option value="${k}" ${(r.role||'admin')===k?'selected':''}>${rn(k)}</option>`).join('')}
       </select>
     </div>
     <div style="font-size:11px;color:var(--text2);line-height:1.6">Approving will create an account and grant portal access with the selected role.</div>`;
@@ -2770,7 +2765,7 @@ function renderUsers() {
       ${canEdit ? `
       <div class="uc-role-change">
         <select class="fi" id="role-sel-${id}">
-          ${ROLE_KEYS.filter(k => k !== 'guest').map(k => `<option value="${k}" ${u.role===k?'selected':''}>${rn(k)}</option>`).join('')}
+          ${ROLE_KEYS.filter(k => !['chief-moderator','guest'].includes(k)).map(k => `<option value="${k}" ${u.role===k?'selected':''}>${rn(k)}</option>`).join('')}
         </select>
         <button class="btn-sm btn-gold" onclick="changeRole('${id}')">Set Role</button>
       </div>` : protectedNote}
@@ -2811,15 +2806,18 @@ function renderSettings() {
   // Permission matrix
   const pm = document.getElementById('perm-matrix'); if (!pm) return;
   const perms = [
-    { label:'View Customers',       roles:['moderator','admin','editor','viewer'] },
-    { label:'Edit / Add Customers', roles:['moderator','admin','editor'] },
-    { label:'Send Broadcast',       roles:['moderator','admin'] },
-    { label:'View Registrations',   roles:['moderator'] },
-    { label:'Approve / Reject',     roles:['moderator'] },
-    { label:'Manage Users',         roles:['moderator'] },
-    { label:'Rename Roles',         roles:['moderator'] },
-    { label:'Portal Settings',      roles:['moderator'] },
-    { label:'View Presence',        roles:['moderator','admin','editor','viewer','guest'] },
+    { label:'View Customers',       roles:['chief-moderator','moderator','admin','content-creator','host-live','b2b-marketing'] },
+    { label:'Edit / Add Customers', roles:['chief-moderator','moderator','admin','content-creator'] },
+    { label:'Send Broadcast',       roles:['chief-moderator','moderator','admin'] },
+    { label:'View Registrations',   roles:['chief-moderator','moderator'] },
+    { label:'Approve / Reject',     roles:['chief-moderator','moderator'] },
+    { label:'Manage Users',         roles:['chief-moderator','moderator'] },
+    { label:'Portal Settings',      roles:['chief-moderator','moderator'] },
+    { label:'Content Studio',       roles:['content-creator'] },
+    { label:'Live Hub',             roles:['host-live'] },
+    { label:'B2B Hub',              roles:['b2b-marketing'] },
+    { label:'Admin Panel',          roles:['chief-moderator','moderator','admin'] },
+    { label:'View Presence',        roles:['chief-moderator','moderator','admin','content-creator','host-live','b2b-marketing'] },
   ];
   pm.innerHTML = perms.map(p => `
     <div class="perm-row">
