@@ -564,7 +564,7 @@ body.is-mod #mod-indicator{display:block}
 @media(max-width:768px){
   .tb-logout-mobile{display:flex!important}
   /* Light mode: ensure sidebar has solid bg */
-  body.light .sb{background:#ede8df !important}
+  body.light .sb{background:var(--bg2) !important}
 }
 
 /* On desktop, sidebar always shows full text */
@@ -584,7 +584,7 @@ body.is-mod #mod-indicator{display:block}
 /* ════════════════════════ RESPONSIVE ════════════════════════ */
 
 /* Overlay for mobile sidebar */
-#sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:199;backdrop-filter:blur(3px)}
+#sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9998;backdrop-filter:blur(3px);pointer-events:none}
 
 @media(max-width:768px){
   :root{--sb-w:var(--sb-w-mobile)}
@@ -601,8 +601,8 @@ body.is-mod #mod-indicator{display:block}
     overflow-y:auto !important;
     overflow-x:hidden;
     /* Force solid background — CRITICAL so content is visible */
-    background:#0f0d0a !important;
-    border-right:1px solid rgba(201,169,110,.2) !important;
+    background:var(--bg2) !important;
+    border-right:1px solid var(--border-hi) !important;
     /* Remove any clip that hides content */
     clip:auto !important;
     clip-path:none !important;
@@ -613,7 +613,7 @@ body.is-mod #mod-indicator{display:block}
     transform:translateX(0) !important;
   }
   /* Show overlay when sidebar open */
-  #sb-overlay.show{display:block}
+  #sb-overlay.show{display:block;pointer-events:auto}
 
   /* Main area takes full width */
   #dash{flex-direction:row}
@@ -3052,22 +3052,25 @@ function navTo(page, btn) {
 function toggleSidebar() {
   const sb = document.getElementById('sidebar');
   const ov = document.getElementById('sb-overlay');
-  if (!sb) return;
+  if (!sb || !ov) return;
   const isExpanded = sb.classList.contains('expanded');
   if (isExpanded) {
     sb.classList.remove('expanded');
     ov.classList.remove('show');
+    ov.style.pointerEvents = 'none';
   } else {
     sb.classList.add('expanded');
     ov.classList.add('show');
+    ov.style.pointerEvents = 'auto';
   }
 }
 function closeSidebar() {
   const sb = document.getElementById('sidebar');
   const ov = document.getElementById('sb-overlay');
-  if (!sb) return;
+  if (!sb || !ov) return;
   sb.classList.remove('expanded');
   ov.classList.remove('show');
+  ov.style.pointerEvents = 'none';
 }
 
 /* ═══════════════════════════════════════════════════════════
