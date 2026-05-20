@@ -178,7 +178,9 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3Csvg width=
 
 /* ── SIDEBAR ── */
 .sb{width:var(--sb-w);flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);
-    display:flex;flex-direction:column;overflow:hidden;position:relative;transition:width var(--trans),transform .3s cubic-bezier(.4,0,.2,1)}
+    display:flex;flex-direction:column;overflow:hidden;position:relative;
+    transition:width var(--trans),transform .3s cubic-bezier(.4,0,.2,1);
+    will-change:transform}
 .sb-head{padding:20px 18px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
 .sb-logo{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .sb-logo-mark{width:32px;height:32px;flex-shrink:0}
@@ -561,6 +563,8 @@ body.is-mod #mod-indicator{display:block}
 .tb-logout-mobile{display:none}
 @media(max-width:768px){
   .tb-logout-mobile{display:flex!important}
+  /* Light mode: ensure sidebar has solid bg */
+  body.light .sb{background:#ede8df !important}
 }
 
 /* On desktop, sidebar always shows full text */
@@ -584,45 +588,80 @@ body.is-mod #mod-indicator{display:block}
 
 @media(max-width:768px){
   :root{--sb-w:var(--sb-w-mobile)}
-  /* On mobile: sidebar is fixed overlay, hidden by default */
+
+  /* On mobile: sidebar slides in from left as overlay drawer */
   .sb{
-    position:fixed;top:0;left:0;bottom:0;
-    width:var(--sb-w)!important;
-    z-index:200;
+    position:fixed !important;
+    top:0;left:0;bottom:0;
+    width:260px !important;
+    z-index:9999 !important;
     transform:translateX(-100%);
     transition:transform .3s cubic-bezier(.4,0,.2,1);
-    box-shadow:4px 0 40px rgba(0,0,0,.7);
-    overflow-y:auto;
+    box-shadow:8px 0 60px rgba(0,0,0,.85);
+    overflow-y:auto !important;
+    overflow-x:hidden;
+    /* Force solid background — CRITICAL so content is visible */
+    background:#0f0d0a !important;
+    border-right:1px solid rgba(201,169,110,.2) !important;
+    /* Remove any clip that hides content */
+    clip:auto !important;
+    clip-path:none !important;
+    visibility:visible !important;
   }
+  /* Sidebar expanded state */
   .sb.expanded{
-    transform:translateX(0);
-    width:240px!important;
+    transform:translateX(0) !important;
   }
-  /* Sidebar overlay shows when expanded */
+  /* Show overlay when sidebar open */
   #sb-overlay.show{display:block}
-  
-  /* Main takes full width since sidebar is floating */
-  #dash{flex-direction:column}
+
+  /* Main area takes full width */
+  #dash{flex-direction:row}
   .main{flex:1;min-width:0;width:100%}
-  
-  /* Show hamburger button */
-  #sb-toggle{display:flex}
-  
-  /* Topbar adjustments */
+
+  /* Show hamburger toggle */
+  #sb-toggle{display:flex !important}
+
+  /* Topbar mobile adjustments */
   .topbar{padding:10px 12px;gap:8px;flex-wrap:nowrap}
-  .topbar-greeting{min-width:0;flex:1}
+  .topbar-greeting{min-width:0;flex:1;overflow:hidden}
   .tg-text{font-size:13px}
   .tg-sub{font-size:8px}
   .tg-icon{display:none}
   .content{padding:14px 12px}
-  
-  /* Show sign out text always on mobile expanded sidebar */
-  .sb.expanded .sb-brand,
-  .sb.expanded .sb-tagline,
-  .sb.expanded .sb-user-card,
-  .sb.expanded .nav-sec-lbl,
-  .sb.expanded .nav-item>span:not(.nav-icon):not(.nav-badge),
-  .sb.expanded .logout-btn>span:not(.nav-icon){display:block!important}
+
+  /* ALL sidebar text visible when expanded */
+  .sb .sb-brand,
+  .sb .sb-tagline,
+  .sb .sb-user-card,
+  .sb .nav-sec-lbl,
+  .sb .nav-item>span:not(.nav-icon):not(.nav-badge),
+  .sb .logout-btn>span:not(.nav-icon){
+    display:block !important;
+    opacity:1 !important;
+    visibility:visible !important;
+    color:inherit !important;
+  }
+  .sb .nav-item,
+  .sb .logout-btn{
+    justify-content:flex-start !important;
+    padding:11px 14px !important;
+    width:100% !important;
+    opacity:1 !important;
+    visibility:visible !important;
+  }
+  .sb .nav-sec-lbl{
+    padding:10px 14px 4px !important;
+  }
+  .sb .sb-head{
+    padding:20px 16px 14px !important;
+  }
+  .sb-nav{
+    padding:10px 8px !important;
+  }
+  .sb-foot{
+    padding:12px !important;
+  }
 }
 
 @media(max-width:480px){
