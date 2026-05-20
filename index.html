@@ -188,9 +188,106 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3Csvg width=
 .sb-user-name{font-size:12px;font-weight:600;color:var(--text);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sb-user-role{display:flex;align-items:center;gap:6px;margin-top:4px}
 .role-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.role-moderator{background:#c9a96e}.role-admin{background:#7abf8e}.role-editor{background:#7ea8c9}
+.role-chief-moderator{background:linear-gradient(135deg,#e8cc99,#c9a96e);box-shadow:0 0 8px rgba(232,204,153,.4)}
+.role-moderator{background:#c9a96e}.role-admin{background:#7abf8e}
+.role-content-creator{background:#b07ea8}.role-host-live{background:#e87070}
+.role-b2b-marketing{background:#7ea8c9}.role-editor{background:#7ea8c9}
 .role-viewer{background:#a88c6e}.role-guest{background:#666}
 .sb-user-role-lbl{font-size:9px;letter-spacing:.2em;color:var(--gold-lo);text-transform:uppercase}
+
+/* ══════ NEW ROLE COLORS (sidebar dot) ══════ */
+.role-dot.role-chief-moderator{background:linear-gradient(135deg,#e8cc99,#c9a96e);box-shadow:0 0 6px rgba(232,204,153,.5)}
+.role-dot.role-content-creator{background:#b07ea8}
+.role-dot.role-host-live{background:#e87070}
+.role-dot.role-b2b-marketing{background:#7ea8c9}
+
+/* ══════ CHIEF MODERATOR — Golden Crown styling ══════ */
+body.is-chief-mod .sb-user-name,body.is-head-mod .sb-user-name{
+  background:linear-gradient(90deg,var(--gold-hi),var(--gold),var(--gold-hi));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-weight:700
+}
+/* Crown badge in sidebar */
+body.is-head-mod .sb-user-card::before{content:'♔';position:absolute;top:8px;right:10px;color:var(--gold-hi);font-size:16px;text-shadow:0 0 8px rgba(232,204,153,.7);pointer-events:none}
+
+/* ══════ CONTENT CREATOR — Purple theme ══════ */
+body.is-content-creator .tg-text{color:#b07ea8}
+body.is-content-creator .sb-user-role-lbl{color:#b07ea8}
+body.is-content-creator .role-dot{background:#b07ea8}
+body.is-content-creator #pg-content-studio .stat-card{border-left:2px solid rgba(176,126,168,.4)}
+
+/* ══════ HOST LIVE — Red/coral theme ══════ */
+body.is-host-live .tg-text{color:#e87070}
+body.is-host-live .sb-user-role-lbl{color:#e87070}
+body.is-host-live .role-dot{background:#e87070;box-shadow:0 0 6px rgba(232,112,112,.5);animation:liveDot 1.5s ease-in-out infinite}
+@keyframes liveDot{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* ══════ B2B MARKETING — Blue theme ══════ */
+body.is-b2b-marketing .tg-text{color:#7ea8c9}
+body.is-b2b-marketing .sb-user-role-lbl{color:#7ea8c9}
+body.is-b2b-marketing .role-dot{background:#7ea8c9}
+
+/* ══════ ADMIN — Green theme ══════ */
+body.is-admin .tg-text{color:#7abf8e}
+body.is-admin .sb-user-role-lbl{color:#7abf8e}
+body.is-admin .role-dot{background:#7abf8e}
+
+/* Badge role colors */
+.badge.b-chief-moderator{background:rgba(232,204,153,.15);color:#e8cc99;border-color:rgba(232,204,153,.3)}
+.badge.b-content-creator{background:rgba(176,126,168,.12);color:#b07ea8;border-color:rgba(176,126,168,.25)}
+.badge.b-host-live{background:rgba(232,112,112,.12);color:#e87070;border-color:rgba(232,112,112,.25)}
+.badge.b-b2b-marketing{background:rgba(126,168,201,.12);color:#7ea8c9;border-color:rgba(126,168,201,.25)}
+
+/* ══════ HEAD MODERATOR — Special styling for highest authority (dickya) ══════ */
+.head-mod-label{
+  color:var(--gold-hi) !important;
+  font-weight:700;
+  text-shadow:0 0 8px rgba(232,204,153,.4);
+  animation:head-pulse 2.5s ease-in-out infinite;
+}
+@keyframes head-pulse{
+  0%,100%{text-shadow:0 0 8px rgba(232,204,153,.4)}
+  50%{text-shadow:0 0 14px rgba(232,204,153,.7)}
+}
+body.is-head-mod .sb-user-name{
+  background:linear-gradient(90deg,var(--gold-hi),var(--gold),var(--gold-hi));
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  font-weight:700;
+}
+body.is-head-mod .sb-user-name::after{
+  content:' ★';
+  -webkit-text-fill-color:var(--gold-hi);
+  font-size:10px;
+  vertical-align:super;
+}
+body.is-head-mod .role-dot{
+  background:var(--gold-hi) !important;
+  box-shadow:0 0 8px var(--gold),0 0 16px rgba(232,204,153,.5);
+}
+body.is-head-mod .tg-text{
+  background:linear-gradient(90deg,var(--gold-hi),var(--gold));
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+/* Head Moderator user-card highlight */
+.head-mod-card{
+  border:1px solid var(--gold) !important;
+  background:linear-gradient(135deg,rgba(201,169,110,.06),transparent) !important;
+  box-shadow:0 0 24px rgba(201,169,110,.18),inset 0 1px 0 rgba(232,204,153,.15) !important;
+  position:relative;
+}
+.head-mod-card::before{
+  content:'★';
+  position:absolute;
+  top:8px;
+  right:10px;
+  color:var(--gold-hi);
+  font-size:14px;
+  text-shadow:0 0 8px rgba(232,204,153,.6);
+  pointer-events:none;
+}
 .sb-nav{flex:1;overflow-y:auto;overflow-x:hidden;padding:14px 10px}
 .nav-sec-lbl{font-size:8px;letter-spacing:.3em;color:var(--muted);text-transform:uppercase;padding:8px 10px 4px;margin-top:6px;white-space:nowrap;overflow:hidden}
 .nav-item{width:100%;display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:6px;
@@ -791,6 +888,54 @@ body.is-mod #mod-indicator{display:block}
         <span data-i18n="settings">Settings</span>
       </button>
 
+      <!-- Role-Specific Nav Items -->
+      <div class="nav-sec-lbl" id="ns-content-studio" style="display:none">Creative Studio</div>
+      <button class="nav-item" onclick="navTo('content-studio',this)" id="n-content-studio" style="display:none">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="3" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M5 7h6M5 9.5h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            <circle cx="12" cy="4" r="2" fill="#b07ea8"/>
+          </svg>
+        </span>
+        <span>Content Studio</span>
+      </button>
+
+      <div class="nav-sec-lbl" id="ns-live-hub" style="display:none">Live Broadcasting</div>
+      <button class="nav-item" onclick="navTo('live-hub',this)" id="n-live-hub" style="display:none">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M3.5 3.5a6.5 6.5 0 019 9M3.5 12.5a6.5 6.5 0 010-9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            <circle cx="8" cy="8" r="1.2" fill="#e87070"/>
+          </svg>
+        </span>
+        <span>Live Hub</span>
+        <span class="nav-badge" style="background:#e87070">LIVE</span>
+      </button>
+
+      <div class="nav-sec-lbl" id="ns-b2b-hub" style="display:none">B2B Division</div>
+      <button class="nav-item" onclick="navTo('b2b-hub',this)" id="n-b2b-hub" style="display:none">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M2 12V6l6-4 6 4v6" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+            <rect x="5" y="8" width="3" height="4" rx="0.5" stroke="currentColor" stroke-width="1.2"/>
+            <rect x="9" y="6" width="3" height="6" rx="0.5" stroke="currentColor" stroke-width="1.2"/>
+          </svg>
+        </span>
+        <span>B2B Hub</span>
+      </button>
+
+      <div class="nav-sec-lbl" id="ns-admin-panel" style="display:none">Admin Panel</div>
+      <button class="nav-item" onclick="navTo('admin-panel',this)" id="n-admin-panel" style="display:none">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 2l1.5 4h4l-3 2.5 1 4L8 10l-3.5 2.5 1-4L2 6h4z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span>Admin Panel</span>
+      </button>
+
       <!-- System -->
       <div class="nav-sec-lbl" data-i18n="system">System</div>
       <button class="nav-item" onclick="navTo('presence',this)" id="n-presence">
@@ -1065,6 +1210,247 @@ body.is-mod #mod-indicator{display:block}
         <div class="user-grid" id="pres-grid"></div>
       </div>
 
+
+      <!-- ⑧ CONTENT STUDIO (Content Creator only) -->
+      <div class="sp" id="pg-content-studio">
+        <div class="ph">
+          <div class="ph-left">
+            <div class="pt" style="color:#b07ea8">
+              <svg width="20" height="20" viewBox="0 0 16 16" fill="none" style="opacity:.8"><rect x="2" y="3" width="12" height="9" rx="1.5" stroke="#b07ea8" stroke-width="1.4"/><path d="M5 7h6M5 9.5h4" stroke="#b07ea8" stroke-width="1.2" stroke-linecap="round"/></svg>
+              Content Studio
+            </div>
+            <div class="ps">Your creative workspace — manage content, schedules & assets</div>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card" style="border-color:rgba(176,126,168,.2)">
+            <div class="stat-num" style="color:#b07ea8">0</div>
+            <div class="stat-lbl">Drafts</div>
+            <div class="stat-sub">Unpublished content</div>
+          </div>
+          <div class="stat-card" style="border-color:rgba(176,126,168,.2)">
+            <div class="stat-num" style="color:var(--green)">0</div>
+            <div class="stat-lbl">Published</div>
+            <div class="stat-sub">Live content</div>
+          </div>
+          <div class="stat-card" style="border-color:rgba(176,126,168,.2)">
+            <div class="stat-num" style="color:var(--amber)">0</div>
+            <div class="stat-lbl">Scheduled</div>
+            <div class="stat-sub">Queued to publish</div>
+          </div>
+        </div>
+        <div class="settings-grid" style="margin-top:20px">
+          <div class="settings-card" style="border-color:rgba(176,126,168,.15)">
+            <div class="sc-title" style="color:#b07ea8">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3h10v2H3zM3 7h7v2H3zM3 11h5v2H3z" fill="#b07ea8" opacity=".7"/></svg>
+              New Post / Caption
+            </div>
+            <div class="fg" style="margin-top:12px">
+              <label>Title / Judul</label>
+              <input class="fi" id="cc-title" placeholder="Post title..."/>
+            </div>
+            <div class="fg">
+              <label>Caption / Body</label>
+              <textarea class="bc-textarea" id="cc-body" placeholder="Write your caption or content here..."></textarea>
+            </div>
+            <div class="fg">
+              <label>Platform</label>
+              <select class="fi" id="cc-platform">
+                <option>Instagram</option><option>TikTok</option><option>YouTube</option><option>Facebook</option><option>LinkedIn</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:4px">
+              <button class="btn-add" onclick="saveContentDraft()" style="background:linear-gradient(135deg,#7a4a7e,#b07ea8)">Save Draft</button>
+              <button class="btn-g" style="width:auto;padding:9px 18px" onclick="clearCC()">Clear</button>
+            </div>
+          </div>
+          <div class="settings-card" style="border-color:rgba(176,126,168,.15)">
+            <div class="sc-title" style="color:#b07ea8">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#b07ea8" stroke-width="1.4"/><path d="M8 5v3l2 2" stroke="#b07ea8" stroke-width="1.4" stroke-linecap="round"/></svg>
+              Content Calendar
+            </div>
+            <div id="cc-calendar" style="margin-top:12px;color:var(--text2);font-size:12px;line-height:2">
+              <div style="padding:10px;background:rgba(176,126,168,.06);border:1px solid rgba(176,126,168,.12);border-radius:6px;text-align:center;color:var(--muted)">
+                No upcoming posts scheduled.<br/>Use the form to create your first draft.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="activity-feed" style="margin-top:20px">
+          <div class="tbl-head"><div class="tbl-title">Content Drafts</div></div>
+          <div id="cc-drafts-list" style="max-height:220px;overflow-y:auto">
+            <div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">No drafts yet. Create your first post above.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⑨ LIVE HUB (Host Live only) -->
+      <div class="sp" id="pg-live-hub">
+        <div class="ph">
+          <div class="ph-left">
+            <div class="pt" style="color:#e87070">
+              <svg width="20" height="20" viewBox="0 0 16 16" fill="none" style="opacity:.8"><circle cx="8" cy="8" r="3" stroke="#e87070" stroke-width="1.4"/><path d="M3.5 3.5a6.5 6.5 0 019 9M3.5 12.5a6.5 6.5 0 010-9" stroke="#e87070" stroke-width="1.2" stroke-linecap="round"/></svg>
+              Live Hub
+            </div>
+            <div class="ps">Broadcast management — schedule, go live, review sessions</div>
+          </div>
+          <div class="ph-acts">
+            <button class="btn-add" onclick="goLive()" style="background:linear-gradient(135deg,#c93030,#e87070);animation:livePulse 2s ease-in-out infinite">⬤ Go Live</button>
+          </div>
+        </div>
+        <style>@keyframes livePulse{0%,100%{box-shadow:0 0 0 rgba(232,112,112,.4)}50%{box-shadow:0 0 16px rgba(232,112,112,.5)}}</style>
+        <div class="stats-grid">
+          <div class="stat-card" style="border-color:rgba(232,112,112,.2)">
+            <div class="stat-num" style="color:#e87070" id="hl-live-count">0</div>
+            <div class="stat-lbl">Live Now</div>
+            <div class="stat-sub">Active broadcasts</div>
+          </div>
+          <div class="stat-card" style="border-color:rgba(232,112,112,.2)">
+            <div class="stat-num" style="color:var(--amber)">0</div>
+            <div class="stat-lbl">Scheduled</div>
+            <div class="stat-sub">Upcoming sessions</div>
+          </div>
+          <div class="stat-card" style="border-color:rgba(232,112,112,.2)">
+            <div class="stat-num">0</div>
+            <div class="stat-lbl">Total Sessions</div>
+            <div class="stat-sub">All time</div>
+          </div>
+        </div>
+        <div class="settings-grid" style="margin-top:20px">
+          <div class="settings-card" style="border-color:rgba(232,112,112,.15)">
+            <div class="sc-title" style="color:#e87070">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="10" height="8" rx="1" stroke="#e87070" stroke-width="1.4"/><path d="M12 7l3-2v6l-3-2V7z" stroke="#e87070" stroke-width="1.4" stroke-linejoin="round"/></svg>
+              Schedule New Session
+            </div>
+            <div class="fg" style="margin-top:12px">
+              <label>Session Title</label>
+              <input class="fi" id="hl-title" placeholder="Live session title..."/>
+            </div>
+            <div class="fg">
+              <label>Platform</label>
+              <select class="fi" id="hl-platform">
+                <option>TikTok Live</option><option>Instagram Live</option><option>YouTube Live</option><option>Facebook Live</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Scheduled Time</label>
+              <input class="fi" id="hl-time" type="datetime-local"/>
+            </div>
+            <div class="fg">
+              <label>Notes / Rundown</label>
+              <textarea class="bc-textarea" id="hl-notes" placeholder="Rundown or talking points..." style="height:80px"></textarea>
+            </div>
+            <button class="btn-add" onclick="scheduleLive()" style="background:linear-gradient(135deg,#8a2020,#e87070)">Schedule Session</button>
+          </div>
+          <div class="settings-card" style="border-color:rgba(232,112,112,.15)">
+            <div class="sc-title" style="color:#e87070">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 12V6l6-4 6 4v6" stroke="#e87070" stroke-width="1.4"/><rect x="5" y="8" width="6" height="4" rx="0.5" stroke="#e87070" stroke-width="1.2"/></svg>
+              Upcoming Sessions
+            </div>
+            <div id="hl-sessions" style="margin-top:12px;max-height:200px;overflow-y:auto">
+              <div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">No sessions scheduled. Add one on the left.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⑩ B2B HUB (B2B Marketing only) -->
+      <div class="sp" id="pg-b2b-hub">
+        <div class="ph">
+          <div class="ph-left">
+            <div class="pt" style="color:#7ea8c9">
+              <svg width="20" height="20" viewBox="0 0 16 16" fill="none" style="opacity:.8"><path d="M2 12V6l6-4 6 4v6" stroke="#7ea8c9" stroke-width="1.4" stroke-linejoin="round"/><rect x="5" y="8" width="3" height="4" rx="0.5" stroke="#7ea8c9" stroke-width="1.2"/><rect x="9" y="6" width="3" height="6" rx="0.5" stroke="#7ea8c9" stroke-width="1.2"/></svg>
+              B2B Hub
+            </div>
+            <div class="ps">Business partnerships, leads, and marketing pipeline</div>
+          </div>
+          <div class="ph-acts">
+            <button class="btn-add" onclick="openLeadModal()" style="background:linear-gradient(135deg,#3a6080,#7ea8c9)">+ Add Lead</button>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card" style="border-color:rgba(126,168,201,.2)">
+            <div class="stat-num" style="color:#7ea8c9" id="b2b-leads-count">0</div>
+            <div class="stat-lbl">Active Leads</div>
+            <div class="stat-sub">In pipeline</div>
+          </div>
+          <div class="stat-card" style="border-color:rgba(126,168,201,.2)">
+            <div class="stat-num" style="color:var(--green)" id="b2b-closed-count">0</div>
+            <div class="stat-lbl">Deals Closed</div>
+            <div class="stat-sub">This month</div>
+          </div>
+          <div class="stat-card" style="border-color:rgba(126,168,201,.2)">
+            <div class="stat-num" style="color:var(--amber)" id="b2b-followup-count">0</div>
+            <div class="stat-lbl">Follow-Up</div>
+            <div class="stat-sub">Action required</div>
+          </div>
+        </div>
+        <div style="margin-top:20px" class="tbl-wrap">
+          <div class="tbl-head">
+            <div class="tbl-title">Lead Pipeline</div>
+            <input class="search-box" id="b2b-search" placeholder="Search leads..." oninput="renderLeads()"/>
+          </div>
+          <div class="tbl-scroll">
+            <table>
+              <thead><tr>
+                <th>Company</th><th>Contact</th><th>Status</th><th>Value</th><th>Action</th>
+              </tr></thead>
+              <tbody id="b2b-tbl"><tr><td colspan="5" class="tbl-empty">No leads yet. Add your first prospect.</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⑪ ADMIN PANEL (Admin only) -->
+      <div class="sp" id="pg-admin-panel">
+        <div class="ph">
+          <div class="ph-left">
+            <div class="pt" style="color:#7abf8e">
+              <svg width="20" height="20" viewBox="0 0 16 16" fill="none" style="opacity:.8"><path d="M8 2l1.5 4h4l-3 2.5 1 4L8 10l-3.5 2.5 1-4L2 6h4z" stroke="#7abf8e" stroke-width="1.3" stroke-linejoin="round"/></svg>
+              Admin Panel
+            </div>
+            <div class="ps">Portal overview & administrative tools</div>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card" style="border-color:rgba(122,191,142,.2)">
+            <div class="stat-num" style="color:#7abf8e">${Object.keys(LOCAL_USERS).length}</div>
+            <div class="stat-lbl">Total Users</div>
+            <div class="stat-sub">All accounts</div>
+          </div>
+          <div class="stat-card" style="border-color:rgba(122,191,142,.2)">
+            <div class="stat-num" id="adm-online" style="color:var(--green)">0</div>
+            <div class="stat-lbl">Online Now</div>
+            <div class="stat-sub">Active sessions</div>
+          </div>
+          <div class="stat-card" style="border-color:rgba(122,191,142,.2)">
+            <div class="stat-num" id="adm-customers">\-\-</div>
+            <div class="stat-lbl">Customers</div>
+            <div class="stat-sub">In CRM</div>
+          </div>
+        </div>
+        <div class="settings-grid" style="margin-top:20px">
+          <div class="settings-card" style="border-color:rgba(122,191,142,.15)">
+            <div class="sc-title" style="color:#7abf8e">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.4"/><path d="M1 13c0-2.761 2.239-4 5-4s5 1.239 5 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="12" y1="6" x2="15" y2="6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="13.5" y1="4.5" x2="13.5" y2="7.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              Team Overview
+            </div>
+            <div id="adm-team-list" style="margin-top:12px"></div>
+          </div>
+          <div class="settings-card" style="border-color:rgba(122,191,142,.15)">
+            <div class="sc-title" style="color:#7abf8e">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 12V6l6-4 6 4v6" stroke="currentColor" stroke-width="1.4"/></svg>
+              Quick Actions
+            </div>
+            <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+              <button class="btn-g" style="text-align:left;padding:10px 14px;font-size:11px" onclick="navTo('customers',document.getElementById('n-customers'))">📋 Manage Customers</button>
+              <button class="btn-g" style="text-align:left;padding:10px 14px;font-size:11px" onclick="navTo('broadcast',document.getElementById('n-broadcast'))">📢 Send Broadcast</button>
+              <button class="btn-g" style="text-align:left;padding:10px 14px;font-size:11px" onclick="navTo('presence',document.getElementById('n-presence'))">👥 View Presence</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div><!-- /content -->
   </div><!-- /main -->
 </div><!-- /dash -->
@@ -1147,20 +1533,39 @@ async function dbQ(fn) {
 /* ═══════════════════════════════════════════════════════════
    ② ROLE SYSTEM
    ═══════════════════════════════════════════════════════════ */
-const ROLE_LEVELS = { moderator:5, admin:4, editor:3, viewer:2, guest:1 };
-const ROLE_COLORS = { moderator:'#c9a96e', admin:'#7abf8e', editor:'#7ea8c9', viewer:'#a88c6e', guest:'#666' };
-const ROLE_KEYS   = ['moderator','admin','editor','viewer','guest'];
+const ROLE_LEVELS = { 'chief-moderator':6, moderator:5, admin:4, 'content-creator':3, 'host-live':3, 'b2b-marketing':3, editor:3, viewer:2, guest:1 };
+const ROLE_COLORS = {
+  'chief-moderator':'#e8cc99',
+  moderator:'#c9a96e',
+  admin:'#7abf8e',
+  'content-creator':'#b07ea8',
+  'host-live':'#e87070',
+  'b2b-marketing':'#7ea8c9',
+  editor:'#7ea8c9',
+  viewer:'#a88c6e',
+  guest:'#666'
+};
+const ROLE_KEYS = ['chief-moderator','moderator','admin','content-creator','host-live','b2b-marketing','editor','viewer','guest'];
 
 let roleNames = JSON.parse(localStorage.getItem('dhp_roleNames') || 'null') || {
-  moderator:'Moderator', admin:'Admin', editor:'Editor', viewer:'Viewer', guest:'Guest'
+  'chief-moderator':'Sovereign Moderator',
+  moderator:'Moderator',
+  admin:'Admin',
+  'content-creator':'Content Creator',
+  'host-live':'Host Live',
+  'b2b-marketing':'B2B Marketing',
+  editor:'Editor',
+  viewer:'Viewer',
+  guest:'Guest'
 };
 const rn = r => roleNames[r] || r;
 
 const can = {
-  isMod:    r => r === 'moderator',
-  adminUp:  r => ['moderator','admin'].includes(r),
-  editorUp: r => ['moderator','admin','editor'].includes(r),
-  viewerUp: r => ['moderator','admin','editor','viewer'].includes(r),
+  isChiefMod: r => r === 'chief-moderator',
+  isMod:    r => ['chief-moderator','moderator'].includes(r),
+  adminUp:  r => ['chief-moderator','moderator','admin'].includes(r),
+  editorUp: r => ['chief-moderator','moderator','admin','content-creator','editor'].includes(r),
+  viewerUp: r => ['chief-moderator','moderator','admin','content-creator','host-live','b2b-marketing','editor','viewer'].includes(r),
   any:      r => !!r,
 };
 
@@ -1168,12 +1573,27 @@ const can = {
    ③ LOCAL DATA (demo)
    ═══════════════════════════════════════════════════════════ */
 const LOCAL_USERS = {
-  moderator: { pass:'11223344', role:'moderator', name:'System Moderator', email:'mod@dhp.id' },
-  admin1:    { pass:'1122',     role:'admin',     name:'Admin Satu',       email:'admin1@dhp.id' },
-  admin2:    { pass:'2233',     role:'admin',     name:'Admin Dua',        email:'admin2@dhp.id' },
-  editor1:   { pass:'3344',     role:'editor',    name:'Editor Satu',      email:'editor1@dhp.id' },
-  viewer1:   { pass:'4455',     role:'viewer',    name:'Viewer Satu',      email:'viewer1@dhp.id' },
+  // ═══ SOVEREIGN MODERATOR (highest authority) ═══
+  dickya:  { pass:'0212',     role:'chief-moderator', name:'Dickya',  email:'dickya@dhp.id', isHead:true },
+  // ═══ MODERATOR ═══
+  firman:  { pass:'11223344', role:'moderator',        name:'Firman',  email:'firman@dhp.id' },
+  // ═══ ADMIN ═══
+  yuna:    { pass:'123',      role:'admin',            name:'Yuna',    email:'yuna@dhp.id' },
+  puji:    { pass:'321',      role:'admin',            name:'Puji',    email:'puji@dhp.id' },
+  erni:    { pass:'111',      role:'admin',            name:'Erni',    email:'erni@dhp.id' },
+  // ═══ CONTENT CREATOR ═══
+  erika:   { pass:'333',      role:'content-creator',  name:'Erika',   email:'erika@dhp.id' },
+  // ═══ HOST LIVE ═══
+  nina:    { pass:'890',      role:'host-live',        name:'Nina',    email:'nina@dhp.id' },
+  sekar:   { pass:'098',      role:'host-live',        name:'Sekar',   email:'sekar@dhp.id' },
+  // ═══ B2B MARKETING ═══
+  galih:   { pass:'888',      role:'b2b-marketing',    name:'Galih',   email:'galih@dhp.id' },
 };
+
+// Head Moderator detection (dickya = highest authority above all other moderators)
+const HEAD_MODERATOR_ID = 'dickya';
+const isHeadMod = (u) => u && u.id === HEAD_MODERATOR_ID;
+const MODERATOR_ID = 'firman';
 
 let customers     = [];
 let registrations = [];
@@ -1501,7 +1921,18 @@ function toggleLang() {
     updateClock();
     const g = getGreeting();
     document.getElementById('tg-icon').innerHTML = g.icon;
-    document.getElementById('tg-text').textContent = (currentLang === 'id' ? g.id : g.en) + ', ' + currentUser.name;
+    const isHead = currentUser.id === HEAD_MODERATOR_ID;
+    if (isHead) {
+      const greetText = currentLang === 'id'
+        ? `${g.id}, Komandan ${currentUser.name}`
+        : `${g.en}, Commander ${currentUser.name}`;
+      document.getElementById('tg-text').textContent = greetText;
+      document.getElementById('tg-sub').textContent = currentLang === 'id'
+        ? 'HEAD MODERATOR · OTORITAS TERTINGGI'
+        : 'HEAD MODERATOR · SUPREME AUTHORITY';
+    } else {
+      document.getElementById('tg-text').textContent = (currentLang === 'id' ? g.id : g.en) + ', ' + currentUser.name;
+    }
     refreshPresenceUI();
     if (document.getElementById('pg-presence').classList.contains('active')) renderPresencePage();
     if (document.getElementById('pg-users').classList.contains('active')) renderUsers();
@@ -1769,15 +2200,33 @@ function updateClock() {
 function showWelcomeBanner(name, role) {
   const g = getGreeting(), wb = document.getElementById('wb');
   document.getElementById('wb-icon-wrap').innerHTML = g.icon || '';
-  document.getElementById('wb-gt').textContent = currentLang === 'id' ? g.id : g.en;
-  document.getElementById('wb-name').textContent = name;
-  document.getElementById('wb-role').textContent = rn(role).toUpperCase();
+
+  // ═══ Personalized greeting for Head Moderator (dickya) ═══
+  const isHead = currentUser && currentUser.id === HEAD_MODERATOR_ID;
+  if (isHead) {
+    const headGreet = currentLang === 'id'
+      ? `${currentLang === 'id' ? g.id : g.en}, Komandan`
+      : `${g.en}, Commander`;
+    document.getElementById('wb-gt').textContent = headGreet;
+    document.getElementById('wb-name').textContent = name;
+    const roleLabel = currentLang === 'id'
+      ? 'HEAD MODERATOR · OTORITAS TERTINGGI'
+      : 'HEAD MODERATOR · SUPREME AUTHORITY';
+    document.getElementById('wb-role').textContent = roleLabel;
+  } else {
+    document.getElementById('wb-gt').textContent = currentLang === 'id' ? g.id : g.en;
+    document.getElementById('wb-name').textContent = name;
+    document.getElementById('wb-role').textContent = rn(role).toUpperCase();
+  }
+
   document.getElementById('wb-date').textContent = fmtDate(new Date().toISOString());
   const hol = getHoliday();
   document.getElementById('wb-hol').textContent = hol ? `✦ ${hol}` : '';
   wb.classList.add('show');
-  setTimeout(() => wb.classList.add('hide'), 3200);
-  setTimeout(() => { wb.classList.remove('show', 'hide'); }, 3900);
+  // Tampilkan banner sedikit lebih lama untuk Head Moderator
+  const showDuration = isHead ? 4200 : 3200;
+  setTimeout(() => wb.classList.add('hide'), showDuration);
+  setTimeout(() => { wb.classList.remove('show', 'hide'); }, showDuration + 700);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1859,7 +2308,12 @@ function loginSuccess(id, role, name) {
     sc.style.display = 'none';
     document.getElementById('ctrl-bar').style.display = 'none';
     document.getElementById('dash').classList.add('active');
-    if (role === 'moderator') document.body.classList.add('is-mod');
+    if (can.isMod(role)) document.body.classList.add('is-mod');
+    if (role === 'chief-moderator') document.body.classList.add('is-chief-mod');
+    if (role === 'content-creator') document.body.classList.add('is-content-creator');
+    if (role === 'host-live') document.body.classList.add('is-host-live');
+    if (role === 'b2b-marketing') document.body.classList.add('is-b2b-marketing');
+    if (role === 'admin') document.body.classList.add('is-admin');
     await initDashboard();
     initRealtimePresence(id, role, name);
     showWelcomeBanner(name, role);
@@ -1879,6 +2333,12 @@ function handleLogout() {
   }
   currentUser = null;
   document.body.classList.remove('is-mod');
+  document.body.classList.remove('is-head-mod');
+  document.body.classList.remove('is-chief-mod');
+  document.body.classList.remove('is-content-creator');
+  document.body.classList.remove('is-host-live');
+  document.body.classList.remove('is-b2b-marketing');
+  document.body.classList.remove('is-admin');
   ['_clockIv','_rtIv'].forEach(k => { if (window[k]) { clearInterval(window[k]); window[k] = null; } });
   document.getElementById('pres-fab').classList.remove('visible');
   document.getElementById('pres-panel').classList.remove('open');
@@ -1909,9 +2369,23 @@ function checkStrength(v) {
    ═══════════════════════════════════════════════════════════ */
 async function initDashboard() {
   const r = currentUser.role;
+  const isHead = currentUser.id === HEAD_MODERATOR_ID;
+
   document.getElementById('sb-uname').textContent = currentUser.name;
   document.getElementById('sb-rdot').className = `role-dot role-${r}`;
-  document.getElementById('sb-rlbl').textContent = rn(r);
+
+  // ═══ Label role per user ═══
+  if (isHead) {
+    document.getElementById('sb-rlbl').textContent = 'Sovereign Moderator';
+    document.getElementById('sb-rlbl').classList.add('head-mod-label');
+    document.body.classList.add('is-head-mod');
+  } else if (r === 'moderator' && currentUser.id === MODERATOR_ID) {
+    document.getElementById('sb-rlbl').textContent = rn(r);
+    document.getElementById('sb-rlbl').style.color = 'var(--gold)';
+  } else {
+    document.getElementById('sb-rlbl').textContent = rn(r);
+  }
+
   const isMod = can.isMod(r);
   document.getElementById('ns-admin').style.display        = isMod ? '' : 'none';
   document.getElementById('n-registrations').style.display = isMod ? '' : 'none';
@@ -1919,10 +2393,43 @@ async function initDashboard() {
   document.getElementById('n-settings').style.display      = isMod ? '' : 'none';
   document.getElementById('notif-bell').style.display      = isMod ? '' : 'none';
   document.getElementById('btn-add-cust').style.display    = can.editorUp(r) ? '' : 'none';
+
+  // Show/hide role-specific nav items
+  const elCC = document.getElementById('n-content-studio');
+  const elHL = document.getElementById('n-live-hub');
+  const elB2B = document.getElementById('n-b2b-hub');
+  const elAdminPanel = document.getElementById('n-admin-panel');
+  if (elCC) elCC.style.display = (r === 'content-creator') ? '' : 'none';
+  if (elHL) elHL.style.display = (r === 'host-live') ? '' : 'none';
+  if (elB2B) elB2B.style.display = (r === 'b2b-marketing') ? '' : 'none';
+  if (elAdminPanel) elAdminPanel.style.display = can.adminUp(r) ? '' : 'none';
+
   const g = getGreeting();
   document.getElementById('tg-icon').innerHTML = g.icon;
-  document.getElementById('tg-text').textContent = (currentLang === 'id' ? g.id : g.en) + ', ' + currentUser.name;
-  document.getElementById('tg-sub').textContent = rn(r).toUpperCase();
+
+  // ═══ Greeting per role ═══
+  const ROLE_SUBTITLES = {
+    'chief-moderator': { en:'SOVEREIGN MODERATOR · SUPREME AUTHORITY', id:'SOVEREIGN MODERATOR · OTORITAS TERTINGGI' },
+    moderator:         { en:'MODERATOR · COMMAND LEVEL', id:'MODERATOR · TINGKAT KOMANDO' },
+    admin:             { en:'ADMINISTRATOR · PORTAL CONTROL', id:'ADMINISTRATOR · KONTROL PORTAL' },
+    'content-creator': { en:'CONTENT CREATOR · CREATIVE STUDIO', id:'CONTENT CREATOR · STUDIO KREATIF' },
+    'host-live':       { en:'HOST LIVE · BROADCAST CENTER', id:'HOST LIVE · PUSAT SIARAN' },
+    'b2b-marketing':   { en:'B2B MARKETING · GROWTH DIVISION', id:'B2B MARKETING · DIVISI PERTUMBUHAN' },
+  };
+  const ROLE_GREETS = {
+    'chief-moderator': { en:'Commander', id:'Komandan' },
+    moderator:         { en:'Moderator', id:'Moderator' },
+    admin:             { en:'Admin',     id:'Admin' },
+    'content-creator': { en:'Creator',  id:'Kreator' },
+    'host-live':       { en:'Host',     id:'Host' },
+    'b2b-marketing':   { en:'Marketer', id:'Pemasar' },
+  };
+  const greetPrefix = ROLE_GREETS[r] || {};
+  const subtitleMap = ROLE_SUBTITLES[r];
+  const greetText = (currentLang === 'id' ? g.id : g.en) + ', ' + (greetPrefix[currentLang] ? greetPrefix[currentLang] + ' ' : '') + currentUser.name;
+  document.getElementById('tg-text').textContent = greetText;
+  document.getElementById('tg-sub').textContent = subtitleMap ? subtitleMap[currentLang] : rn(r).toUpperCase();
+
   document.getElementById('pres-fab').classList.add('visible');
 
   // Load data real dari Supabase (atau tetap kosong jika offline)
@@ -1944,6 +2451,17 @@ async function initDashboard() {
     registrations.filter(reg => reg.status === 'pending').forEach(reg => {
       pushNotif({ type:'reg', msg:`Pending registration: ${reg.name||reg.full_name}`, regId:reg.id });
     });
+  }
+
+  // ═══ Toast khusus selamat datang Sovereign Moderator ═══
+  if (isHead) {
+    setTimeout(() => {
+      const msg = currentLang === 'id'
+        ? `Selamat datang kembali, ${currentUser.name}. Semua sistem berada di bawah kendali Anda.`
+        : `Welcome back, ${currentUser.name}. All systems under your command.`;
+      toast(msg);
+    }, 4500);
+    pushActivity(`★ Head Moderator ${currentUser.name} signed in`, 'info');
   }
 }
 
@@ -2225,20 +2743,25 @@ function renderUsers() {
   grid.innerHTML = entries.map(([id, u]) => {
     const p = presenceMap[id], online = p?.online;
     const av = u.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-    const canEdit = id !== 'moderator' && id !== currentUser.id;
-    return `<div class="user-card">
+    // ═══ Akun dickya (Head Moderator) & moderator default & current user TIDAK BISA diedit ═══
+    const isHeadAcc = id === HEAD_MODERATOR_ID;
+    const canEdit = !isHeadAcc && id !== 'moderator' && id !== currentUser.id;
+    const protectedNote = isHeadAcc
+      ? `<div style="font-size:10px;color:var(--gold-hi);margin-top:10px;padding:6px 8px;background:rgba(201,169,110,.08);border:1px solid var(--border-hi);border-radius:6px;letter-spacing:.08em">★ HEAD MODERATOR · SUPREME AUTHORITY</div>`
+      : `<div style="font-size:10px;color:var(--muted);margin-top:10px;padding:6px 0">Protected account</div>`;
+    return `<div class="user-card${isHeadAcc?' head-mod-card':''}">
       <div class="uc-top">
         <div class="uc-avatar" style="${getAvatarBg(u.role)}" title="${u.name}">
           ${av}
           ${online ? `<div style="position:absolute;bottom:0;right:0;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid var(--surface);animation:rt-blink 2s infinite"></div>` : ''}
         </div>
         <div class="uc-info">
-          <div class="uc-name">${u.name}</div>
+          <div class="uc-name">${u.name}${isHeadAcc?' <span style="color:var(--gold-hi);font-size:11px">★</span>':''}</div>
           <div class="uc-id">@${id}</div>
         </div>
       </div>
       <div class="uc-meta">
-        <span class="badge b-${u.role}">${rn(u.role)}</span>
+        <span class="badge b-${u.role}">${isHeadAcc ? 'Head Moderator' : rn(u.role)}</span>
         <div class="uc-online">
           <div class="uc-online-dot ${online?'on':'off'}"></div>
           <span style="color:${online?'var(--green)':'var(--muted)'};font-size:10px">${online ? `Active ${durSince(p.loginAt)}` : p ? timeAgo(p.lastSeen) : '—'}</span>
@@ -2250,11 +2773,16 @@ function renderUsers() {
           ${ROLE_KEYS.filter(k => k !== 'guest').map(k => `<option value="${k}" ${u.role===k?'selected':''}>${rn(k)}</option>`).join('')}
         </select>
         <button class="btn-sm btn-gold" onclick="changeRole('${id}')">Set Role</button>
-      </div>` : `<div style="font-size:10px;color:var(--muted);margin-top:10px;padding:6px 0">Protected account</div>`}
+      </div>` : protectedNote}
     </div>`;
   }).join('');
 }
 async function changeRole(uid) {
+  // ═══ Proteksi keras: Head Moderator tidak bisa diubah ═══
+  if (uid === HEAD_MODERATOR_ID) {
+    toast('Head Moderator account is protected and cannot be modified.');
+    return;
+  }
   const sel = document.getElementById(`role-sel-${uid}`); if (!sel) return;
   const newRole = sel.value;
   LOCAL_USERS[uid].role = newRole;
@@ -2406,17 +2934,25 @@ function renderPresencePage() {
 function navTo(page, btn) {
   const r = currentUser.role;
   if (['registrations','users','settings'].includes(page) && !can.isMod(r)) { toast('Moderator access required'); return; }
+  if (page === 'content-studio' && r !== 'content-creator' && !can.isMod(r)) { toast('Content Creator access only'); return; }
+  if (page === 'live-hub' && r !== 'host-live' && !can.isMod(r)) { toast('Host Live access only'); return; }
+  if (page === 'b2b-hub' && r !== 'b2b-marketing' && !can.isMod(r)) { toast('B2B Marketing access only'); return; }
+  if (page === 'admin-panel' && !can.adminUp(r)) { toast('Admin access required'); return; }
   document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
   const target = document.getElementById(`pg-${page}`); if (target) target.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  if (page === 'overview')      { renderStats(); renderActivity(); }
-  if (page === 'customers')     renderCust();
-  if (page === 'broadcast')     renderBcHistory();
-  if (page === 'registrations') renderRegs();
-  if (page === 'users')         renderUsers();
-  if (page === 'settings')      renderSettings();
-  if (page === 'presence')      renderPresencePage();
+  if (page === 'overview')       { renderStats(); renderActivity(); }
+  if (page === 'customers')      renderCust();
+  if (page === 'broadcast')      renderBcHistory();
+  if (page === 'registrations')  renderRegs();
+  if (page === 'users')          renderUsers();
+  if (page === 'settings')       renderSettings();
+  if (page === 'presence')       renderPresencePage();
+  if (page === 'content-studio') initContentStudio();
+  if (page === 'live-hub')       initLiveHub();
+  if (page === 'b2b-hub')        initB2BHub();
+  if (page === 'admin-panel')    initAdminPanel();
   // Auto-close mobile sidebar
   closeSidebar();
 }
@@ -2449,6 +2985,186 @@ document.addEventListener('keydown', e => {
   }
   if (e.key === 'l' && e.ctrlKey && !currentUser) { e.preventDefault(); handleLogin(); }
 });
+
+/* ═══════════════════════════════════════════════════════════
+   ㉗ CONTENT STUDIO (Content Creator)
+   ═══════════════════════════════════════════════════════════ */
+let contentDrafts = JSON.parse(localStorage.getItem('dhp_cc_drafts') || '[]');
+function initContentStudio() {
+  renderDrafts();
+}
+function saveContentDraft() {
+  const title = document.getElementById('cc-title')?.value.trim();
+  const body  = document.getElementById('cc-body')?.value.trim();
+  const platform = document.getElementById('cc-platform')?.value;
+  if (!title || !body) { toast('Please fill in title and caption'); return; }
+  const draft = { id:Date.now(), title, body, platform, status:'draft', createdAt:new Date().toLocaleDateString() };
+  contentDrafts.unshift(draft);
+  localStorage.setItem('dhp_cc_drafts', JSON.stringify(contentDrafts));
+  clearCC(); renderDrafts();
+  toast(`Draft saved: "${title}"`);
+  pushActivity(`Content draft saved: "${title}"`, 'info');
+}
+function renderDrafts() {
+  const el = document.getElementById('cc-drafts-list'); if (!el) return;
+  if (!contentDrafts.length) {
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">No drafts yet. Create your first post above.</div>'; return;
+  }
+  el.innerHTML = contentDrafts.map(d => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid var(--border)">
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.title}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">${d.platform} · ${d.createdAt}</div>
+      </div>
+      <span class="badge" style="background:rgba(176,126,168,.12);color:#b07ea8;border-color:rgba(176,126,168,.25);font-size:8px">${d.status}</span>
+      <button class="btn-sm btn-del" onclick="deleteDraft(${d.id})">×</button>
+    </div>`).join('');
+}
+function deleteDraft(id) {
+  contentDrafts = contentDrafts.filter(d => d.id !== id);
+  localStorage.setItem('dhp_cc_drafts', JSON.stringify(contentDrafts));
+  renderDrafts(); toast('Draft deleted');
+}
+function clearCC() {
+  const t = document.getElementById('cc-title'); if(t) t.value='';
+  const b = document.getElementById('cc-body');  if(b) b.value='';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ㉘ LIVE HUB (Host Live)
+   ═══════════════════════════════════════════════════════════ */
+let liveSessions = JSON.parse(localStorage.getItem('dhp_hl_sessions') || '[]');
+function initLiveHub() { renderLiveSessions(); }
+function goLive() {
+  toast('⬤ LIVE — You are now broadcasting! (demo mode)');
+  document.getElementById('hl-live-count').textContent = '1';
+  pushActivity(`${currentUser.name} went LIVE`, 'join');
+}
+function scheduleLive() {
+  const title    = document.getElementById('hl-title')?.value.trim();
+  const platform = document.getElementById('hl-platform')?.value;
+  const time     = document.getElementById('hl-time')?.value;
+  const notes    = document.getElementById('hl-notes')?.value.trim();
+  if (!title || !time) { toast('Please fill in title and time'); return; }
+  const session = { id:Date.now(), title, platform, time, notes, status:'scheduled' };
+  liveSessions.unshift(session);
+  localStorage.setItem('dhp_hl_sessions', JSON.stringify(liveSessions));
+  renderLiveSessions();
+  document.getElementById('hl-title').value='';
+  document.getElementById('hl-time').value='';
+  document.getElementById('hl-notes').value='';
+  toast(`Session scheduled: "${title}"`);
+  pushActivity(`Live session scheduled: "${title}" on ${platform}`, 'info');
+}
+function renderLiveSessions() {
+  const el = document.getElementById('hl-sessions'); if (!el) return;
+  if (!liveSessions.length) { el.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">No sessions scheduled. Add one on the left.</div>'; return; }
+  el.innerHTML = liveSessions.map(s => `
+    <div style="padding:10px 12px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <span style="font-weight:600;font-size:12px;color:var(--text)">${s.title}</span>
+        <span class="badge" style="background:rgba(232,112,112,.12);color:#e87070;border-color:rgba(232,112,112,.25);font-size:8px">${s.platform}</span>
+      </div>
+      <div style="font-size:10px;color:var(--muted)">${new Date(s.time).toLocaleString()}</div>
+      ${s.notes ? `<div style="font-size:11px;color:var(--text2);margin-top:4px">${s.notes}</div>` : ''}
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ㉙ B2B HUB (B2B Marketing)
+   ═══════════════════════════════════════════════════════════ */
+let b2bLeads = JSON.parse(localStorage.getItem('dhp_b2b_leads') || '[]');
+function initB2BHub() {
+  updateB2BStats(); renderLeads();
+}
+function openLeadModal() {
+  document.getElementById('m-title').textContent = 'Add B2B Lead';
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg"><label>Company Name</label><input class="fi" id="lm-company" placeholder="PT. Example Indonesia"/></div>
+    <div class="fg"><label>Contact Person</label><input class="fi" id="lm-contact" placeholder="John Doe"/></div>
+    <div class="fg"><label>Email</label><input class="fi" id="lm-email" type="email" placeholder="contact@company.com"/></div>
+    <div class="fg"><label>Deal Value (Rp)</label><input class="fi" id="lm-value" type="number" placeholder="50000000"/></div>
+    <div class="fg"><label>Status</label>
+      <select class="fi" id="lm-status">
+        <option value="prospect">Prospect</option>
+        <option value="negotiation">Negotiation</option>
+        <option value="follow-up">Follow-Up</option>
+        <option value="closed">Closed</option>
+      </select>
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-gold" onclick="saveLead()">Save Lead</button>
+    <button class="btn-sm" style="border-color:var(--border);color:var(--muted)" onclick="closeModal()">Cancel</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+function saveLead() {
+  const company = document.getElementById('lm-company')?.value.trim();
+  const contact = document.getElementById('lm-contact')?.value.trim();
+  const email   = document.getElementById('lm-email')?.value.trim();
+  const value   = document.getElementById('lm-value')?.value;
+  const status  = document.getElementById('lm-status')?.value;
+  if (!company || !contact) { toast('Fill in company and contact'); return; }
+  const lead = { id:Date.now(), company, contact, email, value:value||0, status, createdAt:new Date().toLocaleDateString() };
+  b2bLeads.unshift(lead);
+  localStorage.setItem('dhp_b2b_leads', JSON.stringify(b2bLeads));
+  closeModal(); updateB2BStats(); renderLeads();
+  toast(`Lead added: ${company}`);
+  pushActivity(`B2B Lead added: ${company} (${status})`, 'info');
+}
+function updateB2BStats() {
+  const el1 = document.getElementById('b2b-leads-count');
+  const el2 = document.getElementById('b2b-closed-count');
+  const el3 = document.getElementById('b2b-followup-count');
+  if (el1) el1.textContent = b2bLeads.filter(l=>l.status!=='closed').length;
+  if (el2) el2.textContent = b2bLeads.filter(l=>l.status==='closed').length;
+  if (el3) el3.textContent = b2bLeads.filter(l=>l.status==='follow-up').length;
+}
+function renderLeads() {
+  const q = (document.getElementById('b2b-search')?.value||'').toLowerCase();
+  const list = b2bLeads.filter(l => !q || l.company.toLowerCase().includes(q) || l.contact.toLowerCase().includes(q));
+  const tbody = document.getElementById('b2b-tbl'); if(!tbody) return;
+  if (!list.length) { tbody.innerHTML='<tr><td colspan="5" class="tbl-empty">No leads found</td></tr>'; return; }
+  const statusColors = { prospect:'var(--amber)', negotiation:'var(--blue)', 'follow-up':'var(--red)', closed:'var(--green)' };
+  tbody.innerHTML = list.map(l => `
+    <tr>
+      <td style="font-weight:600;color:var(--text)">${l.company}</td>
+      <td>${l.contact}${l.email?`<br/><span style="font-size:10px;color:var(--muted)">${l.email}</span>`:''}</td>
+      <td><span class="badge" style="background:${statusColors[l.status]||'var(--muted)'}22;color:${statusColors[l.status]||'var(--muted)'};border-color:${statusColors[l.status]||'var(--muted)'}44">${l.status}</span></td>
+      <td style="font-size:11px;color:var(--text2)">${l.value?'Rp '+Number(l.value).toLocaleString('id-ID'):'-'}</td>
+      <td><button class="btn-sm btn-del" onclick="deleteLead(${l.id})">Del</button></td>
+    </tr>`).join('');
+}
+function deleteLead(id) {
+  if(!confirm('Delete this lead?')) return;
+  b2bLeads = b2bLeads.filter(l=>l.id!==id);
+  localStorage.setItem('dhp_b2b_leads', JSON.stringify(b2bLeads));
+  updateB2BStats(); renderLeads(); toast('Lead removed');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ㉚ ADMIN PANEL
+   ═══════════════════════════════════════════════════════════ */
+function initAdminPanel() {
+  const onCount = Object.values(presenceMap).filter(u=>u.online).length;
+  const el1 = document.getElementById('adm-online');
+  const el2 = document.getElementById('adm-customers');
+  if (el1) el1.textContent = onCount;
+  if (el2) el2.textContent = customers.length;
+  const teamEl = document.getElementById('adm-team-list'); if (!teamEl) return;
+  teamEl.innerHTML = Object.entries(LOCAL_USERS).map(([uid, u]) => {
+    const p = presenceMap[uid];
+    const clr = ROLE_COLORS[u.role]||'#888';
+    const av = u.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="width:32px;height:32px;border-radius:50%;background:${clr}22;color:${clr};border:1px solid ${clr}44;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${av}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600;color:var(--text)">${u.name}</div>
+        <div style="font-size:9px;color:${clr};letter-spacing:.1em">${rn(u.role)}</div>
+      </div>
+      <div style="width:8px;height:8px;border-radius:50%;background:${p?.online?'var(--green)':'var(--border)'}"></div>
+    </div>`;
+  }).join('');
+}
 
 /* ══ INIT ══ */
 applyTranslations();
