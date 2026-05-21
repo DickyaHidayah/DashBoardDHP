@@ -648,7 +648,7 @@ body.light .rn-input{background:rgba(0,0,0,.05);border-color:rgba(80,50,10,.3);c
 .notif-item.unread{border-color:rgba(201,169,110,.3);background:rgba(201,169,110,.04)}
 .notif-item.unread::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold);border-radius:6px 0 0 6px}
 .ni-type{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;font-weight:700}
-.ni-type.reg{color:var(--amber)}.ni-type.system{color:var(--blue)}.ni-type.action{color:var(--green)}
+.ni-type.reg{color:var(--amber)}.ni-type.system{color:var(--blue)}.ni-type.action{color:var(--green)}.ni-type.login{color:var(--green)}
 .ni-msg{font-size:12px;color:var(--text2);line-height:1.5}
 .ni-time{font-size:9px;color:var(--muted);margin-top:6px}
 .ni-acts{display:flex;gap:6px;margin-top:8px}
@@ -2363,47 +2363,119 @@ for (let i = 1; i <= MAX_GUEST; i++) guestSlots[i] = null;
 const presenceMap = {};
 // Presence hanya diisi saat user benar-benar login — tidak ada seed palsu
 
-let presChannel = null, presHB = null, presTab = 'all';
+let presChannel = null, presHB = null, presStaleIv = null, presTab = 'all';
+
+/* ── Tuning realtime presence ──
+   HB_MS    : seberapa sering kirim heartbeat (makin kecil = makin realtime)
+   STALE_MS : kalau tidak ada heartbeat selama ini, user dianggap OFFLINE
+              (lebih besar dari HB_MS supaya tidak salah-offline saat jaringan sedikit lambat) */
+const PRES_HB_MS    = 8000;
+const PRES_STALE_MS = 25000;
+
+// Tandai user offline kalau heartbeat-nya basi, lalu refresh UI bila ada perubahan
+function sweepStalePresence() {
+  const now = Date.now();
+  let changed = false;
+  Object.values(presenceMap).forEach(u => {
+    if (!u) return;
+    // Jangan pernah meng-offline-kan diri sendiri lewat sweep (kita tahu kita masih di sini)
+    if (currentUser && u.id === currentUser.id) return;
+    if (u.online && u.lastSeen && (now - u.lastSeen) > PRES_STALE_MS) {
+      u.online = false;
+      changed = true;
+    }
+  });
+  if (changed) refreshPresenceUI();
+}
 
 function initRealtimePresence(userId, role, name) {
   if (!db) { startLocalTick(); return; }
+
+  // Bersihkan channel lama bila ada (mis. login ulang)
+  if (presChannel) { try { presChannel.untrack(); presChannel.unsubscribe(); } catch(e){} presChannel = null; }
+  if (presHB)      { clearInterval(presHB);      presHB = null; }
+  if (presStaleIv) { clearInterval(presStaleIv); presStaleIv = null; }
+
   presChannel = db.channel('dhp_presence', { config: { presence: { key: userId } } });
   presChannel
     .on('presence', 'sync', () => {
       const state = presChannel.presenceState();
-      Object.keys(presenceMap).forEach(k => { if (presenceMap[k]) presenceMap[k].online = false; });
+      // Kumpulkan siapa saja yang sekarang benar-benar tracked di channel
+      const liveIds = new Set();
       Object.values(state).flat().forEach(u => {
         const id = u.userId || u.user_id || '';
         if (!id) return;
+        liveIds.add(id);
         if (!presenceMap[id]) presenceMap[id] = { id, role:u.role||'guest', name:u.name||id, online:true, loginAt:u.loginAt||Date.now(), lastSeen:Date.now() };
-        else Object.assign(presenceMap[id], { online:true, loginAt:u.loginAt||presenceMap[id].loginAt, lastSeen:Date.now() });
+        else Object.assign(presenceMap[id], { online:true, loginAt:u.loginAt||presenceMap[id].loginAt, lastSeen:Date.now(), role:u.role||presenceMap[id].role, name:u.name||presenceMap[id].name });
+      });
+      // Siapa pun yang TIDAK lagi tracked → offline (kecuali diri sendiri)
+      Object.values(presenceMap).forEach(u => {
+        if (!u) return;
+        if (currentUser && u.id === currentUser.id) { u.online = true; return; }
+        if (!liveIds.has(u.id)) { if (u.online) { u.online = false; u.lastSeen = u.lastSeen || Date.now(); } }
       });
       refreshPresenceUI();
     })
     .on('presence', 'join', ({ key, newPresences }) => {
       newPresences.forEach(u => {
         const id = u.userId || u.user_id || key;
-        if (!presenceMap[id]) presenceMap[id] = { id, role:u.role||'guest', name:u.name||id, online:true, loginAt:Date.now(), lastSeen:Date.now() };
-        else Object.assign(presenceMap[id], { online:true, loginAt:Date.now(), lastSeen:Date.now() });
+        const isNew = !presenceMap[id] || !presenceMap[id].online;
+        if (!presenceMap[id]) presenceMap[id] = { id, role:u.role||'guest', name:u.name||id, online:true, loginAt:u.loginAt||Date.now(), lastSeen:Date.now() };
+        else Object.assign(presenceMap[id], { online:true, loginAt:u.loginAt||Date.now(), lastSeen:Date.now(), role:u.role||presenceMap[id].role, name:u.name||presenceMap[id].name });
+
+        // ── Notif "ada yang login" untuk SEMUA yang masuk (termasuk diri sendiri) ──
+        // Hanya picu kalau ini benar-benar transisi offline→online, supaya tidak spam tiap heartbeat.
+        if (isNew) {
+          const who = (currentUser && id === currentUser.id) ? `${u.name||name} (kamu)` : (u.name||id);
+          pushActivity(`${who} joined · ${rn(u.role||'guest')}`, 'join');
+          pushNotif({ type:'login', msg:`${who} login ke portal` });
+        }
       });
       refreshPresenceUI();
-      const u = newPresences[0];
-      pushActivity(`${u.name||key} joined · ${rn(u.role||'guest')}`, 'join');
-      if (can.isMod(currentUser?.role)) pushNotif({ type:'system', msg:`${u.name||key} connected to portal` });
     })
     .on('presence', 'leave', ({ key, leftPresences }) => {
       leftPresences.forEach(u => {
         const id = u.userId || u.user_id || key;
-        if (presenceMap[id]) { presenceMap[id].online = false; presenceMap[id].lastSeen = Date.now(); }
+        if (currentUser && id === currentUser.id) return; // jangan offline-kan diri sendiri
+        if (presenceMap[id] && presenceMap[id].online) {
+          presenceMap[id].online = false;
+          presenceMap[id].lastSeen = Date.now();
+          pushActivity(`${presenceMap[id].name||id} left`, 'leave');
+        }
       });
       refreshPresenceUI();
     })
     .subscribe(async st => {
       if (st === 'SUBSCRIBED') {
-        await presChannel.track({ userId, role, name, loginAt:Date.now() });
-        presHB = setInterval(() => presChannel.track({ userId, role, name, loginAt:presenceMap[userId]?.loginAt||Date.now() }), 20000);
+        const loginAt = presenceMap[userId]?.loginAt || Date.now();
+        await presChannel.track({ userId, role, name, loginAt, ts:Date.now() });
+        // Heartbeat: kirim sinyal "aku masih di sini" lebih sering = lebih realtime
+        presHB = setInterval(() => {
+          presChannel.track({ userId, role, name, loginAt:presenceMap[userId]?.loginAt||loginAt, ts:Date.now() });
+          if (presenceMap[userId]) presenceMap[userId].lastSeen = Date.now();
+        }, PRES_HB_MS);
+        // Sweep: cek user basi secara berkala
+        presStaleIv = setInterval(sweepStalePresence, PRES_HB_MS);
       }
     });
+
+  // Saat tab disembunyikan/ditutup, segera lepas presence supaya orang lain langsung lihat kita pergi
+  if (!window._presLifecycleBound) {
+    window._presLifecycleBound = true;
+    document.addEventListener('visibilitychange', () => {
+      if (!presChannel || !currentUser) return;
+      if (document.visibilityState === 'visible') {
+        // Kembali aktif → segera kirim heartbeat agar status online langsung pulih
+        presChannel.track({ userId:currentUser.id, role:currentUser.role, name:currentUser.name, loginAt:presenceMap[currentUser.id]?.loginAt||Date.now(), ts:Date.now() });
+        if (presenceMap[currentUser.id]) { presenceMap[currentUser.id].online = true; presenceMap[currentUser.id].lastSeen = Date.now(); }
+        refreshPresenceUI();
+      }
+    });
+    const bail = () => { try { if (presChannel) presChannel.untrack(); } catch(e){} };
+    window.addEventListener('beforeunload', bail);
+    window.addEventListener('pagehide', bail);
+  }
 
   // Moderator: subscribe to new registrations in real-time
   if (can.isMod(role) && db) {
@@ -2421,7 +2493,7 @@ function initRealtimePresence(userId, role, name) {
 }
 
 function startLocalTick() {
-  setInterval(() => { if (currentUser) refreshPresenceUI(); }, 5000);
+  setInterval(() => { if (currentUser) { sweepStalePresence(); refreshPresenceUI(); } }, 4000);
 }
 function releaseGuest(id) {
   Object.entries(guestSlots).forEach(([k, v]) => { if (v === id) guestSlots[k] = null; });
@@ -3580,7 +3652,14 @@ function loginSuccess(id, role, name) {
     initRealtimePresence(id, role, name);
     showWelcomeBanner(name, role);
     if (role === 'guest') toast(t('guestReadOnly'));
-    pushActivity(`${name} signed in · ${rn(role)}`, 'join');
+    // Notif/aktivitas login diri sendiri:
+    // Kalau Supabase aktif, event 'join' channel yang akan memunculkannya (anti-dobel).
+    // Kalau mode lokal (tanpa db), munculkan di sini sebagai fallback.
+    if (!db) {
+      pushActivity(`${name} (kamu) joined · ${rn(role)}`, 'join');
+      pushNotif({ type:'login', msg:`${name} (kamu) login ke portal` });
+    }
+    refreshPresenceUI();
   }, 500);
 }
 
@@ -3590,6 +3669,7 @@ function handleLogout() {
     if (currentUser.role === 'guest') releaseGuest(currentUser.id);
     if (presChannel) { presChannel.untrack(); presChannel.unsubscribe(); presChannel = null; }
     if (presHB) { clearInterval(presHB); presHB = null; }
+    if (presStaleIv) { clearInterval(presStaleIv); presStaleIv = null; }
     dbQ(d => d.rpc('update_user_presence', { p_user_id:currentUser.id, p_event:'logout' }));
     pushActivity(`${currentUser.name} signed out`, 'leave');
   }
@@ -3676,7 +3756,10 @@ async function initDashboard() {
   navShow('ns-manage',        isMod);
   navShow('n-ad-scheduler',   isMod);
 
-  document.getElementById('notif-bell').style.display   = isMod ? '' : 'none';
+  // Bell tampil untuk semua user — notif login/join terlihat oleh siapa pun.
+  // (Notif registrasi dengan tombol Review tetap hanya muncul untuk moderator,
+  //  karena hanya moderator yang subscribe ke channel registrasi.)
+  document.getElementById('notif-bell').style.display   = '';
   const addCustBtn = document.getElementById('btn-add-cust');
   if (addCustBtn) addCustBtn.style.display = can.editorUp(r) ? '' : 'none';
 
