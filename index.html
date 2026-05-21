@@ -2225,13 +2225,13 @@ const LOCAL_USERS = {
   // ─── MODERATOR (regular) ───
   firman: { pass:'11223344', role:'moderator',       name:'Firman',  email:'firman@dhp.id' },
   // ─── ADMIN ───
-  Yuna:   { pass:'123',      role:'admin',           name:'Yuna',    email:'yuna@dhp.id' },
+  yuna:   { pass:'123',      role:'admin',           name:'Yuna',    email:'yuna@dhp.id' },
   puji:   { pass:'321',      role:'admin',           name:'Puji',    email:'puji@dhp.id' },
-  Erni:   { pass:'111',      role:'admin',           name:'Erni',    email:'erni@dhp.id' },
+  erni:   { pass:'111',      role:'admin',           name:'Erni',    email:'erni@dhp.id' },
   // ─── CONTENT CREATOR ───
   erika:  { pass:'333',      role:'content_creator', name:'Erika',   email:'erika@dhp.id' },
   // ─── HOST LIVE ───
-  Nina:   { pass:'890',      role:'host_live',       name:'Nina',    email:'nina@dhp.id' },
+  nina:   { pass:'890',      role:'host_live',       name:'Nina',    email:'nina@dhp.id' },
   sekar:  { pass:'098',      role:'host_live',       name:'Sekar',   email:'sekar@dhp.id' },
   // ─── B2B MARKETING ───
   galih:  { pass:'888',      role:'b2b_marketing',   name:'Galih',   email:'galih@dhp.id' },
@@ -2240,6 +2240,38 @@ const LOCAL_USERS = {
 // Sovereign Moderator detection
 const HEAD_MODERATOR_ID = 'dickya';
 const isHeadMod = (u) => u && u.id === HEAD_MODERATOR_ID;
+
+/* ── Role format converters (JS ↔ DB) ──
+   JS  (underscore): head_moderator, content_creator, host_live, b2b_marketing
+   DB  (dash):       chief-moderator, content-creator, host-live, b2b-marketing  */
+function roleToDb(r) {
+  const map = {
+    head_moderator:  'chief-moderator',
+    moderator:       'moderator',
+    admin:           'admin',
+    content_creator: 'content-creator',
+    host_live:       'host-live',
+    b2b_marketing:   'b2b-marketing',
+    guest:           'guest'
+  };
+  return map[r] || r;
+}
+function roleFromDb(r) {
+  const map = {
+    'chief-moderator': 'head_moderator',
+    'moderator':       'moderator',
+    'admin':           'admin',
+    'content-creator': 'content_creator',
+    'host-live':       'host_live',
+    'b2b-marketing':   'b2b_marketing',
+    'guest':           'guest',
+    'content_creator': 'content_creator',
+    'host_live':       'host_live',
+    'b2b_marketing':   'b2b_marketing',
+    'head_moderator':  'head_moderator'
+  };
+  return map[r] || r;
+}
 
 let customers     = [];
 let registrations = [];
@@ -2302,7 +2334,8 @@ function initRealtimePresence(userId, role, name) {
     db.channel('dhp_regs')
       .on('postgres_changes', { event:'INSERT', schema:'public', table:'registrations' }, payload => {
         const r = payload.new;
-        registrations.unshift({ ...r, status:'pending' });
+        registrations.unshift({ ...r, status:'pending', userId: r.user_id, name: r.full_name,
+          role: roleFromDb(r.requested_role || 'guest'), createdAt: new Date(r.created_at).getTime() });
         updateRegBadge();
         renderRegs();
         pushNotif({ type:'reg', msg:`New registration: ${r.full_name||r.name} (${r.user_id||r.userId})`, regId:r.id });
@@ -3397,7 +3430,7 @@ async function handleLogin() {
   let success = false, role = '', name = '';
   const res = await dbQ(d => d.from('users').select('*').eq('user_id', id).eq('is_active', true).single());
   if (res?.data) {
-    if (res.data.password_hash === pw) { success = true; role = res.data.role; name = res.data.full_name; }
+    if (res.data.password_hash === pw) { success = true; role = roleFromDb(res.data.role); name = res.data.full_name; }
   } else {
     const u = LOCAL_USERS[id];
     if (u && u.pass === pw) { success = true; role = u.role; name = u.name; }
@@ -3673,6 +3706,30 @@ async function loadDataFromDB(isMod) {
     }));
   }
 
+  // Users — sync dari DB ke LOCAL_USERS supaya renderUsers & login selalu up-to-date
+  const uRes = await dbQ(d => d.from('users').select('*').eq('is_active', true));
+  if (uRes?.data) {
+    uRes.data.forEach(u => {
+      const jsRole = roleFromDb(u.role);
+      if (!LOCAL_USERS[u.user_id]) {
+        LOCAL_USERS[u.user_id] = { pass: u.password_hash, role: jsRole, name: u.full_name, email: u.email };
+      } else {
+        // Update role & name dari DB (bisa berubah via changeRole)
+        LOCAL_USERS[u.user_id].role  = jsRole;
+        LOCAL_USERS[u.user_id].name  = u.full_name;
+        LOCAL_USERS[u.user_id].email = u.email;
+        LOCAL_USERS[u.user_id].pass  = u.password_hash;
+      }
+      // Sync ke presenceMap juga
+      if (!presenceMap[u.user_id]) {
+        presenceMap[u.user_id] = { id:u.user_id, role:jsRole, name:u.full_name, online:false, loginAt:0, lastSeen:0 };
+      } else {
+        presenceMap[u.user_id].role = jsRole;
+        presenceMap[u.user_id].name = u.full_name;
+      }
+    });
+  }
+
   // Registrations (moderator saja)
   if (isMod) {
     const rRes = await dbQ(d => d.from('registrations').select('*').order('created_at', { ascending:false }));
@@ -3683,7 +3740,7 @@ async function loadDataFromDB(isMod) {
         name:      reg.full_name,
         email:     reg.email,
         pass:      reg.password_hash,
-        role:      reg.requested_role || 'guest',
+        role:      roleFromDb(reg.requested_role || 'guest'),
         status:    reg.status,
         createdAt: new Date(reg.created_at).getTime()
       }));
@@ -4276,7 +4333,7 @@ async function approveReg(id) {
   const uid = r.userId || r.user_id, name = r.name || r.full_name;
   LOCAL_USERS[uid] = { pass:r.pass||'changeme', role, name, email:r.email };
   presenceMap[uid] = { id:uid, role, name, online:false, loginAt:0, lastSeen:0 };
-  await dbQ(d => d.rpc('approve_registration', { p_reg_id:id, p_reviewed_by:currentUser.id, p_role:role }));
+  await dbQ(d => d.rpc('approve_registration', { p_reg_id:id, p_reviewed_by:currentUser.id, p_role:roleToDb(role) }));
   closeModal(); updateRegBadge(); renderRegs();
   toast(t('regApproved'));
   pushActivity(`${name} approved as ${rn(role)}`, 'info');
@@ -4351,7 +4408,7 @@ async function changeRole(uid) {
   }
   LOCAL_USERS[uid].role = newRole;
   if (presenceMap[uid]) presenceMap[uid].role = newRole;
-  await dbQ(d => d.rpc('change_user_role', { p_target_user:uid, p_new_role:newRole, p_changed_by:currentUser.id }));
+  await dbQ(d => d.rpc('change_user_role', { p_target_user:uid, p_new_role:roleToDb(newRole), p_changed_by:currentUser.id }));
   toast(`${LOCAL_USERS[uid]?.name} → ${rn(newRole)}`);
   pushActivity(`Role changed: ${uid} → ${rn(newRole)}`, 'info');
   renderUsers(); refreshPresenceUI();
