@@ -584,6 +584,11 @@ tbody tr:last-child td{border-bottom:none}
 .btn-del:hover{background:rgba(232,112,112,.18);transform:translateY(-1px)}
 .btn-gold{background:rgba(201,169,110,.1);border-color:var(--border-hi);color:var(--gold)}
 .btn-gold:hover{background:rgba(201,169,110,.22);transform:translateY(-1px)}
+/* Cancel button — jelas terbaca di dark & light, tidak nyaru */
+.btn-cancel{background:rgba(232,228,220,.05);border-color:var(--border-hi);color:var(--text)}
+.btn-cancel:hover{background:rgba(232,228,220,.12);border-color:var(--gold-lo);color:var(--text);transform:translateY(-1px)}
+body.light .btn-cancel{background:rgba(26,18,8,.05);border-color:rgba(80,50,10,.35);color:#1a1208}
+body.light .btn-cancel:hover{background:rgba(26,18,8,.1);border-color:var(--gold-dk)}
 .btn-add{background:linear-gradient(135deg,var(--gold-dk),var(--gold));border:none;color:#0a0906;
     padding:9px 18px;font-size:10px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;
     border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;transition:all var(--trans);
@@ -649,7 +654,7 @@ body.light .rn-input{background:rgba(0,0,0,.05);border-color:rgba(80,50,10,.3);c
 .ni-acts{display:flex;gap:6px;margin-top:8px}
 .notif-empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:12px;font-style:italic}
 
-/* ── PRESENCE FAB ── */
+/* ── PRESENCE FAB — always bottom-right ── */
 #pres-fab{position:fixed;bottom:24px;right:24px;z-index:500;display:none}
 #pres-fab.visible{display:block}
 .fab-btn{width:52px;height:52px;border-radius:50%;background:var(--surface2);border:1px solid var(--border-hi);
@@ -658,11 +663,14 @@ body.light .rn-input{background:rgba(0,0,0,.05);border-color:rgba(80,50,10,.3);c
 .fab-btn:hover{transform:scale(1.08);border-color:var(--gold);background:rgba(201,169,110,.1)}
 .fab-count{position:absolute;top:-4px;right:-4px;background:var(--green);color:#fff;font-size:8px;font-weight:800;border-radius:10px;padding:2px 5px;min-width:18px;text-align:center}
 
-/* ── PRESENCE PANEL (FAB popup) ── */
+/* ── PRESENCE PANEL — opens above its own FAB ── */
 #pres-panel{position:fixed;bottom:88px;right:24px;width:290px;background:var(--surface);
     border:1px solid var(--border-hi);border-radius:12px;z-index:500;display:none;flex-direction:column;
     box-shadow:var(--shadow);overflow:hidden;max-height:440px}
 #pres-panel.open{display:flex}
+
+/* ── TASK FAB — sits to the LEFT of presence FAB on mobile,
+   and ABOVE presence FAB on desktop ── */
 .pp-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .pp-title{font-size:12px;font-weight:700;color:var(--text);letter-spacing:.05em}
 .pp-sub{font-size:10px;color:var(--text2)}
@@ -728,6 +736,324 @@ body.is-mod #mod-indicator{display:block}
 /* ── SHAKE ── */
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 
+/* ═══════════════════════════════════════════════════════════════════
+   ★ AD SCHEDULER — Calendar + Manage  (Moderator only)
+   ═══════════════════════════════════════════════════════════════════ */
+.ads-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.ads-month-nav{display:flex;align-items:center;gap:6px}
+.ads-nav-btn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.03);
+    color:var(--gold);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all var(--trans)}
+.ads-nav-btn:hover{border-color:var(--gold);background:rgba(201,169,110,.1)}
+body.light .ads-nav-btn{background:rgba(0,0,0,.04)}
+.ads-month-sel{display:flex;gap:6px;flex-wrap:wrap}
+.ads-select{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;
+    padding:9px 30px 9px 12px;color:var(--text);font-size:12px;font-family:'Inter',sans-serif;outline:none;
+    cursor:pointer;transition:border-color var(--trans);min-height:38px;
+    -webkit-appearance:none;appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M2 3l3 3 3-3' stroke='%23c9a96e' stroke-width='1.4' fill='none' stroke-linecap='round'/></svg>");
+    background-repeat:no-repeat;background-position:right 11px center}
+.ads-select:focus{border-color:rgba(201,169,110,.4)}
+body.light .ads-select{background-color:rgba(0,0,0,.05);color:#1a1208;border-color:rgba(80,50,10,.3)}
+.ads-today-btn{margin-left:auto}
+.ads-view-toggle{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.ads-vt-btn{background:none;border:none;color:var(--muted);padding:8px 14px;font-size:10px;font-weight:700;
+    letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all var(--trans);min-height:36px;font-family:'Inter',sans-serif}
+.ads-vt-btn.active{background:rgba(201,169,110,.14);color:var(--gold)}
+.ads-vt-btn:not(.active):hover{color:var(--text2)}
+
+/* Calendar grid */
+.cal-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.cal-title-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
+.cal-month-name{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold-hi);letter-spacing:.04em}
+.cal-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:9px;color:var(--text2);letter-spacing:.04em}
+.cal-leg{display:flex;align-items:center;gap:5px}
+.cal-leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr)}
+.cal-dow{padding:10px 6px;text-align:center;font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted);font-weight:700;border-bottom:1px solid var(--border)}
+.cal-dow.sun{color:var(--red)}
+.cal-cell{min-height:92px;border-right:1px solid rgba(201,169,110,.05);border-bottom:1px solid rgba(201,169,110,.05);
+    padding:6px;position:relative;cursor:pointer;transition:background var(--trans);display:flex;flex-direction:column;gap:3px}
+.cal-cell:nth-child(7n){border-right:none}
+.cal-cell.empty{cursor:default;background:rgba(0,0,0,.12)}
+body.light .cal-cell.empty{background:rgba(0,0,0,.025)}
+.cal-cell:not(.empty):hover{background:rgba(201,169,110,.06)}
+.cal-cell.today{background:rgba(201,169,110,.08);box-shadow:inset 0 0 0 1px var(--gold-lo)}
+.cal-daynum{font-size:13px;font-weight:600;color:var(--text2);font-family:'Cormorant Garamond',serif;line-height:1}
+.cal-cell.is-sun .cal-daynum,.cal-cell.is-holiday .cal-daynum{color:var(--red)}
+.cal-cell.today .cal-daynum{color:var(--gold-hi)}
+.cal-holiday-tag{font-size:7.5px;color:var(--red);line-height:1.25;letter-spacing:.02em;
+    overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;opacity:.85}
+.cal-holiday-dot{position:absolute;top:7px;right:7px;width:6px;height:6px;border-radius:50%;background:var(--red);box-shadow:0 0 5px var(--red)}
+.cal-ad-chip{font-size:8.5px;font-weight:700;letter-spacing:.02em;padding:2px 5px;border-radius:3px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:3px}
+.cal-ad-chip .chip-pub{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.cal-ad-chip.cat-Reseller{background:rgba(217,142,192,.14);color:#d98ec0;border:1px solid rgba(217,142,192,.3)}
+.cal-ad-chip.cat-Product{background:rgba(126,168,201,.14);color:var(--blue);border:1px solid rgba(126,168,201,.3)}
+.cal-ad-chip.cat-B2B{background:rgba(122,191,142,.14);color:var(--green);border:1px solid rgba(122,191,142,.3)}
+.cal-more{font-size:8px;color:var(--muted);padding-left:3px}
+.cal-add-hint{position:absolute;bottom:6px;right:7px;font-size:14px;color:var(--gold);opacity:0;transition:opacity var(--trans);font-weight:300;line-height:1}
+.cal-cell:not(.empty):hover .cal-add-hint{opacity:.6}
+
+/* Category badge in tables/modals */
+.cat-badge{display:inline-flex;align-items:center;font-size:9px;font-weight:700;letter-spacing:.08em;
+    text-transform:uppercase;padding:3px 9px;border-radius:3px;white-space:nowrap}
+.cat-badge.cat-Reseller{background:rgba(217,142,192,.12);color:#d98ec0;border:1px solid rgba(217,142,192,.28)}
+.cat-badge.cat-Product{background:rgba(126,168,201,.12);color:var(--blue);border:1px solid rgba(126,168,201,.28)}
+.cat-badge.cat-B2B{background:rgba(122,191,142,.12);color:var(--green);border:1px solid rgba(122,191,142,.28)}
+.ad-status-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;letter-spacing:.08em;
+    text-transform:uppercase;padding:3px 9px;border-radius:3px;white-space:nowrap}
+.ad-status-badge.draft{background:rgba(232,184,110,.1);color:var(--amber);border:1px solid rgba(232,184,110,.28)}
+.ad-status-badge.published{background:rgba(122,191,142,.12);color:var(--green);border:1px solid rgba(122,191,142,.28)}
+.ad-status-badge .dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.ad-status-badge.published .dot{animation:rt-blink 2s infinite}
+
+/* Day detail modal list */
+.day-ad-list{display:flex;flex-direction:column;gap:10px;margin-bottom:6px}
+.day-ad-item{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+body.light .day-ad-item{background:var(--surface2)}
+.dai-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.dai-theme{font-size:13px;font-weight:600;color:var(--text);flex:1;min-width:0}
+.dai-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.dai-target{display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap}
+.dai-target-lbl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.dai-target-names{font-size:11px;color:var(--text2)}
+.dai-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px}
+.day-holiday-note{display:flex;align-items:center;gap:8px;background:rgba(232,112,112,.08);border:1px solid rgba(232,112,112,.25);
+    border-radius:8px;padding:10px 13px;margin-bottom:14px;font-size:12px;color:var(--red)}
+.day-empty{text-align:center;padding:22px;color:var(--muted);font-style:italic;font-size:12px}
+
+/* ══ AD TARGET PICKER — Luxury Avatar System ══ */
+.target-trigger{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:border-color .2s ease,background .2s ease,box-shadow .2s ease;background:rgba(201,169,110,.03);user-select:none}
+.target-trigger:hover{border-color:rgba(201,169,110,.35);background:rgba(201,169,110,.055);box-shadow:0 2px 16px rgba(201,169,110,.07)}
+.target-trigger.open{border-color:rgba(201,169,110,.4);border-bottom-color:transparent;border-radius:10px 10px 0 0;background:rgba(201,169,110,.04)}
+body.light .target-trigger{background:rgba(107,66,24,.03)}
+body.light .target-trigger:hover{background:rgba(107,66,24,.06)}
+body.light .target-trigger.open{background:rgba(107,66,24,.04)}
+.target-trigger-left{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.target-trigger-icon{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,rgba(201,169,110,.12),rgba(201,169,110,.04));border:1px solid rgba(201,169,110,.22);display:flex;align-items:center;justify-content:center;color:var(--gold);flex-shrink:0;transition:background .2s}
+.target-trigger:hover .target-trigger-icon{background:linear-gradient(135deg,rgba(201,169,110,.2),rgba(201,169,110,.07))}
+.target-trigger-label{font-size:12px;color:var(--text);font-family:'Cormorant Garamond',serif;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.target-trigger-label.placeholder{color:var(--muted);font-style:italic}
+.target-trigger-count{font-size:9px;font-weight:600;color:var(--gold);letter-spacing:.1em;background:rgba(201,169,110,.12);padding:2px 8px;border-radius:10px;border:1px solid rgba(201,169,110,.22);white-space:nowrap;flex-shrink:0;margin-left:6px}
+.target-trigger-arrow{color:var(--muted);flex-shrink:0;transition:transform .25s cubic-bezier(.4,0,.2,1),color .2s;margin-left:8px}
+.target-trigger.open .target-trigger-arrow{transform:rotate(180deg);color:var(--gold)}
+.target-dropdown{display:none;border:1px solid rgba(201,169,110,.35);border-top:none;border-radius:0 0 10px 10px;overflow:hidden;background:var(--bg2);box-shadow:0 16px 48px rgba(0,0,0,.55)}
+body.light .target-dropdown{background:var(--surface2);box-shadow:0 8px 28px rgba(0,0,0,.13)}
+.target-dropdown.open{display:block;animation:tdrop-in .2s cubic-bezier(.4,0,.2,1)}
+@keyframes tdrop-in{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+.target-dd-search{padding:9px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;position:sticky;top:0;background:var(--bg2);z-index:1}
+body.light .target-dd-search{background:var(--surface2)}
+.target-dd-search svg{color:var(--muted);flex-shrink:0}
+.target-dd-search input{flex:1;background:none;border:none;outline:none;font-size:12px;color:var(--text);font-family:'Inter',sans-serif;letter-spacing:.02em}
+.target-dd-search input::placeholder{color:var(--muted);font-style:italic}
+.target-dd-selall{font-family:'Cormorant Garamond',serif;font-size:11px;font-style:italic;color:var(--gold-lo);cursor:pointer;white-space:nowrap;flex-shrink:0;padding:3px 0;border-bottom:1px solid transparent;transition:color .18s,border-color .18s;letter-spacing:.03em}
+.target-dd-selall:hover{color:var(--gold);border-bottom-color:rgba(201,169,110,.4)}
+
+/* Member rows */
+.target-list{max-height:220px;overflow-y:auto;padding:5px 8px 8px}
+.target-opt{
+  display:flex;align-items:center;gap:11px;
+  padding:8px 9px;border-radius:9px;cursor:pointer;
+  transition:background .15s ease, transform .12s ease;
+  position:relative;
+}
+.target-opt input[type=checkbox]{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+.target-opt:hover{background:rgba(201,169,110,.055)}
+body.light .target-opt:hover{background:rgba(107,66,24,.055)}
+.target-opt:active{transform:scale(.985)}
+.target-opt.selected{background:rgba(201,169,110,.06)}
+body.light .target-opt.selected{background:rgba(107,66,24,.065)}
+
+/* Avatar with role-color border + online dot */
+.target-opt-avatar-wrap{position:relative;flex-shrink:0;width:36px;height:36px}
+.target-opt-avatar{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;
+  font-size:14px;font-weight:600;letter-spacing:.03em;
+  border:2px solid transparent;
+  transition:box-shadow .22s ease, border-color .22s ease, background .22s ease;
+  background:rgba(255,255,255,.05);
+}
+/* Selected: glow amplified */
+.target-opt.selected .target-opt-avatar{
+  box-shadow:0 0 0 3px rgba(0,0,0,.25), 0 0 14px rgba(0,0,0,.4);
+}
+/* Online presence dot */
+.target-opt-dot{
+  position:absolute;bottom:0;right:0;
+  width:10px;height:10px;border-radius:50%;
+  border:2px solid var(--bg2);
+  transition:background .3s ease, box-shadow .3s ease;
+  flex-shrink:0;
+}
+body.light .target-opt-dot{border-color:var(--surface2)}
+.target-opt-dot.online{
+  background:#7abf8e;
+  box-shadow:0 0 6px rgba(122,191,142,.7);
+  animation:dot-pulse 2s ease-in-out infinite;
+}
+.target-opt-dot.offline{background:rgba(232,228,220,.2)}
+@keyframes dot-pulse{0%,100%{box-shadow:0 0 4px rgba(122,191,142,.5)}50%{box-shadow:0 0 10px rgba(122,191,142,.9)}}
+
+/* Name + role inline */
+.target-opt-info{flex:1;min-width:0;display:flex;align-items:center;gap:8px}
+.target-name{
+  font-family:'Cormorant Garamond',serif;
+  font-size:14px;font-weight:500;letter-spacing:.04em;
+  color:var(--text2);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  transition:color .18s;flex-shrink:1;min-width:0;
+}
+.target-opt.selected .target-name{color:var(--text)}
+.target-role{
+  font-size:8px;font-weight:600;letter-spacing:.09em;
+  text-transform:uppercase;padding:2px 7px;
+  border-radius:20px;border:1px solid;
+  white-space:nowrap;flex-shrink:0;
+  font-family:'Inter',sans-serif;
+  opacity:.65;transition:opacity .18s;
+}
+.target-opt.selected .target-role{opacity:1}
+
+/* Selection checkmark — top right of row */
+.target-opt-check{
+  width:18px;height:18px;border-radius:50%;
+  border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  transition:background .2s, border-color .2s, transform .18s;
+  color:transparent;
+}
+.target-opt.selected .target-opt-check{
+  background:var(--gold);
+  border-color:var(--gold);
+  color:#0a0906;
+  transform:scale(1.08);
+}
+body.light .target-opt.selected .target-opt-check{color:#0a0906}
+
+.target-count{display:none}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ★ TASK NOTIFICATIONS — persistent, responsive
+   ═══════════════════════════════════════════════════════════════════ */
+/* Desktop: task FAB sits above presence FAB (24 + 52 + 12 = 88, then 88 + 52 + 12 = 152) */
+#task-fab{position:fixed;bottom:88px;right:24px;z-index:520;display:none}
+#task-fab.visible{display:block}
+.task-fab-btn{width:52px;height:52px;border-radius:50%;background:var(--surface2);border:1px solid var(--border-hi);
+    color:var(--amber);cursor:pointer;display:flex;align-items:center;justify-content:center;
+    box-shadow:var(--shadow);transition:all var(--trans);position:relative}
+.task-fab-btn:hover{transform:scale(1.08);border-color:var(--amber);background:rgba(232,184,110,.1)}
+.task-fab-btn.has-tasks{border-color:var(--amber);animation:task-glow 2.4s ease-in-out infinite}
+@keyframes task-glow{0%,100%{box-shadow:var(--shadow)}50%{box-shadow:0 0 18px rgba(232,184,110,.5),var(--shadow)}}
+.task-fab-count{position:absolute;top:-4px;right:-4px;background:var(--amber);color:#0a0906;font-size:9px;font-weight:800;
+    border-radius:10px;padding:2px 6px;min-width:20px;text-align:center;display:none;border:2px solid var(--bg)}
+.task-fab-count.show{display:block}
+
+/* Task panel — desktop: opens above task FAB */
+#task-panel{position:fixed;bottom:152px;right:24px;width:340px;max-width:calc(100vw - 36px);background:var(--surface);
+    border:1px solid var(--border-hi);border-radius:14px;z-index:560;display:none;flex-direction:column;
+    box-shadow:var(--shadow);overflow:hidden;max-height:min(70vh,560px)}
+#task-panel.open{display:flex;animation:task-pop .25s cubic-bezier(.4,0,.2,1)}
+@keyframes task-pop{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
+.tp-head{padding:15px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0}
+.tp-head-l{display:flex;align-items:center;gap:9px;min-width:0}
+.tp-head-icon{width:30px;height:30px;border-radius:8px;background:rgba(232,184,110,.12);border:1px solid rgba(232,184,110,.3);
+    display:flex;align-items:center;justify-content:center;color:var(--amber);flex-shrink:0}
+.tp-title{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--gold-hi);letter-spacing:.03em;line-height:1.1}
+.tp-sub{font-size:9px;color:var(--text2);letter-spacing:.04em;margin-top:1px}
+.tp-close{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:6px;border-radius:6px;
+    min-width:32px;min-height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tp-close:hover{color:var(--text);background:rgba(255,255,255,.06)}
+body.light .tp-close:hover{background:rgba(0,0,0,.06)}
+.tp-body{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:9px}
+.task-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 14px 12px;position:relative;
+    overflow:hidden;transition:border-color var(--trans)}
+body.light .task-card{background:var(--surface2)}
+.task-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--amber)}
+.task-card.cat-Reseller::before{background:#d98ec0}
+.task-card.cat-Product::before{background:var(--blue)}
+.task-card.cat-B2B::before{background:var(--green)}
+.tc-tag{font-size:7.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--amber);font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.tc-tag .new-pill{background:var(--amber);color:#0a0906;border-radius:3px;padding:1px 5px;font-size:7px}
+.tc-theme{font-size:13px;font-weight:600;color:var(--text);line-height:1.35}
+.tc-meta{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:8px}
+/* Target — refined inline flourish */
+.tc-target{
+  display:flex;align-items:baseline;gap:0;margin-top:10px;
+  padding-top:9px;border-top:1px solid var(--border);
+}
+.tc-target-lbl{
+  font-size:7.5px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--muted);font-weight:500;flex-shrink:0;
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  margin-right:7px;padding-top:1px;
+}
+.tc-target-names{
+  font-size:11px;color:var(--gold-lo);letter-spacing:.03em;
+  font-family:'Cormorant Garamond',serif;font-weight:400;
+  line-height:1.3;
+}
+
+/* Footer — time only, dismiss via gold thread line at bottom */
+.tc-foot{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:8px;margin-top:11px;
+}
+.tc-time{font-size:9px;color:var(--muted);letter-spacing:.04em}
+
+/* Dismiss — ghost arc, no fill, no label on idle */
+.tc-done-btn{
+  background:none;
+  border:none;
+  color:var(--muted);
+  padding:4px;
+  width:28px;height:28px;
+  border-radius:50%;
+  cursor:pointer;
+  transition:color var(--trans),background var(--trans),transform .18s ease;
+  display:inline-flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  position:relative;
+}
+.tc-done-btn::before{
+  content:'';
+  position:absolute;inset:0;
+  border-radius:50%;
+  border:1px solid transparent;
+  transition:border-color .2s ease,box-shadow .2s ease;
+}
+.tc-done-btn:hover{
+  color:var(--gold);
+  background:rgba(201,169,110,.07);
+  transform:scale(1.1);
+}
+.tc-done-btn:hover::before{
+  border-color:rgba(201,169,110,.3);
+  box-shadow:0 0 10px rgba(201,169,110,.15);
+}
+.tc-done-btn:active{transform:scale(.94)}
+.tp-empty{text-align:center;padding:38px 20px;color:var(--muted);font-size:12px;font-style:italic}
+.tp-empty svg{display:block;margin:0 auto 12px;opacity:.4}
+.tp-foot{padding:11px 16px;border-top:1px solid var(--border);font-size:9px;color:var(--muted);
+    display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+
+/* Light-mode tweaks untuk Ad Scheduler & Task panel */
+body.light .cal-wrap{background:var(--surface);border:1px solid var(--border-hi)}
+body.light .cal-daynum{color:#1a1208}
+body.light .cal-month-name{color:var(--gold-dk)}
+body.light .cal-cell.today .cal-daynum{color:var(--gold-dk)}
+body.light .cal-dow{color:rgba(26,18,8,.55)}
+body.light #task-panel{background:var(--surface);border:1px solid var(--border-hi)}
+body.light .tp-title{color:var(--gold-dk)}
+body.light .tc-theme,body.light .dai-theme{color:#1a1208}
+body.light .task-fab-btn{background:var(--surface);border:1px solid var(--border-hi)}
+body.light .ads-vt-btn.active{background:rgba(107,66,24,.12);color:var(--gold-dk)}
+body.light .tc-target-names{color:var(--gold-dk)}
+body.light .tc-done-btn:hover{color:var(--gold-dk);background:rgba(107,66,24,.07)}
+
 /* ════════════════════════ RESPONSIVE ════════════════════════ */
 @media(max-width:480px){
   .stats-grid{grid-template-columns:1fr 1fr}
@@ -743,6 +1069,33 @@ body.is-mod #mod-indicator{display:block}
   #pres-panel{right:12px;width:calc(100vw - 24px)}
   #notif-panel{width:100%}
   .modal{max-width:100%;border-radius:12px}
+  /* Ad scheduler mobile */
+  .ads-toolbar{gap:8px}
+  .ads-today-btn{margin-left:0}
+  .ads-select{flex:1;min-width:0}
+  .cal-cell{min-height:62px;padding:4px}
+  .cal-daynum{font-size:11px}
+  .cal-holiday-tag{display:none}
+  .cal-ad-chip{font-size:0;padding:3px;width:100%;height:6px;border-radius:2px}
+  .cal-ad-chip .chip-pub{display:none}
+  .cal-more{font-size:7px}
+  .cal-dow{padding:7px 2px;font-size:8px}
+  .cal-legend{font-size:8px;gap:9px}
+  .cal-add-hint{display:none}
+  /* Mobile FABs: presence-fab stays bottom-right, task-fab moves to its LEFT */
+  #pres-fab{bottom:24px;right:16px}
+  #task-fab{bottom:24px;right:84px}   /* 16 + 52 + 16 = 84px from right */
+  /* Presence panel on mobile: anchored above presence FAB */
+  #pres-panel{right:12px;width:calc(100vw - 24px);bottom:88px}
+  /* Task panel: bottom sheet anchored above task FAB */
+  #task-panel{
+    left:10px;right:10px;width:auto;max-width:none;
+    bottom:90px;max-height:64vh;
+    border-radius:16px
+  }
+}
+@media(max-width:360px){
+  .cal-cell{min-height:54px}
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -1229,6 +1582,23 @@ body.is-mod #mod-indicator{display:block}
         <span data-i18n="settings">Settings</span>
       </button>
 
+      <!-- Manage (Moderator only) — Ad Scheduler -->
+      <div class="nav-sec-lbl" id="ns-manage" style="display:none" data-i18n="manage">Manage</div>
+      <button class="nav-item mod-only" onclick="navTo('ad_scheduler',this)" id="n-ad-scheduler" style="display:none">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+            <line x1="2" y1="6.5" x2="14" y2="6.5" stroke="currentColor" stroke-width="1.4"/>
+            <line x1="5" y1="1.5" x2="5" y2="4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <line x1="11" y1="1.5" x2="11" y2="4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <rect x="4.5" y="9" width="2" height="2" rx=".4" fill="currentColor"/>
+            <rect x="9.5" y="9" width="2" height="2" rx=".4" fill="currentColor"/>
+          </svg>
+        </span>
+        <span data-i18n="adScheduler">Atur Jadwal Iklan</span>
+        <span class="nav-badge" id="ad-task-badge" style="display:none">0</span>
+      </button>
+
       <!-- System -->
       <div class="nav-sec-lbl" data-i18n="system">System</div>
       <button class="nav-item" onclick="navTo('presence',this)" id="n-presence">
@@ -1491,6 +1861,85 @@ body.is-mod #mod-indicator{display:block}
         </div>
       </div>
 
+      <!-- ⑦b AD SCHEDULER (Moderator only) -->
+      <div class="sp" id="pg-ad_scheduler">
+        <div class="ph">
+          <div class="ph-left">
+            <div class="pt">
+              <span data-i18n="adScheduler">Atur Jadwal Iklan</span>
+              <span class="mod-badge">♔ Moderator</span>
+            </div>
+            <div class="ps" data-i18n="adSchedulerSub">Kelola tema, kategori &amp; target iklan per tanggal</div>
+          </div>
+          <div class="ph-acts">
+            <div class="ads-view-toggle">
+              <button class="ads-vt-btn active" id="ads-vt-cal" onclick="setAdView('calendar',this)" data-i18n="viewCalendar">Kalender</button>
+              <button class="ads-vt-btn" id="ads-vt-tbl" onclick="setAdView('table',this)" data-i18n="viewTable">Tabel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Toolbar: month / year picker -->
+        <div class="ads-toolbar">
+          <div class="ads-month-nav">
+            <button class="ads-nav-btn" onclick="adMonthShift(-1)" aria-label="Prev">‹</button>
+            <button class="ads-nav-btn" onclick="adMonthShift(1)" aria-label="Next">›</button>
+          </div>
+          <div class="ads-month-sel">
+            <select class="ads-select" id="ad-month-sel" onchange="adMonthPick()"></select>
+            <select class="ads-select" id="ad-year-sel" onchange="adMonthPick()"></select>
+          </div>
+          <button class="btn-gold btn-sm ads-today-btn" onclick="adGoToday()" data-i18n="today">Hari Ini</button>
+        </div>
+
+        <!-- Calendar view -->
+        <div id="ads-cal-view">
+          <div class="cal-wrap">
+            <div class="cal-title-bar">
+              <div class="cal-month-name" id="cal-month-name">—</div>
+              <div class="cal-legend">
+                <span class="cal-leg"><span class="cal-leg-dot" style="background:var(--red)"></span><span data-i18n="legHoliday">Tanggal Merah</span></span>
+                <span class="cal-leg"><span class="cal-leg-dot" style="background:#d98ec0"></span>Reseller</span>
+                <span class="cal-leg"><span class="cal-leg-dot" style="background:var(--blue)"></span>Product</span>
+                <span class="cal-leg"><span class="cal-leg-dot" style="background:var(--green)"></span>B2B</span>
+              </div>
+            </div>
+            <div class="cal-grid" id="cal-dow-row"></div>
+            <div class="cal-grid" id="cal-grid"></div>
+          </div>
+        </div>
+
+        <!-- Table view -->
+        <div id="ads-tbl-view" style="display:none">
+          <div class="tbl-wrap">
+            <div class="tbl-head">
+              <div class="tbl-title" id="ads-tbl-title">—</div>
+              <div class="tbl-actions">
+                <select class="ads-select" id="ad-cat-filter" onchange="renderAdTable()" style="padding:7px 30px 7px 11px;font-size:11px;min-height:34px">
+                  <option value="all" data-i18n="allCategories">Semua Kategori</option>
+                  <option value="Reseller">Reseller</option>
+                  <option value="Product">Product</option>
+                  <option value="B2B">B2B</option>
+                </select>
+              </div>
+            </div>
+            <div class="tbl-scroll">
+              <table>
+                <thead><tr>
+                  <th data-i18n="tdate">Tanggal</th>
+                  <th data-i18n="ttheme">Tema</th>
+                  <th data-i18n="tcategory">Kategori</th>
+                  <th data-i18n="ttarget">Target</th>
+                  <th>Status</th>
+                  <th data-i18n="action">Aksi</th>
+                </tr></thead>
+                <tbody id="ad-tbl-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ⑦ CONTENT STUDIO (Content Creator) -->
       <div class="sp" id="pg-content_studio">
         <div class="ph">
@@ -1635,6 +2084,40 @@ body.is-mod #mod-indicator{display:block}
   <div class="pp-foot">
     <span><span class="live-dot"></span><span id="pp-live">Live</span></span>
     <span id="pp-count">0 members</span>
+  </div>
+</div>
+
+<!-- ══ TASK NOTIFICATIONS (Ad publish tasks — persistent) ══ -->
+<div id="task-fab">
+  <button class="task-fab-btn" id="task-fab-btn" onclick="toggleTaskPanel()" title="Tasks">
+    <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
+      <path d="M9 2H4a1 1 0 00-1 1v10a1 1 0 001 1h8a1 1 0 001-1V6L9 2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M9 2v4h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M5.5 9.5l1.3 1.3L9.8 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="task-fab-count" id="task-fab-count">0</span>
+  </button>
+</div>
+<div id="task-panel">
+  <div class="tp-head">
+    <div class="tp-head-l">
+      <div class="tp-head-icon">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+          <path d="M5.5 9.5l1.3 1.3L9.8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="2.5" y="2.5" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.3"/>
+        </svg>
+      </div>
+      <div style="min-width:0">
+        <div class="tp-title" data-i18n="taskTitle">Task Iklan</div>
+        <div class="tp-sub" id="tp-sub" data-i18n="taskSub">Tugas baru dari iklan terpublish</div>
+      </div>
+    </div>
+    <button class="tp-close" onclick="toggleTaskPanel()">✕</button>
+  </div>
+  <div class="tp-body" id="task-body"></div>
+  <div class="tp-foot">
+    <span><span class="live-dot" style="background:var(--amber)"></span><span data-i18n="taskPersistent">Tetap sampai dikerjakan</span></span>
+    <span id="tp-count">0 task</span>
   </div>
 </div>
 
@@ -1890,18 +2373,60 @@ function toggleNotifPanel() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ⑥ NATIONAL HOLIDAYS
+   ⑥ NATIONAL HOLIDAYS — Akurat per SKB 3 Menteri 2026
+   (17 Libur Nasional + 8 Cuti Bersama). Format key: 'YYYY-MM-DD'.
    ═══════════════════════════════════════════════════════════ */
-const NATIONAL_HOLIDAYS = {
-  '01-01':'New Year\'s Day', '02-10':'Chinese New Year', '03-14':'Nyepi',
-  '03-29':'Good Friday', '04-10':'Eid al-Fitr', '04-11':'Eid al-Fitr Holiday',
-  '05-01':'Labour Day', '05-09':'Ascension Day', '05-23':'Vesak Day',
-  '06-01':'Pancasila Day', '06-17':'Eid al-Adha', '07-07':'Islamic New Year',
-  '08-17':'Independence Day', '09-16':'Prophet Birthday', '12-25':'Christmas Day',
+// 17 Hari Libur Nasional 2026 (tanggal merah)
+const HOLIDAYS_2026 = {
+  '2026-01-01': { id:'Tahun Baru 2026 Masehi',          en:'New Year 2026' },
+  '2026-01-16': { id:'Isra Mikraj Nabi Muhammad SAW',    en:'Isra Mi\'raj' },
+  '2026-02-17': { id:'Tahun Baru Imlek 2577 Kongzili',   en:'Chinese New Year 2577' },
+  '2026-03-19': { id:'Hari Suci Nyepi (Saka 1948)',      en:'Nyepi (Saka 1948)' },
+  '2026-03-21': { id:'Idulfitri 1447 H',                 en:'Eid al-Fitr 1447 H' },
+  '2026-03-22': { id:'Idulfitri 1447 H',                 en:'Eid al-Fitr 1447 H' },
+  '2026-04-03': { id:'Wafat Yesus Kristus',              en:'Good Friday' },
+  '2026-04-05': { id:'Kebangkitan Yesus Kristus (Paskah)',en:'Easter Sunday' },
+  '2026-05-01': { id:'Hari Buruh Internasional',         en:'Labour Day' },
+  '2026-05-14': { id:'Kenaikan Yesus Kristus',           en:'Ascension Day' },
+  '2026-05-27': { id:'Iduladha 1447 H',                  en:'Eid al-Adha 1447 H' },
+  '2026-05-31': { id:'Hari Raya Waisak 2570 BE',         en:'Vesak Day 2570 BE' },
+  '2026-06-01': { id:'Hari Lahir Pancasila',             en:'Pancasila Day' },
+  '2026-06-16': { id:'Tahun Baru Islam 1448 H',          en:'Islamic New Year 1448 H' },
+  '2026-08-17': { id:'Proklamasi Kemerdekaan RI',        en:'Independence Day' },
+  '2026-08-25': { id:'Maulid Nabi Muhammad SAW',         en:'Prophet\'s Birthday' },
+  '2026-12-25': { id:'Hari Raya Natal',                  en:'Christmas Day' },
 };
+// 8 Cuti Bersama 2026 (juga tanggal merah / hari libur)
+const JOINT_LEAVE_2026 = {
+  '2026-02-16': { id:'Cuti Bersama Imlek',               en:'Joint Leave (CNY)' },
+  '2026-03-18': { id:'Cuti Bersama Nyepi',               en:'Joint Leave (Nyepi)' },
+  '2026-03-20': { id:'Cuti Bersama Idulfitri',           en:'Joint Leave (Eid)' },
+  '2026-03-23': { id:'Cuti Bersama Idulfitri',           en:'Joint Leave (Eid)' },
+  '2026-03-24': { id:'Cuti Bersama Idulfitri',           en:'Joint Leave (Eid)' },
+  '2026-05-15': { id:'Cuti Bersama Kenaikan Isa Almasih',en:'Joint Leave (Ascension)' },
+  '2026-05-28': { id:'Cuti Bersama Iduladha',            en:'Joint Leave (Eid al-Adha)' },
+  '2026-12-24': { id:'Cuti Bersama Natal',               en:'Joint Leave (Christmas)' },
+};
+// Gabungan: semua tanggal merah (libur nasional + cuti bersama)
+const RED_DATES = Object.assign({}, HOLIDAYS_2026, JOINT_LEAVE_2026);
+
+// Ambil keterangan hari libur untuk tanggal 'YYYY-MM-DD' (mengikuti bahasa aktif)
+function holidayName(ymd) {
+  const h = RED_DATES[ymd];
+  if (!h) return null;
+  return currentLang === 'id' ? h.id : h.en;
+}
+// Apakah tanggal merah? (libur nasional/cuti bersama ATAU hari Minggu)
+function isRedDate(dateObj) {
+  const ymd = ymdKey(dateObj);
+  return !!RED_DATES[ymd] || dateObj.getDay() === 0;
+}
+function ymdKey(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+// Kompat: getHoliday() lama (dipakai elemen lain bila ada)
 function getHoliday() {
-  const d = new Date(), key = `${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  return NATIONAL_HOLIDAYS[key] || null;
+  return holidayName(ymdKey(new Date()));
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -2085,6 +2610,28 @@ const i18n = {
     contentStudioSub:'Plan, draft, and publish content for the brand',
     liveStudioSub:'Stream control, schedule, and live audience metrics',
     b2bPipelineSub:'Track partnerships and enterprise deals through the funnel',
+    // Ad Scheduler
+    manage:'Manage', adScheduler:'Ad Schedule', adSchedulerSub:'Manage ad theme, category & target per date',
+    viewCalendar:'Calendar', viewTable:'Table', today:'Today',
+    legHoliday:'Public Holiday', allCategories:'All Categories',
+    tdate:'Date', ttheme:'Theme', tcategory:'Category', ttarget:'Target',
+    adTheme:'Ad Theme', adCategory:'Category', adTarget:'Ad Target', adNote:'Note (optional)',
+    adThemePh:'e.g. Ramadan Mega Sale', adTargetPh:'Who/what is being advertised',
+    searchTargetPh:'Search members...', selectAll:'Select All', clearAll:'Clear All',
+    targetSelected:'selected', noTargetSelected:'No target selected yet',
+    noTargetUsers:'No member accounts available',
+    addAd:'+ Add Ad', editAd:'Edit Ad', publish:'Publish', published:'Published', draft:'Draft',
+    publishConfirm:'Publish this ad? A new task will be created.',
+    adSaved:'Ad saved', adPublished:'Ad published — task created', adDeleted:'Ad deleted',
+    adDeleteConfirm:'Delete this ad?', adFillTheme:'Please enter the ad theme',
+    modOnlyAds:'Only moderators can manage ads',
+    noAdsThisMonth:'No ads scheduled this month', noAdsThisDay:'No ads on this date yet',
+    adsForDay:'Ads on', addForDay:'Add ad for this date',
+    // Task notifications
+    taskTitle:'Ad Tasks', taskSub:'New tasks from published ads',
+    taskPersistent:'Stays until completed', noTasks:'No tasks. All caught up!',
+    taskNew:'NEW', markDone:'Mark Done', taskDone:'Task completed',
+    taskCountLabel:'task', forDate:'For',
   },
   id: {
     brandTagline:'Desain · Warisan · Kehadiran', signIn:'Masuk',
@@ -2197,6 +2744,28 @@ const i18n = {
     contentStudioSub:'Rencanakan, buat draf, dan publikasikan konten merek',
     liveStudioSub:'Kontrol siaran, jadwal, dan metrik penonton live',
     b2bPipelineSub:'Lacak kemitraan dan kesepakatan enterprise melalui funnel',
+    // Ad Scheduler
+    manage:'Kelola', adScheduler:'Atur Jadwal Iklan', adSchedulerSub:'Kelola tema, kategori & target iklan per tanggal',
+    viewCalendar:'Kalender', viewTable:'Tabel', today:'Hari Ini',
+    legHoliday:'Tanggal Merah', allCategories:'Semua Kategori',
+    tdate:'Tanggal', ttheme:'Tema', tcategory:'Kategori', ttarget:'Target',
+    adTheme:'Tema Iklan', adCategory:'Kategori', adTarget:'Target Iklan', adNote:'Catatan (opsional)',
+    adThemePh:'cth. Mega Sale Ramadan', adTargetPh:'Siapa/apa yang diiklankan',
+    searchTargetPh:'Cari anggota...', selectAll:'Pilih Semua', clearAll:'Kosongkan',
+    targetSelected:'dipilih', noTargetSelected:'Belum ada target dipilih',
+    noTargetUsers:'Belum ada akun anggota tersedia',
+    addAd:'+ Tambah Iklan', editAd:'Edit Iklan', publish:'Publish', published:'Terpublish', draft:'Draf',
+    publishConfirm:'Publish iklan ini? Task baru akan dibuat.',
+    adSaved:'Iklan tersimpan', adPublished:'Iklan dipublish — task dibuat', adDeleted:'Iklan dihapus',
+    adDeleteConfirm:'Hapus iklan ini?', adFillTheme:'Mohon isi tema iklan',
+    modOnlyAds:'Hanya moderator yang dapat mengelola iklan',
+    noAdsThisMonth:'Belum ada iklan terjadwal bulan ini', noAdsThisDay:'Belum ada iklan di tanggal ini',
+    adsForDay:'Iklan pada', addForDay:'Tambah iklan untuk tanggal ini',
+    // Task notifications
+    taskTitle:'Task Iklan', taskSub:'Tugas baru dari iklan terpublish',
+    taskPersistent:'Tetap sampai dikerjakan', noTasks:'Tidak ada task. Semua beres!',
+    taskNew:'BARU', markDone:'Tandai Selesai', taskDone:'Task selesai',
+    taskCountLabel:'task', forDate:'Untuk',
   }
 };
 const t = k => i18n[currentLang][k] || i18n.en[k] || k;
@@ -2923,6 +3492,9 @@ function handleLogout() {
   document.getElementById('pres-fab').classList.remove('visible');
   document.getElementById('pres-panel').classList.remove('open');
   document.getElementById('notif-bell').style.display = 'none';
+  const tFab = document.getElementById('task-fab'); if (tFab) tFab.classList.remove('visible');
+  const tPanel = document.getElementById('task-panel'); if (tPanel) tPanel.classList.remove('open');
+  adTasks = []; ads = [];
   document.getElementById('dash').classList.remove('active');
   document.getElementById('ctrl-bar').style.display = '';
   const sc = document.getElementById('scene');
@@ -2991,6 +3563,10 @@ async function initDashboard() {
   // Settings — Sovereign only (otherwise moderator can rename their own role)
   navShow('n-settings',       isHead);
 
+  // Manage (Moderator+) — Ad Scheduler (dickya & firman)
+  navShow('ns-manage',        isMod);
+  navShow('n-ad-scheduler',   isMod);
+
   document.getElementById('notif-bell').style.display   = isMod ? '' : 'none';
   const addCustBtn = document.getElementById('btn-add-cust');
   if (addCustBtn) addCustBtn.style.display = can.editorUp(r) ? '' : 'none';
@@ -3014,6 +3590,12 @@ async function initDashboard() {
 
   // Load data dari Supabase
   await loadDataFromDB(isMod);
+
+  // Load jadwal iklan + task notifikasi (moderator)
+  if (isMod) {
+    await loadAdsFromDB();
+    initAdRealtime();
+  }
 
   renderStats(); renderActivity(); renderCust(); renderBcHistory();
   updateClock();
@@ -3274,7 +3856,7 @@ function openContentDraft() {
     <div class="fg"><label>${t('scheduledCol')} (optional)</label><input class="fi" id="dr-sched" placeholder="Fri 19:00"/></div>`;
   document.getElementById('m-foot').innerHTML = `
     <button class="btn-sm btn-gold" onclick="saveDraft()">${t('saveDraft')}</button>
-    <button class="btn-sm" style="border-color:var(--border);color:var(--muted)" onclick="closeModal()">${t('cancel')}</button>`;
+    <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>`;
   document.getElementById('modal-ov').classList.add('open');
 }
 function saveDraft() {
@@ -3519,7 +4101,7 @@ function openPipelineLead() {
     </div>`;
   document.getElementById('m-foot').innerHTML = `
     <button class="btn-sm btn-gold" onclick="saveLead()">${t('saveLead')}</button>
-    <button class="btn-sm" style="border-color:var(--border);color:var(--muted)" onclick="closeModal()">${t('cancel')}</button>`;
+    <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>`;
   document.getElementById('modal-ov').classList.add('open');
 }
 function saveLead() {
@@ -3575,7 +4157,7 @@ function openCustModal(id) {
     </div>`;
   document.getElementById('m-foot').innerHTML = `
     <button class="btn-sm btn-gold" onclick="saveCust()">${t('save')}</button>
-    <button class="btn-sm" style="border-color:var(--border);color:var(--muted)" onclick="closeModal()">${t('cancel')}</button>`;
+    <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>`;
   document.getElementById('modal-ov').classList.add('open');
 }
 async function saveCust() {
@@ -3684,7 +4266,7 @@ function openRegModal(id) {
   document.getElementById('m-foot').innerHTML = `
     <button class="btn-sm btn-approve" onclick="approveReg(${r.id})">✓ Approve</button>
     <button class="btn-sm btn-reject"  onclick="rejectReg(${r.id})">✕ Reject</button>
-    <button class="btn-sm" style="border-color:var(--border);color:var(--muted)" onclick="closeModal()">Cancel</button>`;
+    <button class="btn-sm btn-cancel" onclick="closeModal()">Cancel</button>`;
   document.getElementById('modal-ov').classList.add('open');
 }
 async function approveReg(id) {
@@ -3842,6 +4424,19 @@ function refreshPresenceUI() {
   const rc = document.getElementById('rt-count');    if (rc) rc.textContent = `${on} online`;
   renderPPPanel(all, on);
   if (document.getElementById('pg-presence')?.classList.contains('active')) renderPresencePage();
+  // Live-sync presence dots in target picker if open
+  const dropdown = document.getElementById('ad-target-dropdown');
+  if (dropdown?.classList.contains('open')) {
+    document.querySelectorAll('#ad-target-list .target-opt').forEach(label => {
+      const cb = label.querySelector('.ad-target-cb');
+      if (!cb) return;
+      const dot = label.querySelector('.target-opt-dot');
+      if (dot) {
+        const online = !!(presenceMap[cb.value]?.online);
+        dot.className = 'target-opt-dot ' + (online ? 'online' : 'offline');
+      }
+    });
+  }
 }
 function renderPPPanel(all, on) {
   const pp = document.getElementById('pp-title'); if (pp) pp.textContent = t('members');
@@ -3914,12 +4509,663 @@ function renderPresencePage() {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   ㉓b AD SCHEDULER  (Moderator only — dickya & firman)
+   ═══════════════════════════════════════════════════════════ */
+let ads = [];                 // semua iklan {id, date:'YYYY-MM-DD', theme, category, target, note, status}
+let adTasks = [];             // task notifikasi {id, adId, title, date, category, target, status, createdAt}
+let adView = 'calendar';
+let adCursor = new Date(2026, new Date().getFullYear() === 2026 ? new Date().getMonth() : 0, 1);
+let editAdId = null;
+
+const AD_CATS = ['Reseller','Product','B2B'];
+const MONTHS_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DOW_ID = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+const DOW_EN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+// HTML-escape kecil agar input user aman ditampilkan
+function escHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+/* ── Daftar anggota/user (punya akun di dashboard) untuk pilihan target ── */
+function getTargetUsers() {
+  const map = {};
+  // Dari roster akun aplikasi (juga tersinkron dari DB saat approve)
+  Object.entries(LOCAL_USERS).forEach(([id, u]) => {
+    map[id] = { id, name: u.name || id, role: u.role || 'guest' };
+  });
+  // Tambah siapa pun yang pernah terdeteksi di presence (mis. user DB lain)
+  Object.values(presenceMap || {}).forEach(p => {
+    if (p && p.id && !map[p.id] && p.role !== 'guest') {
+      map[p.id] = { id: p.id, name: p.name || p.id, role: p.role || 'guest' };
+    }
+  });
+  // Urutkan berdasarkan level role lalu nama
+  return Object.values(map).sort((a, b) => {
+    const lv = (ROLE_LEVELS[b.role] || 0) - (ROLE_LEVELS[a.role] || 0);
+    return lv !== 0 ? lv : a.name.localeCompare(b.name);
+  });
+}
+
+/* ── Load data iklan + task dari Supabase ── */
+async function loadAdsFromDB() {
+  const aRes = await dbQ(d => d.from('ad_schedule').select('*').order('ad_date', { ascending:true }));
+  if (aRes?.data) {
+    ads = aRes.data.map(a => ({
+      id: a.id, date: a.ad_date, theme: a.theme, category: a.category,
+      target: a.target || '', note: a.note || '', status: a.status,
+      createdBy: a.created_by, createdAt: new Date(a.created_at).getTime()
+    }));
+  }
+  const tRes = await dbQ(d => d.from('ad_tasks').select('*').eq('status','pending').order('created_at', { ascending:false }));
+  if (tRes?.data) {
+    adTasks = tRes.data.map(tk => ({
+      id: tk.id, adId: tk.ad_id, title: tk.title, date: tk.ad_date,
+      category: tk.category, target: tk.target || '', status: tk.status,
+      createdAt: new Date(tk.created_at).getTime()
+    }));
+  }
+  updateTaskBadges();
+  renderTaskPanel();
+}
+
+/* ── Realtime: iklan & task ── */
+function initAdRealtime() {
+  if (!db) return;
+  db.channel('dhp_ads')
+    .on('postgres_changes', { event:'*', schema:'public', table:'ad_schedule' }, () => {
+      loadAdsFromDB().then(() => { if (isAdPageActive()) renderAdScheduler(); });
+    })
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'ad_tasks' }, payload => {
+      const tk = payload.new;
+      if (tk.status === 'pending' && !adTasks.find(x => x.id === tk.id)) {
+        adTasks.unshift({
+          id: tk.id, adId: tk.ad_id, title: tk.title, date: tk.ad_date,
+          category: tk.category, target: tk.target || '', status:'pending',
+          createdAt: new Date(tk.created_at).getTime()
+        });
+        updateTaskBadges(); renderTaskPanel();
+        // notif task baru juga dorong ke bell panel moderator
+        pushNotif({ type:'action', msg:`${t('taskNew')}: ${tk.title} · ${tk.category}` });
+        toast(`${t('taskNew')} · ${tk.title}`);
+      }
+    })
+    .on('postgres_changes', { event:'UPDATE', schema:'public', table:'ad_tasks' }, payload => {
+      const tk = payload.new;
+      if (tk.status === 'done') {
+        adTasks = adTasks.filter(x => x.id !== tk.id);
+        updateTaskBadges(); renderTaskPanel();
+      }
+    })
+    .subscribe();
+}
+
+function isAdPageActive() {
+  const el = document.getElementById('pg-ad_scheduler');
+  return el && el.classList.contains('active');
+}
+
+/* ── Render entry point ── */
+function renderAdScheduler() {
+  buildMonthYearSelects();
+  if (adView === 'calendar') {
+    document.getElementById('ads-cal-view').style.display = '';
+    document.getElementById('ads-tbl-view').style.display = 'none';
+    renderCalendar();
+  } else {
+    document.getElementById('ads-cal-view').style.display = 'none';
+    document.getElementById('ads-tbl-view').style.display = '';
+    renderAdTable();
+  }
+}
+
+function setAdView(v, btn) {
+  adView = v;
+  document.querySelectorAll('.ads-vt-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderAdScheduler();
+}
+
+/* ── Month / Year pickers ── */
+function buildMonthYearSelects() {
+  const mSel = document.getElementById('ad-month-sel');
+  const ySel = document.getElementById('ad-year-sel');
+  if (!mSel || !ySel) return;
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  if (mSel.options.length !== 12 || mSel.dataset.lang !== currentLang) {
+    mSel.innerHTML = months.map((m,i) => `<option value="${i}">${m}</option>`).join('');
+    mSel.dataset.lang = currentLang;
+  }
+  if (ySel.options.length === 0) {
+    const years = [2025, 2026, 2027, 2028];
+    ySel.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
+  }
+  mSel.value = adCursor.getMonth();
+  ySel.value = adCursor.getFullYear();
+}
+function adMonthPick() {
+  const m = parseInt(document.getElementById('ad-month-sel').value, 10);
+  const y = parseInt(document.getElementById('ad-year-sel').value, 10);
+  adCursor = new Date(y, m, 1);
+  renderAdScheduler();
+}
+function adMonthShift(delta) {
+  adCursor = new Date(adCursor.getFullYear(), adCursor.getMonth() + delta, 1);
+  renderAdScheduler();
+}
+function adGoToday() {
+  const now = new Date();
+  adCursor = new Date(now.getFullYear(), now.getMonth(), 1);
+  renderAdScheduler();
+}
+
+/* ── Calendar grid ── */
+function renderCalendar() {
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const dows   = currentLang === 'id' ? DOW_ID : DOW_EN;
+  const y = adCursor.getFullYear(), m = adCursor.getMonth();
+  const nameEl = document.getElementById('cal-month-name');
+  if (nameEl) nameEl.textContent = `${months[m]} ${y}`;
+
+  // DOW header
+  const dowRow = document.getElementById('cal-dow-row');
+  if (dowRow) dowRow.innerHTML = dows.map((d,i) => `<div class="cal-dow ${i===0?'sun':''}">${d}</div>`).join('');
+
+  const grid = document.getElementById('cal-grid'); if (!grid) return;
+  const firstDow = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const todayKey = ymdKey(new Date());
+
+  let cells = '';
+  for (let i = 0; i < firstDow; i++) cells += `<div class="cal-cell empty"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateObj = new Date(y, m, d);
+    const ymd = ymdKey(dateObj);
+    const isSun = dateObj.getDay() === 0;
+    const hName = holidayName(ymd);
+    const isHol = !!RED_DATES[ymd];
+    const isToday = ymd === todayKey;
+    const dayAds = ads.filter(a => a.date === ymd);
+
+    const cls = ['cal-cell'];
+    if (isSun) cls.push('is-sun');
+    if (isHol) cls.push('is-holiday');
+    if (isToday) cls.push('today');
+
+    let chips = '';
+    dayAds.slice(0, 3).forEach(a => {
+      const pub = a.status === 'published' ? `<span class="chip-pub"></span>` : '';
+      chips += `<div class="cal-ad-chip cat-${a.category}" title="${escHtml(a.theme)}">${pub}<span style="overflow:hidden;text-overflow:ellipsis">${escHtml(a.theme)}</span></div>`;
+    });
+    if (dayAds.length > 3) chips += `<div class="cal-more">+${dayAds.length-3}</div>`;
+
+    cells += `
+      <div class="${cls.join(' ')}" onclick="openDayModal('${ymd}')">
+        ${isHol ? `<div class="cal-holiday-dot" title="${escHtml(hName||'')}"></div>` : ''}
+        <div class="cal-daynum">${d}</div>
+        ${hName ? `<div class="cal-holiday-tag">${escHtml(hName)}</div>` : ''}
+        ${chips}
+        <div class="cal-add-hint">+</div>
+      </div>`;
+  }
+  grid.innerHTML = cells;
+}
+
+/* ── Table view (per-tanggal, terurut) ── */
+function renderAdTable() {
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const y = adCursor.getFullYear(), m = adCursor.getMonth();
+  const titleEl = document.getElementById('ads-tbl-title');
+  if (titleEl) titleEl.textContent = `${months[m]} ${y}`;
+
+  const catFilter = document.getElementById('ad-cat-filter')?.value || 'all';
+  const prefix = `${y}-${String(m+1).padStart(2,'0')}`;
+  let list = ads.filter(a => a.date.startsWith(prefix));
+  if (catFilter !== 'all') list = list.filter(a => a.category === catFilter);
+  list.sort((a,b) => a.date.localeCompare(b.date));
+
+  const tbody = document.getElementById('ad-tbl-body'); if (!tbody) return;
+  if (!list.length) { tbody.innerHTML = `<tr><td colspan="6" class="tbl-empty">${t('noAdsThisMonth')}</td></tr>`; return; }
+
+  const isMod = can.isMod(currentUser?.role);
+  tbody.innerHTML = list.map(a => {
+    const dObj = new Date(a.date + 'T00:00:00');
+    const red = isRedDate(dObj);
+    const dateStr = `${dObj.getDate()} ${months[dObj.getMonth()]}`;
+    const hol = holidayName(a.date);
+    return `
+    <tr>
+      <td style="white-space:nowrap">
+        <span style="font-weight:600;color:${red?'var(--red)':'var(--text)'}">${dateStr}</span>
+        ${hol ? `<div style="font-size:9px;color:var(--red);margin-top:2px">${escHtml(hol)}</div>` : ''}
+      </td>
+      <td style="font-weight:600;color:var(--text)">${escHtml(a.theme)}</td>
+      <td><span class="cat-badge cat-${a.category}">${a.category}</span></td>
+      <td style="font-size:11px">${escHtml(targetNames(a.target)) || '<span style="color:var(--muted)">—</span>'}</td>
+      <td><span class="ad-status-badge ${a.status}"><span class="dot"></span>${a.status==='published'?t('published'):t('draft')}</span></td>
+      <td>
+        ${isMod ? `<div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${a.status!=='published' ? `<button class="btn-sm btn-gold" onclick="publishAd('${a.id}')">${t('publish')}</button>` : ''}
+          <button class="btn-sm btn-edit" onclick="openAdModal('${a.date}','${a.id}')">Edit</button>
+          <button class="btn-sm btn-del" onclick="deleteAd('${a.id}')">Del</button>
+        </div>` : `<span style="color:var(--muted);font-size:10px">${t('viewOnly')}</span>`}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── Day detail modal (klik tanggal di kalender) ── */
+function openDayModal(ymd) {
+  const dObj = new Date(ymd + 'T00:00:00');
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const days = currentLang === 'id'
+    ? ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu']
+    : ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const hol = holidayName(ymd);
+  const isMod = can.isMod(currentUser?.role);
+  const dayAds = ads.filter(a => a.date === ymd);
+
+  document.getElementById('m-title').textContent =
+    `${days[dObj.getDay()]}, ${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
+
+  let bodyHtml = '';
+  if (hol) {
+    bodyHtml += `<div class="day-holiday-note">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4"/><path d="M8 5v3.5M8 11h.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span>${escHtml(hol)}</span></div>`;
+  }
+  if (dayAds.length) {
+    bodyHtml += `<div class="day-ad-list">` + dayAds.map(a => `
+      <div class="day-ad-item">
+        <div class="dai-top">
+          <div class="dai-theme">${escHtml(a.theme)}</div>
+          <span class="ad-status-badge ${a.status}"><span class="dot"></span>${a.status==='published'?t('published'):t('draft')}</span>
+        </div>
+        <div class="dai-meta">
+          <span class="cat-badge cat-${a.category}">${a.category}</span>
+        </div>
+        ${a.target ? `<div class="dai-target">
+          <span class="dai-target-lbl">${t('adTarget')}</span>
+          <span class="dai-target-names">${escHtml(targetNames(a.target))}</span>
+        </div>` : ''}
+        ${isMod ? `<div class="dai-acts">
+          ${a.status!=='published' ? `<button class="btn-sm btn-gold" onclick="publishAd('${a.id}')">${t('publish')}</button>` : ''}
+          <button class="btn-sm btn-edit" onclick="openAdModal('${ymd}','${a.id}')">Edit</button>
+          <button class="btn-sm btn-del" onclick="deleteAd('${a.id}')">Del</button>
+        </div>` : ''}
+      </div>`).join('') + `</div>`;
+  } else {
+    bodyHtml += `<div class="day-empty">${t('noAdsThisDay')}</div>`;
+  }
+  document.getElementById('m-body').innerHTML = bodyHtml;
+
+  document.getElementById('m-foot').innerHTML = isMod
+    ? `<button class="btn-sm btn-gold" onclick="openAdModal('${ymd}')">${t('addAd')}</button>
+       <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>`
+    : `<button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+
+/* ── Add / Edit ad modal ── */
+function openAdModal(ymd, id) {
+  if (!can.isMod(currentUser?.role)) { toast(t('modOnlyAds')); return; }
+  editAdId = id || null;
+  const a = id ? ads.find(x => x.id === id) : null;
+  const dateVal = a ? a.date : ymd;
+
+  // Target tersimpan sebagai daftar user-id dipisah koma. Backward-compat:
+  // jika data lama berupa teks bebas, tetap ditampilkan sebagai catatan target.
+  const savedTargets = (a && a.target) ? a.target.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const targetUsers = getTargetUsers();
+
+  const userOpts = targetUsers.map(u => {
+    const isSel = savedTargets.includes(u.id);
+    const clr = ROLE_COLORS[u.role] || '#888';
+    const initials = u.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const isOnline = !!(presenceMap[u.id]?.online);
+    return `
+      <label class="target-opt${isSel?' selected':''}" onclick="toggleTargetOpt(this)">
+        <input type="checkbox" class="ad-target-cb" value="${escHtml(u.id)}"${isSel?' checked':''}/>
+        <span class="target-opt-avatar-wrap">
+          <span class="target-opt-avatar"
+            style="border-color:${clr}${isSel?'cc':'55'};background:${clr}14;color:${clr}${isSel?'':'99'};${isSel?'box-shadow:0 0 12px '+clr+'44,0 0 0 2px '+clr+'22':''}">
+            ${initials}
+          </span>
+          <span class="target-opt-dot ${isOnline?'online':'offline'}"></span>
+        </span>
+        <span class="target-opt-info">
+          <span class="target-name">${escHtml(u.name)}</span>
+          <span class="target-role" style="color:${clr};border-color:${clr}40;background:${clr}14">${escHtml(rn(u.role))}</span>
+        </span>
+        <span class="target-opt-check">
+          <svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5 5.5-5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </label>`;
+  }).join('');
+
+  document.getElementById('m-title').textContent = a ? t('editAd') : t('addAd');
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg">
+      <label>${t('tdate')}</label>
+      <input class="fi" id="ad-date" type="date" value="${dateVal}"/>
+    </div>
+    <div class="fg">
+      <label>${t('adTheme')}</label>
+      <input class="fi" id="ad-theme" placeholder="${t('adThemePh')}" value="${a?escHtml(a.theme):''}"/>
+    </div>
+    <div class="fg">
+      <label>${t('adCategory')}</label>
+      <select class="fi" id="ad-cat">
+        ${AD_CATS.map(c => `<option value="${c}" ${a&&a.category===c?'selected':(!a&&c==='Product'?'selected':'')}>${c}</option>`).join('')}
+      </select>
+    </div>
+    <div class="fg">
+      <label>${t('adTarget')}</label>
+      <div class="target-trigger" id="ad-target-trigger" onclick="toggleTargetDropdown()">
+        <div class="target-trigger-left">
+          <div class="target-trigger-icon">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6" r="2.8" stroke="currentColor" stroke-width="1.4"/><path d="M2.5 14c0-2.8 2.5-4.5 5.5-4.5s5.5 1.7 5.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <div class="target-trigger-label${savedTargets.length ? '' : ' placeholder'}" id="ad-target-label">${savedTargets.length ? '' : t('noTargetSelected')}</div>
+            <div class="target-trigger-count" id="ad-target-count"></div>
+          </div>
+        </div>
+        <span class="target-trigger-arrow"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+      <div class="target-dropdown" id="ad-target-dropdown">
+        <div class="target-dd-search">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <input id="ad-target-search" placeholder="${t('searchTargetPh')}" oninput="filterTargetOpts(this.value)"/>
+          <span class="target-dd-selall" id="ad-target-all" onclick="toggleAllTargets()">${t('selectAll')}</span>
+        </div>
+        <div class="target-list" id="ad-target-list">
+          ${userOpts || `<div class="day-empty" style="padding:14px">${t('noTargetUsers')}</div>`}
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>
+    ${a && a.status!=='published' ? `<button class="btn-sm btn-approve" onclick="saveAd(true)">${t('publish')}</button>` : ''}
+    <button class="btn-sm btn-gold" onclick="saveAd()">${t('save')}</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+  updateTargetCount();
+  // Update hitungan tiap kali centang berubah
+  document.querySelectorAll('.ad-target-cb').forEach(cb => cb.addEventListener('change', updateTargetCount));
+}
+
+/* Toggle target dropdown */
+function toggleTargetDropdown() {
+  const trigger = document.getElementById('ad-target-trigger');
+  const dropdown = document.getElementById('ad-target-dropdown');
+  if (!trigger || !dropdown) return;
+  const isOpen = trigger.classList.contains('open');
+  trigger.classList.toggle('open', !isOpen);
+  dropdown.classList.toggle('open', !isOpen);
+  if (!isOpen) {
+    // Sync online dots with current presenceMap on open
+    document.querySelectorAll('#ad-target-list .target-opt').forEach(label => {
+      const cb = label.querySelector('.ad-target-cb');
+      if (!cb) return;
+      const dot = label.querySelector('.target-opt-dot');
+      if (dot) {
+        const online = !!(presenceMap[cb.value]?.online);
+        dot.className = 'target-opt-dot ' + (online ? 'online' : 'offline');
+      }
+    });
+    setTimeout(() => document.getElementById('ad-target-search')?.focus(), 50);
+  }
+}
+
+/* Helper UI untuk daftar target */
+function toggleTargetOpt(label) {
+  requestAnimationFrame(() => {
+    const cb = label.querySelector('.ad-target-cb');
+    const isSel = cb && cb.checked;
+    label.classList.toggle('selected', isSel);
+    // Update avatar border intensity
+    const av = label.querySelector('.target-opt-avatar');
+    if (av) {
+      const u = getTargetUsers().find(u => u.id === cb?.value);
+      const clr = (u && ROLE_COLORS[u.role]) || '#888';
+      av.style.borderColor   = clr + (isSel ? 'cc' : '55');
+      av.style.color         = clr + (isSel ? '' : '99');
+      av.style.boxShadow     = isSel ? `0 0 12px ${clr}44, 0 0 0 2px ${clr}22` : '';
+    }
+    updateTargetCount();
+  });
+}
+function filterTargetOpts(q) {
+  q = (q || '').toLowerCase();
+  document.querySelectorAll('#ad-target-list .target-opt').forEach(el => {
+    const name = el.querySelector('.target-name')?.textContent.toLowerCase() || '';
+    el.style.display = (!q || name.includes(q)) ? '' : 'none';
+  });
+}
+function toggleAllTargets() {
+  const labels = [...document.querySelectorAll('#ad-target-list .target-opt')].filter(el => el.style.display !== 'none');
+  const cbs = labels.map(el => el.querySelector('.ad-target-cb')).filter(Boolean);
+  const allOn = cbs.every(c => c.checked);
+  cbs.forEach(c => { c.checked = !allOn; });
+  labels.forEach(el => el.classList.toggle('selected', !allOn));
+  const btn = document.getElementById('ad-target-all');
+  if (btn) btn.textContent = allOn ? t('selectAll') : t('clearAll');
+  updateTargetCount();
+}
+function updateTargetCount() {
+  const checked = [...document.querySelectorAll('.ad-target-cb:checked')];
+  const n = checked.length;
+  const countEl = document.getElementById('ad-target-count');
+  const labelEl = document.getElementById('ad-target-label');
+  if (countEl) countEl.textContent = n ? `${n} ${t('targetSelected')}` : '';
+  if (labelEl) {
+    if (n === 0) {
+      labelEl.textContent = t('noTargetSelected');
+      labelEl.className = 'target-trigger-label placeholder';
+      labelEl.style.color = '';
+    } else {
+      labelEl.className = 'target-trigger-label';
+      // Show first 2 names + overflow
+      const allUsers = getTargetUsers();
+      const roster = {};
+      allUsers.forEach(u => { roster[u.id] = u.name; });
+      const names = checked.slice(0,2).map(cb => roster[cb.value] || cb.value);
+      labelEl.textContent = names.join(', ') + (n > 2 ? ` +${n-2}` : '');
+      labelEl.style.color = 'var(--text)';
+    }
+  }
+}
+
+async function saveAd(thenPublish) {
+  if (!can.isMod(currentUser?.role)) { toast(t('modOnlyAds')); return; }
+  const date   = document.getElementById('ad-date').value;
+  const theme  = document.getElementById('ad-theme').value.trim();
+  const cat    = document.getElementById('ad-cat').value;
+  const targetIds = [...document.querySelectorAll('.ad-target-cb:checked')].map(cb => cb.value);
+  const target = targetIds.join(',');
+  if (!theme) { toast(t('adFillTheme')); return; }
+  if (!date)  { toast(t('tdate')); return; }
+
+  let savedId = editAdId;
+  if (editAdId) {
+    const a = ads.find(x => x.id === editAdId);
+    if (a) Object.assign(a, { date, theme, category:cat, target });
+  } else {
+    savedId = 'local_' + Date.now();
+    ads.push({ id:savedId, date, theme, category:cat, target, note:'', status:'draft',
+               createdBy: currentUser.id, createdAt: Date.now() });
+  }
+
+  // Persist ke DB via RPC (mengembalikan UUID asli)
+  const res = await dbQ(d => d.rpc('upsert_ad', {
+    p_id: editAdId && !String(editAdId).startsWith('local_') ? editAdId : null,
+    p_ad_date: date, p_theme: theme, p_category: cat,
+    p_target: target, p_note: '', p_user_id: currentUser.id
+  }));
+  if (res && res.data) {
+    // sinkronkan id lokal dengan UUID DB
+    const localItem = ads.find(x => x.id === savedId);
+    if (localItem) localItem.id = res.data;
+    savedId = res.data;
+  }
+
+  toast(t('adSaved'));
+  pushActivity(`Iklan: ${theme} (${cat})`, 'info');
+  closeModal();
+  renderAdScheduler();
+
+  if (thenPublish && savedId) await publishAd(savedId, true);
+}
+
+/* Ubah daftar user-id target → nama yang ramah dibaca */
+function targetNames(target) {
+  if (!target) return '';
+  const ids = target.split(',').map(s => s.trim()).filter(Boolean);
+  const roster = {};
+  getTargetUsers().forEach(u => { roster[u.id] = u.name; });
+  // Jika ada id yang tidak dikenal (mis. data teks lama), tampilkan apa adanya
+  return ids.map(id => roster[id] || id).join(', ');
+}
+
+async function publishAd(id, skipConfirm) {
+  if (!can.isMod(currentUser?.role)) { toast(t('modOnlyAds')); return; }
+  if (!skipConfirm && !confirm(t('publishConfirm'))) return;
+  const a = ads.find(x => x.id === id);
+  if (a) a.status = 'published';
+
+  // DB publish (membuat task otomatis via RPC)
+  let usedRpc = false;
+  if (!String(id).startsWith('local_')) {
+    const r = await dbQ(d => d.rpc('publish_ad', { p_id: id, p_user_id: currentUser.id }));
+    usedRpc = !!r; // r adalah objek bila berhasil
+  }
+
+  // Bila DB tidak tersedia / id lokal → buat task lokal agar fitur tetap jalan
+  if (!usedRpc && a) {
+    const localTask = {
+      id: 'task_' + Date.now(), adId: id, title: a.theme, date: a.date,
+      category: a.category, target: a.target, status: 'pending', createdAt: Date.now()
+    };
+    if (!adTasks.find(x => x.adId === id && x.status === 'pending')) {
+      adTasks.unshift(localTask);
+      pushNotif({ type:'action', msg:`${t('taskNew')}: ${a.theme} · ${a.category}` });
+    }
+  }
+
+  closeModal();
+  toast(t('adPublished'));
+  pushActivity(`Iklan dipublish: ${a?a.theme:''}`, 'info');
+  updateTaskBadges();
+  renderTaskPanel();
+  renderAdScheduler();
+}
+
+async function deleteAd(id) {
+  if (!can.isMod(currentUser?.role)) { toast(t('modOnlyAds')); return; }
+  if (!confirm(t('adDeleteConfirm'))) return;
+  const a = ads.find(x => x.id === id);
+  ads = ads.filter(x => x.id !== id);
+  adTasks = adTasks.filter(x => x.adId !== id);   // task terkait ikut hilang
+  if (!String(id).startsWith('local_')) {
+    await dbQ(d => d.rpc('delete_ad', { p_id: id, p_user_id: currentUser.id }));
+  }
+  toast(t('adDeleted'));
+  pushActivity(`Iklan dihapus: ${a?a.theme:''}`, 'info');
+  updateTaskBadges(); renderTaskPanel();
+  closeModal();
+  renderAdScheduler();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ㉓c TASK NOTIFICATIONS (persistent — tidak hilang sampai dikerjakan)
+   ═══════════════════════════════════════════════════════════ */
+function updateTaskBadges() {
+  const n = adTasks.filter(tk => tk.status === 'pending').length;
+  // FAB
+  const fab = document.getElementById('task-fab');
+  const fabBtn = document.getElementById('task-fab-btn');
+  const fabCount = document.getElementById('task-fab-count');
+  if (fabCount) { fabCount.textContent = n; fabCount.classList.toggle('show', n > 0); }
+  if (fabBtn)   fabBtn.classList.toggle('has-tasks', n > 0);
+  if (fab && can.isMod(currentUser?.role)) fab.classList.add('visible');
+  // Nav badge
+  const navBadge = document.getElementById('ad-task-badge');
+  if (navBadge) { navBadge.textContent = n; navBadge.style.display = n > 0 ? '' : 'none'; }
+  // Foot count
+  const tpCount = document.getElementById('tp-count');
+  if (tpCount) tpCount.textContent = `${n} ${t('taskCountLabel')}`;
+}
+
+function renderTaskPanel() {
+  const body = document.getElementById('task-body'); if (!body) return;
+  const list = adTasks.filter(tk => tk.status === 'pending');
+  if (!list.length) {
+    body.innerHTML = `<div class="tp-empty">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.4"/><path d="M8.5 12.5l2.2 2.2L16 9.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      ${t('noTasks')}</div>`;
+    return;
+  }
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  body.innerHTML = list.map(tk => {
+    const dObj = new Date(tk.date + 'T00:00:00');
+    const dateStr = `${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
+    const targetStr = tk.target ? escHtml(targetNames(tk.target)) : '';
+    return `
+    <div class="task-card cat-${tk.category}">
+      <div class="tc-tag"><span class="new-pill">${t('taskNew')}</span> ${tk.category}</div>
+      <div class="tc-theme">${escHtml(tk.title)}</div>
+      <div class="tc-meta">
+        <span class="cat-badge cat-${tk.category}">${tk.category}</span>
+        <span style="font-size:10px;color:var(--text2)">📅 ${dateStr}</span>
+      </div>
+      ${targetStr ? `<div class="tc-target">
+        <span class="tc-target-lbl">${t('adTarget')}</span>
+        <span class="tc-target-names">${targetStr}</span>
+      </div>` : ''}
+      <div class="tc-foot">
+        <span class="tc-time">${timeAgo(tk.createdAt)}</span>
+        <button class="tc-done-btn" title="${t('markDone')}" onclick="completeTask('${tk.id}')">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleTaskPanel() {
+  const p = document.getElementById('task-panel');
+  if (!p) return;
+  p.classList.toggle('open');
+  if (p.classList.contains('open')) renderTaskPanel();
+}
+
+async function completeTask(id) {
+  if (!can.isMod(currentUser?.role)) { toast(t('modOnlyAds')); return; }
+  adTasks = adTasks.filter(x => x.id !== id);
+  if (!String(id).startsWith('task_')) {
+    await dbQ(d => d.rpc('complete_ad_task', { p_task_id: id, p_user_id: currentUser.id }));
+  }
+  toast(t('taskDone'));
+  updateTaskBadges();
+  renderTaskPanel();
+  // Tutup panel bila kosong
+  if (!adTasks.length) {
+    const p = document.getElementById('task-panel');
+    if (p) setTimeout(() => p.classList.remove('open'), 400);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
    ㉔ NAVIGATION
    ═══════════════════════════════════════════════════════════ */
 function navTo(page, btn) {
   const r = currentUser.role;
   // Moderator-only pages
-  if (['registrations','users'].includes(page) && !can.isMod(r)) { toast('Moderator access required'); return; }
+  if (['registrations','users','ad_scheduler'].includes(page) && !can.isMod(r)) { toast('Moderator access required'); return; }
   if (page === 'settings' && currentUser.id !== HEAD_MODERATOR_ID) { toast('Sovereign Moderator access required'); return; }
   // Studio pages — role-specific
   if (page === 'content_studio' && !can.isContent(r) && !can.isMod(r)) { toast('Content Creator access required'); return; }
@@ -3940,6 +5186,7 @@ function navTo(page, btn) {
   if (page === 'content_studio')  renderContentStudio();
   if (page === 'live_studio')     renderLiveStudio();
   if (page === 'pipeline')        renderPipeline();
+  if (page === 'ad_scheduler')    renderAdScheduler();
   // Auto-close drawer on mobile after navigating
   navClose();
 }
@@ -3989,6 +5236,7 @@ document.addEventListener('keydown', e => {
     closeModal();
     document.getElementById('notif-panel').classList.remove('open');
     document.getElementById('pres-panel').classList.remove('open');
+    const tp = document.getElementById('task-panel'); if (tp) tp.classList.remove('open');
     navClose();
   }
   if (e.key === 'l' && e.ctrlKey && !currentUser) { e.preventDefault(); handleLogin(); }
