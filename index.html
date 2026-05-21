@@ -823,117 +823,131 @@ body.light .day-ad-item{background:var(--surface2)}
     border-radius:8px;padding:10px 13px;margin-bottom:14px;font-size:12px;color:var(--red)}
 .day-empty{text-align:center;padding:22px;color:var(--muted);font-style:italic;font-size:12px}
 
-/* ══ AD TARGET PICKER — Luxury Avatar System ══ */
-.target-trigger{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:border-color .2s ease,background .2s ease,box-shadow .2s ease;background:rgba(201,169,110,.03);user-select:none}
-.target-trigger:hover{border-color:rgba(201,169,110,.35);background:rgba(201,169,110,.055);box-shadow:0 2px 16px rgba(201,169,110,.07)}
-.target-trigger.open{border-color:rgba(201,169,110,.4);border-bottom-color:transparent;border-radius:10px 10px 0 0;background:rgba(201,169,110,.04)}
-body.light .target-trigger{background:rgba(107,66,24,.03)}
-body.light .target-trigger:hover{background:rgba(107,66,24,.06)}
-body.light .target-trigger.open{background:rgba(107,66,24,.04)}
-.target-trigger-left{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
-.target-trigger-icon{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,rgba(201,169,110,.12),rgba(201,169,110,.04));border:1px solid rgba(201,169,110,.22);display:flex;align-items:center;justify-content:center;color:var(--gold);flex-shrink:0;transition:background .2s}
-.target-trigger:hover .target-trigger-icon{background:linear-gradient(135deg,rgba(201,169,110,.2),rgba(201,169,110,.07))}
-.target-trigger-label{font-size:12px;color:var(--text);font-family:'Cormorant Garamond',serif;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
-.target-trigger-label.placeholder{color:var(--muted);font-style:italic}
-.target-trigger-count{font-size:9px;font-weight:600;color:var(--gold);letter-spacing:.1em;background:rgba(201,169,110,.12);padding:2px 8px;border-radius:10px;border:1px solid rgba(201,169,110,.22);white-space:nowrap;flex-shrink:0;margin-left:6px}
-.target-trigger-arrow{color:var(--muted);flex-shrink:0;transition:transform .25s cubic-bezier(.4,0,.2,1),color .2s;margin-left:8px}
-.target-trigger.open .target-trigger-arrow{transform:rotate(180deg);color:var(--gold)}
-.target-dropdown{display:none;border:1px solid rgba(201,169,110,.35);border-top:none;border-radius:0 0 10px 10px;overflow:hidden;background:var(--bg2);box-shadow:0 16px 48px rgba(0,0,0,.55)}
-body.light .target-dropdown{background:var(--surface2);box-shadow:0 8px 28px rgba(0,0,0,.13)}
-.target-dropdown.open{display:block;animation:tdrop-in .2s cubic-bezier(.4,0,.2,1)}
-@keyframes tdrop-in{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
-.target-dd-search{padding:9px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;position:sticky;top:0;background:var(--bg2);z-index:1}
-body.light .target-dd-search{background:var(--surface2)}
-.target-dd-search svg{color:var(--muted);flex-shrink:0}
-.target-dd-search input{flex:1;background:none;border:none;outline:none;font-size:12px;color:var(--text);font-family:'Inter',sans-serif;letter-spacing:.02em}
-.target-dd-search input::placeholder{color:var(--muted);font-style:italic}
-.target-dd-selall{font-family:'Cormorant Garamond',serif;font-size:11px;font-style:italic;color:var(--gold-lo);cursor:pointer;white-space:nowrap;flex-shrink:0;padding:3px 0;border-bottom:1px solid transparent;transition:color .18s,border-color .18s;letter-spacing:.03em}
-.target-dd-selall:hover{color:var(--gold);border-bottom-color:rgba(201,169,110,.4)}
+/* ══ AD TARGET PICKER — Horizontal Avatar Grid ══ */
+.target-picker-wrap{
+  border:1px solid var(--border);border-radius:10px;
+  overflow:hidden;background:rgba(201,169,110,.02);
+}
+body.light .target-picker-wrap{background:rgba(107,66,24,.02)}
 
-/* Member rows */
-.target-list{max-height:220px;overflow-y:auto;padding:5px 8px 8px}
-.target-opt{
-  display:flex;align-items:center;gap:11px;
-  padding:8px 9px;border-radius:9px;cursor:pointer;
-  transition:background .15s ease, transform .12s ease;
-  position:relative;
+/* Top bar: search + select-all */
+.target-picker-bar{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 12px;border-bottom:1px solid var(--border);
 }
-.target-opt input[type=checkbox]{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
-.target-opt:hover{background:rgba(201,169,110,.055)}
-body.light .target-opt:hover{background:rgba(107,66,24,.055)}
-.target-opt:active{transform:scale(.985)}
-.target-opt.selected{background:rgba(201,169,110,.06)}
-body.light .target-opt.selected{background:rgba(107,66,24,.065)}
-
-/* Avatar with role-color border + online dot */
-.target-opt-avatar-wrap{position:relative;flex-shrink:0;width:36px;height:36px}
-.target-opt-avatar{
-  width:36px;height:36px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Cormorant Garamond',serif;
-  font-size:14px;font-weight:600;letter-spacing:.03em;
-  border:2px solid transparent;
-  transition:box-shadow .22s ease, border-color .22s ease, background .22s ease;
-  background:rgba(255,255,255,.05);
+.target-picker-bar svg{color:var(--muted);flex-shrink:0}
+.target-picker-bar input{
+  flex:1;background:none;border:none;outline:none;
+  font-size:12px;color:var(--text);font-family:'Inter',sans-serif;
 }
-/* Selected: glow amplified */
-.target-opt.selected .target-opt-avatar{
-  box-shadow:0 0 0 3px rgba(0,0,0,.25), 0 0 14px rgba(0,0,0,.4);
-}
-/* Online presence dot */
-.target-opt-dot{
-  position:absolute;bottom:0;right:0;
-  width:10px;height:10px;border-radius:50%;
-  border:2px solid var(--bg2);
-  transition:background .3s ease, box-shadow .3s ease;
-  flex-shrink:0;
-}
-body.light .target-opt-dot{border-color:var(--surface2)}
-.target-opt-dot.online{
-  background:#7abf8e;
-  box-shadow:0 0 6px rgba(122,191,142,.7);
-  animation:dot-pulse 2s ease-in-out infinite;
-}
-.target-opt-dot.offline{background:rgba(232,228,220,.2)}
-@keyframes dot-pulse{0%,100%{box-shadow:0 0 4px rgba(122,191,142,.5)}50%{box-shadow:0 0 10px rgba(122,191,142,.9)}}
-
-/* Name + role inline */
-.target-opt-info{flex:1;min-width:0;display:flex;align-items:center;gap:8px}
-.target-name{
-  font-family:'Cormorant Garamond',serif;
-  font-size:14px;font-weight:500;letter-spacing:.04em;
-  color:var(--text2);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  transition:color .18s;flex-shrink:1;min-width:0;
-}
-.target-opt.selected .target-name{color:var(--text)}
-.target-role{
-  font-size:8px;font-weight:600;letter-spacing:.09em;
-  text-transform:uppercase;padding:2px 7px;
-  border-radius:20px;border:1px solid;
-  white-space:nowrap;flex-shrink:0;
+.target-picker-bar input::placeholder{color:var(--muted)}
+.target-picker-selall{
+  font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--gold-lo);cursor:pointer;white-space:nowrap;flex-shrink:0;
+  padding:4px 9px;border:1px solid var(--border);border-radius:5px;
+  transition:color .18s,border-color .18s,background .18s;
   font-family:'Inter',sans-serif;
-  opacity:.65;transition:opacity .18s;
 }
-.target-opt.selected .target-role{opacity:1}
+.target-picker-selall:hover{color:var(--gold);border-color:rgba(201,169,110,.4);background:rgba(201,169,110,.07)}
 
-/* Selection checkmark — top right of row */
-.target-opt-check{
-  width:18px;height:18px;border-radius:50%;
-  border:1px solid var(--border);
+/* Count line */
+.target-picker-meta{
+  padding:6px 12px 0;
+  font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);min-height:20px;display:flex;align-items:center;gap:6px;
+}
+.target-picker-meta-count{
+  color:var(--gold);font-weight:700;
+  background:rgba(201,169,110,.12);padding:1px 8px;
+  border-radius:8px;border:1px solid rgba(201,169,110,.22);
+  transition:opacity .2s;
+}
+.target-picker-meta-count.hidden{opacity:0}
+
+/* Avatar grid */
+.target-grid{
+  display:flex;flex-wrap:wrap;gap:6px;
+  padding:10px 12px 12px;
+  max-height:160px;overflow-y:auto;
+}
+.target-grid::-webkit-scrollbar{width:3px}
+.target-grid::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:2px}
+
+/* Each avatar tile */
+.target-tile{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  cursor:pointer;position:relative;padding:6px 4px;
+  border-radius:10px;border:1px solid transparent;
+  transition:background .18s,border-color .18s,transform .14s;
+  width:58px;flex-shrink:0;
+  -webkit-user-select:none;user-select:none;
+}
+.target-tile input[type=checkbox]{position:absolute;opacity:0;width:0;height:0}
+.target-tile:hover{background:rgba(201,169,110,.06);border-color:rgba(201,169,110,.18)}
+body.light .target-tile:hover{background:rgba(107,66,24,.06);border-color:rgba(107,66,24,.18)}
+.target-tile:active{transform:scale(.93)}
+.target-tile.selected{
+  background:rgba(201,169,110,.09);
+  border-color:rgba(201,169,110,.35);
+}
+body.light .target-tile.selected{background:rgba(107,66,24,.08);border-color:rgba(107,66,24,.3)}
+.target-tile.hidden-item{display:none}
+
+/* Avatar circle */
+.target-tile-av-wrap{position:relative;width:38px;height:38px}
+.target-tile-av{
+  width:38px;height:38px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;
-  transition:background .2s, border-color .2s, transform .18s;
-  color:transparent;
+  font-family:'Cormorant Garamond',serif;
+  font-size:15px;font-weight:600;letter-spacing:.02em;
+  border:2px solid transparent;
+  transition:border-color .2s,box-shadow .2s,filter .2s;
+  filter:saturate(.55) brightness(.8);
 }
-.target-opt.selected .target-opt-check{
-  background:var(--gold);
-  border-color:var(--gold);
-  color:#0a0906;
-  transform:scale(1.08);
+.target-tile.selected .target-tile-av{
+  filter:saturate(1) brightness(1);
 }
-body.light .target-opt.selected .target-opt-check{color:#0a0906}
 
+/* Online dot */
+.target-tile-dot{
+  position:absolute;bottom:0;right:0;
+  width:9px;height:9px;border-radius:50%;
+  border:2px solid var(--bg);
+}
+body.light .target-tile-dot{border-color:var(--surface)}
+.target-tile-dot.online{background:#7abf8e;box-shadow:0 0 5px rgba(122,191,142,.7);animation:dot-pulse 2s ease-in-out infinite}
+.target-tile-dot.offline{background:rgba(232,228,220,.18)}
+@keyframes dot-pulse{0%,100%{box-shadow:0 0 4px rgba(122,191,142,.5)}50%{box-shadow:0 0 9px rgba(122,191,142,.9)}}
+
+/* Checkmark tick (top-right of tile) */
+.target-tile-tick{
+  position:absolute;top:3px;right:3px;
+  width:14px;height:14px;border-radius:50%;
+  background:var(--gold);display:none;
+  align-items:center;justify-content:center;
+}
+.target-tile.selected .target-tile-tick{display:flex}
+
+/* Name below avatar */
+.target-tile-name{
+  font-size:9px;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--muted);font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:54px;text-align:center;
+  transition:color .18s;
+  font-family:'Inter',sans-serif;
+}
+.target-tile.selected .target-tile-name{color:var(--gold-hi)}
+
+/* Empty state */
+.target-grid-empty{
+  width:100%;padding:18px;text-align:center;
+  color:var(--muted);font-size:11px;font-style:italic;
+}
+
+/* Legacy refs kept for task panel compatibility */
+.target-opt-dot.online{background:#7abf8e;box-shadow:0 0 6px rgba(122,191,142,.7);animation:dot-pulse 2s ease-in-out infinite}
+.target-opt-dot.offline{background:rgba(232,228,220,.2)}
 .target-count{display:none}
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -4879,30 +4893,27 @@ function openAdModal(ymd, id) {
   const savedTargets = (a && a.target) ? a.target.split(',').map(s => s.trim()).filter(Boolean) : [];
   const targetUsers = getTargetUsers();
 
-  const userOpts = targetUsers.map(u => {
+  const userOpts = targetUsers.length ? targetUsers.map(u => {
     const isSel = savedTargets.includes(u.id);
     const clr = ROLE_COLORS[u.role] || '#888';
     const initials = u.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const isOnline = !!(presenceMap[u.id]?.online);
     return `
-      <label class="target-opt${isSel?' selected':''}" onclick="toggleTargetOpt(this)">
+      <label class="target-tile${isSel?' selected':''}" onclick="toggleTargetTile(this)" title="${escHtml(u.name)} · ${escHtml(rn(u.role))}">
         <input type="checkbox" class="ad-target-cb" value="${escHtml(u.id)}"${isSel?' checked':''}/>
-        <span class="target-opt-avatar-wrap">
-          <span class="target-opt-avatar"
-            style="border-color:${clr}${isSel?'cc':'55'};background:${clr}14;color:${clr}${isSel?'':'99'};${isSel?'box-shadow:0 0 12px '+clr+'44,0 0 0 2px '+clr+'22':''}">
+        <div class="target-tile-av-wrap">
+          <div class="target-tile-av"
+            style="border-color:${clr}${isSel?'bb':'44'};background:${clr}18;color:${clr}">
             ${initials}
-          </span>
-          <span class="target-opt-dot ${isOnline?'online':'offline'}"></span>
-        </span>
-        <span class="target-opt-info">
-          <span class="target-name">${escHtml(u.name)}</span>
-          <span class="target-role" style="color:${clr};border-color:${clr}40;background:${clr}14">${escHtml(rn(u.role))}</span>
-        </span>
-        <span class="target-opt-check">
-          <svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5 5.5-5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </span>
+          </div>
+          <span class="target-tile-dot ${isOnline?'online':'offline'}"></span>
+        </div>
+        <div class="target-tile-tick">
+          <svg width="8" height="8" viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5 5.5-5.5" stroke="#0a0906" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="target-tile-name">${escHtml(u.name.split(' ')[0])}</span>
       </label>`;
-  }).join('');
+  }).join('') : `<div class="target-grid-empty">${t('noTargetUsers')}</div>`;
 
   document.getElementById('m-title').textContent = a ? t('editAd') : t('addAd');
   document.getElementById('m-body').innerHTML = `
@@ -4922,26 +4933,17 @@ function openAdModal(ymd, id) {
     </div>
     <div class="fg">
       <label>${t('adTarget')}</label>
-      <div class="target-trigger" id="ad-target-trigger" onclick="toggleTargetDropdown()">
-        <div class="target-trigger-left">
-          <div class="target-trigger-icon">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6" r="2.8" stroke="currentColor" stroke-width="1.4"/><path d="M2.5 14c0-2.8 2.5-4.5 5.5-4.5s5.5 1.7 5.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-          </div>
-          <div>
-            <div class="target-trigger-label${savedTargets.length ? '' : ' placeholder'}" id="ad-target-label">${savedTargets.length ? '' : t('noTargetSelected')}</div>
-            <div class="target-trigger-count" id="ad-target-count"></div>
-          </div>
-        </div>
-        <span class="target-trigger-arrow"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-      </div>
-      <div class="target-dropdown" id="ad-target-dropdown">
-        <div class="target-dd-search">
+      <div class="target-picker-wrap">
+        <div class="target-picker-bar">
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-          <input id="ad-target-search" placeholder="${t('searchTargetPh')}" oninput="filterTargetOpts(this.value)"/>
-          <span class="target-dd-selall" id="ad-target-all" onclick="toggleAllTargets()">${t('selectAll')}</span>
+          <input id="ad-target-search" placeholder="${t('searchTargetPh')}" oninput="filterTargetTiles(this.value)"/>
+          <span class="target-picker-selall" onclick="toggleAllTargets()">${t('selectAll')}</span>
         </div>
-        <div class="target-list" id="ad-target-list">
-          ${userOpts || `<div class="day-empty" style="padding:14px">${t('noTargetUsers')}</div>`}
+        <div class="target-picker-meta">
+          <span id="ad-target-count" class="target-picker-meta-count hidden"></span>
+        </div>
+        <div class="target-grid" id="ad-target-list">
+          ${userOpts}
         </div>
       </div>
     </div>`;
@@ -4951,89 +4953,56 @@ function openAdModal(ymd, id) {
     <button class="btn-sm btn-gold" onclick="saveAd()">${t('save')}</button>`;
   document.getElementById('modal-ov').classList.add('open');
   updateTargetCount();
-  // Update hitungan tiap kali centang berubah
-  document.querySelectorAll('.ad-target-cb').forEach(cb => cb.addEventListener('change', updateTargetCount));
 }
 
-/* Toggle target dropdown */
-function toggleTargetDropdown() {
-  const trigger = document.getElementById('ad-target-trigger');
-  const dropdown = document.getElementById('ad-target-dropdown');
-  if (!trigger || !dropdown) return;
-  const isOpen = trigger.classList.contains('open');
-  trigger.classList.toggle('open', !isOpen);
-  dropdown.classList.toggle('open', !isOpen);
-  if (!isOpen) {
-    // Sync online dots with current presenceMap on open
-    document.querySelectorAll('#ad-target-list .target-opt').forEach(label => {
-      const cb = label.querySelector('.ad-target-cb');
-      if (!cb) return;
-      const dot = label.querySelector('.target-opt-dot');
-      if (dot) {
-        const online = !!(presenceMap[cb.value]?.online);
-        dot.className = 'target-opt-dot ' + (online ? 'online' : 'offline');
-      }
-    });
-    setTimeout(() => document.getElementById('ad-target-search')?.focus(), 50);
-  }
-}
-
-/* Helper UI untuk daftar target */
-function toggleTargetOpt(label) {
+/* Toggle target tile (avatar grid) */
+function toggleTargetTile(label) {
   requestAnimationFrame(() => {
     const cb = label.querySelector('.ad-target-cb');
     const isSel = cb && cb.checked;
     label.classList.toggle('selected', isSel);
-    // Update avatar border intensity
-    const av = label.querySelector('.target-opt-avatar');
-    if (av) {
-      const u = getTargetUsers().find(u => u.id === cb?.value);
+    const av = label.querySelector('.target-tile-av');
+    if (av && cb) {
+      const u = getTargetUsers().find(u => u.id === cb.value);
       const clr = (u && ROLE_COLORS[u.role]) || '#888';
-      av.style.borderColor   = clr + (isSel ? 'cc' : '55');
-      av.style.color         = clr + (isSel ? '' : '99');
-      av.style.boxShadow     = isSel ? `0 0 12px ${clr}44, 0 0 0 2px ${clr}22` : '';
+      av.style.borderColor = clr + (isSel ? 'bb' : '44');
     }
     updateTargetCount();
   });
 }
-function filterTargetOpts(q) {
+
+function filterTargetTiles(q) {
   q = (q || '').toLowerCase();
-  document.querySelectorAll('#ad-target-list .target-opt').forEach(el => {
-    const name = el.querySelector('.target-name')?.textContent.toLowerCase() || '';
-    el.style.display = (!q || name.includes(q)) ? '' : 'none';
+  document.querySelectorAll('#ad-target-list .target-tile').forEach(el => {
+    const name = el.querySelector('.target-tile-name')?.textContent.toLowerCase() || '';
+    el.classList.toggle('hidden-item', !!(q && !name.includes(q)));
   });
 }
 function toggleAllTargets() {
-  const labels = [...document.querySelectorAll('#ad-target-list .target-opt')].filter(el => el.style.display !== 'none');
+  const labels = [...document.querySelectorAll('#ad-target-list .target-tile')].filter(el => !el.classList.contains('hidden-item'));
   const cbs = labels.map(el => el.querySelector('.ad-target-cb')).filter(Boolean);
   const allOn = cbs.every(c => c.checked);
   cbs.forEach(c => { c.checked = !allOn; });
-  labels.forEach(el => el.classList.toggle('selected', !allOn));
+  labels.forEach(el => {
+    el.classList.toggle('selected', !allOn);
+    const av = el.querySelector('.target-tile-av');
+    const cb = el.querySelector('.ad-target-cb');
+    if (av && cb) {
+      const u = getTargetUsers().find(u => u.id === cb.value);
+      const clr = (u && ROLE_COLORS[u.role]) || '#888';
+      av.style.borderColor = clr + (!allOn ? 'bb' : '44');
+    }
+  });
   const btn = document.getElementById('ad-target-all');
   if (btn) btn.textContent = allOn ? t('selectAll') : t('clearAll');
   updateTargetCount();
 }
 function updateTargetCount() {
-  const checked = [...document.querySelectorAll('.ad-target-cb:checked')];
-  const n = checked.length;
+  const n = [...document.querySelectorAll('.ad-target-cb:checked')].length;
   const countEl = document.getElementById('ad-target-count');
-  const labelEl = document.getElementById('ad-target-label');
-  if (countEl) countEl.textContent = n ? `${n} ${t('targetSelected')}` : '';
-  if (labelEl) {
-    if (n === 0) {
-      labelEl.textContent = t('noTargetSelected');
-      labelEl.className = 'target-trigger-label placeholder';
-      labelEl.style.color = '';
-    } else {
-      labelEl.className = 'target-trigger-label';
-      // Show first 2 names + overflow
-      const allUsers = getTargetUsers();
-      const roster = {};
-      allUsers.forEach(u => { roster[u.id] = u.name; });
-      const names = checked.slice(0,2).map(cb => roster[cb.value] || cb.value);
-      labelEl.textContent = names.join(', ') + (n > 2 ? ` +${n-2}` : '');
-      labelEl.style.color = 'var(--text)';
-    }
+  if (countEl) {
+    if (n > 0) { countEl.textContent = `${n} ${t('targetSelected')}`; countEl.classList.remove('hidden'); }
+    else { countEl.classList.add('hidden'); }
   }
 }
 
