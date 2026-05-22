@@ -4925,7 +4925,7 @@ let ads = [];                 // semua iklan {id, date:'YYYY-MM-DD', theme, cate
 let adTasks = [];             // task notifikasi {id, adId, assignee, title, date, category, status, unlockUntil, ...}
 let taskLeadCount = {};       // { taskId: jumlahLeads } — cache untuk badge
 let adView = 'calendar';
-let adCursor = new Date(2026, new Date().getFullYear() === 2026 ? new Date().getMonth() : 0, 1);
+let adCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 let editAdId = null;
 
 const AD_CATS = ['Reseller','Product','B2B'];
@@ -4942,7 +4942,7 @@ function escHtml(s) {
 }
 
 /* ── Role yang BOLEH jadi target iklan: admin & b2b-marketing saja ── */
-const AD_TARGET_ROLES = ['admin', 'b2b_marketing'];
+const AD_TARGET_ROLES = ['admin', 'b2b_marketing', 'b2b-marketing'];
 const isAdTargetRole = r => AD_TARGET_ROLES.includes(r);
 
 /* ── Daftar anggota/user yang bisa dijadikan TARGET iklan ──
@@ -4955,9 +4955,13 @@ function getTargetUsers() {
     if (isAdTargetRole(role)) map[id] = { id, name: u.name || id, role };
   });
   // Tambah user DB lain yang terdeteksi di presence (tetap difilter admin/b2b)
+  // Role di presenceMap bisa berbentuk dash (dari DB) — normalisasi dulu
   Object.values(presenceMap || {}).forEach(p => {
-    if (p && p.id && !map[p.id] && isAdTargetRole(p.role)) {
-      map[p.id] = { id: p.id, name: p.name || p.id, role: p.role };
+    if (p && p.id && !map[p.id]) {
+      const normalizedRole = roleFromDb(p.role || 'guest');
+      if (isAdTargetRole(normalizedRole)) {
+        map[p.id] = { id: p.id, name: p.name || p.id, role: normalizedRole };
+      }
     }
   });
   // Urutkan berdasarkan level role lalu nama
@@ -4981,9 +4985,11 @@ async function loadAdsFromDB() {
   }
 
   const isMod = can.isMod(currentUser?.role);
+  // PENTING: gunakan currentUser.id yang adalah user_id teks (mis. 'yuna'), bukan UUID
+  const myUserId = currentUser ? currentUser.id : null;
   const tRes = await dbQ(d => {
     let q = d.from('ad_tasks').select('*').neq('status','done');
-    if (!isMod) q = q.eq('assignee_id', currentUser.id);   // target → hanya miliknya
+    if (!isMod && myUserId) q = q.eq('assignee_id', myUserId);
     return q.order('created_at', { ascending:false });
   });
   if (tRes?.data) {
@@ -5038,8 +5044,8 @@ function initAdRealtime() {
     })
     .on('postgres_changes', { event:'INSERT', schema:'public', table:'ad_tasks' }, payload => {
       const tk = payload.new;
-      // Target hanya peduli task miliknya
-      if (!isMod && tk.assignee_id !== currentUser.id) return;
+      // Target hanya peduli task miliknya (assignee_id = user_id teks, bukan UUID)
+      if (!isMod && tk.assignee_id !== (currentUser && currentUser.id)) return;
       if (tk.status !== 'done' && !adTasks.find(x => x.id === tk.id)) {
         adTasks.unshift(mapTaskRow(tk));
         updateTaskBadges(); renderTaskPanel();
@@ -5051,7 +5057,7 @@ function initAdRealtime() {
     })
     .on('postgres_changes', { event:'UPDATE', schema:'public', table:'ad_tasks' }, payload => {
       const tk = payload.new;
-      if (!isMod && tk.assignee_id !== currentUser.id) return;
+      if (!isMod && tk.assignee_id !== (currentUser && currentUser.id)) return;
       if (tk.status === 'done') {
         adTasks = adTasks.filter(x => x.id !== tk.id);
       } else {
@@ -5166,7 +5172,8 @@ function adGoToday() {
    Admin/B2B  : hanya iklan PUBLISHED yang menargetkan dirinya. */
 function visibleAds() {
   if (can.isMod(currentUser?.role)) return ads;
-  const me = currentUser.id;
+  const me = currentUser ? currentUser.id : null;
+  if (!me) return [];
   return ads.filter(a =>
     a.status === 'published' &&
     String(a.target||'').split(',').map(s=>s.trim()).includes(me)
@@ -5345,7 +5352,9 @@ function renderDayModalMod(ymd) {
 
   return `<div class="day-ad-list">` + dayAds.map(a => {
     // task per target untuk iklan ini
+    // Moderator: tampilkan semua task untuk iklan ini (termasuk task semua target)
     const tasks = adTasks.filter(tk => tk.adId === a.id);
+    // Jika iklan published tapi tidak ada task di memori, tampilkan pesan lebih informatif
     const tasksHtml = tasks.length ? `<div class="dai-tasks">` + tasks.map(tk => {
       const u = getUserMeta(tk.assignee);
       const clr = ROLE_COLORS[u.role] || '#888';
@@ -5367,7 +5376,9 @@ function renderDayModalMod(ymd) {
         ${tk.unlockNote && tk.status==='unlock_requested' ? `<div class="dai-unlock-note">"${escHtml(tk.unlockNote)}"</div>` : ''}
         <div class="dai-task-acts">${approveBtn}${finishBtn}</div>
       </div>`;
-    }).join('') + `</div>` : `<div class="dai-no-task">${t('adNotPublished')}</div>`;
+    }).join('') + `</div>` : (a.status === "published"
+      ? `<div class="dai-no-task" style="color:var(--amber)">⚠ Task belum dimuat — coba refresh halaman</div>`
+      : `<div class="dai-no-task">${t('adNotPublished')}</div>`);
 
     return `
       <div class="day-ad-item">
@@ -5707,6 +5718,9 @@ async function publishAd(id, skipConfirm) {
       }
     });
     pushNotif({ type:'action', msg:`${t('taskNew')}: ${a.theme} · ${a.category}` });
+  } else {
+    // DB sukses: push notif manual (backup jika realtime lambat)
+    pushNotif({ type:'action', msg:`${t('taskNew')}: ${a ? a.theme : ''} · ${a ? a.category : ''}` });
   }
 
   closeModal();
@@ -6219,7 +6233,8 @@ async function renderAdTaskPage() {
     // Muat task selesai dari DB (tidak tersimpan di adTasks)
     const res = await dbQ(d => {
       let q = d.from('ad_tasks').select('*').eq('status','done');
-      if (!isMod) q = q.eq('assignee_id', currentUser.id);
+      // gunakan user_id teks, bukan UUID
+      if (!isMod) q = q.eq('assignee_id', currentUser ? currentUser.id : null);
       return q.order('done_at', { ascending:false });
     });
     list = (res?.data || []).map(mapTaskRow);
