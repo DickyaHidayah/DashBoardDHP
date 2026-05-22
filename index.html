@@ -1130,6 +1130,91 @@ body.light .ads-vt-btn.active{background:rgba(107,66,24,.12);color:var(--gold-dk
 body.light .tc-target-names{color:var(--gold-dk)}
 body.light .tc-done-btn:hover{color:var(--gold-dk);background:rgba(107,66,24,.07)}
 
+/* ════════════ v4.0 — Leads / Lock / Unlock / Recap ════════════ */
+/* Button variants tambahan */
+.btn-view{background:rgba(126,168,201,.1);border-color:rgba(126,168,201,.32);color:var(--blue)}
+.btn-lock{background:rgba(232,184,110,.1);border-color:rgba(232,184,110,.35);color:var(--amber)}
+
+/* Calendar: penanda task untuk target */
+.cal-task-hint{position:absolute;bottom:4px;right:6px;font-size:13px;color:var(--amber);line-height:1}
+.cal-cell.has-mytask{box-shadow:inset 0 0 0 1.5px rgba(232,184,110,.45)}
+
+/* Lock / status badges */
+.lock-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;
+  letter-spacing:.06em;padding:3px 8px;border-radius:6px;text-transform:uppercase;
+  background:rgba(232,184,110,.1);color:var(--amber);border:1px solid rgba(232,184,110,.3)}
+.lock-badge.open{background:rgba(122,191,142,.12);color:var(--green);border-color:rgba(122,191,142,.32)}
+.lock-badge.done{background:rgba(122,191,142,.12);color:var(--green);border-color:rgba(122,191,142,.32)}
+.lock-badge.req{background:rgba(232,184,110,.16);color:var(--amber);border-color:rgba(232,184,110,.4);
+  animation:task-glow 2s ease-in-out infinite}
+.lock-note{font-size:11px;color:var(--amber);background:rgba(232,184,110,.08);
+  border:1px solid rgba(232,184,110,.22);border-radius:8px;padding:9px 11px;line-height:1.5;margin-top:8px}
+.dai-await{font-size:10px;color:var(--green);font-style:italic}
+
+/* FAB urgent (ada permintaan buka kunci untuk moderator) */
+.task-fab-btn.has-urgent{border-color:var(--amber)!important;
+  animation:task-glow 1.4s ease-in-out infinite}
+
+/* Day modal — baris task per target (moderator) */
+.dai-tasks{display:flex;flex-direction:column;gap:7px;margin-top:9px;
+  padding-top:9px;border-top:1px dashed var(--border)}
+.dai-task-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px}
+.dai-task-who{display:flex;align-items:center;gap:5px;font-weight:600;color:var(--text)}
+.dai-task-who .role-dot{width:7px;height:7px;border-radius:50%}
+.dai-task-leads{font-size:10px;color:var(--text2);margin-left:auto}
+.dai-task-acts{display:flex;gap:5px;flex-wrap:wrap;flex-basis:100%;justify-content:flex-end}
+.dai-unlock-note{flex-basis:100%;font-size:10px;font-style:italic;color:var(--amber)}
+.dai-no-task{font-size:10px;color:var(--muted);font-style:italic;margin-top:8px}
+
+/* Leads form */
+.lead-form{display:flex;flex-direction:column;gap:13px;margin-bottom:6px}
+.wa-wrap{display:flex;align-items:stretch;border:1px solid var(--border-hi);border-radius:10px;overflow:hidden}
+.wa-prefix{display:flex;align-items:center;padding:0 12px;background:var(--surface3);
+  color:var(--gold);font-weight:700;font-size:13px;border-right:1px solid var(--border)}
+.wa-input{border:none!important;border-radius:0!important;flex:1}
+.wa-hint{font-size:10px;color:var(--muted);margin-top:4px;letter-spacing:.02em}
+.wa-hint.ok{color:var(--green)}
+.wa-hint.err{color:var(--red)}
+.lead-cat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.lead-cat-btn{padding:8px 4px;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text2);
+  cursor:pointer;transition:all .15s}
+.lead-cat-btn:hover{border-color:var(--border-hi)}
+.lead-cat-btn.active.lc-cold{background:rgba(126,168,201,.16);color:var(--blue);border-color:rgba(126,168,201,.45)}
+.lead-cat-btn.active.lc-warm{background:rgba(232,184,110,.16);color:var(--amber);border-color:rgba(232,184,110,.45)}
+.lead-cat-btn.active.lc-hot{background:rgba(232,112,112,.16);color:var(--red);border-color:rgba(232,112,112,.45)}
+.lead-cat-btn.active.lc-closing{background:rgba(122,191,142,.16);color:var(--green);border-color:rgba(122,191,142,.45)}
+
+/* Leads list */
+.lead-list-head{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);margin:16px 0 8px;padding-top:14px;border-top:1px solid var(--border)}
+.lead-list{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto}
+.lead-empty{text-align:center;padding:18px;color:var(--muted);font-size:11px;font-style:italic}
+.lead-row{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 12px}
+.lead-row-main{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
+.lead-row-name{font-weight:600;color:var(--text);font-size:12px}
+.lead-row-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--text2)}
+.lead-row-note{font-size:10px;color:var(--muted);font-style:italic;margin-top:5px}
+.lead-cat-badge{font-size:8px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  padding:2px 7px;border-radius:5px}
+.lead-cat-badge.lc-cold{background:rgba(126,168,201,.14);color:var(--blue)}
+.lead-cat-badge.lc-warm{background:rgba(232,184,110,.14);color:var(--amber)}
+.lead-cat-badge.lc-hot{background:rgba(232,112,112,.14);color:var(--red)}
+.lead-cat-badge.lc-closing{background:rgba(122,191,142,.14);color:var(--green)}
+
+/* Recap (moderator) */
+.recap-summary{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12px;color:var(--text);
+  background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:11px 13px;margin-bottom:12px}
+.recap-owner{margin-bottom:14px}
+.recap-owner-head{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--text);
+  margin-bottom:7px}
+.recap-owner-head .role-dot{width:8px;height:8px;border-radius:50%}
+.ad-status-badge.done{background:rgba(122,191,142,.12);color:var(--green)}
+
+body.light .lead-row,body.light .recap-summary{background:var(--surface);border:1px solid var(--border-hi)}
+body.light .lead-row-name{color:#1a1208}
+body.light .wa-prefix{background:var(--surface3);color:var(--gold-dk)}
+
 /* ════════════════════════ RESPONSIVE ════════════════════════ */
 @media(max-width:480px){
   .stats-grid{grid-template-columns:1fr 1fr}
@@ -2289,6 +2374,10 @@ const can = {
   isContent:   r => r === 'content_creator',
   isHostLive:  r => r === 'host_live',
   isB2B:       r => r === 'b2b_marketing',
+  // Bisa jadi TARGET iklan & punya halaman/FAB task (admin + b2b)
+  isAdTarget:  r => r === 'admin' || r === 'b2b_marketing',
+  // Siapa pun yang berhak akses halaman Ad Schedule (moderator ATAU target)
+  canSeeAds:   r => r === 'head_moderator' || r === 'moderator' || r === 'admin' || r === 'b2b_marketing',
   any:         r => !!r,
 };
 
@@ -2813,6 +2902,39 @@ const i18n = {
     taskPersistent:'Stays until completed', noTasks:'No tasks. All caught up!',
     taskNew:'NEW', markDone:'Mark Done', taskDone:'Task completed',
     taskCountLabel:'task', forDate:'For',
+    // ── v4.0: targets, leads, lock & unlock ──
+    adSchedulerSubTarget:'Your assigned ad tasks — fill in leads on the day',
+    adNeedTarget:'Pick at least 1 target (admin/B2B)',
+    assignee:'Assignee', viewTask:'View task', viewLeads:'View leads',
+    workTask:'Work on it', finishTask:'Finish', finishConfirm:'Mark this task as done?',
+    taskOpen:'OPEN', locked:'Locked',
+    lockedMsg:'This task is locked. Leads can only be added on the ad date. Request the moderator to unlock it.',
+    unlockReq:'Unlock requested', unlockReqNotif:'Unlock request',
+    unlockPending:'Awaiting approval', unlockPendingMsg:'Waiting for moderator approval.',
+    requestUnlock:'Request unlock', unlockReason:'Reason for unlock request (optional):',
+    unlockRequested:'Unlock request sent to moderator', unlockReqErr:'Failed to send request',
+    approveUnlock:'Approve', reject:'Reject',
+    unlockApproved:'Task unlocked for 24 hours', unlockApproveErr:'Failed to approve',
+    unlockRejected:'Unlock request rejected',
+    awaitMod:'Leads saved — moderator will mark this task done.',
+    adNotPublished:'Not published yet — no tasks created.',
+    noTaskThisDay:'No task assigned to you on this day.',
+    completeModOnly:'Only moderators can finish a task',
+    needLeadFirst:'At least 1 lead must be entered first',
+    taskCompleteErr:'Failed to finish task', notYourTask:'This task is not yours',
+    modOnly:'Moderator access required',
+    // leads form
+    leadsFor:'Leads', leadsEntered:'Leads entered', noLeadsYet:'No leads yet',
+    leadsCount:'leads', leadName:'Customer name', leadNamePh:'e.g. Budi Santoso',
+    leadWA:'WhatsApp number', waHint:'Enter the number after +62 (e.g. 81234567890)',
+    waInvalid:'Number not valid', waInvalidToast:'WhatsApp number is not valid — check it again',
+    leadRegion:'Region/Area', leadRegionPh:'e.g. Jakarta Selatan',
+    leadCategory:'Category', leadNote:'Note', leadNotePh:'Optional note',
+    leadCatCold:'Cold', leadCatWarm:'Warm', leadCatHot:'Hot', leadCatClosing:'Closing',
+    leadNeedName:'Customer name is required', leadNeedRegion:'Region is required',
+    addLeadBtn:'+ Add Lead', leadAdded:'Lead added', leadSaveErr:'Failed to save lead',
+    close:'Close', taskNotFound:'Task not found',
+    leadsRecap:'Leads Recap', totalLeads:'Total leads',
   },
   id: {
     brandTagline:'Desain · Warisan · Kehadiran', signIn:'Masuk',
@@ -2947,6 +3069,39 @@ const i18n = {
     taskPersistent:'Tetap sampai dikerjakan', noTasks:'Tidak ada task. Semua beres!',
     taskNew:'BARU', markDone:'Tandai Selesai', taskDone:'Task selesai',
     taskCountLabel:'task', forDate:'Untuk',
+    // ── v4.0: target, leads, kunci & buka kunci ──
+    adSchedulerSubTarget:'Task iklan yang ditugaskan ke Anda — isi leads di hari-H',
+    adNeedTarget:'Pilih minimal 1 target (admin/B2B)',
+    assignee:'Penanggung jawab', viewTask:'Lihat task', viewLeads:'Lihat leads',
+    workTask:'Kerjakan', finishTask:'Selesaikan', finishConfirm:'Tandai task ini selesai?',
+    taskOpen:'TERBUKA', locked:'Terkunci',
+    lockedMsg:'Task ini terkunci. Leads hanya bisa diisi pada tanggal iklan. Minta moderator untuk membuka kunci.',
+    unlockReq:'Minta buka kunci', unlockReqNotif:'Permintaan buka kunci',
+    unlockPending:'Menunggu persetujuan', unlockPendingMsg:'Menunggu persetujuan moderator.',
+    requestUnlock:'Minta buka kunci', unlockReason:'Alasan minta buka kunci (opsional):',
+    unlockRequested:'Permintaan dikirim ke moderator', unlockReqErr:'Gagal mengirim permintaan',
+    approveUnlock:'Setujui', reject:'Tolak',
+    unlockApproved:'Task dibuka selama 24 jam', unlockApproveErr:'Gagal menyetujui',
+    unlockRejected:'Permintaan buka kunci ditolak',
+    awaitMod:'Leads tersimpan — moderator akan menandai task ini selesai.',
+    adNotPublished:'Belum dipublish — task belum dibuat.',
+    noTaskThisDay:'Tidak ada task untuk Anda di tanggal ini.',
+    completeModOnly:'Hanya moderator yang bisa menyelesaikan task',
+    needLeadFirst:'Minimal 1 lead harus diisi dulu',
+    taskCompleteErr:'Gagal menyelesaikan task', notYourTask:'Task ini bukan milik Anda',
+    modOnly:'Akses moderator diperlukan',
+    // form leads
+    leadsFor:'Leads', leadsEntered:'Leads terisi', noLeadsYet:'Belum ada leads',
+    leadsCount:'leads', leadName:'Nama customer', leadNamePh:'cth. Budi Santoso',
+    leadWA:'Nomor WhatsApp', waHint:'Masukkan nomor setelah +62 (cth. 81234567890)',
+    waInvalid:'Nomor tidak valid', waInvalidToast:'Nomor WhatsApp tidak sesuai — cek lagi',
+    leadRegion:'Wilayah/Daerah', leadRegionPh:'cth. Jakarta Selatan',
+    leadCategory:'Kategori', leadNote:'Catatan', leadNotePh:'Catatan opsional',
+    leadCatCold:'Cold', leadCatWarm:'Warm', leadCatHot:'Hot', leadCatClosing:'Closing',
+    leadNeedName:'Nama customer wajib diisi', leadNeedRegion:'Wilayah wajib diisi',
+    addLeadBtn:'+ Tambah Lead', leadAdded:'Lead ditambahkan', leadSaveErr:'Gagal menyimpan lead',
+    close:'Tutup', taskNotFound:'Task tidak ditemukan',
+    leadsRecap:'Rekap Leads', totalLeads:'Total leads',
   }
 };
 const t = k => i18n[currentLang][k] || i18n.en[k] || k;
@@ -3668,6 +3823,7 @@ function handleLogout() {
     if (presenceMap[currentUser.id]) Object.assign(presenceMap[currentUser.id], { online:false, lastSeen:Date.now() });
     if (currentUser.role === 'guest') releaseGuest(currentUser.id);
     if (presChannel) { presChannel.untrack(); presChannel.unsubscribe(); presChannel = null; }
+    if (adChannel) { try { adChannel.unsubscribe(); } catch(e){} adChannel = null; }
     if (presHB) { clearInterval(presHB); presHB = null; }
     if (presStaleIv) { clearInterval(presStaleIv); presStaleIv = null; }
     dbQ(d => d.rpc('update_user_presence', { p_user_id:currentUser.id, p_event:'logout' }));
@@ -3683,7 +3839,7 @@ function handleLogout() {
   document.getElementById('notif-bell').style.display = 'none';
   const tFab = document.getElementById('task-fab'); if (tFab) tFab.classList.remove('visible');
   const tPanel = document.getElementById('task-panel'); if (tPanel) tPanel.classList.remove('open');
-  adTasks = []; ads = [];
+  adTasks = []; ads = []; taskLeadCount = {};
   document.getElementById('dash').classList.remove('active');
   document.getElementById('ctrl-bar').style.display = '';
   const sc = document.getElementById('scene');
@@ -3752,9 +3908,10 @@ async function initDashboard() {
   // Settings — Sovereign only (otherwise moderator can rename their own role)
   navShow('n-settings',       isHead);
 
-  // Manage (Moderator+) — Ad Scheduler (dickya & firman)
-  navShow('ns-manage',        isMod);
-  navShow('n-ad-scheduler',   isMod);
+  // Manage — Ad Scheduler: moderator (kelola penuh) + admin/b2b (lihat task & isi leads)
+  const canSeeAds = can.canSeeAds(r);
+  navShow('ns-manage',        canSeeAds);
+  navShow('n-ad-scheduler',   canSeeAds);
 
   // Bell tampil untuk semua user — notif login/join terlihat oleh siapa pun.
   // (Notif registrasi dengan tombol Review tetap hanya muncul untuk moderator,
@@ -3783,8 +3940,10 @@ async function initDashboard() {
   // Load data dari Supabase
   await loadDataFromDB(isMod);
 
-  // Load jadwal iklan + task notifikasi (moderator)
-  if (isMod) {
+  // Load jadwal iklan + task notifikasi
+  // Moderator: semua iklan & semua task (untuk approve/kelola).
+  // Admin/B2B: iklan (read-only) & task yang ditugaskan ke dirinya.
+  if (canSeeAds) {
     await loadAdsFromDB();
     initAdRealtime();
   }
@@ -4728,7 +4887,8 @@ function renderPresencePage() {
    ㉓b AD SCHEDULER  (Moderator only — dickya & firman)
    ═══════════════════════════════════════════════════════════ */
 let ads = [];                 // semua iklan {id, date:'YYYY-MM-DD', theme, category, target, note, status}
-let adTasks = [];             // task notifikasi {id, adId, title, date, category, target, status, createdAt}
+let adTasks = [];             // task notifikasi {id, adId, assignee, title, date, category, status, unlockUntil, ...}
+let taskLeadCount = {};       // { taskId: jumlahLeads } — cache untuk badge
 let adView = 'calendar';
 let adCursor = new Date(2026, new Date().getFullYear() === 2026 ? new Date().getMonth() : 0, 1);
 let editAdId = null;
@@ -4746,17 +4906,23 @@ function escHtml(s) {
     .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-/* ── Daftar anggota/user (punya akun di dashboard) untuk pilihan target ── */
+/* ── Role yang BOLEH jadi target iklan: admin & b2b-marketing saja ── */
+const AD_TARGET_ROLES = ['admin', 'b2b_marketing'];
+const isAdTargetRole = r => AD_TARGET_ROLES.includes(r);
+
+/* ── Daftar anggota/user yang bisa dijadikan TARGET iklan ──
+   Hanya akun dengan role admin atau b2b-marketing. */
 function getTargetUsers() {
   const map = {};
   // Dari roster akun aplikasi (juga tersinkron dari DB saat approve)
   Object.entries(LOCAL_USERS).forEach(([id, u]) => {
-    map[id] = { id, name: u.name || id, role: u.role || 'guest' };
+    const role = u.role || 'guest';
+    if (isAdTargetRole(role)) map[id] = { id, name: u.name || id, role };
   });
-  // Tambah siapa pun yang pernah terdeteksi di presence (mis. user DB lain)
+  // Tambah user DB lain yang terdeteksi di presence (tetap difilter admin/b2b)
   Object.values(presenceMap || {}).forEach(p => {
-    if (p && p.id && !map[p.id] && p.role !== 'guest') {
-      map[p.id] = { id: p.id, name: p.name || p.id, role: p.role || 'guest' };
+    if (p && p.id && !map[p.id] && isAdTargetRole(p.role)) {
+      map[p.id] = { id: p.id, name: p.name || p.id, role: p.role };
     }
   });
   // Urutkan berdasarkan level role lalu nama
@@ -4766,7 +4932,9 @@ function getTargetUsers() {
   });
 }
 
-/* ── Load data iklan + task dari Supabase ── */
+/* ── Load data iklan + task dari Supabase ──
+   Moderator  : semua task (untuk approve & pantau).
+   Admin/B2B  : hanya task yang ditugaskan ke dirinya (assignee_id). */
 async function loadAdsFromDB() {
   const aRes = await dbQ(d => d.from('ad_schedule').select('*').order('ad_date', { ascending:true }));
   if (aRes?.data) {
@@ -4776,45 +4944,95 @@ async function loadAdsFromDB() {
       createdBy: a.created_by, createdAt: new Date(a.created_at).getTime()
     }));
   }
-  const tRes = await dbQ(d => d.from('ad_tasks').select('*').eq('status','pending').order('created_at', { ascending:false }));
+
+  const isMod = can.isMod(currentUser?.role);
+  const tRes = await dbQ(d => {
+    let q = d.from('ad_tasks').select('*').neq('status','done');
+    if (!isMod) q = q.eq('assignee_id', currentUser.id);   // target → hanya miliknya
+    return q.order('created_at', { ascending:false });
+  });
   if (tRes?.data) {
-    adTasks = tRes.data.map(tk => ({
-      id: tk.id, adId: tk.ad_id, title: tk.title, date: tk.ad_date,
-      category: tk.category, target: tk.target || '', status: tk.status,
-      createdAt: new Date(tk.created_at).getTime()
-    }));
+    adTasks = tRes.data.map(mapTaskRow);
   }
+  await loadLeadCounts();
   updateTaskBadges();
   renderTaskPanel();
 }
 
+/* Hitung jumlah leads per task (untuk badge & rekap) */
+async function loadLeadCounts() {
+  taskLeadCount = {};
+  if (!adTasks.length) return;
+  const ids = adTasks.map(tk => tk.id);
+  const res = await dbQ(d => d.from('leads').select('task_id').in('task_id', ids));
+  if (res?.data) {
+    res.data.forEach(r => { taskLeadCount[r.task_id] = (taskLeadCount[r.task_id]||0) + 1; });
+  }
+}
+
+/* Map satu baris ad_tasks dari DB → objek lokal */
+function mapTaskRow(tk) {
+  return {
+    id: tk.id, adId: tk.ad_id, assignee: tk.assignee_id,
+    title: tk.title, date: tk.ad_date, category: tk.category,
+    status: tk.status,
+    unlockUntil: tk.unlock_until ? new Date(tk.unlock_until).getTime() : null,
+    unlockNote: tk.unlock_note || '',
+    createdAt: new Date(tk.created_at).getTime()
+  };
+}
+
+/* Apakah task boleh diisi leads sekarang (hari-H atau sedang di-unlock) */
+function taskIsOpen(tk) {
+  if (!tk || tk.status === 'done') return false;
+  const today = ymdKey(new Date());
+  if (tk.date === today) return true;
+  if (tk.unlockUntil && tk.unlockUntil > Date.now()) return true;
+  return false;
+}
+
 /* ── Realtime: iklan & task ── */
+let adChannel = null;
 function initAdRealtime() {
   if (!db) return;
-  db.channel('dhp_ads')
+  if (adChannel) { try { adChannel.unsubscribe(); } catch(e){} adChannel = null; }
+  const isMod = can.isMod(currentUser?.role);
+  adChannel = db.channel('dhp_ads')
     .on('postgres_changes', { event:'*', schema:'public', table:'ad_schedule' }, () => {
       loadAdsFromDB().then(() => { if (isAdPageActive()) renderAdScheduler(); });
     })
     .on('postgres_changes', { event:'INSERT', schema:'public', table:'ad_tasks' }, payload => {
       const tk = payload.new;
-      if (tk.status === 'pending' && !adTasks.find(x => x.id === tk.id)) {
-        adTasks.unshift({
-          id: tk.id, adId: tk.ad_id, title: tk.title, date: tk.ad_date,
-          category: tk.category, target: tk.target || '', status:'pending',
-          createdAt: new Date(tk.created_at).getTime()
-        });
+      // Target hanya peduli task miliknya
+      if (!isMod && tk.assignee_id !== currentUser.id) return;
+      if (tk.status !== 'done' && !adTasks.find(x => x.id === tk.id)) {
+        adTasks.unshift(mapTaskRow(tk));
         updateTaskBadges(); renderTaskPanel();
-        // notif task baru juga dorong ke bell panel moderator
+        if (isAdPageActive()) renderAdScheduler();
         pushNotif({ type:'action', msg:`${t('taskNew')}: ${tk.title} · ${tk.category}` });
         toast(`${t('taskNew')} · ${tk.title}`);
       }
     })
     .on('postgres_changes', { event:'UPDATE', schema:'public', table:'ad_tasks' }, payload => {
       const tk = payload.new;
+      if (!isMod && tk.assignee_id !== currentUser.id) return;
       if (tk.status === 'done') {
         adTasks = adTasks.filter(x => x.id !== tk.id);
-        updateTaskBadges(); renderTaskPanel();
+      } else {
+        const i = adTasks.findIndex(x => x.id === tk.id);
+        if (i >= 0) adTasks[i] = mapTaskRow(tk);
+        else adTasks.unshift(mapTaskRow(tk));
+        // Moderator: notif saat ada permintaan buka kunci
+        if (isMod && tk.status === 'unlock_requested') {
+          pushNotif({ type:'action', msg:`${t('unlockReqNotif')}: ${tk.title}` });
+          toast(`${t('unlockReqNotif')} · ${tk.title}`);
+        }
       }
+      updateTaskBadges(); renderTaskPanel();
+      if (isAdPageActive()) renderAdScheduler();
+    })
+    .on('postgres_changes', { event:'*', schema:'public', table:'leads' }, () => {
+      if (isAdPageActive()) renderAdScheduler();
     })
     .subscribe();
 }
@@ -4827,6 +5045,7 @@ function isAdPageActive() {
 /* ── Render entry point ── */
 function renderAdScheduler() {
   buildMonthYearSelects();
+  applyAdHeaderByRole();
   if (adView === 'calendar') {
     document.getElementById('ads-cal-view').style.display = '';
     document.getElementById('ads-tbl-view').style.display = 'none';
@@ -4836,6 +5055,20 @@ function renderAdScheduler() {
     document.getElementById('ads-tbl-view').style.display = '';
     renderAdTable();
   }
+}
+
+/* Sesuaikan judul/subjudul halaman Ad Schedule menurut peran */
+function applyAdHeaderByRole() {
+  const isMod = can.isMod(currentUser?.role);
+  const badge = document.querySelector('#pg-ad_scheduler .mod-badge');
+  const sub   = document.querySelector('#pg-ad_scheduler .ps');
+  if (badge) {
+    badge.textContent = isMod ? '♔ Moderator' : '◆ ' + rn(currentUser.role);
+    badge.style.background = isMod ? '' : (ROLE_COLORS[currentUser.role] || '#888') + '22';
+    badge.style.color      = isMod ? '' : (ROLE_COLORS[currentUser.role] || '#888');
+    badge.style.borderColor = isMod ? '' : (ROLE_COLORS[currentUser.role] || '#888') + '55';
+  }
+  if (sub) sub.textContent = isMod ? t('adSchedulerSub') : t('adSchedulerSubTarget');
 }
 
 function setAdView(v, btn) {
@@ -4878,8 +5111,26 @@ function adGoToday() {
   renderAdScheduler();
 }
 
+/* ── Iklan yang boleh dilihat user saat ini ──
+   Moderator  : semua iklan (draft + published).
+   Admin/B2B  : hanya iklan PUBLISHED yang menargetkan dirinya. */
+function visibleAds() {
+  if (can.isMod(currentUser?.role)) return ads;
+  const me = currentUser.id;
+  return ads.filter(a =>
+    a.status === 'published' &&
+    String(a.target||'').split(',').map(s=>s.trim()).includes(me)
+  );
+}
+
+/* Task milikku pada tanggal tertentu (untuk target) */
+function myTasksOnDate(ymd) {
+  return adTasks.filter(tk => tk.date === ymd && (can.isMod(currentUser?.role) || tk.assignee === currentUser.id));
+}
+
 /* ── Calendar grid ── */
 function renderCalendar() {
+  const isMod  = can.isMod(currentUser?.role);
   const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
   const dows   = currentLang === 'id' ? DOW_ID : DOW_EN;
   const y = adCursor.getFullYear(), m = adCursor.getMonth();
@@ -4894,6 +5145,7 @@ function renderCalendar() {
   const firstDow = new Date(y, m, 1).getDay();
   const daysInMonth = new Date(y, m+1, 0).getDate();
   const todayKey = ymdKey(new Date());
+  const adsView = visibleAds();
 
   let cells = '';
   for (let i = 0; i < firstDow; i++) cells += `<div class="cal-cell empty"></div>`;
@@ -4905,12 +5157,13 @@ function renderCalendar() {
     const hName = holidayName(ymd);
     const isHol = !!RED_DATES[ymd];
     const isToday = ymd === todayKey;
-    const dayAds = ads.filter(a => a.date === ymd);
+    const dayAds = adsView.filter(a => a.date === ymd);
 
     const cls = ['cal-cell'];
     if (isSun) cls.push('is-sun');
     if (isHol) cls.push('is-holiday');
     if (isToday) cls.push('today');
+    if (!isMod && dayAds.length) cls.push('has-mytask');
 
     let chips = '';
     dayAds.slice(0, 3).forEach(a => {
@@ -4919,13 +5172,18 @@ function renderCalendar() {
     });
     if (dayAds.length > 3) chips += `<div class="cal-more">+${dayAds.length-3}</div>`;
 
+    // Hint: moderator → "+", target → ikon task/leads (hanya bila ada task hari itu)
+    const hint = isMod
+      ? `<div class="cal-add-hint">+</div>`
+      : (dayAds.length ? `<div class="cal-task-hint" title="${t('viewTask')}">●</div>` : '');
+
     cells += `
       <div class="${cls.join(' ')}" onclick="openDayModal('${ymd}')">
         ${isHol ? `<div class="cal-holiday-dot" title="${escHtml(hName||'')}"></div>` : ''}
         <div class="cal-daynum">${d}</div>
         ${hName ? `<div class="cal-holiday-tag">${escHtml(hName)}</div>` : ''}
         ${chips}
-        <div class="cal-add-hint">+</div>
+        ${hint}
       </div>`;
   }
   grid.innerHTML = cells;
@@ -4940,7 +5198,7 @@ function renderAdTable() {
 
   const catFilter = document.getElementById('ad-cat-filter')?.value || 'all';
   const prefix = `${y}-${String(m+1).padStart(2,'0')}`;
-  let list = ads.filter(a => a.date.startsWith(prefix));
+  let list = visibleAds().filter(a => a.date.startsWith(prefix));
   if (catFilter !== 'all') list = list.filter(a => a.category === catFilter);
   list.sort((a,b) => a.date.localeCompare(b.date));
 
@@ -4953,6 +5211,34 @@ function renderAdTable() {
     const red = isRedDate(dObj);
     const dateStr = `${dObj.getDate()} ${months[dObj.getMonth()]}`;
     const hol = holidayName(a.date);
+
+    // Untuk target: cari task miliknya pada iklan ini
+    const myTask = !isMod ? adTasks.find(tk => tk.adId === a.id && tk.assignee === currentUser.id) : null;
+    const leadCount = myTask ? (taskLeadCount[myTask.id] || 0) : 0;
+
+    let actionCell;
+    if (isMod) {
+      actionCell = `<div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${a.status!=='published' ? `<button class="btn-sm btn-gold" onclick="publishAd('${a.id}')">${t('publish')}</button>` : ''}
+        <button class="btn-sm btn-edit" onclick="openAdModal('${a.date}','${a.id}')">Edit</button>
+        <button class="btn-sm btn-del" onclick="deleteAd('${a.id}')">Del</button>
+      </div>`;
+    } else if (myTask) {
+      const open = taskIsOpen(myTask);
+      const locked = !open && myTask.status !== 'done';
+      if (myTask.status === 'done') {
+        actionCell = `<span class="ad-status-badge done"><span class="dot"></span>${t('taskDone')}</span>`;
+      } else if (open) {
+        actionCell = `<button class="btn-sm btn-gold" onclick="openLeadsModal('${myTask.id}')">${t('workTask')}${leadCount?` · ${leadCount}`:''}</button>`;
+      } else if (myTask.status === 'unlock_requested') {
+        actionCell = `<span class="lock-badge req">⏳ ${t('unlockPending')}</span>`;
+      } else {
+        actionCell = `<button class="btn-sm btn-lock" onclick="openLeadsModal('${myTask.id}')">🔒 ${t('locked')}</button>`;
+      }
+    } else {
+      actionCell = `<span style="color:var(--muted);font-size:10px">${t('viewOnly')}</span>`;
+    }
+
     return `
     <tr>
       <td style="white-space:nowrap">
@@ -4961,15 +5247,9 @@ function renderAdTable() {
       </td>
       <td style="font-weight:600;color:var(--text)">${escHtml(a.theme)}</td>
       <td><span class="cat-badge cat-${a.category}">${a.category}</span></td>
-      <td style="font-size:11px">${escHtml(targetNames(a.target)) || '<span style="color:var(--muted)">—</span>'}</td>
+      <td style="font-size:11px">${isMod ? (escHtml(targetNames(a.target)) || '<span style="color:var(--muted)">—</span>') : (leadCount ? `${leadCount} ${t('leadsCount')}` : '<span style="color:var(--muted)">—</span>')}</td>
       <td><span class="ad-status-badge ${a.status}"><span class="dot"></span>${a.status==='published'?t('published'):t('draft')}</span></td>
-      <td>
-        ${isMod ? `<div style="display:flex;gap:6px;flex-wrap:wrap">
-          ${a.status!=='published' ? `<button class="btn-sm btn-gold" onclick="publishAd('${a.id}')">${t('publish')}</button>` : ''}
-          <button class="btn-sm btn-edit" onclick="openAdModal('${a.date}','${a.id}')">Edit</button>
-          <button class="btn-sm btn-del" onclick="deleteAd('${a.id}')">Del</button>
-        </div>` : `<span style="color:var(--muted);font-size:10px">${t('viewOnly')}</span>`}
-      </td>
+      <td>${actionCell}</td>
     </tr>`;
   }).join('');
 }
@@ -4983,7 +5263,6 @@ function openDayModal(ymd) {
     : ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const hol = holidayName(ymd);
   const isMod = can.isMod(currentUser?.role);
-  const dayAds = ads.filter(a => a.date === ymd);
 
   document.getElementById('m-title').textContent =
     `${days[dObj.getDay()]}, ${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
@@ -4994,28 +5273,11 @@ function openDayModal(ymd) {
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4"/><path d="M8 5v3.5M8 11h.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
       <span>${escHtml(hol)}</span></div>`;
   }
-  if (dayAds.length) {
-    bodyHtml += `<div class="day-ad-list">` + dayAds.map(a => `
-      <div class="day-ad-item">
-        <div class="dai-top">
-          <div class="dai-theme">${escHtml(a.theme)}</div>
-          <span class="ad-status-badge ${a.status}"><span class="dot"></span>${a.status==='published'?t('published'):t('draft')}</span>
-        </div>
-        <div class="dai-meta">
-          <span class="cat-badge cat-${a.category}">${a.category}</span>
-        </div>
-        ${a.target ? `<div class="dai-target">
-          <span class="dai-target-lbl">${t('adTarget')}</span>
-          <span class="dai-target-names">${escHtml(targetNames(a.target))}</span>
-        </div>` : ''}
-        ${isMod ? `<div class="dai-acts">
-          ${a.status!=='published' ? `<button class="btn-sm btn-gold" onclick="publishAd('${a.id}')">${t('publish')}</button>` : ''}
-          <button class="btn-sm btn-edit" onclick="openAdModal('${ymd}','${a.id}')">Edit</button>
-          <button class="btn-sm btn-del" onclick="deleteAd('${a.id}')">Del</button>
-        </div>` : ''}
-      </div>`).join('') + `</div>`;
+
+  if (isMod) {
+    bodyHtml += renderDayModalMod(ymd);
   } else {
-    bodyHtml += `<div class="day-empty">${t('noAdsThisDay')}</div>`;
+    bodyHtml += renderDayModalTarget(ymd);
   }
   document.getElementById('m-body').innerHTML = bodyHtml;
 
@@ -5024,6 +5286,116 @@ function openDayModal(ymd) {
        <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>`
     : `<button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>`;
   document.getElementById('modal-ov').classList.add('open');
+}
+
+/* Day modal — tampilan MODERATOR (kelola iklan + pantau task per target + approve) */
+function renderDayModalMod(ymd) {
+  const dayAds = ads.filter(a => a.date === ymd);
+  if (!dayAds.length) return `<div class="day-empty">${t('noAdsThisDay')}</div>`;
+
+  return `<div class="day-ad-list">` + dayAds.map(a => {
+    // task per target untuk iklan ini
+    const tasks = adTasks.filter(tk => tk.adId === a.id);
+    const tasksHtml = tasks.length ? `<div class="dai-tasks">` + tasks.map(tk => {
+      const u = getUserMeta(tk.assignee);
+      const clr = ROLE_COLORS[u.role] || '#888';
+      const n = taskLeadCount[tk.id] || 0;
+      let badge;
+      if (tk.status === 'done') badge = `<span class="lock-badge done">✓ ${t('taskDone')}</span>`;
+      else if (tk.status === 'unlock_requested') badge = `<span class="lock-badge req">⏳ ${t('unlockReq')}</span>`;
+      else if (taskIsOpen(tk)) badge = `<span class="lock-badge open">● ${t('taskOpen')}</span>`;
+      else badge = `<span class="lock-badge">🔒 ${t('locked')}</span>`;
+      const approveBtn = tk.status === 'unlock_requested'
+        ? `<button class="btn-sm btn-approve" onclick="approveUnlock('${tk.id}')">${t('approveUnlock')}</button>
+           <button class="btn-sm btn-del" onclick="rejectUnlock('${tk.id}')">${t('reject')}</button>` : '';
+      const finishBtn = (tk.status !== 'done' && n >= 1)
+        ? `<button class="btn-sm btn-gold" onclick="completeTask('${tk.id}')">${t('finishTask')}</button>` : '';
+      return `<div class="dai-task-row">
+        <span class="dai-task-who"><span class="role-dot" style="background:${clr}"></span>${escHtml(u.name)}</span>
+        ${badge}
+        <span class="dai-task-leads">${n} ${t('leadsCount')}</span>
+        ${tk.unlockNote && tk.status==='unlock_requested' ? `<div class="dai-unlock-note">"${escHtml(tk.unlockNote)}"</div>` : ''}
+        <div class="dai-task-acts">${approveBtn}${finishBtn}</div>
+      </div>`;
+    }).join('') + `</div>` : `<div class="dai-no-task">${t('adNotPublished')}</div>`;
+
+    return `
+      <div class="day-ad-item">
+        <div class="dai-top">
+          <div class="dai-theme">${escHtml(a.theme)}</div>
+          <span class="ad-status-badge ${a.status}"><span class="dot"></span>${a.status==='published'?t('published'):t('draft')}</span>
+        </div>
+        <div class="dai-meta"><span class="cat-badge cat-${a.category}">${a.category}</span></div>
+        ${a.target ? `<div class="dai-target">
+          <span class="dai-target-lbl">${t('adTarget')}</span>
+          <span class="dai-target-names">${escHtml(targetNames(a.target))}</span>
+        </div>` : ''}
+        ${tasksHtml}
+        <div class="dai-acts">
+          ${a.status!=='published' ? `<button class="btn-sm btn-gold" onclick="publishAd('${a.id}')">${t('publish')}</button>` : ''}
+          <button class="btn-sm btn-edit" onclick="openAdModal('${ymd}','${a.id}')">Edit</button>
+          <button class="btn-sm btn-del" onclick="deleteAd('${a.id}')">Del</button>
+          ${a.status==='published' ? `<button class="btn-sm btn-view" onclick="openRecapModal('${a.id}')">${t('viewLeads')}</button>` : ''}
+        </div>
+      </div>`;
+  }).join('') + `</div>`;
+}
+
+/* Day modal — tampilan TARGET (admin/b2b): lihat task miliknya & kerjakan */
+function renderDayModalTarget(ymd) {
+  const myAds = visibleAds().filter(a => a.date === ymd);
+  if (!myAds.length) return `<div class="day-empty">${t('noTaskThisDay')}</div>`;
+
+  return `<div class="day-ad-list">` + myAds.map(a => {
+    const tk = adTasks.find(x => x.adId === a.id && x.assignee === currentUser.id);
+    const n = tk ? (taskLeadCount[tk.id] || 0) : 0;
+    let actionHtml = '';
+    if (!tk) {
+      actionHtml = `<div class="dai-no-task">${t('viewOnly')}</div>`;
+    } else if (tk.status === 'done') {
+      actionHtml = `<div class="lock-badge done" style="margin-top:8px">✓ ${t('taskDone')} · ${n} ${t('leadsCount')}</div>`;
+    } else if (taskIsOpen(tk)) {
+      actionHtml = `<div class="dai-acts">
+        <button class="btn-sm btn-gold" onclick="openLeadsModal('${tk.id}')">${t('workTask')}${n?` · ${n}`:''}</button>
+      </div>
+      ${n ? `<div class="dai-await" style="margin-top:6px">${t('awaitMod')}</div>` : ''}`;
+    } else if (tk.status === 'unlock_requested') {
+      actionHtml = `<div class="lock-note">⏳ ${t('unlockPendingMsg')}</div>`;
+    } else {
+      // terkunci
+      actionHtml = `<div class="lock-note">🔒 ${t('lockedMsg')}</div>
+        <div class="dai-acts">
+          <button class="btn-sm btn-gold" onclick="requestUnlockPrompt('${tk.id}')">${t('requestUnlock')}</button>
+          ${n ? `<button class="btn-sm btn-view" onclick="openLeadsModal('${tk.id}')">${t('viewLeads')} (${n})</button>` : ''}
+        </div>`;
+    }
+
+    return `
+      <div class="day-ad-item">
+        <div class="dai-top">
+          <div class="dai-theme">${escHtml(a.theme)}</div>
+          <span class="cat-badge cat-${a.category}">${a.category}</span>
+        </div>
+        <div class="dai-meta">
+          <span style="font-size:11px;color:var(--text2)">${t('forDate')} ${escHtml(fmtDayShort(a.date))}</span>
+        </div>
+        ${actionHtml}
+      </div>`;
+  }).join('') + `</div>`;
+}
+
+/* Helper: metadata user (nama+role) dari roster/presence */
+function getUserMeta(id) {
+  if (LOCAL_USERS[id]) return { id, name: LOCAL_USERS[id].name || id, role: LOCAL_USERS[id].role || 'guest' };
+  const p = presenceMap[id];
+  if (p) return { id, name: p.name || id, role: p.role || 'guest' };
+  return { id, name: id, role: 'guest' };
+}
+
+function fmtDayShort(ymd) {
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const d = new Date(ymd + 'T00:00:00');
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 /* ── Add / Edit ad modal ── */
@@ -5210,6 +5582,8 @@ async function saveAd(thenPublish) {
   const target = targetIds.join(',');
   if (!theme) { toast(t('adFillTheme')); return; }
   if (!date)  { toast(t('tdate')); return; }
+  // Wajib pilih target (admin/b2b) — terutama bila langsung publish
+  if (!targetIds.length) { toast(t('adNeedTarget')); return; }
 
   let savedId = editAdId;
   if (editAdId) {
@@ -5254,27 +5628,35 @@ function targetNames(target) {
 
 async function publishAd(id, skipConfirm) {
   if (!can.isMod(currentUser?.role)) { toast(t('modOnlyAds')); return; }
-  if (!skipConfirm && !confirm(t('publishConfirm'))) return;
   const a = ads.find(x => x.id === id);
-  if (a) a.status = 'published';
+  // Wajib ada target sebelum publish (task dibuat per target)
+  if (!a || !String(a.target||'').split(',').map(s=>s.trim()).filter(Boolean).length) {
+    toast(t('adNeedTarget')); return;
+  }
+  if (!skipConfirm && !confirm(t('publishConfirm'))) return;
+  a.status = 'published';
 
-  // DB publish (membuat task otomatis via RPC)
+  // DB publish → RPC membuat 1 task per target
   let usedRpc = false;
   if (!String(id).startsWith('local_')) {
     const r = await dbQ(d => d.rpc('publish_ad', { p_id: id, p_user_id: currentUser.id }));
-    usedRpc = !!r; // r adalah objek bila berhasil
+    usedRpc = !!r;
+    if (usedRpc) await loadAdsFromDB();   // tarik ulang task per-target dari DB
   }
 
-  // Bila DB tidak tersedia / id lokal → buat task lokal agar fitur tetap jalan
-  if (!usedRpc && a) {
-    const localTask = {
-      id: 'task_' + Date.now(), adId: id, title: a.theme, date: a.date,
-      category: a.category, target: a.target, status: 'pending', createdAt: Date.now()
-    };
-    if (!adTasks.find(x => x.adId === id && x.status === 'pending')) {
-      adTasks.unshift(localTask);
-      pushNotif({ type:'action', msg:`${t('taskNew')}: ${a.theme} · ${a.category}` });
-    }
+  // Fallback lokal (tanpa DB): buat task lokal per target
+  if (!usedRpc) {
+    const targets = String(a.target||'').split(',').map(s=>s.trim()).filter(Boolean);
+    targets.forEach(tid => {
+      if (!adTasks.find(x => x.adId === id && x.assignee === tid)) {
+        adTasks.unshift({
+          id: 'task_' + tid + '_' + Date.now(), adId: id, assignee: tid,
+          title: a.theme, date: a.date, category: a.category,
+          status: 'pending', unlockUntil: null, unlockNote: '', createdAt: Date.now()
+        });
+      }
+    });
+    pushNotif({ type:'action', msg:`${t('taskNew')}: ${a.theme} · ${a.category}` });
   }
 
   closeModal();
@@ -5305,14 +5687,28 @@ async function deleteAd(id) {
    ㉓c TASK NOTIFICATIONS (persistent — tidak hilang sampai dikerjakan)
    ═══════════════════════════════════════════════════════════ */
 function updateTaskBadges() {
-  const n = adTasks.filter(tk => tk.status === 'pending').length;
+  // Hitung task yang butuh perhatian
+  const isMod = can.isMod(currentUser?.role);
+  let n;
+  if (isMod) {
+    // moderator: utamakan jumlah permintaan buka kunci, lalu task aktif
+    n = adTasks.filter(tk => tk.status !== 'done').length;
+  } else {
+    // target: task miliknya yang belum selesai
+    n = adTasks.filter(tk => tk.assignee === currentUser.id && tk.status !== 'done').length;
+  }
+  const unlockReqN = isMod ? adTasks.filter(tk => tk.status === 'unlock_requested').length : 0;
+
   // FAB
   const fab = document.getElementById('task-fab');
   const fabBtn = document.getElementById('task-fab-btn');
   const fabCount = document.getElementById('task-fab-count');
   if (fabCount) { fabCount.textContent = n; fabCount.classList.toggle('show', n > 0); }
-  if (fabBtn)   fabBtn.classList.toggle('has-tasks', n > 0);
-  if (fab && can.isMod(currentUser?.role)) fab.classList.add('visible');
+  if (fabBtn) {
+    fabBtn.classList.toggle('has-tasks', n > 0);
+    fabBtn.classList.toggle('has-urgent', unlockReqN > 0);
+  }
+  if (fab && can.canSeeAds(currentUser?.role)) fab.classList.add('visible');
   // Nav badge
   const navBadge = document.getElementById('ad-task-badge');
   if (navBadge) { navBadge.textContent = n; navBadge.style.display = n > 0 ? '' : 'none'; }
@@ -5323,35 +5719,80 @@ function updateTaskBadges() {
 
 function renderTaskPanel() {
   const body = document.getElementById('task-body'); if (!body) return;
-  const list = adTasks.filter(tk => tk.status === 'pending');
+  const isMod = can.isMod(currentUser?.role);
+  // Subjudul panel sesuai peran
+  const subEl = document.getElementById('tp-sub');
+  if (subEl) subEl.textContent = isMod ? t('taskSub') : t('adSchedulerSubTarget');
+  // moderator lihat semua; target lihat miliknya
+  let list = adTasks.filter(tk => tk.status !== 'done');
+  if (!isMod) list = list.filter(tk => tk.assignee === currentUser.id);
+
   if (!list.length) {
     body.innerHTML = `<div class="tp-empty">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.4"/><path d="M8.5 12.5l2.2 2.2L16 9.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       ${t('noTasks')}</div>`;
     return;
   }
+  // Urutkan: permintaan buka kunci paling atas (untuk moderator)
+  list.sort((a,b) => {
+    const pa = a.status === 'unlock_requested' ? 0 : 1;
+    const pb = b.status === 'unlock_requested' ? 0 : 1;
+    return pa !== pb ? pa - pb : b.createdAt - a.createdAt;
+  });
+
   const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
   body.innerHTML = list.map(tk => {
     const dObj = new Date(tk.date + 'T00:00:00');
     const dateStr = `${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
-    const targetStr = tk.target ? escHtml(targetNames(tk.target)) : '';
+    const n = taskLeadCount[tk.id] || 0;
+    const open = taskIsOpen(tk);
+
+    // Baris status & tombol aksi berbeda per peran & kondisi
+    let statusPill, actions = '';
+    if (tk.status === 'unlock_requested') {
+      statusPill = `<span class="lock-badge req">⏳ ${t('unlockReq')}</span>`;
+    } else if (open) {
+      statusPill = `<span class="lock-badge open">● ${t('taskOpen')}</span>`;
+    } else {
+      statusPill = `<span class="lock-badge">🔒 ${t('locked')}</span>`;
+    }
+
+    if (isMod) {
+      const who = getUserMeta(tk.assignee);
+      if (tk.status === 'unlock_requested') {
+        actions = `<button class="btn-sm btn-approve" onclick="approveUnlock('${tk.id}')">${t('approveUnlock')}</button>
+                   <button class="btn-sm btn-del" onclick="rejectUnlock('${tk.id}')">${t('reject')}</button>`;
+      }
+      actions += `<button class="btn-sm btn-view" onclick="openRecapModal('${tk.adId}')">${t('viewLeads')} (${n})</button>`;
+      // Moderator menandai selesai — aktif hanya bila ada ≥1 lead
+      if (n >= 1) actions += `<button class="btn-sm btn-gold" onclick="completeTask('${tk.id}')">${t('finishTask')}</button>`;
+      var whoLine = `<div class="tc-target"><span class="tc-target-lbl">${t('assignee')}</span><span class="tc-target-names">${escHtml(who.name)}</span></div>`;
+    } else {
+      var whoLine = '';
+      if (open) {
+        actions = `<button class="btn-sm btn-gold" onclick="openLeadsModal('${tk.id}')">${t('workTask')}${n?` · ${n}`:''}</button>`;
+      } else if (tk.status === 'unlock_requested') {
+        actions = `<span style="font-size:10px;color:var(--amber)">${t('unlockPendingMsg')}</span>`;
+      } else {
+        actions = `<button class="btn-sm btn-gold" onclick="requestUnlockPrompt('${tk.id}')">${t('requestUnlock')}</button>`;
+        if (n) actions += `<button class="btn-sm btn-view" onclick="openLeadsModal('${tk.id}')">${t('viewLeads')} (${n})</button>`;
+      }
+    }
+
     return `
     <div class="task-card cat-${tk.category}">
-      <div class="tc-tag"><span class="new-pill">${t('taskNew')}</span> ${tk.category}</div>
+      <div class="tc-tag"><span class="new-pill">${tk.status==='unlock_requested'?'⏳':t('taskNew')}</span> ${tk.category} ${statusPill}</div>
       <div class="tc-theme">${escHtml(tk.title)}</div>
       <div class="tc-meta">
         <span class="cat-badge cat-${tk.category}">${tk.category}</span>
         <span style="font-size:10px;color:var(--text2)">📅 ${dateStr}</span>
+        ${n ? `<span style="font-size:10px;color:var(--green)">▣ ${n} ${t('leadsCount')}</span>` : ''}
       </div>
-      ${targetStr ? `<div class="tc-target">
-        <span class="tc-target-lbl">${t('adTarget')}</span>
-        <span class="tc-target-names">${targetStr}</span>
-      </div>` : ''}
-      <div class="tc-foot">
+      ${whoLine}
+      ${tk.unlockNote && tk.status==='unlock_requested' ? `<div class="tc-target"><span class="tc-target-names" style="font-style:italic">"${escHtml(tk.unlockNote)}"</span></div>` : ''}
+      <div class="tc-foot" style="flex-wrap:wrap;gap:6px">
         <span class="tc-time">${timeAgo(tk.createdAt)}</span>
-        <button class="tc-done-btn" title="${t('markDone')}" onclick="completeTask('${tk.id}')">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>
-        </button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">${actions}</div>
       </div>
     </div>`;
   }).join('');
@@ -5364,20 +5805,279 @@ function toggleTaskPanel() {
   if (p.classList.contains('open')) renderTaskPanel();
 }
 
+/* HANYA moderator yang menandai task selesai (wajib ada minimal 1 lead) */
 async function completeTask(id) {
-  if (!can.isMod(currentUser?.role)) { toast(t('modOnlyAds')); return; }
-  adTasks = adTasks.filter(x => x.id !== id);
+  const tk = adTasks.find(x => x.id === id);
+  if (!tk) return;
+  if (!can.isMod(currentUser?.role)) { toast(t('completeModOnly')); return; }
+  const n = taskLeadCount[id] || 0;
+  if (n < 1) { toast(t('needLeadFirst')); return; }
+  if (!confirm(t('finishConfirm'))) return;
+
   if (!String(id).startsWith('task_')) {
-    await dbQ(d => d.rpc('complete_ad_task', { p_task_id: id, p_user_id: currentUser.id }));
+    const res = await dbQ(d => d.rpc('complete_ad_task', { p_task_id: id, p_user_id: currentUser.id }));
+    if (res && res.error) {
+      const m = String(res.error.message||'');
+      if (m.includes('NEED_LEAD')) { toast(t('needLeadFirst')); return; }
+      toast(t('taskCompleteErr')); return;
+    }
   }
+  adTasks = adTasks.filter(x => x.id !== id);
   toast(t('taskDone'));
+  closeModal();
   updateTaskBadges();
   renderTaskPanel();
-  // Tutup panel bila kosong
-  if (!adTasks.length) {
-    const p = document.getElementById('task-panel');
-    if (p) setTimeout(() => p.classList.remove('open'), 400);
+  renderAdScheduler();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LEADS — form input oleh target (admin/b2b)
+   ═══════════════════════════════════════════════════════════ */
+let activeLeadTask = null;
+
+/* Validasi & normalisasi nomor WA → +62XXXXXXXXX (sisi klien) */
+function normalizeWA(raw) {
+  let v = String(raw||'').replace(/[^0-9+]/g, '');
+  if (v.startsWith('0'))    v = '+62' + v.slice(1);
+  if (v.startsWith('62'))   v = '+' + v;
+  if (v.startsWith('+620')) v = '+62' + v.slice(4);
+  if (!v.startsWith('+62') && /^[0-9]/.test(v)) v = '+62' + v;
+  return v;
+}
+function isValidWA(v) { return /^\+628[0-9]{7,12}$/.test(v); }
+
+async function openLeadsModal(taskId) {
+  const tk = adTasks.find(x => x.id === taskId);
+  if (!tk) { toast(t('taskNotFound')); return; }
+  if (!can.isMod(currentUser?.role) && tk.assignee !== currentUser.id) { toast(t('notYourTask')); return; }
+  activeLeadTask = tk;
+  const open = taskIsOpen(tk);
+  const readOnly = !open || can.isMod(currentUser?.role); // moderator hanya lihat; target isi bila open
+
+  document.getElementById('m-title').textContent = `${t('leadsFor')}: ${tk.title}`;
+
+  // Muat leads yang sudah ada untuk task ini
+  let existing = [];
+  const res = await dbQ(d => d.from('leads').select('*').eq('task_id', taskId).order('created_at', { ascending:false }));
+  if (res?.data) existing = res.data;
+
+  const lockNote = !open
+    ? `<div class="lock-note" style="margin-bottom:12px">🔒 ${t('lockedMsg')}
+         ${tk.status!=='unlock_requested' && tk.assignee===currentUser.id ? `<button class="btn-sm btn-gold" style="margin-top:8px" onclick="requestUnlockPrompt('${tk.id}')">${t('requestUnlock')}</button>` : ''}
+         ${tk.status==='unlock_requested' ? `<div style="margin-top:6px;color:var(--amber);font-size:11px">⏳ ${t('unlockPendingMsg')}</div>` : ''}
+       </div>` : '';
+
+  const formHtml = (open && !can.isMod(currentUser?.role)) ? `
+    <div class="lead-form">
+      <div class="fg"><label>${t('leadName')} *</label>
+        <input class="fi" id="lead-name" placeholder="${t('leadNamePh')}"/></div>
+      <div class="fg"><label>${t('leadWA')} *</label>
+        <div class="wa-wrap">
+          <span class="wa-prefix">+62</span>
+          <input class="fi wa-input" id="lead-wa" inputmode="numeric" placeholder="81234567890" oninput="validateWAField()"/>
+        </div>
+        <div class="wa-hint" id="wa-hint">${t('waHint')}</div>
+      </div>
+      <div class="fg"><label>${t('leadRegion')} *</label>
+        <input class="fi" id="lead-region" placeholder="${t('leadRegionPh')}"/></div>
+      <div class="fg"><label>${t('leadCategory')} *</label>
+        <div class="lead-cat-row" id="lead-cat-row">
+          ${['Cold','Warm','Hot','Closing'].map((c,i) => `
+            <button type="button" class="lead-cat-btn lc-${c.toLowerCase()}${i===0?' active':''}" data-cat="${c}" onclick="pickLeadCat(this)">${t('leadCat'+c)}</button>
+          `).join('')}
+        </div>
+        <input type="hidden" id="lead-cat" value="Cold"/>
+      </div>
+      <div class="fg"><label>${t('leadNote')}</label>
+        <input class="fi" id="lead-note" placeholder="${t('leadNotePh')}"/></div>
+    </div>` : '';
+
+  const listHtml = `
+    <div class="lead-list-head">${t('leadsEntered')} (${existing.length})</div>
+    <div class="lead-list" id="lead-list">
+      ${existing.length ? existing.map(l => leadRowHtml(l)).join('') : `<div class="lead-empty">${t('noLeadsYet')}</div>`}
+    </div>`;
+
+  document.getElementById('m-body').innerHTML = lockNote + formHtml + listHtml;
+
+  document.getElementById('m-foot').innerHTML = (open && !can.isMod(currentUser?.role))
+    ? `<button class="btn-sm btn-cancel" onclick="closeModal()">${t('close')}</button>
+       <button class="btn-sm btn-gold" onclick="submitLead()">${t('addLeadBtn')}</button>`
+    : `<button class="btn-sm btn-cancel" onclick="closeModal()">${t('close')}</button>`;
+
+  document.getElementById('modal-ov').classList.add('open');
+}
+
+function leadRowHtml(l) {
+  const catCls = (l.category||'Cold').toLowerCase();
+  return `<div class="lead-row">
+    <div class="lead-row-main">
+      <span class="lead-row-name">${escHtml(l.name)}</span>
+      <span class="lead-cat-badge lc-${catCls}">${t('leadCat'+(l.category||'Cold'))}</span>
+    </div>
+    <div class="lead-row-meta">
+      <span>📱 ${escHtml(l.wa_phone)}</span>
+      <span>📍 ${escHtml(l.region)}</span>
+    </div>
+    ${l.note ? `<div class="lead-row-note">${escHtml(l.note)}</div>` : ''}
+  </div>`;
+}
+
+function pickLeadCat(btn) {
+  document.querySelectorAll('#lead-cat-row .lead-cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('lead-cat').value = btn.dataset.cat;
+}
+
+function validateWAField() {
+  const input = document.getElementById('lead-wa');
+  const hint  = document.getElementById('wa-hint');
+  if (!input || !hint) return true;
+  const full = normalizeWA('+62' + input.value.replace(/^\+?62/, ''));
+  if (!input.value) { hint.textContent = t('waHint'); hint.className = 'wa-hint'; return false; }
+  if (isValidWA(full)) { hint.textContent = `✓ ${full}`; hint.className = 'wa-hint ok'; return true; }
+  hint.textContent = `✕ ${t('waInvalid')}`; hint.className = 'wa-hint err'; return false;
+}
+
+async function submitLead() {
+  const tk = activeLeadTask;
+  if (!tk) return;
+  const name   = document.getElementById('lead-name').value.trim();
+  const waRaw  = document.getElementById('lead-wa').value.trim();
+  const region = document.getElementById('lead-region').value.trim();
+  const cat    = document.getElementById('lead-cat').value;
+  const note   = document.getElementById('lead-note').value.trim();
+
+  if (!name)   { toast(t('leadNeedName'));   return; }
+  // Gabungkan dengan prefix +62 yang ditampilkan
+  const wa = normalizeWA('+62' + waRaw.replace(/^\+?62/, ''));
+  if (!isValidWA(wa)) { toast(t('waInvalidToast')); shake(document.getElementById('lead-wa')); return; }
+  if (!region) { toast(t('leadNeedRegion')); return; }
+
+  // Cek gerbang waktu sekali lagi (jaga-jaga lewat tengah malam saat form terbuka)
+  if (!taskIsOpen(tk)) { toast(t('lockedMsg')); closeModal(); openLeadsModal(tk.id); return; }
+
+  let ok = false;
+  if (!String(tk.id).startsWith('task_')) {
+    const res = await dbQ(d => d.rpc('add_lead', {
+      p_task_id: tk.id, p_user_id: currentUser.id,
+      p_name: name, p_wa: wa, p_region: region, p_category: cat, p_note: note || null
+    }));
+    if (res && res.data) ok = true;
+    else if (res && res.error) {
+      const m = String(res.error.message||'');
+      if (m.includes('TASK_LOCKED')) { toast(t('lockedMsg')); }
+      else if (m.includes('WA_INVALID')) { toast(t('waInvalidToast')); }
+      else if (m.includes('NAME_REQUIRED')) { toast(t('leadNeedName')); }
+      else if (m.includes('REGION_REQUIRED')) { toast(t('leadNeedRegion')); }
+      else { toast(t('leadSaveErr')); }
+      return;
+    }
+  } else {
+    ok = true; // mode lokal tanpa DB
   }
+
+  // Update cache hitungan & UI
+  taskLeadCount[tk.id] = (taskLeadCount[tk.id] || 0) + 1;
+  toast(t('leadAdded'));
+  pushActivity(`Lead: ${name} (${cat}) · ${tk.title}`, 'info');
+  // Reset form & refresh daftar
+  openLeadsModal(tk.id);
+  updateTaskBadges();
+  renderAdScheduler();
+}
+
+/* ── Minta buka kunci (target) ── */
+async function requestUnlockPrompt(taskId) {
+  const tk = adTasks.find(x => x.id === taskId);
+  if (!tk) return;
+  if (tk.assignee !== currentUser.id) { toast(t('notYourTask')); return; }
+  const note = prompt(t('unlockReason'), '');
+  if (note === null) return; // batal
+  if (!String(taskId).startsWith('task_')) {
+    const res = await dbQ(d => d.rpc('request_unlock', { p_task_id: taskId, p_user_id: currentUser.id, p_note: note || null }));
+    if (!res) { toast(t('unlockReqErr')); return; }
+  }
+  tk.status = 'unlock_requested';
+  tk.unlockNote = note || '';
+  toast(t('unlockRequested'));
+  pushActivity(`Minta buka kunci: ${tk.title}`, 'info');
+  closeModal();
+  updateTaskBadges(); renderTaskPanel(); renderAdScheduler();
+}
+
+/* ── Approve buka kunci (moderator) ── */
+async function approveUnlock(taskId) {
+  if (!can.isMod(currentUser?.role)) { toast(t('modOnly')); return; }
+  const tk = adTasks.find(x => x.id === taskId);
+  if (!String(taskId).startsWith('task_')) {
+    const res = await dbQ(d => d.rpc('approve_unlock', { p_task_id: taskId, p_user_id: currentUser.id }));
+    if (!res) { toast(t('unlockApproveErr')); return; }
+  }
+  if (tk) {
+    tk.status = 'pending';
+    // buka 24 jam dari waktu approve
+    tk.unlockUntil = Date.now() + 24 * 60 * 60 * 1000;
+    tk.unlockNote = '';
+  }
+  toast(t('unlockApproved'));
+  pushActivity(`Kunci dibuka: ${tk?tk.title:''}`, 'info');
+  closeModal();
+  updateTaskBadges(); renderTaskPanel(); renderAdScheduler();
+}
+
+/* ── Tolak permintaan buka kunci (moderator) ── */
+async function rejectUnlock(taskId) {
+  if (!can.isMod(currentUser?.role)) { toast(t('modOnly')); return; }
+  const tk = adTasks.find(x => x.id === taskId);
+  if (!String(taskId).startsWith('task_')) {
+    await dbQ(d => d.rpc('reject_unlock', { p_task_id: taskId, p_user_id: currentUser.id }));
+  }
+  if (tk) { tk.status = 'pending'; tk.unlockNote = ''; }
+  toast(t('unlockRejected'));
+  closeModal();
+  updateTaskBadges(); renderTaskPanel(); renderAdScheduler();
+}
+
+/* ── Rekap leads untuk MODERATOR (semua target pada 1 iklan) ── */
+async function openRecapModal(adId) {
+  if (!can.isMod(currentUser?.role)) { toast(t('modOnly')); return; }
+  const a = ads.find(x => x.id === adId);
+  document.getElementById('m-title').textContent = `${t('leadsRecap')}: ${a?a.theme:''}`;
+
+  let rows = [];
+  if (!String(adId).startsWith('local_')) {
+    const res = await dbQ(d => d.from('leads').select('*').eq('ad_id', adId).order('created_at', { ascending:false }));
+    if (res?.data) rows = res.data;
+  }
+
+  // Kelompokkan per owner
+  const byOwner = {};
+  rows.forEach(l => { (byOwner[l.owner_id] = byOwner[l.owner_id] || []).push(l); });
+
+  let body = '';
+  if (!rows.length) {
+    body = `<div class="lead-empty">${t('noLeadsYet')}</div>`;
+  } else {
+    body = `<div class="recap-summary">
+      <span>${t('totalLeads')}: <b>${rows.length}</b></span>
+      ${['Cold','Warm','Hot','Closing'].map(c => {
+        const n = rows.filter(r => r.category===c).length;
+        return n ? `<span class="lead-cat-badge lc-${c.toLowerCase()}">${t('leadCat'+c)}: ${n}</span>` : '';
+      }).join('')}
+    </div>`;
+    body += Object.entries(byOwner).map(([owner, list]) => {
+      const u = getUserMeta(owner);
+      const clr = ROLE_COLORS[u.role] || '#888';
+      return `<div class="recap-owner">
+        <div class="recap-owner-head"><span class="role-dot" style="background:${clr}"></span>${escHtml(u.name)} <span style="color:var(--muted)">· ${list.length} ${t('leadsCount')}</span></div>
+        ${list.map(l => leadRowHtml(l)).join('')}
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('m-body').innerHTML = body;
+  document.getElementById('m-foot').innerHTML = `<button class="btn-sm btn-cancel" onclick="closeModal()">${t('close')}</button>`;
+  document.getElementById('modal-ov').classList.add('open');
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -5386,7 +6086,9 @@ async function completeTask(id) {
 function navTo(page, btn) {
   const r = currentUser.role;
   // Moderator-only pages
-  if (['registrations','users','ad_scheduler'].includes(page) && !can.isMod(r)) { toast('Moderator access required'); return; }
+  if (['registrations','users'].includes(page) && !can.isMod(r)) { toast('Moderator access required'); return; }
+  // Ad Schedule: moderator + admin/b2b (target)
+  if (page === 'ad_scheduler' && !can.canSeeAds(r)) { toast('Ad Schedule access required'); return; }
   if (page === 'settings' && currentUser.id !== HEAD_MODERATOR_ID) { toast('Sovereign Moderator access required'); return; }
   // Studio pages — role-specific
   if (page === 'content_studio' && !can.isContent(r) && !can.isMod(r)) { toast('Content Creator access required'); return; }
