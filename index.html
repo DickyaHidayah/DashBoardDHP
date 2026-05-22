@@ -1462,6 +1462,14 @@ body.light .unlock-task-theme{color:#1a1208}
   body.nav-on #nav-veil{display:block;opacity:1}
 }
 
+
+/* ── TASK REFRESH indicator ── */
+@keyframes spin-once {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+#ads-refresh-btn:active svg { animation: spin-once .5s ease; }
+.tp-lastupd { margin-left: auto; }
 </style>
 </head>
 <body>
@@ -2689,6 +2697,10 @@ function initRealtimePresence(userId, role, name) {
         presChannel.track({ userId:currentUser.id, role:currentUser.role, name:currentUser.name, loginAt:presenceMap[currentUser.id]?.loginAt||Date.now(), ts:Date.now() });
         if (presenceMap[currentUser.id]) { presenceMap[currentUser.id].online = true; presenceMap[currentUser.id].lastSeen = Date.now(); }
         refreshPresenceUI();
+        // Non-mod: reload tasks saat tab aktif kembali (bisa ada task baru saat di background)
+        if (db && can.canSeeAds(currentUser.role) && !can.isMod(currentUser.role)) {
+          loadAdsFromDB().then(() => refreshAdViews());
+        }
       }
     });
     const bail = () => { try { if (presChannel) presChannel.untrack(); } catch(e){} };
@@ -3981,6 +3993,7 @@ function handleLogout() {
     if (currentUser.role === 'guest') releaseGuest(currentUser.id);
     if (presChannel) { presChannel.untrack(); presChannel.unsubscribe(); presChannel = null; }
     if (adChannel) { try { adChannel.unsubscribe(); } catch(e){} adChannel = null; }
+    stopAdPolling();
     if (presHB) { clearInterval(presHB); presHB = null; }
     if (presStaleIv) { clearInterval(presStaleIv); presStaleIv = null; }
     dbQ(d => d.rpc('update_user_presence', { p_user_id:currentUser.id, p_event:'logout' }));
@@ -5034,6 +5047,48 @@ function taskIsOpen(tk) {
 
 /* ── Realtime: iklan & task ── */
 let adChannel = null;
+let adPollInterval = null;   // polling fallback untuk non-mod
+
+/* Poll task dari DB setiap N detik (fallback realtime) */
+function startAdPolling(intervalMs) {
+  if (adPollInterval) { clearInterval(adPollInterval); adPollInterval = null; }
+  if (!db) return;
+  adPollInterval = setInterval(async () => {
+    if (!currentUser || !can.canSeeAds(currentUser.role)) return;
+    const isMod = can.isMod(currentUser.role);
+    const myUserId = currentUser.id;
+    const tRes = await dbQ(d => {
+      let q = d.from('ad_tasks').select('*').neq('status','done');
+      if (!isMod) q = q.eq('assignee_id', myUserId);
+      return q.order('created_at', { ascending:false });
+    });
+    if (!tRes?.data) return;
+    const freshTasks = tRes.data.map(mapTaskRow);
+    // Cek apakah ada task baru
+    const prevIds = new Set(adTasks.map(t => t.id));
+    const newOnes = freshTasks.filter(t => !prevIds.has(t.id));
+    if (newOnes.length || freshTasks.length !== adTasks.length) {
+      adTasks = freshTasks;
+      await loadLeadCounts();
+      updateTaskBadges();
+      renderTaskPanel();
+      refreshAdViews();
+      // Notif untuk task baru
+      newOnes.forEach(t => {
+        pushNotif({ type:'action', msg:`${t_('taskNew')}: ${t.title} · ${t.category}` });
+        toast(`✨ ${t_('taskNew')} · ${t.title}`);
+      });
+    }
+  }, intervalMs);
+}
+
+/* Singkatan t() agar bisa dipanggil di luar konteks render (saat polling) */
+function t_(key) { try { return t(key); } catch(e) { return key; } }
+
+function stopAdPolling() {
+  if (adPollInterval) { clearInterval(adPollInterval); adPollInterval = null; }
+}
+
 function initAdRealtime() {
   if (!db) return;
   if (adChannel) { try { adChannel.unsubscribe(); } catch(e){} adChannel = null; }
@@ -5044,6 +5099,7 @@ function initAdRealtime() {
     })
     .on('postgres_changes', { event:'INSERT', schema:'public', table:'ad_tasks' }, payload => {
       const tk = payload.new;
+      console.log('[DHP] Task INSERT received:', tk.assignee_id, '| me:', currentUser?.id, '| isMod:', isMod);
       // Target hanya peduli task miliknya (assignee_id = user_id teks, bukan UUID)
       if (!isMod && tk.assignee_id !== (currentUser && currentUser.id)) return;
       if (tk.status !== 'done' && !adTasks.find(x => x.id === tk.id)) {
@@ -5080,7 +5136,17 @@ function initAdRealtime() {
       if (document.getElementById('pg-ad_customers')?.classList.contains('active')) renderAdCustomers();
       if (isTaskPageActive()) renderAdTaskPage();
     })
-    .subscribe();
+    .subscribe(status => {
+      // Jika realtime tersambung, non-mod juga langsung reload task
+      if (status === 'SUBSCRIBED' && currentUser && !can.isMod(currentUser.role)) {
+        loadAdsFromDB();
+      }
+    });
+
+  // Polling fallback: non-mod poll setiap 12 detik, mod setiap 20 detik
+  // supaya task selalu update meski realtime lambat/miss
+  const pollMs = can.isMod(currentUser?.role) ? 20000 : 12000;
+  startAdPolling(pollMs);
 }
 
 function isAdPageActive() {
@@ -5125,6 +5191,33 @@ function applyAdHeaderByRole() {
     badge.style.borderColor = isMod ? '' : (ROLE_COLORS[currentUser.role] || '#888') + '55';
   }
   if (sub) sub.textContent = isMod ? t('adSchedulerSub') : t('adSchedulerSubTarget');
+
+  // Tombol refresh manual untuk non-mod (tampil di toolbar)
+  let refreshBtn = document.getElementById('ads-refresh-btn');
+  if (!isMod) {
+    if (!refreshBtn) {
+      const toolbar = document.querySelector('#pg-ad_scheduler .ads-toolbar');
+      if (toolbar) {
+        refreshBtn = document.createElement('button');
+        refreshBtn.id = 'ads-refresh-btn';
+        refreshBtn.className = 'ads-nav-btn ads-today-btn';
+        refreshBtn.title = 'Refresh tasks';
+        refreshBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2.5 8a5.5 5.5 0 1 1 1.1 3.3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M2.5 11.5V8h3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        refreshBtn.onclick = async () => {
+          refreshBtn.style.opacity = '0.5';
+          refreshBtn.style.pointerEvents = 'none';
+          await loadAdsFromDB();
+          refreshAdViews();
+          refreshBtn.style.opacity = '';
+          refreshBtn.style.pointerEvents = '';
+          toast('✓ Tasks diperbarui');
+        };
+        toolbar.appendChild(refreshBtn);
+      }
+    }
+  } else {
+    if (refreshBtn) refreshBtn.remove();
+  }
 }
 
 function setAdView(v, btn) {
@@ -5729,6 +5822,8 @@ async function publishAd(id, skipConfirm) {
   updateTaskBadges();
   renderTaskPanel();
   renderAdScheduler();
+  // Refresh halaman task jika sedang aktif
+  if (isTaskPageActive()) renderAdTaskPage();
 }
 
 async function deleteAd(id) {
@@ -5790,6 +5885,18 @@ function renderTaskPanel() {
   // moderator lihat semua; target lihat miliknya
   let list = adTasks.filter(tk => tk.status !== 'done');
   if (!isMod) list = list.filter(tk => tk.assignee === currentUser.id);
+  // Untuk non-mod: tampilkan waktu update terakhir di foot panel
+  if (!isMod) {
+    const foot = document.getElementById('task-panel')?.querySelector('.tp-foot');
+    if (foot && !foot.querySelector('.tp-lastupd')) {
+      const upd = document.createElement('span');
+      upd.className = 'tp-lastupd';
+      upd.style.cssText = 'font-size:9px;color:var(--muted);opacity:.6';
+      foot.appendChild(upd);
+    }
+    const updEl = document.getElementById('task-panel')?.querySelector('.tp-lastupd');
+    if (updEl) updEl.textContent = '✓ ' + new Date().toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit'});
+  }
 
   if (!list.length) {
     body.innerHTML = `<div class="tp-empty">
@@ -5866,7 +5973,14 @@ function toggleTaskPanel() {
   const p = document.getElementById('task-panel');
   if (!p) return;
   p.classList.toggle('open');
-  if (p.classList.contains('open')) renderTaskPanel();
+  if (p.classList.contains('open')) {
+    // Non-mod: reload task dari DB saat buka task panel
+    if (db && currentUser && !can.isMod(currentUser.role)) {
+      loadAdsFromDB().then(() => renderTaskPanel());
+    } else {
+      renderTaskPanel();
+    }
+  }
 }
 
 /* HANYA moderator yang menandai task selesai (wajib ada minimal 1 lead) */
@@ -6405,9 +6519,23 @@ function navTo(page, btn) {
   if (page === 'presence')        renderPresencePage();
   if (page === 'content_studio')  renderContentStudio();
   if (page === 'live_studio')     renderLiveStudio();
-  if (page === 'ad_scheduler')    renderAdScheduler();
+  if (page === 'ad_scheduler')    {
+    // Non-mod: reload task dari DB setiap kali buka halaman (supaya selalu fresh)
+    if (db && currentUser && !can.isMod(currentUser.role)) {
+      loadAdsFromDB().then(() => renderAdScheduler());
+    } else {
+      renderAdScheduler();
+    }
+  }
   if (page === 'ad_customers')    renderAdCustomers();
-  if (page === 'ad_task')         renderAdTaskPage();
+  if (page === 'ad_task')         {
+    // Non-mod: reload task dari DB setiap kali buka halaman
+    if (db && currentUser && !can.isMod(currentUser.role)) {
+      loadAdsFromDB().then(() => renderAdTaskPage());
+    } else {
+      renderAdTaskPage();
+    }
+  }
   // Auto-close drawer on mobile after navigating
   navClose();
 }
