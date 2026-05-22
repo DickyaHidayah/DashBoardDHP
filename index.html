@@ -1215,6 +1215,74 @@ body.light .lead-row,body.light .recap-summary{background:var(--surface);border:
 body.light .lead-row-name{color:#1a1208}
 body.light .wa-prefix{background:var(--surface3);color:var(--gold-dk)}
 
+/* ════════════ v4.1 — Ads Customers · Ads Task · Unlock form ════════════ */
+/* Ads Customers — stats strip */
+.adcust-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.adcust-stat{flex:1;min-width:90px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--r);padding:13px 15px;display:flex;flex-direction:column;gap:3px}
+.adcust-stat .acs-num{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;line-height:1;color:var(--gold-hi)}
+.adcust-stat .acs-lbl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text2)}
+.adcust-stat.lc-cold{border-color:rgba(126,168,201,.3)} .adcust-stat.lc-cold .acs-num{color:var(--blue)}
+.adcust-stat.lc-warm{border-color:rgba(232,184,110,.3)} .adcust-stat.lc-warm .acs-num{color:var(--amber)}
+.adcust-stat.lc-hot{border-color:rgba(232,112,112,.3)} .adcust-stat.lc-hot .acs-num{color:var(--red)}
+.adcust-stat.lc-closing{border-color:rgba(122,191,142,.3)} .adcust-stat.lc-closing .acs-num{color:var(--green)}
+
+.adcust-search{font-size:12px}
+.adcust-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:auto}
+.adcust-table{width:100%;border-collapse:collapse;font-size:12px}
+.adcust-table th{text-align:left;padding:12px 14px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text2);font-weight:700;background:var(--surface2);border-bottom:1px solid var(--border-hi);white-space:nowrap}
+.adcust-table td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+.adcust-table tr:last-child td{border-bottom:none}
+.adcust-table tr:hover td{background:rgba(201,169,110,.04)}
+.adcust-owner{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text)}
+.adcust-owner .role-dot{width:7px;height:7px;border-radius:50%}
+.wa-link{color:var(--green);text-decoration:none;font-weight:500}
+.wa-link:hover{text-decoration:underline}
+.tbl-empty{text-align:center;padding:34px;color:var(--muted);font-style:italic;font-size:12px}
+body.light .adcust-table-wrap,body.light .adcust-stat{background:var(--surface);border:1px solid var(--border-hi)}
+body.light .adcust-table th{background:var(--bg3);color:#1a1208}
+body.light .adcust-stat .acs-num{color:var(--gold-dk)}
+
+/* Ads Task page — card grid */
+.adtask-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.adtask-card{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--border-hi);
+  border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px}
+.adtask-card.cat-Reseller{border-left-color:#d98ec0}
+.adtask-card.cat-Product{border-left-color:var(--blue)}
+.adtask-card.cat-B2B{border-left-color:var(--amber)}
+.atc-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.atc-theme{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;color:var(--text);line-height:1.2}
+.atc-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--text2)}
+.atc-assignee{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;
+  padding-top:9px;border-top:1px dashed var(--border)}
+.atc-assignee-lbl{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.atc-assignee-name{display:inline-flex;align-items:center;gap:5px;font-weight:600;color:var(--text)}
+.atc-assignee-name .role-dot{width:7px;height:7px;border-radius:50%}
+.atc-note{font-size:11px;font-style:italic;color:var(--amber);background:rgba(232,184,110,.08);
+  border-radius:7px;padding:7px 10px}
+.atc-acts{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto;padding-top:4px}
+.atc-await{font-size:10px;color:var(--amber);font-style:italic}
+.adtask-empty{grid-column:1/-1;text-align:center;padding:50px 20px;color:var(--muted);font-size:13px;font-style:italic}
+.adtask-empty svg{display:block;margin:0 auto 14px;opacity:.35}
+body.light .adtask-card{background:var(--surface);border:1px solid var(--border-hi);border-left:3px solid var(--border-hi)}
+body.light .atc-theme{color:#1a1208}
+
+/* Unlock request form */
+.unlock-form{display:flex;flex-direction:column;align-items:center;text-align:center}
+.unlock-lockicon{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:rgba(232,184,110,.1);border:1px solid rgba(232,184,110,.3);color:var(--amber);margin-bottom:14px}
+.unlock-task-info{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:13px;margin-bottom:14px}
+.unlock-task-theme{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--text);margin-bottom:6px}
+.unlock-task-meta{display:flex;align-items:center;justify-content:center;gap:8px}
+.unlock-desc{font-size:12px;color:var(--text2);line-height:1.6;margin:0 0 16px;max-width:380px}
+.unlock-form .fg{width:100%;text-align:left}
+.unlock-textarea{resize:vertical;min-height:70px;font-family:inherit;line-height:1.5}
+.unlock-charcount{text-align:right;font-size:10px;color:var(--muted);margin-top:4px}
+body.light .unlock-task-info{background:var(--surface);border:1px solid var(--border-hi)}
+body.light .unlock-task-theme{color:#1a1208}
+
 /* ════════════════════════ RESPONSIVE ════════════════════════ */
 @media(max-width:480px){
   .stats-grid{grid-template-columns:1fr 1fr}
@@ -1743,7 +1811,7 @@ body.light .wa-prefix{background:var(--surface3);color:var(--gold-dk)}
         <span data-i18n="settings">Settings</span>
       </button>
 
-      <!-- Manage (Moderator only) — Ad Scheduler -->
+      <!-- Manage — Ads Schedule · Ads Customers · Ads Task -->
       <div class="nav-sec-lbl" id="ns-manage" style="display:none" data-i18n="manage">Manage</div>
       <button class="nav-item mod-only" onclick="navTo('ad_scheduler',this)" id="n-ad-scheduler" style="display:none">
         <span class="nav-icon">
@@ -1756,7 +1824,26 @@ body.light .wa-prefix{background:var(--surface3);color:var(--gold-dk)}
             <rect x="9.5" y="9" width="2" height="2" rx=".4" fill="currentColor"/>
           </svg>
         </span>
-        <span data-i18n="adScheduler">Atur Jadwal Iklan</span>
+        <span data-i18n="adsSchedule">Ads Schedule</span>
+      </button>
+      <button class="nav-item mod-only" onclick="navTo('ad_customers',this)" id="n-ad-customers" style="display:none">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="5" r="2.6" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M3 13.5c0-2.5 2.2-4.2 5-4.2s5 1.7 5 4.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span data-i18n="adsCustomers">Ads Customers</span>
+        <span class="nav-badge" id="ad-cust-badge" style="display:none">0</span>
+      </button>
+      <button class="nav-item mod-only" onclick="navTo('ad_task',this)" id="n-ad-task" style="display:none">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="2.5" y="2.5" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M5.5 8l1.6 1.6L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span data-i18n="adsTask">Ads Task</span>
         <span class="nav-badge" id="ad-task-badge" style="display:none">0</span>
       </button>
 
@@ -2027,7 +2114,7 @@ body.light .wa-prefix{background:var(--surface3);color:var(--gold-dk)}
         <div class="ph">
           <div class="ph-left">
             <div class="pt">
-              <span data-i18n="adScheduler">Atur Jadwal Iklan</span>
+              <span data-i18n="adsSchedule">Ads Schedule</span>
               <span class="mod-badge">♔ Moderator</span>
             </div>
             <div class="ps" data-i18n="adSchedulerSub">Kelola tema, kategori &amp; target iklan per tanggal</div>
@@ -2170,23 +2257,66 @@ body.light .wa-prefix{background:var(--surface3);color:var(--gold-dk)}
       </div>
 
       <!-- ⑨ B2B PIPELINE (B2B Marketing) -->
-      <div class="sp" id="pg-pipeline">
+      <!-- ADS CUSTOMERS PAGE — customer relations dari leads -->
+      <div class="sp" id="pg-ad_customers">
         <div class="ph">
           <div class="ph-left">
             <div class="pt">
-              <span data-i18n="b2bPipeline">B2B Pipeline</span>
-              <span class="role-pill" style="background:rgba(126,168,201,.12);color:#7ea8c9;border:1px solid rgba(126,168,201,.3)">
-                <span class="pill-dot" style="background:#7ea8c9"></span> B2B Marketing
-              </span>
+              <span data-i18n="adsCustomers">Ads Customers</span>
+              <span class="mod-badge" id="adcust-badge">◆</span>
             </div>
-            <div class="ps" data-i18n="b2bPipelineSub">Track partnerships and enterprise deals through the funnel</div>
+            <div class="ps" data-i18n="adsCustomersSub">Customer relations — data leads yang sudah masuk</div>
           </div>
           <div class="ph-acts">
-            <button class="btn-add" onclick="openPipelineLead()" data-i18n="addLead">+ Add Lead</button>
+            <div class="ads-month-sel">
+              <input type="text" class="ads-select adcust-search" id="adcust-search" placeholder="Cari nama / WA / wilayah…" oninput="renderAdCustomers()" style="min-width:200px">
+              <select class="ads-select" id="adcust-cat-filter" onchange="renderAdCustomers()">
+                <option value="all" data-i18n="allCats">Semua Kategori</option>
+                <option value="Cold">Cold</option>
+                <option value="Warm">Warm</option>
+                <option value="Hot">Hot</option>
+                <option value="Closing">Closing</option>
+              </select>
+            </div>
           </div>
         </div>
-        <div class="studio-grid" id="b2b-studio-cards"></div>
-        <div class="studio-grid" id="pipeline-board" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))"></div>
+        <div class="adcust-stats" id="adcust-stats"></div>
+        <div class="adcust-table-wrap">
+          <table class="adcust-table">
+            <thead>
+              <tr>
+                <th data-i18n="leadName">Nama</th>
+                <th data-i18n="leadWA">WhatsApp</th>
+                <th data-i18n="leadRegion">Wilayah</th>
+                <th data-i18n="leadCategory">Kategori</th>
+                <th data-i18n="adColumn">Iklan</th>
+                <th data-i18n="ownerColumn">Diinput oleh</th>
+                <th data-i18n="timeColumn">Waktu Input</th>
+              </tr>
+            </thead>
+            <tbody id="adcust-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ADS TASK PAGE — daftar task (sama isinya dengan FAB, tampilan halaman) -->
+      <div class="sp" id="pg-ad_task">
+        <div class="ph">
+          <div class="ph-left">
+            <div class="pt">
+              <span data-i18n="adsTask">Ads Task</span>
+              <span class="mod-badge" id="adtask-badge">◆</span>
+            </div>
+            <div class="ps" id="adtask-sub" data-i18n="adsTaskSub">Tugas iklan — kerjakan dengan mengisi leads</div>
+          </div>
+          <div class="ph-acts">
+            <div class="ads-view-toggle">
+              <button class="ads-vt-btn active" id="adtask-f-active" onclick="setTaskFilter('active',this)" data-i18n="taskFilterActive">Aktif</button>
+              <button class="ads-vt-btn" id="adtask-f-done" onclick="setTaskFilter('done',this)" data-i18n="taskFilterDone">Selesai</button>
+            </div>
+          </div>
+        </div>
+        <div class="adtask-grid" id="adtask-grid"></div>
       </div>
 
       <!-- ⑩ PRESENCE PAGE -->
@@ -2935,6 +3065,20 @@ const i18n = {
     addLeadBtn:'+ Add Lead', leadAdded:'Lead added', leadSaveErr:'Failed to save lead',
     close:'Close', taskNotFound:'Task not found',
     leadsRecap:'Leads Recap', totalLeads:'Total leads',
+    // ── v4.1: menu restructure, customers, task page, unlock form ──
+    adsSchedule:'Ads Schedule', adsCustomers:'Ads Customers', adsTask:'Ads Task',
+    adsCustomersSub:'Customer relations — incoming leads data',
+    adsTaskSub:'Your ad tasks — work on them by filling leads',
+    adsTaskSubMod:'All ad tasks — monitor, approve & complete',
+    adAccessReq:'Ads access required',
+    allCats:'All Categories', adColumn:'Ad', ownerColumn:'Input by', timeColumn:'Input time',
+    totalCustomers:'Total', noCustomers:'No customer leads yet',
+    taskFilterActive:'Active', taskFilterDone:'Done', noDoneTasks:'No completed tasks yet',
+    // unlock request form
+    unlockTitle:'Request to Unlock', sendRequest:'Send Request',
+    unlockDesc:'This task is locked because the ad date has passed. Send a request and the moderator can reopen it for 24 hours.',
+    unlockReasonLabel:'Reason (optional)',
+    unlockReasonPh:'e.g. I was on leave and missed the input window…',
   },
   id: {
     brandTagline:'Desain · Warisan · Kehadiran', signIn:'Masuk',
@@ -3102,6 +3246,20 @@ const i18n = {
     addLeadBtn:'+ Tambah Lead', leadAdded:'Lead ditambahkan', leadSaveErr:'Gagal menyimpan lead',
     close:'Tutup', taskNotFound:'Task tidak ditemukan',
     leadsRecap:'Rekap Leads', totalLeads:'Total leads',
+    // ── v4.1: restruktur menu, customers, halaman task, form unlock ──
+    adsSchedule:'Ads Schedule', adsCustomers:'Ads Customers', adsTask:'Ads Task',
+    adsCustomersSub:'Customer relations — data leads yang masuk',
+    adsTaskSub:'Tugas iklan Anda — kerjakan dengan mengisi leads',
+    adsTaskSubMod:'Semua tugas iklan — pantau, setujui & selesaikan',
+    adAccessReq:'Akses Ads diperlukan',
+    allCats:'Semua Kategori', adColumn:'Iklan', ownerColumn:'Diinput oleh', timeColumn:'Waktu Input',
+    totalCustomers:'Total', noCustomers:'Belum ada leads customer',
+    taskFilterActive:'Aktif', taskFilterDone:'Selesai', noDoneTasks:'Belum ada task selesai',
+    // form minta buka kunci
+    unlockTitle:'Minta Buka Kunci', sendRequest:'Kirim Permintaan',
+    unlockDesc:'Task ini terkunci karena tanggal iklan sudah lewat. Kirim permintaan, moderator bisa membuka kembali selama 24 jam.',
+    unlockReasonLabel:'Alasan (opsional)',
+    unlockReasonPh:'cth. Saya sedang cuti dan terlewat jendela input…',
   }
 };
 const t = k => i18n[currentLang][k] || i18n.en[k] || k;
@@ -3157,7 +3315,6 @@ function toggleLang() {
     if (document.getElementById('pg-settings').classList.contains('active')) renderSettings();
     if (document.getElementById('pg-content_studio') && document.getElementById('pg-content_studio').classList.contains('active')) renderContentStudio();
     if (document.getElementById('pg-live_studio') && document.getElementById('pg-live_studio').classList.contains('active')) renderLiveStudio();
-    if (document.getElementById('pg-pipeline') && document.getElementById('pg-pipeline').classList.contains('active')) renderPipeline();
 
     // Update dynamically-set text that isn't data-i18n
     const ppLive = document.getElementById('pp-live'); if (ppLive) ppLive.textContent = t('live');
@@ -3895,11 +4052,11 @@ async function initDashboard() {
   navShow('n-broadcast',  can.canBroadcast(r));
 
   // Studio section
-  const showStudio = isContent || isLive || isB2B;
+  const showStudio = isContent || isLive;
   navShow('ns-studio',        showStudio);
   navShow('n-content-studio', isContent);
   navShow('n-live-studio',    isLive);
-  navShow('n-pipeline',       isB2B);
+  navShow('n-pipeline',       false);   // B2B Pipeline dihapus — diganti sistem Ads
 
   // Administration (Moderator+)
   navShow('ns-admin',         isMod);
@@ -3908,10 +4065,13 @@ async function initDashboard() {
   // Settings — Sovereign only (otherwise moderator can rename their own role)
   navShow('n-settings',       isHead);
 
-  // Manage — Ad Scheduler: moderator (kelola penuh) + admin/b2b (lihat task & isi leads)
+  // Manage — Ads Schedule / Ads Customers / Ads Task
+  // moderator (kelola penuh) + admin/b2b (lihat task, isi leads, lihat customers)
   const canSeeAds = can.canSeeAds(r);
   navShow('ns-manage',        canSeeAds);
   navShow('n-ad-scheduler',   canSeeAds);
+  navShow('n-ad-customers',   canSeeAds);
+  navShow('n-ad-task',        canSeeAds);
 
   // Bell tampil untuk semua user — notif login/join terlihat oleh siapa pun.
   // (Notif registrasi dengan tombol Review tetap hanya muncul untuk moderator,
@@ -3963,7 +4123,6 @@ async function initDashboard() {
   // ─── Pre-render specialty pages so they're ready on first nav ───
   if (isContent) renderContentStudio();
   if (isLive)    renderLiveStudio();
-  if (isB2B)     renderPipeline();
 
   // Moderator pending notifs
   if (isMod) {
@@ -3985,14 +4144,15 @@ async function initDashboard() {
   }
 
   // ─── Auto-route to the role's "home" page ───
-  const homePage = isContent ? 'content_studio' :
-                   isLive    ? 'live_studio'    :
-                   isB2B     ? 'pipeline'       :
-                                'overview';
+  // admin & b2b → langsung ke Ads Schedule (sistem ads jadi pusat kerja mereka)
+  const homePage = isContent      ? 'content_studio' :
+                   isLive         ? 'live_studio'    :
+                   (isAdmin||isB2B)? 'ad_scheduler'  :
+                                     'overview';
   const homeNavBtn = document.getElementById(
     homePage === 'content_studio' ? 'n-content-studio' :
     homePage === 'live_studio'    ? 'n-live-studio'    :
-    homePage === 'pipeline'       ? 'n-pipeline'       :
+    homePage === 'ad_scheduler'   ? 'n-ad-scheduler'   :
                                     'n-overview'
   );
   navTo(homePage, homeNavBtn);
@@ -4366,132 +4526,7 @@ function rehearseLive() {
   pushActivity(`${currentUser.name} started a rehearsal`, 'info');
 }
 
-/* ═══════════════════════════════════════════════════════════
-   ⑰-d B2B PIPELINE  (B2B Marketing dashboard)
-   ═══════════════════════════════════════════════════════════ */
-let b2bLeads = JSON.parse(localStorage.getItem('dhp_b2b') || '[]');
-if (!b2bLeads.length) {
-  b2bLeads = [
-    { id:1, name:'PT Mitra Sukses',   stage:'lead',        value:25_000_000, contact:'Pak Budi'   },
-    { id:2, name:'Loka Cipta Studio', stage:'lead',        value:18_000_000, contact:'Mbak Sari'  },
-    { id:3, name:'Garda Niaga',       stage:'qualified',   value:60_000_000, contact:'Pak Anton'  },
-    { id:4, name:'Anugerah Retail',   stage:'qualified',   value:42_000_000, contact:'Bu Linda'   },
-    { id:5, name:'Cipta Karya',       stage:'proposal',    value:95_000_000, contact:'Pak Dimas'  },
-    { id:6, name:'Bina Mandiri',      stage:'closed_won',  value:120_000_000,contact:'Bu Rina'    }
-  ];
-}
-const PIPELINE_STAGES = [
-  { key:'lead',       label:'Leads' },
-  { key:'qualified',  label:'Qualified' },
-  { key:'proposal',   label:'Proposal' },
-  { key:'closed_won', label:'Closed Won' }
-];
-function renderPipeline() {
-  const cards = document.getElementById('b2b-studio-cards');
-  const board = document.getElementById('pipeline-board');
-  if (!cards || !board) return;
-
-  const totalValue = b2bLeads.reduce((s,l) => s + l.value, 0);
-  const won = b2bLeads.filter(l => l.stage === 'closed_won');
-  const wonValue = won.reduce((s,l) => s + l.value, 0);
-  const inFlight = b2bLeads.length - won.length;
-
-  const fmtIDR = n => 'Rp ' + (n/1_000_000).toFixed(1) + ' jt';
-
-  cards.innerHTML = `
-    <div class="studio-card">
-      <div class="studio-card-head">
-        <div class="studio-card-icon" style="background:rgba(126,168,201,.15);color:var(--blue)">
-          <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M2 14l4-6 3 2 5-7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div>
-          <div class="studio-card-title">${b2bLeads.length}</div>
-          <div class="studio-card-sub">${t('totalLeads')}</div>
-        </div>
-      </div>
-      <div class="studio-card-body">${inFlight} ${t('active')} · ${won.length} ${t('closedWon')}</div>
-    </div>
-    <div class="studio-card">
-      <div class="studio-card-head">
-        <div class="studio-card-icon" style="background:rgba(232,184,110,.15);color:var(--amber)">
-          <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M8 4v4l2 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-        </div>
-        <div>
-          <div class="studio-card-title">${fmtIDR(totalValue)}</div>
-          <div class="studio-card-sub">${t('pipelineValue')}</div>
-        </div>
-      </div>
-      <div class="studio-card-body">${t('combinedValue')}</div>
-    </div>
-    <div class="studio-card">
-      <div class="studio-card-head">
-        <div class="studio-card-icon" style="background:rgba(122,191,142,.15);color:var(--green)">
-          <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M3 8l3 3 7-7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div>
-          <div class="studio-card-title">${fmtIDR(wonValue)}</div>
-          <div class="studio-card-sub">${t('closedWon').charAt(0).toUpperCase() + t('closedWon').slice(1)}</div>
-        </div>
-      </div>
-      <div class="studio-card-body">${t('revenueLockedWon')}</div>
-    </div>`;
-
-  board.innerHTML = PIPELINE_STAGES.map(s => {
-    const items = b2bLeads.filter(l => l.stage === s.key);
-    return `<div class="pipeline-col">
-      <div class="pipeline-col-head">
-        <span class="pipeline-col-title">${s.label}</span>
-        <span class="pipeline-col-count">${items.length}</span>
-      </div>
-      ${items.length ? items.map(l => `
-        <div class="pipeline-card" onclick="advanceLead(${l.id})" title="Click to advance stage">
-          <div class="pipeline-card-name">${l.name}</div>
-          <div class="pipeline-card-meta">${l.contact} · ${fmtIDR(l.value)}</div>
-        </div>`).join('') : '<div style="color:var(--muted);font-size:11px;padding:8px 0;text-align:center">—</div>'}
-    </div>`;
-  }).join('');
-}
-function saveB2B(){ localStorage.setItem('dhp_b2b', JSON.stringify(b2bLeads)); }
-function advanceLead(id) {
-  const stages = PIPELINE_STAGES.map(s => s.key);
-  const l = b2bLeads.find(x => x.id === id); if (!l) return;
-  const idx = stages.indexOf(l.stage);
-  if (idx >= stages.length - 1) { toast(`${l.name} sudah Closed Won`); return; }
-  l.stage = stages[idx + 1];
-  saveB2B();
-  pushActivity(`${currentUser.name} moved ${l.name} → ${l.stage}`, 'info');
-  toast(`${l.name} → ${l.stage}`);
-  renderPipeline();
-}
-function openPipelineLead() {
-  document.getElementById('m-title').textContent = t('newB2BLead');
-  document.getElementById('m-body').innerHTML = `
-    <div class="fg"><label>${t('companyName')}</label><input class="fi" id="lead-name" placeholder="PT …"/></div>
-    <div class="fg"><label>${t('primaryContact')}</label><input class="fi" id="lead-contact" placeholder="Pak/Bu …"/></div>
-    <div class="fg"><label>${t('estimatedValue')}</label><input class="fi" id="lead-value" type="number" placeholder="25000000"/></div>
-    <div class="fg"><label>${t('initialStage')}</label>
-      <select class="fi" id="lead-stage">
-        ${PIPELINE_STAGES.map(s => `<option value="${s.key}">${s.label}</option>`).join('')}
-      </select>
-    </div>`;
-  document.getElementById('m-foot').innerHTML = `
-    <button class="btn-sm btn-gold" onclick="saveLead()">${t('saveLead')}</button>
-    <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>`;
-  document.getElementById('modal-ov').classList.add('open');
-}
-function saveLead() {
-  const name    = document.getElementById('lead-name').value.trim();
-  const contact = document.getElementById('lead-contact').value.trim() || '—';
-  const value   = parseInt(document.getElementById('lead-value').value, 10) || 0;
-  const stage   = document.getElementById('lead-stage').value;
-  if (!name) { toast(t('companyRequired')); return; }
-  b2bLeads.unshift({ id: Date.now(), name, contact, value, stage });
-  saveB2B();
-  closeModal();
-  toast(t('leadAdded'));
-  pushActivity(`${currentUser.name} added lead: ${name}`, 'info');
-  renderPipeline();
-}
+/* B2B Pipeline dihapus di v4.1 — diganti sistem Ads (Schedule/Customers/Task) */
 
 /* ═══════════════════════════════════════════════════════════
    ⑱ CUSTOMERS
@@ -5009,6 +5044,7 @@ function initAdRealtime() {
         adTasks.unshift(mapTaskRow(tk));
         updateTaskBadges(); renderTaskPanel();
         if (isAdPageActive()) renderAdScheduler();
+        if (isTaskPageActive()) renderAdTaskPage();
         pushNotif({ type:'action', msg:`${t('taskNew')}: ${tk.title} · ${tk.category}` });
         toast(`${t('taskNew')} · ${tk.title}`);
       }
@@ -5030,9 +5066,13 @@ function initAdRealtime() {
       }
       updateTaskBadges(); renderTaskPanel();
       if (isAdPageActive()) renderAdScheduler();
+      if (isTaskPageActive()) renderAdTaskPage();
     })
     .on('postgres_changes', { event:'*', schema:'public', table:'leads' }, () => {
+      adCustomersCache = [];   // invalidate cache
       if (isAdPageActive()) renderAdScheduler();
+      if (document.getElementById('pg-ad_customers')?.classList.contains('active')) renderAdCustomers();
+      if (isTaskPageActive()) renderAdTaskPage();
     })
     .subscribe();
 }
@@ -5040,6 +5080,16 @@ function initAdRealtime() {
 function isAdPageActive() {
   const el = document.getElementById('pg-ad_scheduler');
   return el && el.classList.contains('active');
+}
+function isTaskPageActive() {
+  const el = document.getElementById('pg-ad_task');
+  return el && el.classList.contains('active');
+}
+/* Refresh apa pun halaman ads yang sedang aktif */
+function refreshAdViews() {
+  if (isAdPageActive()) renderAdScheduler();
+  if (isTaskPageActive()) renderAdTaskPage();
+  if (document.getElementById('pg-ad_customers')?.classList.contains('active')) renderAdCustomers();
 }
 
 /* ── Render entry point ── */
@@ -5827,7 +5877,7 @@ async function completeTask(id) {
   closeModal();
   updateTaskBadges();
   renderTaskPanel();
-  renderAdScheduler();
+  refreshAdViews();
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -5984,26 +6034,7 @@ async function submitLead() {
   // Reset form & refresh daftar
   openLeadsModal(tk.id);
   updateTaskBadges();
-  renderAdScheduler();
-}
-
-/* ── Minta buka kunci (target) ── */
-async function requestUnlockPrompt(taskId) {
-  const tk = adTasks.find(x => x.id === taskId);
-  if (!tk) return;
-  if (tk.assignee !== currentUser.id) { toast(t('notYourTask')); return; }
-  const note = prompt(t('unlockReason'), '');
-  if (note === null) return; // batal
-  if (!String(taskId).startsWith('task_')) {
-    const res = await dbQ(d => d.rpc('request_unlock', { p_task_id: taskId, p_user_id: currentUser.id, p_note: note || null }));
-    if (!res) { toast(t('unlockReqErr')); return; }
-  }
-  tk.status = 'unlock_requested';
-  tk.unlockNote = note || '';
-  toast(t('unlockRequested'));
-  pushActivity(`Minta buka kunci: ${tk.title}`, 'info');
-  closeModal();
-  updateTaskBadges(); renderTaskPanel(); renderAdScheduler();
+  refreshAdViews();
 }
 
 /* ── Approve buka kunci (moderator) ── */
@@ -6023,7 +6054,7 @@ async function approveUnlock(taskId) {
   toast(t('unlockApproved'));
   pushActivity(`Kunci dibuka: ${tk?tk.title:''}`, 'info');
   closeModal();
-  updateTaskBadges(); renderTaskPanel(); renderAdScheduler();
+  updateTaskBadges(); renderTaskPanel(); refreshAdViews();
 }
 
 /* ── Tolak permintaan buka kunci (moderator) ── */
@@ -6036,7 +6067,7 @@ async function rejectUnlock(taskId) {
   if (tk) { tk.status = 'pending'; tk.unlockNote = ''; }
   toast(t('unlockRejected'));
   closeModal();
-  updateTaskBadges(); renderTaskPanel(); renderAdScheduler();
+  updateTaskBadges(); renderTaskPanel(); refreshAdViews();
 }
 
 /* ── Rekap leads untuk MODERATOR (semua target pada 1 iklan) ── */
@@ -6081,19 +6112,270 @@ async function openRecapModal(adId) {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   ADS CUSTOMERS — customer relations dari leads
+   admin & b2b: lihat SEMUA leads (semua orang), moderator juga.
+   ═══════════════════════════════════════════════════════════ */
+let adCustomersCache = [];
+
+async function loadAdCustomers() {
+  const res = await dbQ(d => d.from('leads').select('*').order('created_at', { ascending:false }));
+  adCustomersCache = (res?.data) ? res.data : [];
+  return adCustomersCache;
+}
+
+async function renderAdCustomers() {
+  const body = document.getElementById('adcust-body');
+  const statsEl = document.getElementById('adcust-stats');
+  if (!body) return;
+
+  // muat data bila belum ada
+  if (!adCustomersCache.length) await loadAdCustomers();
+
+  const badge = document.getElementById('adcust-badge');
+  if (badge) {
+    const isMod = can.isMod(currentUser?.role);
+    badge.textContent = isMod ? '♔ Moderator' : '◆ ' + rn(currentUser.role);
+    const clr = isMod ? 'var(--gold)' : (ROLE_COLORS[currentUser.role] || '#888');
+    badge.style.color = clr;
+  }
+
+  const q   = (document.getElementById('adcust-search')?.value || '').toLowerCase().trim();
+  const cat = document.getElementById('adcust-cat-filter')?.value || 'all';
+  let rows = adCustomersCache.slice();
+  if (cat !== 'all') rows = rows.filter(r => r.category === cat);
+  if (q) rows = rows.filter(r =>
+    (r.name||'').toLowerCase().includes(q) ||
+    (r.wa_phone||'').toLowerCase().includes(q) ||
+    (r.region||'').toLowerCase().includes(q));
+
+  // Statistik
+  if (statsEl) {
+    const total = adCustomersCache.length;
+    const byCat = c => adCustomersCache.filter(r => r.category === c).length;
+    statsEl.innerHTML = `
+      <div class="adcust-stat"><span class="acs-num">${total}</span><span class="acs-lbl">${t('totalCustomers')}</span></div>
+      <div class="adcust-stat lc-cold"><span class="acs-num">${byCat('Cold')}</span><span class="acs-lbl">Cold</span></div>
+      <div class="adcust-stat lc-warm"><span class="acs-num">${byCat('Warm')}</span><span class="acs-lbl">Warm</span></div>
+      <div class="adcust-stat lc-hot"><span class="acs-num">${byCat('Hot')}</span><span class="acs-lbl">Hot</span></div>
+      <div class="adcust-stat lc-closing"><span class="acs-num">${byCat('Closing')}</span><span class="acs-lbl">Closing</span></div>`;
+  }
+
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="7" class="tbl-empty">${t('noCustomers')}</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = rows.map(r => {
+    const u = getUserMeta(r.owner_id);
+    const clr = ROLE_COLORS[u.role] || '#888';
+    const catCls = (r.category||'Cold').toLowerCase();
+    const waLink = `https://wa.me/${(r.wa_phone||'').replace(/[^0-9]/g,'')}`;
+    return `<tr>
+      <td style="font-weight:600;color:var(--text)">${escHtml(r.name)}</td>
+      <td><a href="${waLink}" target="_blank" rel="noopener" class="wa-link">${escHtml(r.wa_phone)}</a></td>
+      <td>${escHtml(r.region)}</td>
+      <td><span class="lead-cat-badge lc-${catCls}">${t('leadCat'+(r.category||'Cold'))}</span></td>
+      <td style="font-size:11px;color:var(--text2)">${escHtml(r.ad_theme||'—')}</td>
+      <td><span class="adcust-owner"><span class="role-dot" style="background:${clr}"></span>${escHtml(u.name)}</span></td>
+      <td style="font-size:10px;color:var(--muted);white-space:nowrap">${fmtDateTime(r.created_at)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function fmtDateTime(iso) {
+  const d = new Date(iso);
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mm = String(d.getMinutes()).padStart(2,'0');
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} · ${hh}:${mm}`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ADS TASK PAGE — daftar task dalam bentuk halaman penuh
+   ═══════════════════════════════════════════════════════════ */
+let taskPageFilter = 'active';
+
+function setTaskFilter(f, btn) {
+  taskPageFilter = f;
+  document.querySelectorAll('#pg-ad_task .ads-vt-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderAdTaskPage();
+}
+
+async function renderAdTaskPage() {
+  const grid = document.getElementById('adtask-grid'); if (!grid) return;
+  const isMod = can.isMod(currentUser?.role);
+
+  const badge = document.getElementById('adtask-badge');
+  if (badge) {
+    badge.textContent = isMod ? '♔ Moderator' : '◆ ' + rn(currentUser.role);
+    badge.style.color = isMod ? 'var(--gold)' : (ROLE_COLORS[currentUser.role] || '#888');
+  }
+  const subEl = document.getElementById('adtask-sub');
+  if (subEl) subEl.textContent = isMod ? t('adsTaskSubMod') : t('adsTaskSub');
+
+  let list;
+  if (taskPageFilter === 'done') {
+    // Muat task selesai dari DB (tidak tersimpan di adTasks)
+    const res = await dbQ(d => {
+      let q = d.from('ad_tasks').select('*').eq('status','done');
+      if (!isMod) q = q.eq('assignee_id', currentUser.id);
+      return q.order('done_at', { ascending:false });
+    });
+    list = (res?.data || []).map(mapTaskRow);
+    // hitung leads untuk task selesai
+    if (list.length) {
+      const ids = list.map(x => x.id);
+      const lr = await dbQ(d => d.from('leads').select('task_id').in('task_id', ids));
+      (lr?.data||[]).forEach(r => { taskLeadCount[r.task_id] = (taskLeadCount[r.task_id]||0)+1; });
+    }
+  } else {
+    list = adTasks.filter(tk => tk.status !== 'done');
+    if (!isMod) list = list.filter(tk => tk.assignee === currentUser.id);
+    list.sort((a,b) => {
+      const pa = a.status === 'unlock_requested' ? 0 : 1;
+      const pb = b.status === 'unlock_requested' ? 0 : 1;
+      return pa !== pb ? pa - pb : b.createdAt - a.createdAt;
+    });
+  }
+
+  if (!list.length) {
+    grid.innerHTML = `<div class="adtask-empty">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.3"/><path d="M8.5 12.5l2.2 2.2L16 9.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div>${taskPageFilter==='done' ? t('noDoneTasks') : t('noTasks')}</div>
+    </div>`;
+    return;
+  }
+
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  grid.innerHTML = list.map(tk => {
+    const dObj = new Date(tk.date + 'T00:00:00');
+    const dateStr = `${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
+    const n = taskLeadCount[tk.id] || 0;
+    const open = taskIsOpen(tk);
+    const who = getUserMeta(tk.assignee);
+    const clr = ROLE_COLORS[who.role] || '#888';
+
+    let statusPill, actions = '';
+    if (tk.status === 'done') statusPill = `<span class="lock-badge done">✓ ${t('taskDone')}</span>`;
+    else if (tk.status === 'unlock_requested') statusPill = `<span class="lock-badge req">⏳ ${t('unlockReq')}</span>`;
+    else if (open) statusPill = `<span class="lock-badge open">● ${t('taskOpen')}</span>`;
+    else statusPill = `<span class="lock-badge">🔒 ${t('locked')}</span>`;
+
+    if (tk.status !== 'done') {
+      if (isMod) {
+        if (tk.status === 'unlock_requested') {
+          actions = `<button class="btn-sm btn-approve" onclick="approveUnlock('${tk.id}')">${t('approveUnlock')}</button>
+                     <button class="btn-sm btn-del" onclick="rejectUnlock('${tk.id}')">${t('reject')}</button>`;
+        }
+        actions += `<button class="btn-sm btn-view" onclick="openRecapModal('${tk.adId}')">${t('viewLeads')} (${n})</button>`;
+        if (n >= 1) actions += `<button class="btn-sm btn-gold" onclick="completeTask('${tk.id}')">${t('finishTask')}</button>`;
+      } else {
+        if (open) actions = `<button class="btn-sm btn-gold" onclick="openLeadsModal('${tk.id}')">${t('workTask')}${n?` · ${n}`:''}</button>`;
+        else if (tk.status === 'unlock_requested') actions = `<span class="adtask-await">${t('unlockPendingMsg')}</span>`;
+        else {
+          actions = `<button class="btn-sm btn-gold" onclick="requestUnlockPrompt('${tk.id}')">${t('requestUnlock')}</button>`;
+          if (n) actions += `<button class="btn-sm btn-view" onclick="openLeadsModal('${tk.id}')">${t('viewLeads')} (${n})</button>`;
+        }
+      }
+    } else {
+      actions = `<button class="btn-sm btn-view" onclick="openLeadsModal('${tk.id}')">${t('viewLeads')} (${n})</button>`;
+    }
+
+    return `
+    <div class="adtask-card cat-${tk.category}">
+      <div class="atc-head">
+        <span class="cat-badge cat-${tk.category}">${tk.category}</span>
+        ${statusPill}
+      </div>
+      <div class="atc-theme">${escHtml(tk.title)}</div>
+      <div class="atc-meta">
+        <span>📅 ${dateStr}</span>
+        ${n ? `<span style="color:var(--green)">▣ ${n} ${t('leadsCount')}</span>` : ''}
+      </div>
+      ${isMod ? `<div class="atc-assignee"><span class="atc-assignee-lbl">${t('assignee')}</span><span class="atc-assignee-name"><span class="role-dot" style="background:${clr}"></span>${escHtml(who.name)}</span></div>` : ''}
+      ${tk.unlockNote && tk.status==='unlock_requested' ? `<div class="atc-note">"${escHtml(tk.unlockNote)}"</div>` : ''}
+      <div class="atc-acts">${actions}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   REQUEST UNLOCK — form modal yang rapi (ganti prompt lama)
+   ═══════════════════════════════════════════════════════════ */
+let activeUnlockTask = null;
+
+function requestUnlockPrompt(taskId) {
+  const tk = adTasks.find(x => x.id === taskId);
+  if (!tk) { toast(t('taskNotFound')); return; }
+  if (tk.assignee !== currentUser.id) { toast(t('notYourTask')); return; }
+  activeUnlockTask = tk;
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const dObj = new Date(tk.date + 'T00:00:00');
+  const dateStr = `${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
+
+  document.getElementById('m-title').textContent = t('unlockTitle');
+  document.getElementById('m-body').innerHTML = `
+    <div class="unlock-form">
+      <div class="unlock-lockicon">
+        <svg width="42" height="42" viewBox="0 0 24 24" fill="none">
+          <rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M8 11V8a4 4 0 0 1 8 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="12" cy="15.5" r="1.4" fill="currentColor"/>
+        </svg>
+      </div>
+      <div class="unlock-task-info">
+        <div class="unlock-task-theme">${escHtml(tk.title)}</div>
+        <div class="unlock-task-meta"><span class="cat-badge cat-${tk.category}">${tk.category}</span> <span style="color:var(--text2);font-size:11px">📅 ${dateStr}</span></div>
+      </div>
+      <p class="unlock-desc">${t('unlockDesc')}</p>
+      <div class="fg">
+        <label>${t('unlockReasonLabel')}</label>
+        <textarea class="fi unlock-textarea" id="unlock-reason" rows="3" placeholder="${t('unlockReasonPh')}" maxlength="300"></textarea>
+        <div class="unlock-charcount"><span id="unlock-charn">0</span>/300</div>
+      </div>
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>
+    <button class="btn-sm btn-gold" onclick="submitUnlockRequest()">${t('sendRequest')}</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+
+  const ta = document.getElementById('unlock-reason');
+  if (ta) { ta.focus(); ta.addEventListener('input', () => { document.getElementById('unlock-charn').textContent = ta.value.length; }); }
+}
+
+async function submitUnlockRequest() {
+  const tk = activeUnlockTask;
+  if (!tk) return;
+  const note = document.getElementById('unlock-reason')?.value.trim() || '';
+
+  if (!String(tk.id).startsWith('task_')) {
+    const res = await dbQ(d => d.rpc('request_unlock', { p_task_id: tk.id, p_user_id: currentUser.id, p_note: note || null }));
+    if (!res || res.error) { toast(t('unlockReqErr')); return; }
+  }
+  tk.status = 'unlock_requested';
+  tk.unlockNote = note;
+  toast(t('unlockRequested'));
+  pushActivity(`Minta buka kunci: ${tk.title}`, 'info');
+  closeModal();
+  updateTaskBadges(); renderTaskPanel();
+  if (isAdPageActive()) renderAdScheduler();
+  if (document.getElementById('pg-ad_task')?.classList.contains('active')) renderAdTaskPage();
+}
+
+/* ═══════════════════════════════════════════════════════════
    ㉔ NAVIGATION
    ═══════════════════════════════════════════════════════════ */
 function navTo(page, btn) {
   const r = currentUser.role;
   // Moderator-only pages
   if (['registrations','users'].includes(page) && !can.isMod(r)) { toast('Moderator access required'); return; }
-  // Ad Schedule: moderator + admin/b2b (target)
-  if (page === 'ad_scheduler' && !can.canSeeAds(r)) { toast('Ad Schedule access required'); return; }
+  // Manage (Ads) pages: moderator + admin/b2b (target)
+  if (['ad_scheduler','ad_customers','ad_task'].includes(page) && !can.canSeeAds(r)) { toast(t('adAccessReq')); return; }
   if (page === 'settings' && currentUser.id !== HEAD_MODERATOR_ID) { toast('Sovereign Moderator access required'); return; }
   // Studio pages — role-specific
   if (page === 'content_studio' && !can.isContent(r) && !can.isMod(r)) { toast('Content Creator access required'); return; }
   if (page === 'live_studio'    && !can.isHostLive(r) && !can.isMod(r)) { toast('Host Live access required'); return; }
-  if (page === 'pipeline'       && !can.isB2B(r) && !can.isMod(r)) { toast('B2B Marketing access required'); return; }
 
   document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
   const target = document.getElementById(`pg-${page}`); if (target) target.classList.add('active');
@@ -6108,8 +6390,9 @@ function navTo(page, btn) {
   if (page === 'presence')        renderPresencePage();
   if (page === 'content_studio')  renderContentStudio();
   if (page === 'live_studio')     renderLiveStudio();
-  if (page === 'pipeline')        renderPipeline();
   if (page === 'ad_scheduler')    renderAdScheduler();
+  if (page === 'ad_customers')    renderAdCustomers();
+  if (page === 'ad_task')         renderAdTaskPage();
   // Auto-close drawer on mobile after navigating
   navClose();
 }
