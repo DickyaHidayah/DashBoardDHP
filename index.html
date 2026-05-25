@@ -3287,6 +3287,12 @@ const i18n = {
     taskNew:'NEW', markDone:'Mark Done', taskDone:'Task completed',
     npTask:'New Task', npAd:'New Ad', npDone:'Task Done', npLead:'New Lead', npReg:'New Registration', npLogin:'Login', npAlert:'Notice', npSystem:'Notification',
     npUnlockReq:'Unlock Request', npUnlocked:'Task Unlocked', npRejected:'Request Rejected', npApproved:'Approved', npPublished:'Ad Published', npAssigned:'Assigned to you',
+    welHi:'Welcome', welReady:'Your portal is ready.',
+    welModPending:'{n} registration(s) awaiting review.', welModNoPending:'No pending registrations.',
+    welModTasks:'{n} active task(s) across the team.', welModNoTasks:'No active tasks right now.',
+    welTargetTasks:'You have {n} task(s) to work on.', welTargetNoTasks:'No tasks assigned yet.',
+    welContent:'Content Studio is ready.', welLive:'Live Studio is ready.',
+    welGuest:'Read-only access. Enjoy exploring.',
     taskCountLabel:'task', forDate:'For',
     // ── v4.0: targets, leads, lock & unlock ──
     adSchedulerSubTarget:'Your assigned ad tasks — fill in leads on the day',
@@ -3472,6 +3478,12 @@ const i18n = {
     taskNew:'BARU', markDone:'Tandai Selesai', taskDone:'Task selesai',
     npTask:'Task Baru', npAd:'Iklan Baru', npDone:'Task Selesai', npLead:'Lead Baru', npReg:'Pendaftaran Baru', npLogin:'Login', npAlert:'Pemberitahuan', npSystem:'Notifikasi',
     npUnlockReq:'Minta Buka Kunci', npUnlocked:'Task Dibuka', npRejected:'Permintaan Ditolak', npApproved:'Disetujui', npPublished:'Iklan Dipublish', npAssigned:'Ditugaskan ke kamu',
+    welHi:'Selamat datang', welReady:'Portal kamu sudah siap.',
+    welModPending:'{n} pendaftaran menunggu ditinjau.', welModNoPending:'Tidak ada pendaftaran tertunda.',
+    welModTasks:'{n} task aktif di seluruh tim.', welModNoTasks:'Belum ada task aktif saat ini.',
+    welTargetTasks:'Kamu punya {n} task untuk dikerjakan.', welTargetNoTasks:'Belum ada task yang ditugaskan.',
+    welContent:'Content Studio sudah siap.', welLive:'Live Studio sudah siap.',
+    welGuest:'Akses baca-saja. Selamat menjelajah.',
     taskCountLabel:'task', forDate:'Untuk',
     // ── v4.0: target, leads, kunci & buka kunci ──
     adSchedulerSubTarget:'Task iklan yang ditugaskan ke Anda — isi leads di hari-H',
@@ -3962,9 +3974,11 @@ function loginSuccess(id, role, name) {
     // Kalau mode lokal (tanpa db), munculkan di sini sebagai fallback.
     if (!db) {
       pushActivity(`${name} (kamu) joined · ${rn(role)}`, 'join');
-      pushNotif({ type:'login', title:t_('npLogin'), body:`${name}`, msg:`${name} (kamu) login ke portal`, popup:false });
     }
     refreshPresenceUI();
+    // Notif SAMBUTAN saat login — beda isi per role, sesuai alur kerja masing-masing.
+    // Diberi jeda kecil supaya muncul setelah dashboard tampil & data termuat.
+    setTimeout(() => { try { welcomeNotif(); } catch (e) { console.warn('[DHP] welcomeNotif gagal:', e); } }, 700);
   }, 500);
 }
 
@@ -5158,6 +5172,43 @@ function taskNotifFor(tk) {
   }
   // Target (admin/b2b) → ini tugas untuk dirinya
   return { title:t_('npAssigned'), body:`${tk.title} · ${dateStr}` };
+}
+
+/* Notif sambutan saat login — beda isi per role, mengikuti alur kerja masing-masing.
+   Dipanggil setelah dashboard & data termuat. */
+function welcomeNotif() {
+  if (!currentUser) return;
+  const r = currentUser.role;
+  const name = currentUser.name;
+  const fill = (key, n) => t_(key).replace('{n}', n);
+  const title = `${t_('welHi')}, ${name}`;
+  let body, type;
+
+  if (can.isMod(r)) {
+    // Moderator / Sovereign → ringkasan kerja: pendaftaran tertunda + task aktif tim
+    const pend = (typeof registrations !== 'undefined')
+      ? registrations.filter(x => x.status === 'pending').length : 0;
+    const tasks = (typeof adTasks !== 'undefined') ? adTasks.length : 0;
+    if (pend > 0) { body = fill('welModPending', pend); type = 'alert'; }
+    else if (tasks > 0) { body = fill('welModTasks', tasks); type = 'task'; }
+    else { body = t_('welModNoPending'); type = 'done'; }
+  } else if (can.isAdTarget(r)) {
+    // Admin / B2B (target iklan) → jumlah task miliknya yang harus dikerjakan
+    const mine = (typeof adTasks !== 'undefined') ? adTasks.length : 0;
+    if (mine > 0) { body = fill('welTargetTasks', mine); type = 'task'; }
+    else { body = t_('welTargetNoTasks'); type = 'done'; }
+  } else if (can.isContent(r)) {
+    body = t_('welContent'); type = 'task';
+  } else if (can.isHostLive(r)) {
+    body = t_('welLive'); type = 'task';
+  } else if (r === 'guest') {
+    body = t_('welGuest'); type = 'info';
+  } else {
+    body = t_('welReady'); type = 'task';
+  }
+
+  // Masuk ke bell + popup elegan 8 detik
+  pushNotif({ type, title, body, msg:`${title} — ${body}` });
 }
 
 /* ── DIAGNOSTIK SYNC (jalankan di Console: dhpDebug()) ──
