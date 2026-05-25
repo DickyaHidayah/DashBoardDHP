@@ -231,11 +231,8 @@ body.light .np-close svg,body.light .modal-close svg{ filter:brightness(.25) con
 body.light .panel-logo-svg svg path,body.light .panel-logo-svg svg polygon,body.light .panel-logo-svg svg line{ stroke:#6b4218 !important; }
 body.light .wb-icon-wrap svg path,body.light .wb-icon-wrap svg polygon{ stroke:#6b4218 !important; }
 
-/* ══════ WELCOME BANNER ══════ */
-#wb{position:fixed;inset:0;z-index:900;display:flex;flex-direction:column;align-items:center;
-    justify-content:center;gap:12px;background:var(--bg);pointer-events:none;opacity:0;transition:opacity .6s}
-#wb.show{opacity:1}
-#wb.hide{opacity:0}
+/* ══════ WELCOME BANNER (dinonaktifkan — disembunyikan untuk semua role) ══════ */
+#wb{display:none !important}
 .wb-icon-wrap{display:flex;align-items:center;justify-content:center;width:64px;height:64px;
     border-radius:50%;border:1px solid var(--border-hi);
     background:radial-gradient(circle,rgba(201,169,110,.08),transparent);
@@ -3995,7 +3992,8 @@ function loginSuccess(id, role, name) {
     document.body.classList.add(`role-theme-${role}`);
     await initDashboard();
     initRealtimePresence(id, role, name);
-    showWelcomeBanner(name, role);
+    // Welcome banner dinonaktifkan untuk semua role (langsung masuk dashboard)
+    // showWelcomeBanner(name, role);
     if (role === 'guest') toast(t('guestReadOnly'));
     // Notif/aktivitas login diri sendiri:
     // Kalau Supabase aktif, event 'join' channel yang akan memunculkannya (anti-dobel).
@@ -5092,37 +5090,62 @@ function taskIsOpen(tk) {
 let adChannel = null;
 let adPollInterval = null;   // polling fallback untuk non-mod
 
-/* Poll task dari DB setiap N detik (fallback realtime) */
+/* Poll task + jadwal iklan dari DB setiap N detik (fallback realtime).
+   PENTING: ikut reload tabel ad_schedule, karena halaman Ad Schedule
+   menampilkan IKLAN (bukan task). Kalau hanya task yang di-poll, iklan
+   yang baru dipublish moderator tidak akan pernah muncul di kalender target. */
 function startAdPolling(intervalMs) {
   if (adPollInterval) { clearInterval(adPollInterval); adPollInterval = null; }
   if (!db) return;
-  adPollInterval = setInterval(async () => {
+  const tick = async () => {
     if (!currentUser || !can.canSeeAds(currentUser.role)) return;
     const isMod = can.isMod(currentUser.role);
     const myUserId = currentUser.id;
+
+    // 1) Reload jadwal iklan (ad_schedule)
+    let adsChanged = false;
+    const aRes = await dbQ(d => d.from('ad_schedule').select('*').order('ad_date', { ascending:true }));
+    if (aRes?.data) {
+      const fresh = aRes.data.map(a => ({
+        id: a.id, date: a.ad_date, theme: a.theme, category: a.category,
+        target: a.target || '', note: a.note || '', status: a.status,
+        createdBy: a.created_by, createdAt: new Date(a.created_at).getTime()
+      }));
+      const sig = arr => arr.map(a => `${a.id}|${a.status}|${a.target}|${a.theme}|${a.date}`).sort().join('§');
+      if (sig(fresh) !== sig(ads)) { ads = fresh; adsChanged = true; }
+    }
+
+    // 2) Reload task
     const tRes = await dbQ(d => {
       let q = d.from('ad_tasks').select('*').neq('status','done');
       if (!isMod) q = q.eq('assignee_id', myUserId);
       return q.order('created_at', { ascending:false });
     });
-    if (!tRes?.data) return;
-    const freshTasks = tRes.data.map(mapTaskRow);
-    // Cek apakah ada task baru
-    const prevIds = new Set(adTasks.map(t => t.id));
-    const newOnes = freshTasks.filter(t => !prevIds.has(t.id));
-    if (newOnes.length || freshTasks.length !== adTasks.length) {
-      adTasks = freshTasks;
-      await loadLeadCounts();
-      updateTaskBadges();
-      renderTaskPanel();
-      refreshAdViews();
-      // Notif untuk task baru
+    let tasksChanged = false, newOnes = [];
+    if (tRes?.data) {
+      const freshTasks = tRes.data.map(mapTaskRow);
+      const prevIds = new Set(adTasks.map(t => t.id));
+      newOnes = freshTasks.filter(t => !prevIds.has(t.id));
+      const tsig = arr => arr.map(t => `${t.id}|${t.status}|${t.unlockUntil||''}`).sort().join('§');
+      if (newOnes.length || tsig(freshTasks) !== tsig(adTasks)) {
+        adTasks = freshTasks; tasksChanged = true;
+        await loadLeadCounts();
+      }
+    }
+
+    // 3) Render ulang bila ada perubahan apa pun
+    if (adsChanged || tasksChanged) {
+      try { updateTaskBadges(); renderTaskPanel(); refreshAdViews(); }
+      catch (e) { console.warn('[DHP] poll render error:', e); }
       newOnes.forEach(t => {
         pushNotif({ type:'action', msg:`${t_('taskNew')}: ${t.title} · ${t.category}` });
         toast(`✨ ${t_('taskNew')} · ${t.title}`);
       });
     }
-  }, intervalMs);
+  };
+  // Jalankan sekali segera, lalu berulang
+  tick();
+  adPollInterval = setInterval(tick, intervalMs);
 }
 
 /* Singkatan t() agar bisa dipanggil di luar konteks render (saat polling) */
@@ -5185,15 +5208,18 @@ function initAdRealtime() {
       } catch (e) { console.warn('[DHP] realtime leads render error:', e); }
     })
     .subscribe(status => {
-      // Jika realtime tersambung, non-mod juga langsung reload task
-      if (status === 'SUBSCRIBED' && currentUser && !can.isMod(currentUser.role)) {
-        loadAdsFromDB();
+      console.log('[DHP] realtime channel status:', status);
+      // Saat tersambung, langsung reload sekali supaya data sinkron
+      if (status === 'SUBSCRIBED' && currentUser) {
+        loadAdsFromDB().then(() => { try { refreshAdViews(); } catch(_){} })
+                       .catch(e => console.warn('[DHP] reload setelah subscribe gagal:', e));
       }
     });
 
-  // Polling fallback: non-mod poll setiap 12 detik, mod setiap 20 detik
-  // supaya task selalu update meski realtime lambat/miss
-  const pollMs = can.isMod(currentUser?.role) ? 20000 : 12000;
+  // Polling fallback (selalu jalan) — supaya task & jadwal tetap update
+  // meski Supabase Realtime tidak aktif / tabel belum dimasukkan ke publication.
+  // Lebih agresif untuk non-mod (target) karena merekalah yang menunggu task.
+  const pollMs = can.isMod(currentUser?.role) ? 8000 : 5000;
   startAdPolling(pollMs);
 }
 
