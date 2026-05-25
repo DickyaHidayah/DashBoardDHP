@@ -40,72 +40,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:2px}
 
-/* ══════ LOADING SCREEN — CREATIVE 4D ══════ */
-#ls{position:fixed;inset:0;background:#050403;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
-#ls-canvas{position:absolute;inset:0;width:100%;height:100%}
-
-/* Center content */
-.ls-center{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:0;pointer-events:none}
-
-/* Holographic orb */
-.ls-orb{position:relative;width:140px;height:140px;margin-bottom:32px;flex-shrink:0}
-.ls-orb-ring{position:absolute;inset:0;border-radius:50%;animation:ls-orb-spin 4s linear infinite}
-.ls-orb-ring:nth-child(1){border:1px solid rgba(201,169,110,.6);animation-duration:4s}
-.ls-orb-ring:nth-child(2){inset:8px;border:1px solid rgba(232,204,153,.4);animation-duration:2.8s;animation-direction:reverse}
-.ls-orb-ring:nth-child(3){inset:18px;border:1px solid rgba(160,104,64,.5);animation-duration:2s;transform-origin:center}
-.ls-orb-ring:nth-child(4){inset:28px;border:1px solid rgba(201,169,110,.3);animation-duration:1.5s;animation-direction:reverse}
-@keyframes ls-orb-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-
-/* 3D tilt rings */
-.ls-orb-ring:nth-child(2){transform:rotateX(60deg);animation:ls-tilt2 2.8s linear infinite}
-.ls-orb-ring:nth-child(3){transform:rotateY(45deg);animation:ls-tilt3 2s linear infinite}
-@keyframes ls-tilt2{from{transform:rotateX(60deg) rotateZ(0deg)}to{transform:rotateX(60deg) rotateZ(-360deg)}}
-@keyframes ls-tilt3{from{transform:rotateY(45deg) rotateZ(0deg)}to{transform:rotateY(45deg) rotateZ(360deg)}}
-
-/* Core pulse */
-.ls-orb-core{position:absolute;inset:36px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(232,204,153,.25),rgba(201,169,110,.08),transparent);animation:ls-core-pulse 2.5s ease-in-out infinite;display:flex;align-items:center;justify-content:center;box-shadow:0 0 30px rgba(201,169,110,.15),inset 0 0 20px rgba(232,204,153,.1)}
-@keyframes ls-core-pulse{0%,100%{box-shadow:0 0 20px rgba(201,169,110,.15),inset 0 0 15px rgba(232,204,153,.08)}50%{box-shadow:0 0 50px rgba(201,169,110,.35),0 0 80px rgba(201,169,110,.1),inset 0 0 30px rgba(232,204,153,.2)}}
-.ls-dhp-svg{width:42px;height:42px;animation:ls-svg-breathe 3s ease-in-out infinite}
-@keyframes ls-svg-breathe{0%,100%{opacity:.7;filter:drop-shadow(0 0 4px rgba(201,169,110,.4))}50%{opacity:1;filter:drop-shadow(0 0 12px rgba(232,204,153,.8))}}
-
-/* Scan line */
-.ls-scan{position:absolute;inset:0;border-radius:50%;overflow:hidden;pointer-events:none}
-.ls-scan::before{content:'';position:absolute;top:-100%;left:0;width:100%;height:100%;background:linear-gradient(to bottom,transparent 40%,rgba(201,169,110,.12) 50%,transparent 60%);animation:ls-scan-anim 2.2s ease-in-out infinite}
-@keyframes ls-scan-anim{0%{top:-100%}100%{top:100%}}
-
-/* Brand text */
-.ls-brand{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;letter-spacing:.35em;color:rgba(232,204,153,.95);text-shadow:0 0 30px rgba(201,169,110,.4);animation:ls-brand-glow 3s ease-in-out infinite;margin-bottom:4px}
-@keyframes ls-brand-glow{0%,100%{text-shadow:0 0 20px rgba(201,169,110,.3)}50%{text-shadow:0 0 40px rgba(201,169,110,.6),0 0 60px rgba(201,169,110,.2)}}
-.ls-tagline{font-size:8px;letter-spacing:.7em;color:rgba(201,169,110,.45);text-transform:uppercase;margin-bottom:40px;font-family:'Inter',sans-serif}
-
-/* Progress — hexagonal style */
-.ls-prog-wrap{width:220px;position:relative;margin-bottom:12px}
-.ls-prog-track{width:100%;height:1px;background:rgba(201,169,110,.12);position:relative}
-.ls-prog-track::before,.ls-prog-track::after{content:'';position:absolute;top:-3px;width:7px;height:7px;border:1px solid rgba(201,169,110,.4);transform:rotate(45deg)}
-.ls-prog-track::before{left:-4px}
-.ls-prog-track::after{right:-4px}
-#l-bar{height:1px;background:linear-gradient(90deg,transparent,rgba(201,169,110,.6),var(--gold-hi),rgba(232,204,153,1),var(--gold-hi));width:0%;transition:width .6s cubic-bezier(.4,0,.2,1);position:relative;box-shadow:0 0 8px rgba(201,169,110,.8)}
-#l-bar::after{content:'';position:absolute;right:0;top:-3px;width:7px;height:7px;background:var(--gold-hi);border-radius:50%;box-shadow:0 0 10px rgba(232,204,153,1);animation:ls-dot-pulse .8s ease-in-out infinite}
-@keyframes ls-dot-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.8)}}
-
-/* Status text */
-.lst{font-size:9px;letter-spacing:.25em;color:rgba(201,169,110,.5);font-family:'Inter',sans-serif;text-transform:uppercase;height:14px;transition:opacity .3s}
-
-/* Corner marks — more geometric */
-.lc{position:absolute;width:40px;height:40px;opacity:.6;pointer-events:none}
-.lc.tl{top:24px;left:24px}
-.lc.tr{top:24px;right:24px;transform:scaleX(-1)}
-.lc.bl{bottom:24px;left:24px;transform:scaleY(-1)}
-.lc.br{bottom:24px;right:24px;transform:scale(-1)}
-
-/* Data stream lines */
-.ls-streams{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
-.ls-stream{position:absolute;width:1px;background:linear-gradient(to bottom,transparent,rgba(201,169,110,.15),rgba(201,169,110,.06),transparent);animation:ls-stream-fall linear infinite;opacity:0}
-@keyframes ls-stream-fall{0%{transform:translateY(-100vh);opacity:0}5%{opacity:1}90%{opacity:.4}100%{transform:translateY(100vh);opacity:0}}
-
-/* Fade out */
-#ls.fade-out{animation:lfo 1s cubic-bezier(.4,0,.2,1) forwards}
-@keyframes lfo{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.06)}}
+/* loading screen dihapus */
+#ls{display:none !important}
 
 /* ══════ CONTROLS (top right — shown on login only) ══════ */
 .ctrl-bar{position:fixed;top:16px;right:16px;z-index:800;display:flex;gap:8px}
@@ -231,19 +167,7 @@ body.light .np-close svg,body.light .modal-close svg{ filter:brightness(.25) con
 body.light .panel-logo-svg svg path,body.light .panel-logo-svg svg polygon,body.light .panel-logo-svg svg line{ stroke:#6b4218 !important; }
 body.light .wb-icon-wrap svg path,body.light .wb-icon-wrap svg polygon{ stroke:#6b4218 !important; }
 
-/* ══════ WELCOME BANNER (dinonaktifkan — disembunyikan untuk semua role) ══════ */
-#wb{display:none !important}
-.wb-icon-wrap{display:flex;align-items:center;justify-content:center;width:64px;height:64px;
-    border-radius:50%;border:1px solid var(--border-hi);
-    background:radial-gradient(circle,rgba(201,169,110,.08),transparent);
-    animation:wbpulse 2s ease-in-out infinite alternate}
-@keyframes wbpulse{to{box-shadow:0 0 30px rgba(201,169,110,.2)}}
-.wb-gt{font-family:'Shippori Mincho',serif;font-size:clamp(11px,2vw,13px);letter-spacing:.5em;color:rgba(201,169,110,.5);text-transform:uppercase}
-.wb-name{font-family:'Cormorant Garamond',serif;font-size:clamp(24px,5vw,40px);font-weight:300;letter-spacing:.12em;color:var(--gold-hi)}
-.wb-rule{width:120px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
-.wb-role{font-size:9px;letter-spacing:.4em;color:var(--muted);text-transform:uppercase}
-.wb-date{font-size:11px;color:var(--text2);letter-spacing:.05em;margin-top:4px}
-.wb-hol{font-size:10px;color:var(--amber);letter-spacing:.08em;min-height:16px}
+/* welcome banner dihapus */
 
 /* ══════ 3D SCENE ══════ */
 #scene{position:fixed;inset:0;z-index:0;transition:opacity .5s}
@@ -785,6 +709,10 @@ body.light .cal-cell.empty{background:rgba(0,0,0,.025)}
 .cal-ad-chip{font-size:8.5px;font-weight:700;letter-spacing:.02em;padding:2px 5px;border-radius:3px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:3px}
 .cal-ad-chip .chip-pub{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.cal-ad-chip .chip-state{font-size:7px;font-weight:800;letter-spacing:.05em;padding:1px 3px;border-radius:2px;flex-shrink:0}
+.cal-ad-chip .chip-state.live{background:rgba(122,191,142,.9);color:#0a0906}
+.cal-ad-chip .chip-state.draft{background:rgba(232,184,110,.9);color:#0a0906}
+.cal-ad-chip.is-draft{opacity:.6;border-style:dashed}
 .cal-ad-chip.cat-Reseller{background:rgba(217,142,192,.14);color:#d98ec0;border:1px solid rgba(217,142,192,.3)}
 .cal-ad-chip.cat-Product{background:rgba(126,168,201,.14);color:var(--blue);border:1px solid rgba(126,168,201,.3)}
 .cal-ad-chip.cat-B2B{background:rgba(122,191,142,.14);color:var(--green);border:1px solid rgba(122,191,142,.3)}
@@ -1498,72 +1426,8 @@ body.light .unlock-task-theme{color:#140d04}
 <!-- ══ TOAST ══ -->
 <div id="toast"></div>
 
-<!-- ══ LOADING SCREEN ══ -->
-<div id="ls">
-  <canvas id="ls-canvas"></canvas>
-
-  <!-- Geometric data streams -->
-  <div class="ls-streams" id="ls-streams"></div>
-
-  <!-- Corner marks -->
-  <div class="lc tl"><svg viewBox="0 0 40 40" fill="none"><path d="M2 38L2 2L38 2" stroke="rgba(201,169,110,.55)" stroke-width="1.2"/><circle cx="2" cy="2" r="2.5" fill="rgba(201,169,110,.7)"/><path d="M2 12L2 2L12 2" stroke="rgba(201,169,110,.3)" stroke-width=".8"/></svg></div>
-  <div class="lc tr"><svg viewBox="0 0 40 40" fill="none"><path d="M2 38L2 2L38 2" stroke="rgba(201,169,110,.55)" stroke-width="1.2"/><circle cx="2" cy="2" r="2.5" fill="rgba(201,169,110,.7)"/><path d="M2 12L2 2L12 2" stroke="rgba(201,169,110,.3)" stroke-width=".8"/></svg></div>
-  <div class="lc bl"><svg viewBox="0 0 40 40" fill="none"><path d="M2 38L2 2L38 2" stroke="rgba(201,169,110,.55)" stroke-width="1.2"/><circle cx="2" cy="2" r="2.5" fill="rgba(201,169,110,.7)"/><path d="M2 12L2 2L12 2" stroke="rgba(201,169,110,.3)" stroke-width=".8"/></svg></div>
-  <div class="lc br"><svg viewBox="0 0 40 40" fill="none"><path d="M2 38L2 2L38 2" stroke="rgba(201,169,110,.55)" stroke-width="1.2"/><circle cx="2" cy="2" r="2.5" fill="rgba(201,169,110,.7)"/><path d="M2 12L2 2L12 2" stroke="rgba(201,169,110,.3)" stroke-width=".8"/></svg></div>
-
-  <!-- Center content -->
-  <div class="ls-center">
-    <!-- Holographic orb -->
-    <div class="ls-orb">
-      <div class="ls-orb-ring"></div>
-      <div class="ls-orb-ring"></div>
-      <div class="ls-orb-ring"></div>
-      <div class="ls-orb-ring"></div>
-      <div class="ls-orb-core">
-        <div class="ls-scan"></div>
-        <svg class="ls-dhp-svg" viewBox="0 0 48 48" fill="none">
-          <defs>
-            <linearGradient id="lslg" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#c9a96e"/>
-              <stop offset="50%" stop-color="#e8cc99"/>
-              <stop offset="100%" stop-color="#a06840"/>
-            </linearGradient>
-            <linearGradient id="lslg2" x1="100%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#c9a96e" stop-opacity=".4"/>
-              <stop offset="100%" stop-color="#e8cc99" stop-opacity=".1"/>
-            </linearGradient>
-          </defs>
-          <polygon points="24,3 42,13.5 42,34.5 24,45 6,34.5 6,13.5" stroke="url(#lslg)" stroke-width=".8" fill="url(#lslg2)" opacity=".8"/>
-          <path d="M15 16L15 32L21 32Q28 32 28 24Q28 16 21 16Z" stroke="url(#lslg)" stroke-width="1.3" fill="none" stroke-linejoin="round"/>
-          <line x1="30" y1="16" x2="30" y2="32" stroke="url(#lslg)" stroke-width="1.3" stroke-linecap="round"/>
-          <line x1="36" y1="16" x2="36" y2="32" stroke="url(#lslg)" stroke-width="1.3" stroke-linecap="round"/>
-          <line x1="30" y1="24" x2="36" y2="24" stroke="url(#lslg)" stroke-width="1.3" stroke-linecap="round"/>
-        </svg>
-      </div>
-    </div>
-
-    <div class="ls-brand">DHP Creative</div>
-    <div class="ls-tagline">Command Portal</div>
-
-    <div class="ls-prog-wrap">
-      <div class="ls-prog-track">
-        <div id="l-bar"></div>
-      </div>
-    </div>
-    <div class="lst" id="l-sta">Initialising system...</div>
-  </div>
-</div>
-
-<!-- ══ WELCOME BANNER ══ -->
-<div id="wb">
-  <div class="wb-icon-wrap" id="wb-icon-wrap"></div>
-  <div class="wb-gt" id="wb-gt"></div>
-  <div class="wb-name" id="wb-name"></div>
-  <div class="wb-rule"></div>
-  <div class="wb-role" id="wb-role"></div>
-  <div class="wb-date" id="wb-date"></div>
-  <div class="wb-hol" id="wb-hol"></div>
-</div>
+<!-- loading screen dihapus -->
+<div id="ls" style="display:none"></div>
 
 <!-- ══ CONTROLS (login page only) ══ -->
 <div class="ctrl-bar" id="ctrl-bar">
@@ -3482,320 +3346,11 @@ let bgRenderer = null;
 })();
 
 /* ═══════════════════════════════════════════════════════════
-   ⑪ LOADING SCREEN — 4D Creative Animation
+   ⑪ LOADING SCREEN — dinonaktifkan (langsung sembunyikan)
    ═══════════════════════════════════════════════════════════ */
 (function initLoader() {
-  // Spawn data stream lines
-  const streamsEl = document.getElementById('ls-streams');
-  if (streamsEl) {
-    for (let i = 0; i < 18; i++) {
-      const s = document.createElement('div');
-      s.className = 'ls-stream';
-      const left = 2 + Math.random() * 96;
-      const dur  = 3 + Math.random() * 6;
-      const delay = Math.random() * 8;
-      const h    = 80 + Math.random() * 160;
-      s.style.cssText = `left:${left}%;height:${h}px;animation-duration:${dur}s;animation-delay:${delay}s`;
-      streamsEl.appendChild(s);
-    }
-  }
-
-  // ── Canvas setup ──
-  const canvas = document.getElementById('ls-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  let W, H, raf;
-  const resize = () => { W = canvas.width = innerWidth; H = canvas.height = innerHeight; };
-  resize(); addEventListener('resize', resize);
-  let ti = 0;
-
-  // ── 4D Tesseract / Hypercube projection ──
-  // 16 vertices of a 4D hypercube
-  const baseVerts4D = [];
-  for (let i = 0; i < 16; i++) {
-    baseVerts4D.push([
-      (i & 1) ? 1 : -1,
-      (i & 2) ? 1 : -1,
-      (i & 4) ? 1 : -1,
-      (i & 8) ? 1 : -1
-    ]);
-  }
-  // Edges: connect vertices differing in exactly 1 bit
-  const edges4D = [];
-  for (let a = 0; a < 16; a++) {
-    for (let b = a+1; b < 16; b++) {
-      if ((a^b) !== 0 && (a^b) !== 0 && ((a^b) & (a^b)-1) === 0) edges4D.push([a,b]);
-    }
-  }
-
-  // Project 4D → 3D → 2D
-  function rotate4D(v, t) {
-    let [x, y, z, w] = v;
-    // XW rotation
-    let nx = x*Math.cos(t*.7) - w*Math.sin(t*.7);
-    let nw = x*Math.sin(t*.7) + w*Math.cos(t*.7);
-    x = nx; w = nw;
-    // YZ rotation
-    let ny = y*Math.cos(t*.5) - z*Math.sin(t*.5);
-    let nz = y*Math.sin(t*.5) + z*Math.cos(t*.5);
-    y = ny; z = nz;
-    // ZW rotation
-    let nz2 = z*Math.cos(t*.3) - w*Math.sin(t*.3);
-    let nw2 = z*Math.sin(t*.3) + w*Math.cos(t*.3);
-    z = nz2; w = nw2;
-    return [x, y, z, w];
-  }
-
-  function project4Dto2D(v4, W, H, t) {
-    const [x, y, z, w] = rotate4D(v4, t);
-    // 4D→3D perspective
-    const d4 = 2.5;
-    const w4 = 1 / (d4 - w);
-    const x3 = x * w4, y3 = y * w4, z3 = z * w4;
-    // 3D→2D perspective
-    const d3 = 4;
-    const z3p = 1 / (d3 - z3);
-    const px = W/2 + x3 * z3p * Math.min(W, H) * .28;
-    const py = H/2 + y3 * z3p * Math.min(W, H) * .28;
-    const brightness = (w4 + z3p) * .5;
-    return { px, py, brightness };
-  }
-
-  // ── Particle field ──
-  const particles = [];
-  for (let i = 0; i < 200; i++) {
-    particles.push({
-      x: Math.random() * 2 - 1,
-      y: Math.random() * 2 - 1,
-      z: Math.random() * 2 - 1,
-      vx: (Math.random() - .5) * .002,
-      vy: (Math.random() - .5) * .002,
-      vz: (Math.random() - .5) * .002,
-      r: .5 + Math.random() * 1.5,
-      ph: Math.random() * Math.PI * 2,
-      sp: .3 + Math.random() * .7
-    });
-  }
-
-  // ── DNA Double Helix ──
-  const helixPoints = 80;
-
-  // ── Golden spiral ──
-  const spiralPoints = [];
-  for (let i = 0; i < 300; i++) {
-    const t = i / 300 * Math.PI * 8;
-    const r = i / 300;
-    spiralPoints.push({ r, t, op: i / 300 });
-  }
-
-  // ── Draw ──
-  (function draw() {
-    ctx.clearRect(0, 0, W, H);
-
-    // Deep dark background with subtle vignette
-    const bg = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W,H)*.8);
-    bg.addColorStop(0, 'rgba(8,5,3,.0)');
-    bg.addColorStop(1, 'rgba(0,0,0,.8)');
-    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-
-    const cx = W/2, cy = H/2;
-
-    // ── GRID — subtle hex-ish grid ──
-    ctx.save();
-    ctx.globalAlpha = .025;
-    ctx.strokeStyle = '#c9a96e';
-    ctx.lineWidth = .5;
-    const gs = 55;
-    for (let x = 0; x < W+gs; x += gs) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
-    for (let y = 0; y < H+gs; y += gs) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
-    // Diagonal lines
-    ctx.globalAlpha = .012;
-    for (let x = -H; x < W+H; x += gs*2) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x+H, H); ctx.stroke(); }
-    ctx.restore();
-
-    // ── 4D HYPERCUBE ──
-    const proj = baseVerts4D.map(v => project4Dto2D(v, W, H, ti));
-    // Draw edges
-    ctx.save();
-    edges4D.forEach(([a, b]) => {
-      const pa = proj[a], pb = proj[b];
-      const alpha = ((pa.brightness + pb.brightness) * .5) * .55;
-      const grad = ctx.createLinearGradient(pa.px, pa.py, pb.px, pb.py);
-      grad.addColorStop(0, `rgba(201,169,110,${alpha})`);
-      grad.addColorStop(.5, `rgba(232,204,153,${alpha*1.4})`);
-      grad.addColorStop(1, `rgba(160,104,64,${alpha})`);
-      ctx.strokeStyle = grad;
-      ctx.lineWidth = .8 + pa.brightness * .8;
-      ctx.beginPath(); ctx.moveTo(pa.px, pa.py); ctx.lineTo(pb.px, pb.py); ctx.stroke();
-    });
-    // Draw vertices
-    proj.forEach(p => {
-      const alpha = p.brightness * .9;
-      ctx.beginPath(); ctx.arc(p.px, p.py, 1.5 + p.brightness * 1.5, 0, Math.PI*2);
-      ctx.fillStyle = `rgba(232,204,153,${alpha})`;
-      ctx.fill();
-      // Glow
-      const g2 = ctx.createRadialGradient(p.px, p.py, 0, p.px, p.py, 8);
-      g2.addColorStop(0, `rgba(232,204,153,${alpha*.5})`);
-      g2.addColorStop(1, 'rgba(232,204,153,0)');
-      ctx.fillStyle = g2;
-      ctx.beginPath(); ctx.arc(p.px, p.py, 8, 0, Math.PI*2); ctx.fill();
-    });
-    ctx.restore();
-
-    // ── DNA DOUBLE HELIX ──
-    ctx.save();
-    const helixScale = Math.min(W, H) * .18;
-    const helixOffX = cx, helixOffY = cy;
-    for (let i = 0; i < helixPoints - 1; i++) {
-      const t1 = i / helixPoints * Math.PI * 4 + ti * .6;
-      const t2 = (i+1) / helixPoints * Math.PI * 4 + ti * .6;
-      const y1 = cy - helixScale + i / helixPoints * helixScale * 2;
-      const y2 = cy - helixScale + (i+1) / helixPoints * helixScale * 2;
-      // Strand A
-      const ax1 = cx + Math.cos(t1) * helixScale * .5;
-      const ax2 = cx + Math.cos(t2) * helixScale * .5;
-      const depthA = (Math.sin(t1) + 1) * .5;
-      ctx.globalAlpha = .12 + depthA * .25;
-      ctx.strokeStyle = `rgba(201,169,110,1)`;
-      ctx.lineWidth = .8 + depthA * .5;
-      ctx.beginPath(); ctx.moveTo(ax1, y1); ctx.lineTo(ax2, y2); ctx.stroke();
-      // Strand B
-      const bx1 = cx + Math.cos(t1 + Math.PI) * helixScale * .5;
-      const bx2 = cx + Math.cos(t2 + Math.PI) * helixScale * .5;
-      const depthB = (Math.sin(t1 + Math.PI) + 1) * .5;
-      ctx.globalAlpha = .12 + depthB * .2;
-      ctx.strokeStyle = `rgba(160,104,64,1)`;
-      ctx.lineWidth = .6 + depthB * .4;
-      ctx.beginPath(); ctx.moveTo(bx1, y1); ctx.lineTo(bx2, y2); ctx.stroke();
-      // Rungs (every 4)
-      if (i % 4 === 0) {
-        const rungAlpha = .08 + (depthA + depthB) * .08;
-        ctx.globalAlpha = rungAlpha;
-        ctx.strokeStyle = 'rgba(232,204,153,1)';
-        ctx.lineWidth = .5;
-        ctx.setLineDash([2, 3]);
-        ctx.beginPath(); ctx.moveTo(ax1, y1); ctx.lineTo(bx1, y1); ctx.stroke();
-        ctx.setLineDash([]);
-      }
-    }
-    ctx.globalAlpha = 1;
-    ctx.restore();
-
-    // ── GOLDEN SPIRAL ──
-    ctx.save();
-    const sScale = Math.min(W, H) * .32;
-    ctx.globalAlpha = .15;
-    ctx.strokeStyle = 'rgba(201,169,110,.8)';
-    ctx.lineWidth = .5;
-    ctx.beginPath();
-    spiralPoints.forEach((p, i) => {
-      const angle = p.t + ti * .15;
-      const radius = p.r * sScale;
-      const sx = cx + Math.cos(angle) * radius;
-      const sy = cy + Math.sin(angle) * radius;
-      if (i === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
-    });
-    ctx.stroke();
-    ctx.restore();
-
-    // ── PARTICLES ──
-    particles.forEach(p => {
-      p.x += p.vx + Math.sin(ti * p.sp + p.ph) * .001;
-      p.y += p.vy + Math.cos(ti * p.sp * .7 + p.ph) * .001;
-      p.z += p.vz;
-      if (Math.abs(p.x) > 1.2) p.vx *= -1;
-      if (Math.abs(p.y) > 1.2) p.vy *= -1;
-      if (Math.abs(p.z) > 1.2) p.vz *= -1;
-      // Project to 2D
-      const d = 3;
-      const zp = 1 / (d - p.z * .5);
-      const px2 = cx + p.x * zp * Math.min(W,H) * .45;
-      const py2 = cy + p.y * zp * Math.min(W,H) * .45;
-      const alpha = (.3 + Math.sin(ti * p.sp * 2 + p.ph) * .2) * zp * .8;
-      const radius = p.r * zp;
-      ctx.beginPath();
-      ctx.arc(px2, py2, Math.max(.4, radius), 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(232,204,153,${Math.min(.8, alpha)})`;
-      ctx.fill();
-    });
-
-    // ── ORBITAL RINGS around center ──
-    ctx.save();
-    for (let ring = 0; ring < 3; ring++) {
-      const orbitR = (110 + ring * 55) * Math.min(W,H) / 900;
-      const tiltX = [.6, -.4, .2][ring];
-      const tiltY = [.3, .6, -.5][ring];
-      const speed = [.4, -.28, .18][ring];
-      ctx.save();
-      ctx.translate(cx, cy);
-      // Simulate 3D tilt with ellipse
-      const rx = orbitR;
-      const ry = orbitR * Math.abs(Math.sin(tiltX * Math.PI));
-      const rot = ti * speed;
-      ctx.rotate(tiltY);
-      ctx.globalAlpha = .12 - ring * .025;
-      ctx.strokeStyle = `rgba(201,169,110,1)`;
-      ctx.lineWidth = .8;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, rx, Math.max(ry, orbitR*.15), rot, 0, Math.PI*2);
-      ctx.stroke();
-      // Traveling dot on orbit
-      const dotAngle = ti * speed * 2.5 + ring * 2.1;
-      const dotX = Math.cos(dotAngle) * rx;
-      const dotY = Math.sin(dotAngle) * Math.max(ry, orbitR*.15);
-      ctx.globalAlpha = .7;
-      ctx.fillStyle = `rgba(232,204,153,1)`;
-      ctx.beginPath(); ctx.arc(dotX, dotY, 2 - ring * .3, 0, Math.PI*2); ctx.fill();
-      // Trail
-      for (let t = 1; t < 8; t++) {
-        const ta = dotAngle - t * .12;
-        const tx = Math.cos(ta) * rx;
-        const ty = Math.sin(ta) * Math.max(ry, orbitR*.15);
-        ctx.globalAlpha = (.5 - t * .06) * .7;
-        ctx.beginPath(); ctx.arc(tx, ty, (1.5 - ring * .2) * (1 - t/10), 0, Math.PI*2); ctx.fill();
-      }
-      ctx.restore();
-    }
-    ctx.restore();
-
-    // ── CENTER GLOW ──
-    const cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, 90);
-    cg.addColorStop(0, `rgba(201,169,110,${.06 + Math.sin(ti*1.4)*.03})`);
-    cg.addColorStop(.4, `rgba(201,169,110,${.025 + Math.sin(ti*.9)*.015})`);
-    cg.addColorStop(1, 'rgba(201,169,110,0)');
-    ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(cx, cy, 90, 0, Math.PI*2); ctx.fill();
-
-    ti += .015;
-    raf = requestAnimationFrame(draw);
-  })();
-
-  // Progress bar & steps
-  const bar = document.getElementById('l-bar'), sta = document.getElementById('l-sta');
-  const steps = [
-    { p:15,  en:'Initialising system...',      id:'Inisialisasi sistem...' },
-    { p:35,  en:'Loading UI components...',    id:'Memuat komponen UI...' },
-    { p:58,  en:'Connecting to database...',   id:'Menghubungkan database...' },
-    { p:78,  en:'Checking presence...',        id:'Memeriksa kehadiran...' },
-    { p:92,  en:'Finalising...',               id:'Memfinalisasi...' },
-    { p:100, en:'Ready ✦',                     id:'Siap! ✦' },
-  ];
-  const delays = [220, 380, 520, 580, 440, 300];
-  let si = 0;
-  function nextStep() {
-    if (si >= steps.length) {
-      setTimeout(() => {
-        const el = document.getElementById('ls');
-        el.classList.add('fade-out');
-        setTimeout(() => { el.style.display = 'none'; cancelAnimationFrame(raf); }, 900);
-      }, 280); return;
-    }
-    const s = steps[si];
-    if (bar) bar.style.width = s.p + '%';
-    if (sta) { sta.style.opacity = '0'; setTimeout(() => { sta.textContent = currentLang === 'id' ? s.id : s.en; sta.style.opacity = '1'; }, 120); }
-    si++; setTimeout(nextStep, delays[si-1] || 400);
-  }
-  setTimeout(nextStep, 300);
+  const el = document.getElementById('ls');
+  if (el) el.style.display = 'none';
 })();
 
 /* ═══════════════════════════════════════════════════════════
@@ -3817,12 +3372,6 @@ function durSince(ts) {
   if (m < 60)  return `${m}m`;
   if (h < 24)  return `${h}${ID?'j':'h'}`;
   return               `${d}${ID?'h':'d'}`;
-}
-function fmtDate(iso) {
-  const d = new Date(iso), ID = currentLang === 'id';
-  const days = ID ? ['Min','Sen','Sel','Rab','Kam','Jum','Sab'] : ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const months = ID ? ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'] : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
 }
 const showAlert = (id, type, msg) => { const el = document.getElementById(id); if (el) { el.className = `al ${type} show`; el.textContent = msg; } };
 const hideAlert = (id) => { const el = document.getElementById(id); if (el) el.className = 'al'; };
@@ -3873,36 +3422,6 @@ function updateClock() {
   const months = ID ? ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'] : ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const dc = document.getElementById('clk-date');
   if (dc) dc.textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
-}
-function showWelcomeBanner(name, role) {
-  const g = getGreeting(), wb = document.getElementById('wb');
-  document.getElementById('wb-icon-wrap').innerHTML = g.icon || '';
-
-  // ═══ Personalized greeting for Sovereign Moderator (dickya) ═══
-  const isHead = currentUser && currentUser.id === HEAD_MODERATOR_ID;
-  if (isHead) {
-    const headGreet = currentLang === 'id'
-      ? `${g.id}, Yang Mulia`
-      : `${g.en}, Sovereign`;
-    document.getElementById('wb-gt').textContent = headGreet;
-    document.getElementById('wb-name').textContent = name;
-    const roleLabel = currentLang === 'id'
-      ? 'SOVEREIGN MODERATOR · OTORITAS TERTINGGI'
-      : 'SOVEREIGN MODERATOR · SUPREME AUTHORITY';
-    document.getElementById('wb-role').textContent = roleLabel;
-  } else {
-    document.getElementById('wb-gt').textContent = currentLang === 'id' ? g.id : g.en;
-    document.getElementById('wb-name').textContent = name;
-    document.getElementById('wb-role').textContent = rn(role).toUpperCase();
-  }
-
-  document.getElementById('wb-date').textContent = fmtDate(new Date().toISOString());
-  const hol = getHoliday();
-  document.getElementById('wb-hol').textContent = hol ? `✦ ${hol}` : '';
-  wb.classList.add('show');
-  const showDuration = isHead ? 4200 : 3200;
-  setTimeout(() => wb.classList.add('hide'), showDuration);
-  setTimeout(() => { wb.classList.remove('show', 'hide'); }, showDuration + 700);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -3992,8 +3511,6 @@ function loginSuccess(id, role, name) {
     document.body.classList.add(`role-theme-${role}`);
     await initDashboard();
     initRealtimePresence(id, role, name);
-    // Welcome banner dinonaktifkan untuk semua role (langsung masuk dashboard)
-    // showWelcomeBanner(name, role);
     if (role === 'guest') toast(t('guestReadOnly'));
     // Notif/aktivitas login diri sendiri:
     // Kalau Supabase aktif, event 'join' channel yang akan memunculkannya (anti-dobel).
@@ -4140,10 +3657,12 @@ async function initDashboard() {
   // Moderator: semua iklan & semua task (untuk approve/kelola).
   // Admin/B2B: iklan (read-only) & task yang ditugaskan ke dirinya.
   if (canSeeAds) {
-    try {
-      await loadAdsFromDB();
-      initAdRealtime();
-    } catch (e) { console.warn('[DHP] loadAdsFromDB gagal:', e); }
+    try { await loadAdsFromDB(); }
+    catch (e) { console.warn('[DHP] loadAdsFromDB gagal:', e); }
+    // Realtime + polling HARUS tetap mulai meski load awal gagal,
+    // supaya task baru tetap masuk lewat polling.
+    try { initAdRealtime(); }
+    catch (e) { console.warn('[DHP] initAdRealtime gagal:', e); }
   }
 
   try { renderStats(); renderActivity(); renderCust(); renderBcHistory(); }
@@ -5105,6 +4624,7 @@ function startAdPolling(intervalMs) {
     // 1) Reload jadwal iklan (ad_schedule)
     let adsChanged = false;
     const aRes = await dbQ(d => d.from('ad_schedule').select('*').order('ad_date', { ascending:true }));
+    if (aRes?.error) console.warn('[DHP] poll ad_schedule error:', aRes.error.message);
     if (aRes?.data) {
       const fresh = aRes.data.map(a => ({
         id: a.id, date: a.ad_date, theme: a.theme, category: a.category,
@@ -5121,6 +4641,7 @@ function startAdPolling(intervalMs) {
       if (!isMod) q = q.eq('assignee_id', myUserId);
       return q.order('created_at', { ascending:false });
     });
+    if (tRes?.error) console.warn('[DHP] poll ad_tasks error:', tRes.error.message);
     let tasksChanged = false, newOnes = [];
     if (tRes?.data) {
       const freshTasks = tRes.data.map(mapTaskRow);
@@ -5133,13 +4654,26 @@ function startAdPolling(intervalMs) {
       }
     }
 
-    // 3) Render ulang bila ada perubahan apa pun
+    // 3) Render ulang + notifikasi bila ada perubahan
     if (adsChanged || tasksChanged) {
+      // Bila ada task baru → lompat kalender ke bulan task terbaru supaya kelihatan
+      if (newOnes.length) {
+        try {
+          const newest = newOnes[0];
+          const d = new Date((newest.date || '') + 'T00:00:00');
+          if (!isNaN(d)) adCursor = new Date(d.getFullYear(), d.getMonth(), 1);
+        } catch (_) {}
+      }
       try { updateTaskBadges(); renderTaskPanel(); refreshAdViews(); }
       catch (e) { console.warn('[DHP] poll render error:', e); }
-      newOnes.forEach(t => {
-        pushNotif({ type:'action', msg:`${t_('taskNew')}: ${t.title} · ${t.category}` });
-        toast(`✨ ${t_('taskNew')} · ${t.title}`);
+      // Notifikasi task baru — masuk bell, activity feed, dan toast
+      newOnes.forEach(tk => {
+        const dateStr = fmtDayShort(tk.date);
+        pushNotif({ type:'action', msg:`${t_('taskNew')}: ${tk.title} · ${tk.category} · ${dateStr}` });
+        pushActivity(`📌 ${t_('taskNew')}: ${tk.title} (${dateStr})`, 'task');
+        toast(`✨ ${t_('taskNew')} · ${tk.title}`);
+        // Bunyi notif lembut bila tersedia
+        try { playNotifBeep(); } catch (_) {}
       });
     }
   };
@@ -5148,8 +4682,120 @@ function startAdPolling(intervalMs) {
   adPollInterval = setInterval(tick, intervalMs);
 }
 
+/* Bunyi notifikasi singkat (Web Audio — tidak butuh file) */
+let _notifAudioCtx = null;
+function playNotifBeep() {
+  try {
+    _notifAudioCtx = _notifAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = _notifAudioCtx;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = 880;
+    g.gain.setValueAtTime(0.0001, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.25);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(); o.stop(ctx.currentTime + 0.26);
+  } catch (_) {}
+}
+
 /* Singkatan t() agar bisa dipanggil di luar konteks render (saat polling) */
 function t_(key) { try { return t(key); } catch(e) { return key; } }
+
+/* ── DIAGNOSTIK SYNC (jalankan di Console: dhpDebug()) ──
+   Menampilkan status koneksi, isi DB, dan apakah task milik user terbaca. */
+window.dhpDebug = async function () {
+  console.log('═══════════ DHP SYNC DEBUG ═══════════');
+  console.log('db terkonfigurasi   :', !!db);
+  console.log('user saat ini       :', currentUser);
+  if (!db) { console.warn('Supabase TIDAK aktif — cek SUPABASE_URL & KEY.'); return; }
+
+  const aRes = await dbQ(d => d.from('ad_schedule').select('*').order('ad_date', { ascending:false }));
+  if (aRes?.error) console.error('ad_schedule ERROR:', aRes.error);
+  console.log('Total iklan di DB   :', aRes?.data?.length ?? '(gagal baca)');
+  console.table((aRes?.data || []).map(a => ({ theme:a.theme, status:a.status, target:a.target, ad_date:a.ad_date })));
+
+  const tRes = await dbQ(d => d.from('ad_tasks').select('*').order('created_at', { ascending:false }));
+  if (tRes?.error) console.error('ad_tasks ERROR:', tRes.error);
+  console.log('Total task di DB    :', tRes?.data?.length ?? '(gagal baca)');
+  console.table((tRes?.data || []).map(t => ({ assignee:t.assignee_id, title:t.title, status:t.status, ad_date:t.ad_date })));
+
+  if (currentUser) {
+    const mine = (tRes?.data || []).filter(t => t.assignee_id === currentUser.id);
+    console.log(`Task untuk "${currentUser.id}" :`, mine.length);
+    const myAds = (aRes?.data || []).filter(a =>
+      a.status === 'published' &&
+      String(a.target||'').split(',').map(s=>s.trim()).includes(currentUser.id));
+    console.log(`Iklan PUBLISHED target "${currentUser.id}" :`, myAds.length);
+    if (mine.length && !myAds.length) {
+      console.warn('⚠ Ada task tapi iklannya belum PUBLISHED / target tidak cocok. Minta moderator klik PUBLISH.');
+    }
+    if (!mine.length) {
+      console.warn('⚠ Belum ada task untuk user ini. Pastikan moderator memilih user ini sebagai target lalu PUBLISH.');
+    }
+  }
+  console.log('Status channel realtime:', adChannel ? 'aktif' : 'tidak ada');
+  console.log('═══════════════════════════════════════');
+  console.log('Tip: jalankan dhpForceSync() untuk tarik paksa sekarang.');
+};
+
+/* Tarik paksa data sekarang & render ulang */
+window.dhpForceSync = async function () {
+  await loadAdsFromDB();
+  refreshAdViews();
+  updateTaskBadges();
+  console.log('[DHP] Force sync selesai. Task termuat:', adTasks.length);
+  toast('✓ Sync paksa selesai');
+};
+
+/* Diagnosa SYNC yang tampil di layar (untuk admin/b2b/moderator) */
+async function dhpDiagnosePopup() {
+  if (!db) { alert('Supabase TIDAK aktif. Cek SUPABASE_URL & KEY.'); return; }
+  const me = currentUser ? currentUser.id : '?';
+  const aRes = await dbQ(d => d.from('ad_schedule').select('*'));
+  const tRes = await dbQ(d => d.from('ad_tasks').select('*'));
+  const aErr = aRes?.error?.message;
+  const tErr = tRes?.error?.message;
+  const allAds = aRes?.data || [];
+  const allTasks = tRes?.data || [];
+  const pubForMe = allAds.filter(a => a.status === 'published' &&
+    String(a.target||'').split(',').map(s=>s.trim()).includes(me));
+  const draftAll = allAds.filter(a => a.status !== 'published');
+  const myTasks = allTasks.filter(t => t.assignee_id === me);
+
+  let msg = `DIAGNOSA SYNC — ${me}\n`;
+  msg += `──────────────────────\n`;
+  msg += `Koneksi DB        : OK\n`;
+  if (aErr) msg += `❌ Baca ad_schedule: ${aErr}\n`;
+  if (tErr) msg += `❌ Baca ad_tasks   : ${tErr}\n`;
+  msg += `Total iklan di DB : ${allAds.length}\n`;
+  msg += `Iklan DRAFT       : ${draftAll.length}\n`;
+  msg += `Total task di DB  : ${allTasks.length}\n`;
+  if (can.isMod(currentUser?.role)) {
+    msg += `\n(Anda moderator — lihat semua)\n`;
+    if (draftAll.length) {
+      msg += `\n⚠ Ada ${draftAll.length} iklan DRAFT (belum dipublish).\n`;
+      msg += `Target TIDAK akan melihatnya sampai Anda klik PUBLISH.\n`;
+      msg += `Draft: ` + draftAll.slice(0,5).map(a=>`${a.theme} (${a.ad_date})`).join(', ') + `\n`;
+    } else {
+      msg += `\n✓ Tidak ada draft tertinggal.\n`;
+    }
+  } else {
+    msg += `\nIklan PUBLISHED utk Anda : ${pubForMe.length}\n`;
+    msg += `Task utk Anda            : ${myTasks.length}\n`;
+    if (!myTasks.length && !pubForMe.length) {
+      msg += `\n⚠ Belum ada apa pun untuk Anda.\n`;
+      msg += `Kemungkinan: moderator belum PUBLISH, atau Anda bukan target.\n`;
+    } else if (myTasks.length && !pubForMe.length) {
+      msg += `\n⚠ Ada task tapi iklan tidak terbaca sebagai published untuk Anda.\n`;
+    } else {
+      msg += `\n✓ Data ada. Kalau kalender kosong, klik "Sync" / cek bulan iklan.\n`;
+    }
+  }
+  alert(msg);
+  // sekalian tarik ulang
+  await loadAdsFromDB(); refreshAdViews(); updateTaskBadges();
+}
+window.dhpDiagnosePopup = dhpDiagnosePopup;
 
 function stopAdPolling() {
   if (adPollInterval) { clearInterval(adPollInterval); adPollInterval = null; }
@@ -5173,11 +4819,21 @@ function initAdRealtime() {
       if (!isMod && tk.assignee_id !== (currentUser && currentUser.id)) return;
       if (tk.status !== 'done' && !adTasks.find(x => x.id === tk.id)) {
         adTasks.unshift(mapTaskRow(tk));
-        safe(updateTaskBadges); safe(renderTaskPanel);
-        if (isAdPageActive()) safe(renderAdScheduler);
-        if (isTaskPageActive()) safe(renderAdTaskPage);
-        pushNotif({ type:'action', msg:`${t('taskNew')}: ${tk.title} · ${tk.category}` });
-        toast(`${t('taskNew')} · ${tk.title}`);
+        // Reload jadwal iklan dulu (task tampil di kalender via iklan published),
+        // lalu lompat ke bulan task & render.
+        loadAdsFromDB().then(() => {
+          try {
+            const d = new Date((tk.ad_date || '') + 'T00:00:00');
+            if (!isNaN(d)) adCursor = new Date(d.getFullYear(), d.getMonth(), 1);
+          } catch (_) {}
+          safe(updateTaskBadges); safe(renderTaskPanel);
+          safe(refreshAdViews);
+        }).catch(e => console.warn('[DHP] reload setelah task insert gagal:', e));
+        const dateStr = fmtDayShort(tk.ad_date);
+        pushNotif({ type:'action', msg:`${t('taskNew')}: ${tk.title} · ${tk.category} · ${dateStr}` });
+        pushActivity(`📌 ${t('taskNew')}: ${tk.title} (${dateStr})`, 'task');
+        toast(`✨ ${t('taskNew')} · ${tk.title}`);
+        try { playNotifBeep(); } catch (_) {}
       }
     })
     .on('postgres_changes', { event:'UPDATE', schema:'public', table:'ad_tasks' }, payload => {
@@ -5268,7 +4924,7 @@ function applyAdHeaderByRole() {
   }
   if (sub) sub.textContent = isMod ? t('adSchedulerSub') : t('adSchedulerSubTarget');
 
-  // Tombol refresh manual untuk non-mod (tampil di toolbar)
+  // Tombol SYNC manual untuk non-mod (tampil di toolbar, berlabel jelas)
   let refreshBtn = document.getElementById('ads-refresh-btn');
   if (!isMod) {
     if (!refreshBtn) {
@@ -5276,23 +4932,50 @@ function applyAdHeaderByRole() {
       if (toolbar) {
         refreshBtn = document.createElement('button');
         refreshBtn.id = 'ads-refresh-btn';
-        refreshBtn.className = 'ads-nav-btn ads-today-btn';
-        refreshBtn.title = 'Refresh tasks';
-        refreshBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2.5 8a5.5 5.5 0 1 1 1.1 3.3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M2.5 11.5V8h3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        refreshBtn.className = 'btn-gold btn-sm ads-today-btn';
+        refreshBtn.style.cssText = 'display:inline-flex;align-items:center;gap:6px';
+        refreshBtn.title = 'Tarik task terbaru dari moderator';
+        refreshBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 8a5.5 5.5 0 1 1 1.1 3.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M2.5 11.5V8h3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Sync</span>';
         refreshBtn.onclick = async () => {
           refreshBtn.style.opacity = '0.5';
           refreshBtn.style.pointerEvents = 'none';
+          const before = new Set(adTasks.map(t => t.id));
           await loadAdsFromDB();
+          // Lompat ke bulan task terbaru milikku bila ada yang baru
+          const mine = adTasks.filter(t => t.assignee === currentUser.id);
+          const fresh = mine.filter(t => !before.has(t.id));
+          if (fresh.length) {
+            const d = new Date((fresh[0].date || '') + 'T00:00:00');
+            if (!isNaN(d)) adCursor = new Date(d.getFullYear(), d.getMonth(), 1);
+            toast(`✨ ${fresh.length} task baru ditemukan`);
+          } else {
+            toast('✓ Sudah paling baru');
+          }
           refreshAdViews();
           refreshBtn.style.opacity = '';
           refreshBtn.style.pointerEvents = '';
-          toast('✓ Tasks diperbarui');
         };
         toolbar.appendChild(refreshBtn);
       }
     }
   } else {
     if (refreshBtn) refreshBtn.remove();
+  }
+
+  // Tombol Diagnosa (semua role) — tampilkan status sync di layar
+  let diagBtn = document.getElementById('ads-diag-btn');
+  if (!diagBtn) {
+    const toolbar = document.querySelector('#pg-ad_scheduler .ads-toolbar');
+    if (toolbar) {
+      diagBtn = document.createElement('button');
+      diagBtn.id = 'ads-diag-btn';
+      diagBtn.className = 'ads-nav-btn';
+      diagBtn.title = 'Diagnosa sinkronisasi';
+      diagBtn.style.cssText = 'display:inline-flex;align-items:center;gap:5px';
+      diagBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
+      diagBtn.onclick = () => dhpDiagnosePopup();
+      toolbar.appendChild(diagBtn);
+    }
   }
 }
 
@@ -5349,11 +5032,6 @@ function visibleAds() {
   );
 }
 
-/* Task milikku pada tanggal tertentu (untuk target) */
-function myTasksOnDate(ymd) {
-  return adTasks.filter(tk => tk.date === ymd && (can.isMod(currentUser?.role) || tk.assignee === currentUser.id));
-}
-
 /* ── Calendar grid ── */
 function renderCalendar() {
   const isMod  = can.isMod(currentUser?.role);
@@ -5393,8 +5071,12 @@ function renderCalendar() {
 
     let chips = '';
     dayAds.slice(0, 3).forEach(a => {
-      const pub = a.status === 'published' ? `<span class="chip-pub"></span>` : '';
-      chips += `<div class="cal-ad-chip cat-${a.category}" title="${escHtml(a.theme)}">${pub}<span style="overflow:hidden;text-overflow:ellipsis">${escHtml(a.theme)}</span></div>`;
+      const isPub = a.status === 'published';
+      // Moderator: tampilkan status jelas (LIVE/DRAFT). Target: hanya lihat yang published.
+      const tag = isMod
+        ? (isPub ? `<span class="chip-state live">LIVE</span>` : `<span class="chip-state draft">DRAFT</span>`)
+        : `<span class="chip-pub"></span>`;
+      chips += `<div class="cal-ad-chip cat-${a.category}${isMod&&!isPub?' is-draft':''}" title="${escHtml(a.theme)}${isMod?(isPub?' — sudah dipublish':' — BELUM dipublish (klik untuk publish)'):''}">${tag}<span style="overflow:hidden;text-overflow:ellipsis">${escHtml(a.theme)}</span></div>`;
     });
     if (dayAds.length > 3) chips += `<div class="cal-more">+${dayAds.length-3}</div>`;
 
@@ -5831,11 +5513,28 @@ async function saveAd(thenPublish) {
     p_ad_date: date, p_theme: theme, p_category: cat,
     p_target: target, p_note: '', p_user_id: currentUser.id
   }));
+  if (res && res.error) {
+    console.error('[DHP] upsert_ad ERROR:', res.error);
+    toast('⚠ Gagal simpan ke server: ' + (res.error.message || 'cek koneksi/skema SQL'));
+  }
   if (res && res.data) {
     // sinkronkan id lokal dengan UUID DB
     const localItem = ads.find(x => x.id === savedId);
     if (localItem) localItem.id = res.data;
     savedId = res.data;
+  } else if (db && !res) {
+    // DB aktif tapi RPC tidak mengembalikan apa-apa → kemungkinan error/permission
+    console.warn('[DHP] upsert_ad tidak mengembalikan data — task mungkin TIDAK tersimpan ke DB.');
+    toast('⚠ Server tidak merespons. Pastikan SQL v4.0 sudah dijalankan.');
+  }
+
+  // Jika DB aktif tapi id masih lokal (RPC gagal) → JANGAN lanjut publish palsu,
+  // karena task lokal tidak akan pernah sampai ke target.
+  if (db && thenPublish && String(savedId).startsWith('local_')) {
+    toast('⚠ Iklan belum tersimpan ke server, publish dibatalkan. Coba lagi.');
+    closeModal();
+    renderAdScheduler();
+    return;
   }
 
   toast(t('adSaved'));
@@ -5870,7 +5569,15 @@ async function publishAd(id, skipConfirm) {
   let usedRpc = false;
   if (!String(id).startsWith('local_')) {
     const r = await dbQ(d => d.rpc('publish_ad', { p_id: id, p_user_id: currentUser.id }));
-    usedRpc = !!r;
+    if (r && r.error) {
+      console.error('[DHP] publish_ad ERROR:', r.error);
+      toast('⚠ Publish gagal: ' + (r.error.message || 'cek skema SQL / target valid'));
+      a.status = 'draft';   // kembalikan status karena gagal
+      renderAdScheduler();
+      return;
+    }
+    // Sukses bila ada respons tanpa error
+    usedRpc = !!(r && !r.error);
     if (usedRpc) await loadAdsFromDB();   // tarik ulang task per-target dari DB
   }
 
@@ -6638,7 +6345,6 @@ function navTo(page, btn) {
    ═══════════════════════════════════════════════════════════ */
 function navOpen()  { document.body.classList.add('nav-on'); }
 function navClose() { document.body.classList.remove('nav-on'); }
-function navToggle(){ document.body.classList.toggle('nav-on'); }
 
 // Wire up all listeners once DOM is ready
 (function initNavDrawer(){
