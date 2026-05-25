@@ -641,6 +641,10 @@ body.light .notif-item.unread{background:rgba(107,66,24,.05);border-color:rgba(1
 .ni-type.lead::before{background:#d98ec0}.ni-type.lead{color:#d98ec0}
 .ni-type.info::before{background:var(--muted)}.ni-type.info{color:var(--muted)}
 .ni-type.ad::before{background:var(--blue)}.ni-type.ad{color:var(--blue)}
+.ni-type.done::before{background:var(--green)}.ni-type.done{color:var(--green)}
+.ni-type.alert::before{background:var(--red)}.ni-type.alert{color:var(--red)}
+.ni-head{font-size:12.5px;font-weight:600;color:var(--gold-hi);line-height:1.35;margin-bottom:2px}
+body.light .ni-head{color:var(--gold-dk)}
 .ni-msg{font-size:12px;color:var(--text2);line-height:1.5}
 .ni-time{font-size:9px;color:var(--muted);margin-top:5px;display:flex;align-items:center;gap:3px}
 .ni-acts{display:flex;gap:6px;margin-top:8px}
@@ -721,7 +725,53 @@ body.light .ni-time{color:rgba(20,13,4,.6)}
     transition:all .3s;white-space:nowrap;max-width:90vw;text-align:center}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* ══════ ELEGANT CONFIRM / ALERT DIALOG ══════ */
+/* ══════ ELEGANT NOTIFICATION POPUP (top-right, 8s, minimalis) ══════ */
+#np-stack{position:fixed;top:64px;right:16px;z-index:2600;display:flex;flex-direction:column;
+    gap:10px;width:300px;max-width:calc(100vw - 24px);pointer-events:none}
+.np-pop{position:relative;pointer-events:auto;overflow:hidden;cursor:pointer;
+    background:linear-gradient(135deg,rgba(30,27,23,.98),rgba(20,18,16,.98));
+    border:1px solid var(--border-hi);border-radius:13px;
+    box-shadow:0 14px 40px rgba(0,0,0,.5),inset 0 1px 0 rgba(232,204,153,.07);
+    backdrop-filter:blur(10px);
+    transform:translateX(120%);opacity:0;
+    transition:transform .42s cubic-bezier(.16,1,.3,1),opacity .3s,margin .3s}
+.np-pop.show{transform:translateX(0);opacity:1}
+.np-pop.hide{transform:translateX(120%);opacity:0;margin-bottom:-58px}
+body.light .np-pop{background:linear-gradient(135deg,var(--surface),var(--surface2));
+    box-shadow:0 14px 40px rgba(0,0,0,.16)}
+.np-pop-row{display:flex;align-items:flex-start;gap:11px;padding:13px 14px 13px 13px}
+.np-pop-ic{flex-shrink:0;width:34px;height:34px;border-radius:9px;display:flex;
+    align-items:center;justify-content:center;background:rgba(201,169,110,.12);
+    border:1px solid var(--border-hi)}
+.np-pop-ic svg{width:17px;height:17px;stroke:var(--gold-hi);fill:none;stroke-width:2;
+    stroke-linecap:round;stroke-linejoin:round}
+.np-pop.t-task .np-pop-ic,.np-pop.t-action .np-pop-ic{background:rgba(201,169,110,.12);border-color:var(--border-hi)}
+.np-pop.t-task .np-pop-ic svg,.np-pop.t-action .np-pop-ic svg{stroke:var(--gold-hi)}
+.np-pop.t-done .np-pop-ic{background:rgba(122,191,142,.13);border-color:rgba(122,191,142,.32)}
+.np-pop.t-done .np-pop-ic svg{stroke:var(--green)}
+.np-pop.t-alert .np-pop-ic{background:rgba(232,112,112,.12);border-color:rgba(232,112,112,.3)}
+.np-pop.t-alert .np-pop-ic svg{stroke:var(--red)}
+.np-pop.t-lead .np-pop-ic{background:rgba(126,168,201,.13);border-color:rgba(126,168,201,.32)}
+.np-pop.t-lead .np-pop-ic svg{stroke:var(--blue)}
+.np-pop-txt{flex:1;min-width:0}
+.np-pop-ttl{font-size:12.5px;font-weight:600;color:var(--gold-hi);letter-spacing:.01em;
+    line-height:1.3;margin-bottom:2px}
+body.light .np-pop-ttl{color:var(--gold-dk)}
+.np-pop-bd{font-size:11.5px;color:var(--text2);line-height:1.4;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.np-pop-x{flex-shrink:0;background:none;border:none;color:var(--muted);cursor:pointer;
+    padding:2px;line-height:0;border-radius:5px;transition:all var(--trans);align-self:flex-start}
+.np-pop-x:hover{color:var(--text);background:rgba(255,255,255,.06)}
+.np-pop-x svg{width:13px;height:13px;stroke:currentColor;stroke-width:2.4;fill:none;stroke-linecap:round}
+.np-pop-bar{position:absolute;left:0;bottom:0;height:2px;width:100%;transform-origin:left;
+    background:linear-gradient(90deg,var(--gold-lo),var(--gold-hi))}
+.np-pop.t-done .np-pop-bar{background:linear-gradient(90deg,#3b7a52,var(--green))}
+.np-pop.t-alert .np-pop-bar{background:linear-gradient(90deg,#8a2727,var(--red))}
+.np-pop.t-lead .np-pop-bar{background:linear-gradient(90deg,#3a5c75,var(--blue))}
+@keyframes np-drain{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@media(max-width:480px){#np-stack{top:58px;right:10px;left:10px;width:auto}}
+
+/* ── TOAST (kept for system messages) ── */
 #cfm-ov{position:fixed;inset:0;z-index:3000;display:none;align-items:center;justify-content:center;
     padding:20px;background:rgba(0,0,0,.74);backdrop-filter:blur(8px) saturate(1.1);
     opacity:0;transition:opacity .26s cubic-bezier(.4,0,.2,1)}
@@ -1570,6 +1620,10 @@ body.light .unlock-task-theme{color:#140d04}
 
 <!-- ══ TOAST ══ -->
 <div id="toast"></div>
+
+<!-- ══ ELEGANT NOTIFICATION POPUP STACK (top-right, 8s) ══ -->
+<div id="np-stack" aria-live="polite" aria-atomic="false"></div>
+
 
 <!-- ══ ELEGANT CONFIRM / ALERT DIALOG ══ -->
 <div id="cfm-ov" role="dialog" aria-modal="true">
@@ -2705,7 +2759,7 @@ function initRealtimePresence(userId, role, name) {
         if (isNew) {
           const who = (currentUser && id === currentUser.id) ? `${u.name||name} (kamu)` : (u.name||id);
           pushActivity(`${who} joined · ${rn(u.role||'guest')}`, 'join');
-          pushNotif({ type:'login', msg:`${who} login ke portal` });
+          pushNotif({ type:'login', title:t_('npLogin'), body:who, msg:`${who} login ke portal` });
         }
       });
       refreshPresenceUI();
@@ -2766,7 +2820,7 @@ function initRealtimePresence(userId, role, name) {
           role: roleFromDb(r.requested_role || 'guest'), createdAt: new Date(r.created_at).getTime() });
         updateRegBadge();
         renderRegs();
-        pushNotif({ type:'reg', msg:`New registration: ${r.full_name||r.name} (${r.user_id||r.userId})`, regId:r.id });
+        pushNotif({ type:'reg', title:t_('npReg'), body:`${r.full_name||r.name} (${r.user_id||r.userId})`, msg:`New registration: ${r.full_name||r.name} (${r.user_id||r.userId})`, regId:r.id });
       })
       .subscribe();
   }
@@ -2795,16 +2849,103 @@ function claimGuest() {
    ═══════════════════════════════════════════════════════════ */
 let notifications = [], notifUnread = 0;
 
+/* ── Ikon SVG untuk popup notifikasi (per tipe) ── */
+const NP_POP_ICONS = {
+  task:   '<svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
+  action: '<svg viewBox="0 0 24 24"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4Z"/></svg>',
+  done:   '<svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>',
+  alert:  '<svg viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  lead:   '<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  reg:    '<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>',
+  ad:     '<svg viewBox="0 0 24 24"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>',
+  login:  '<svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>',
+  system: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+  info:   '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+};
+/* Map tipe notif → kelas tone popup */
+const NP_TONE = { task:'task', action:'task', ad:'task', done:'done', task_done:'done',
+  alert:'alert', reject:'alert', lead:'lead', reg:'lead', login:'task', system:'task', info:'task' };
+
+const NP_POP_MS = 8000;   // popup tampil 8 detik
+let _npPopCount = 0;
+
+/* Tampilkan popup elegan kanan-atas. opts: { title, body, type } */
+function notifPopup({ title, body, type = 'system' }) {
+  const stack = document.getElementById('np-stack');
+  if (!stack) return;
+  const tone = NP_TONE[type] || 'task';
+  const icon = NP_POP_ICONS[type] || NP_POP_ICONS.system;
+  const el = document.createElement('div');
+  el.className = `np-pop t-${tone}`;
+  el.innerHTML =
+    `<div class="np-pop-row">
+       <div class="np-pop-ic">${icon}</div>
+       <div class="np-pop-txt">
+         <div class="np-pop-ttl">${title || ''}</div>
+         ${body ? `<div class="np-pop-bd">${body}</div>` : ''}
+       </div>
+       <button class="np-pop-x" aria-label="Tutup"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+     </div>
+     <div class="np-pop-bar" style="animation:np-drain ${NP_POP_MS}ms linear forwards"></div>`;
+  stack.prepend(el);
+  // batasi maksimal 4 popup di layar
+  while (stack.children.length > 4) stack.lastElementChild.remove();
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('show')));
+
+  let timer = null;
+  const dismiss = () => {
+    if (el._gone) return; el._gone = true;
+    clearTimeout(timer);
+    el.classList.remove('show'); el.classList.add('hide');
+    setTimeout(() => el.remove(), 440);
+  };
+  timer = setTimeout(dismiss, NP_POP_MS);
+  el.querySelector('.np-pop-x').addEventListener('click', e => { e.stopPropagation(); dismiss(); });
+  // klik isi → buka panel bell
+  el.addEventListener('click', () => {
+    dismiss();
+    const p = document.getElementById('notif-panel');
+    if (p && !p.classList.contains('open')) toggleNotifPanel();
+  });
+  // jeda hitung mundur saat hover
+  el.addEventListener('mouseenter', () => {
+    clearTimeout(timer);
+    const bar = el.querySelector('.np-pop-bar'); if (bar) bar.style.animationPlayState = 'paused';
+  });
+  el.addEventListener('mouseleave', () => {
+    const bar = el.querySelector('.np-pop-bar'); if (bar) bar.style.animationPlayState = 'running';
+    timer = setTimeout(dismiss, 2500);
+  });
+}
+window.notifPopup = notifPopup;
+
+/* pushNotif: update bell + activity + popup elegan.
+   n: { type, msg, title, body, popup, regId, taskId } */
 function pushNotif(n, opts = {}) {
-  const item = { id:Date.now() + Math.random(), type:n.type||'system', msg:n.msg, regId:n.regId||null, taskId:n.taskId||null, read:false, time:Date.now() };
+  const item = { id:Date.now() + Math.random(), type:n.type||'system', msg:n.msg,
+    title:n.title||null, body:n.body||null, regId:n.regId||null, taskId:n.taskId||null,
+    read:false, time:Date.now() };
   notifications.unshift(item);
   if (notifications.length > 80) notifications = notifications.slice(0, 80);
   notifUnread++;
   updateNotifBadge();
   renderNotifPanel();
-  // Animate the bell button
+  // Animasikan tombol bell
   const bell = document.getElementById('notif-bell');
   if (bell) { bell.classList.add('bell-ring'); setTimeout(() => bell.classList.remove('bell-ring'), 600); }
+  // Popup elegan 8 detik (kecuali sengaja dimatikan)
+  if (n.popup !== false) {
+    notifPopup({ title:item.title || NP_TYPE_TITLE(item.type), body:item.body || item.msg, type:item.type });
+  }
+}
+/* Judul ringkas default per tipe (kalau title tak diberikan) */
+function NP_TYPE_TITLE(type) {
+  const map = {
+    task:   t_('npTask'), action: t_('npTask'), ad: t_('npAd'),
+    done:   t_('npDone'), lead: t_('npLead'), reg: t_('npReg'),
+    login:  t_('npLogin'), alert: t_('npAlert'), system: t_('npSystem'), info: t_('npSystem')
+  };
+  return map[type] || t_('npSystem');
 }
 function updateNotifBadge() {
   const el = document.getElementById('bell-badge');
@@ -2833,10 +2974,13 @@ function renderNotifPanel() {
     return;
   }
   body.innerHTML = notifications.map(n => {
-    const typeLabel = { reg:'Registration', system:'System', action:'Action', login:'Login', task:'Task', lead:'Lead', info:'Info', ad:'Ads' }[n.type] || n.type.toUpperCase();
+    const typeLabel = { reg:'Registration', system:'System', action:'Task', login:'Login', task:'Task', done:'Done', alert:'Notice', lead:'Lead', info:'Info', ad:'Ads' }[n.type] || n.type.toUpperCase();
+    const headline = n.title ? `<div class="ni-head">${n.title}</div>` : '';
+    const text = n.title ? (n.body || '') : n.msg;
     return `<div class="notif-item ${n.read?'':'unread'}" onclick="markNotif(${JSON.stringify(n.id)})">
       <div class="ni-type ${n.type}">${typeLabel}</div>
-      <div class="ni-msg">${n.msg}</div>
+      ${headline}
+      ${text ? `<div class="ni-msg">${text}</div>` : ''}
       ${n.regId ? `<div class="ni-acts"><button class="btn-sm btn-approve" style="font-size:8px;padding:4px 10px" onclick="event.stopPropagation();openRegModal(${n.regId});toggleNotifPanel()">Review</button></div>` : ''}
       ${n.taskId ? `<div class="ni-acts"><button class="btn-sm btn-gold" style="font-size:8px;padding:4px 10px" onclick="event.stopPropagation();toggleNotifPanel()">View Task</button></div>` : ''}
       <div class="ni-time">${timeAgo(n.time)}</div>
@@ -2858,6 +3002,9 @@ function toggleNotifPanel() {
   const p = document.getElementById('notif-panel');
   const isOpen = p.classList.toggle('open');
   if (isOpen) { markAllRead(); renderNotifPanel(); }
+  // Sembunyikan popup stack saat panel bell terbuka (hindari tumpang tindih)
+  const stack = document.getElementById('np-stack');
+  if (stack) stack.style.visibility = isOpen ? 'hidden' : '';
   // Close other panels
   if (isOpen) {
     document.getElementById('pres-panel')?.classList.remove('open');
@@ -2871,6 +3018,8 @@ document.addEventListener('click', e => {
   if (panel && panel.classList.contains('open')) {
     if (!panel.contains(e.target) && !bell?.contains(e.target)) {
       panel.classList.remove('open');
+      const stack = document.getElementById('np-stack');
+      if (stack) stack.style.visibility = '';
     }
   }
 });
@@ -3136,6 +3285,8 @@ const i18n = {
     taskTitle:'Ad Tasks', taskSub:'New tasks from published ads',
     taskPersistent:'Stays until completed', noTasks:'No tasks. All caught up!',
     taskNew:'NEW', markDone:'Mark Done', taskDone:'Task completed',
+    npTask:'New Task', npAd:'New Ad', npDone:'Task Done', npLead:'New Lead', npReg:'New Registration', npLogin:'Login', npAlert:'Notice', npSystem:'Notification',
+    npUnlockReq:'Unlock Request', npUnlocked:'Task Unlocked', npRejected:'Request Rejected', npApproved:'Approved', npPublished:'Ad Published', npAssigned:'Assigned to you',
     taskCountLabel:'task', forDate:'For',
     // ── v4.0: targets, leads, lock & unlock ──
     adSchedulerSubTarget:'Your assigned ad tasks — fill in leads on the day',
@@ -3319,6 +3470,8 @@ const i18n = {
     taskTitle:'Task Iklan', taskSub:'Tugas baru dari iklan terpublish',
     taskPersistent:'Tetap sampai dikerjakan', noTasks:'Tidak ada task. Semua beres!',
     taskNew:'BARU', markDone:'Tandai Selesai', taskDone:'Task selesai',
+    npTask:'Task Baru', npAd:'Iklan Baru', npDone:'Task Selesai', npLead:'Lead Baru', npReg:'Pendaftaran Baru', npLogin:'Login', npAlert:'Pemberitahuan', npSystem:'Notifikasi',
+    npUnlockReq:'Minta Buka Kunci', npUnlocked:'Task Dibuka', npRejected:'Permintaan Ditolak', npApproved:'Disetujui', npPublished:'Iklan Dipublish', npAssigned:'Ditugaskan ke kamu',
     taskCountLabel:'task', forDate:'Untuk',
     // ── v4.0: target, leads, kunci & buka kunci ──
     adSchedulerSubTarget:'Task iklan yang ditugaskan ke Anda — isi leads di hari-H',
@@ -3774,7 +3927,7 @@ async function handleRegister() {
   // Seed pending notification for any logged-in moderator
   if (currentUser && can.isMod(currentUser.role)) {
     updateRegBadge();
-    pushNotif({ type:'reg', msg:`New registration: ${name} (${uid})`, regId:newReg.id });
+    pushNotif({ type:'reg', title:t_('npReg'), body:`${name} (${uid})`, msg:`New registration: ${name} (${uid})`, regId:newReg.id });
   }
 }
 
@@ -3809,7 +3962,7 @@ function loginSuccess(id, role, name) {
     // Kalau mode lokal (tanpa db), munculkan di sini sebagai fallback.
     if (!db) {
       pushActivity(`${name} (kamu) joined · ${rn(role)}`, 'join');
-      pushNotif({ type:'login', msg:`${name} (kamu) login ke portal` });
+      pushNotif({ type:'login', title:t_('npLogin'), body:`${name}`, msg:`${name} (kamu) login ke portal`, popup:false });
     }
     refreshPresenceUI();
   }, 500);
@@ -3978,7 +4131,7 @@ async function initDashboard() {
   if (isMod) {
     updateRegBadge();
     registrations.filter(reg => reg.status === 'pending').forEach(reg => {
-      pushNotif({ type:'reg', msg:`Pending registration: ${reg.name||reg.full_name}`, regId:reg.id });
+      pushNotif({ type:'reg', title:t_('npReg'), body:`${reg.name||reg.full_name}`, msg:`Pending registration: ${reg.name||reg.full_name}`, regId:reg.id });
     });
   }
 
@@ -4556,7 +4709,7 @@ async function approveReg(id) {
   closeModal(); updateRegBadge(); renderRegs();
   toast(t('regApproved'));
   pushActivity(`${name} approved as ${rn(role)}`, 'info');
-  pushNotif({ type:'action', msg:`${name} approved → ${rn(role)}` });
+  pushNotif({ type:'done', title:t_('npApproved'), body:`${name} → ${rn(role)}`, msg:`${name} approved → ${rn(role)}` });
 }
 async function rejectReg(id) {
   const r = registrations.find(x => x.id === id); if (!r) return;
@@ -4959,12 +5112,12 @@ function startAdPolling(intervalMs) {
       }
       try { updateTaskBadges(); renderTaskPanel(); refreshAdViews(); }
       catch (e) { console.warn('[DHP] poll render error:', e); }
-      // Notifikasi task baru — masuk bell, activity feed, dan toast
+      // Notifikasi task baru — masuk bell, activity feed, dan popup elegan (sesuai role)
       newOnes.forEach(tk => {
         const dateStr = fmtDayShort(tk.date);
-        pushNotif({ type:'action', msg:`${t_('taskNew')}: ${tk.title} · ${tk.category} · ${dateStr}` });
+        const nf = taskNotifFor(tk);
+        pushNotif({ type:'task', title:nf.title, body:nf.body, msg:`${nf.title}: ${nf.body}` });
         pushActivity(`📌 ${t_('taskNew')}: ${tk.title} (${dateStr})`, 'task');
-        toast(`✨ ${t_('taskNew')} · ${tk.title}`);
         // Bunyi notif lembut bila tersedia
         try { playNotifBeep(); } catch (_) {}
       });
@@ -4993,6 +5146,19 @@ function playNotifBeep() {
 
 /* Singkatan t() agar bisa dipanggil di luar konteks render (saat polling) */
 function t_(key) { try { return t(key); } catch(e) { return key; } }
+
+/* Judul + isi notif task baru, disesuaikan role penerima (ringkas) */
+function taskNotifFor(tk) {
+  const mod = can.isMod(currentUser?.role);
+  const dateStr = fmtDayShort(tk.date || tk.ad_date);
+  if (mod) {
+    // Moderator melihat semua → sebutkan untuk siapa
+    const who = (tk.assignee || tk.assignee_id || '').toString();
+    return { title:t_('npTask'), body:`${tk.title} · ${who} · ${dateStr}` };
+  }
+  // Target (admin/b2b) → ini tugas untuk dirinya
+  return { title:t_('npAssigned'), body:`${tk.title} · ${dateStr}` };
+}
 
 /* ── DIAGNOSTIK SYNC (jalankan di Console: dhpDebug()) ──
    Menampilkan status koneksi, isi DB, dan apakah task milik user terbaca. */
@@ -5122,10 +5288,9 @@ function initAdRealtime() {
           safe(updateTaskBadges); safe(renderTaskPanel);
           safe(refreshAdViews);
         }).catch(e => console.warn('[DHP] reload setelah task insert gagal:', e));
-        const dateStr = fmtDayShort(tk.ad_date);
-        pushNotif({ type:'action', msg:`${t('taskNew')}: ${tk.title} · ${tk.category} · ${dateStr}` });
-        pushActivity(`📌 ${t('taskNew')}: ${tk.title} (${dateStr})`, 'task');
-        toast(`✨ ${t('taskNew')} · ${tk.title}`);
+        const nf = taskNotifFor(tk);
+        pushNotif({ type:'task', title:nf.title, body:nf.body, msg:`${nf.title}: ${nf.body}` });
+        pushActivity(`📌 ${t('taskNew')}: ${tk.title} (${fmtDayShort(tk.ad_date)})`, 'task');
         try { playNotifBeep(); } catch (_) {}
       }
     })
@@ -5140,8 +5305,7 @@ function initAdRealtime() {
         else adTasks.unshift(mapTaskRow(tk));
         // Moderator: notif saat ada permintaan buka kunci
         if (isMod && tk.status === 'unlock_requested') {
-          pushNotif({ type:'action', msg:`${t('unlockReqNotif')}: ${tk.title}` });
-          toast(`${t('unlockReqNotif')} · ${tk.title}`);
+          pushNotif({ type:'alert', title:t('npUnlockReq'), body:tk.title, msg:`${t('unlockReqNotif')}: ${tk.title}` });
         }
       }
       safe(updateTaskBadges); safe(renderTaskPanel);
@@ -5889,10 +6053,10 @@ async function publishAd(id, skipConfirm) {
         });
       }
     });
-    pushNotif({ type:'ad', msg:`📣 Iklan baru dipublish: "${a.theme}" · ${a.category} · ditugaskan ke ${String(a.target||'').split(',').filter(Boolean).join(', ')}` });
+    pushNotif({ type:'ad', title:t('npPublished'), body:`${a.theme} · ${a.category}`, msg:`Iklan dipublish: "${a.theme}" · ${a.category} → ${String(a.target||'').split(',').filter(Boolean).join(', ')}` });
   } else {
     // DB sukses: push notif manual (backup jika realtime lambat)
-    pushNotif({ type:'ad', msg:`📣 Iklan dipublish: "${a ? a.theme : ''}" · ${a ? a.category : ''}` });
+    pushNotif({ type:'ad', title:t('npPublished'), body:`${a ? a.theme : ''} · ${a ? a.category : ''}`, msg:`Iklan dipublish: "${a ? a.theme : ''}" · ${a ? a.category : ''}` });
   }
 
   closeModal();
@@ -6084,7 +6248,7 @@ async function completeTask(id) {
   adTasks = adTasks.filter(x => x.id !== id);
   toast(t('taskDone'));
   // Cross-role: notify the assignee their task is complete
-  if (tk) pushNotif({ type:'task', msg:`✓ Task "${tk.title}" telah ditandai selesai oleh moderator · ${n} leads` });
+  if (tk) pushNotif({ type:'done', title:t('npDone'), body:`${tk.title} · ${n} leads`, msg:`Task "${tk.title}" selesai · ${n} leads` });
   pushActivity(`Task selesai: ${tk?tk.title:''} (${n} leads)`, 'task');
   closeModal();
   updateTaskBadges();
@@ -6244,7 +6408,7 @@ async function submitLead() {
   toast(t('leadAdded'));
   pushActivity(`Lead: ${name} (${cat}) · ${tk.title}`, 'info');
   // Cross-role: notify moderator when lead is added by admin/b2b
-  pushNotif({ type:'lead', msg:`${currentUser.name} menambah lead: ${name} (${cat}) pada "${tk.title}"` });
+  pushNotif({ type:'lead', title:t('npLead'), body:`${name} (${cat}) · ${tk.title}`, msg:`${currentUser.name} menambah lead: ${name} (${cat}) pada "${tk.title}"` });
   // Reset form & refresh daftar
   openLeadsModal(tk.id);
   updateTaskBadges();
@@ -6268,7 +6432,7 @@ async function approveUnlock(taskId) {
   toast(t('unlockApproved'));
   pushActivity(`Kunci dibuka: ${tk?tk.title:''}`, 'info');
   // Cross-role: notify the assignee their task is unlocked
-  if (tk) pushNotif({ type:'task', msg:`✓ Moderator membuka kunci task "${tk.title}" — kamu bisa isi leads sekarang` });
+  if (tk) pushNotif({ type:'done', title:t('npUnlocked'), body:`${tk.title}`, msg:`Task "${tk.title}" dibuka — kamu bisa isi leads sekarang` });
   closeModal();
   updateTaskBadges(); renderTaskPanel(); refreshAdViews();
 }
@@ -6283,7 +6447,7 @@ async function rejectUnlock(taskId) {
   if (tk) { tk.status = 'pending'; tk.unlockNote = ''; }
   toast(t('unlockRejected'));
   // Cross-role: notify the assignee
-  if (tk) pushNotif({ type:'task', msg:`✕ Moderator menolak permintaan buka kunci untuk "${tk.title}"` });
+  if (tk) pushNotif({ type:'alert', title:t('npRejected'), body:`${tk.title}`, msg:`Permintaan buka kunci ditolak: "${tk.title}"` });
   closeModal();
   updateTaskBadges(); renderTaskPanel(); refreshAdViews();
 }
@@ -6583,7 +6747,7 @@ async function submitUnlockRequest() {
   toast(t('unlockRequested'));
   pushActivity(`Minta buka kunci: ${tk.title}`, 'info');
   // Cross-role: notify moderator of unlock request
-  pushNotif({ type:'task', msg:`⚠ ${currentUser.name} meminta buka kunci task "${tk.title}" — ${note ? `"${note}"` : 'tanpa catatan'}` });
+  pushNotif({ type:'alert', title:t('npUnlockReq'), body:`${tk.title} · ${currentUser.name}`, msg:`${currentUser.name} minta buka kunci "${tk.title}"${note?` — "${note}"`:''}` });
   closeModal();
   updateTaskBadges(); renderTaskPanel();
   if (isAdPageActive()) renderAdScheduler();
