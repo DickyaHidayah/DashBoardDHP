@@ -4132,18 +4132,24 @@ async function initDashboard() {
 
   document.getElementById('pres-fab').classList.add('visible');
 
-  // Load data dari Supabase
-  await loadDataFromDB(isMod);
+  // Load data dari Supabase — dibungkus try/catch supaya satu query gagal
+  // TIDAK menghentikan render & navigasi (penyebab dashboard kosong).
+  try {
+    await loadDataFromDB(isMod);
+  } catch (e) { console.warn('[DHP] loadDataFromDB gagal:', e); }
 
   // Load jadwal iklan + task notifikasi
   // Moderator: semua iklan & semua task (untuk approve/kelola).
   // Admin/B2B: iklan (read-only) & task yang ditugaskan ke dirinya.
   if (canSeeAds) {
-    await loadAdsFromDB();
-    initAdRealtime();
+    try {
+      await loadAdsFromDB();
+      initAdRealtime();
+    } catch (e) { console.warn('[DHP] loadAdsFromDB gagal:', e); }
   }
 
-  renderStats(); renderActivity(); renderCust(); renderBcHistory();
+  try { renderStats(); renderActivity(); renderCust(); renderBcHistory(); }
+  catch (e) { console.warn('[DHP] render awal gagal:', e); }
   updateClock();
   window._clockIv = setInterval(updateClock, 1000);
   document.getElementById('rt-item').classList.add('active');
@@ -4179,18 +4185,33 @@ async function initDashboard() {
   }
 
   // ─── Auto-route to the role's "home" page ───
-  // admin & b2b → langsung ke Ads Schedule (sistem ads jadi pusat kerja mereka)
-  const homePage = isContent      ? 'content_studio' :
-                   isLive         ? 'live_studio'    :
-                   (isAdmin||isB2B)? 'ad_scheduler'  :
-                                     'overview';
-  const homeNavBtn = document.getElementById(
-    homePage === 'content_studio' ? 'n-content-studio' :
-    homePage === 'live_studio'    ? 'n-live-studio'    :
-    homePage === 'ad_scheduler'   ? 'n-ad-scheduler'   :
-                                    'n-overview'
-  );
-  navTo(homePage, homeNavBtn);
+  // admin & b2b → langsung ke Ads Schedule (sistem ads jadi pusat kerja mereka).
+  // Dibungkus try/catch + fallback supaya admin TIDAK pernah terdampar di
+  // halaman Overview yang kosong (Overview kini disembunyikan untuk admin).
+  try {
+    const homePage = isContent      ? 'content_studio' :
+                     isLive         ? 'live_studio'    :
+                     (isAdmin||isB2B)? 'ad_scheduler'  :
+                                       'overview';
+    const homeNavBtn = document.getElementById(
+      homePage === 'content_studio' ? 'n-content-studio' :
+      homePage === 'live_studio'    ? 'n-live-studio'    :
+      homePage === 'ad_scheduler'   ? 'n-ad-scheduler'   :
+                                      'n-overview'
+    );
+    navTo(homePage, homeNavBtn);
+  } catch (e) {
+    console.warn('[DHP] navigasi home gagal, fallback:', e);
+    // Fallback manual: paksa tampilkan halaman kerja tanpa lewat navTo
+    const fallback = (isAdmin || isB2B) ? 'ad_scheduler'
+                   : isContent ? 'content_studio'
+                   : isLive ? 'live_studio'
+                   : 'overview';
+    document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
+    const tgt = document.getElementById(`pg-${fallback}`);
+    if (tgt) tgt.classList.add('active');
+    try { if (fallback === 'ad_scheduler') renderAdScheduler(); } catch(_){}
+  }
 }
 
 /* Load semua data dari Supabase — tidak ada dummy, kosong jika DB belum dikonfigurasi */
@@ -5115,9 +5136,12 @@ function initAdRealtime() {
   if (!db) return;
   if (adChannel) { try { adChannel.unsubscribe(); } catch(e){} adChannel = null; }
   const isMod = can.isMod(currentUser?.role);
+  // Pembungkus aman: error saat render realtime tidak boleh mengosongkan dashboard
+  const safe = (fn) => { try { fn(); } catch (e) { console.warn('[DHP] realtime render error:', e); } };
   adChannel = db.channel('dhp_ads')
     .on('postgres_changes', { event:'*', schema:'public', table:'ad_schedule' }, () => {
-      loadAdsFromDB().then(() => { if (isAdPageActive()) renderAdScheduler(); });
+      loadAdsFromDB().then(() => { if (isAdPageActive()) safe(renderAdScheduler); })
+                     .catch(e => console.warn('[DHP] reload ad_schedule gagal:', e));
     })
     .on('postgres_changes', { event:'INSERT', schema:'public', table:'ad_tasks' }, payload => {
       const tk = payload.new;
@@ -5126,9 +5150,9 @@ function initAdRealtime() {
       if (!isMod && tk.assignee_id !== (currentUser && currentUser.id)) return;
       if (tk.status !== 'done' && !adTasks.find(x => x.id === tk.id)) {
         adTasks.unshift(mapTaskRow(tk));
-        updateTaskBadges(); renderTaskPanel();
-        if (isAdPageActive()) renderAdScheduler();
-        if (isTaskPageActive()) renderAdTaskPage();
+        safe(updateTaskBadges); safe(renderTaskPanel);
+        if (isAdPageActive()) safe(renderAdScheduler);
+        if (isTaskPageActive()) safe(renderAdTaskPage);
         pushNotif({ type:'action', msg:`${t('taskNew')}: ${tk.title} · ${tk.category}` });
         toast(`${t('taskNew')} · ${tk.title}`);
       }
@@ -5148,15 +5172,17 @@ function initAdRealtime() {
           toast(`${t('unlockReqNotif')} · ${tk.title}`);
         }
       }
-      updateTaskBadges(); renderTaskPanel();
-      if (isAdPageActive()) renderAdScheduler();
-      if (isTaskPageActive()) renderAdTaskPage();
+      safe(updateTaskBadges); safe(renderTaskPanel);
+      if (isAdPageActive()) safe(renderAdScheduler);
+      if (isTaskPageActive()) safe(renderAdTaskPage);
     })
     .on('postgres_changes', { event:'*', schema:'public', table:'leads' }, () => {
       adCustomersCache = [];   // invalidate cache
-      if (isAdPageActive()) renderAdScheduler();
-      if (document.getElementById('pg-ad_customers')?.classList.contains('active')) renderAdCustomers();
-      if (isTaskPageActive()) renderAdTaskPage();
+      try {
+        if (isAdPageActive()) renderAdScheduler();
+        if (document.getElementById('pg-ad_customers')?.classList.contains('active')) renderAdCustomers();
+        if (isTaskPageActive()) renderAdTaskPage();
+      } catch (e) { console.warn('[DHP] realtime leads render error:', e); }
     })
     .subscribe(status => {
       // Jika realtime tersambung, non-mod juga langsung reload task
@@ -5181,9 +5207,11 @@ function isTaskPageActive() {
 }
 /* Refresh apa pun halaman ads yang sedang aktif */
 function refreshAdViews() {
-  if (isAdPageActive()) renderAdScheduler();
-  if (isTaskPageActive()) renderAdTaskPage();
-  if (document.getElementById('pg-ad_customers')?.classList.contains('active')) renderAdCustomers();
+  try {
+    if (isAdPageActive()) renderAdScheduler();
+    if (isTaskPageActive()) renderAdTaskPage();
+    if (document.getElementById('pg-ad_customers')?.classList.contains('active')) renderAdCustomers();
+  } catch (e) { console.warn('[DHP] refreshAdViews error:', e); }
 }
 
 /* ── Render entry point ── */
