@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Shippori+Mincho:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 /* ══════════════════════════════════════════════════════════
    DHP CREATIVE PORTAL  v12  —  Command System
@@ -1409,6 +1410,91 @@ body.light .atc-note{color:#8a4f08;background:rgba(138,79,8,.1)}
 body.light .atc-await{color:#8a4f08}
 body.light .adtask-empty{color:rgba(20,13,4,.7)}
 
+/* ══════ CRM — DATABASE CUSTOMER ══════ */
+.crm-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.crm-search{min-width:190px}
+.crm-filter{width:auto;padding:9px 34px 9px 12px;font-size:12px}
+.crm-btn{font-size:11px;white-space:nowrap}
+.crm-btn svg{margin-right:3px}
+.crm-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.crm-stat{flex:1;min-width:120px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--r);padding:13px 15px;display:flex;flex-direction:column;gap:3px}
+.crm-stat .cs-num{font-family:'Cormorant Garamond',serif;font-size:27px;font-weight:600;line-height:1;color:var(--gold-hi)}
+.crm-stat .cs-lbl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text2)}
+.crm-stat .cs-sub{font-size:10px;color:var(--muted)}
+.crm-stat.cs-money .cs-num{font-size:21px;color:var(--green)}
+.crm-stat.cs-new{border-color:rgba(126,168,201,.3)} .crm-stat.cs-new .cs-num{color:var(--blue)}
+.crm-stat.cs-repeat{border-color:rgba(122,191,142,.3)} .crm-stat.cs-repeat .cs-num{color:var(--green)}
+.crm-stat.cs-agen{border-color:rgba(232,184,110,.3)} .crm-stat.cs-agen .cs-num{color:var(--amber)}
+.crm-stat.cs-reseller{border-color:rgba(217,142,192,.35)} .crm-stat.cs-reseller .cs-num{color:#d98ec0}
+.crm-stat.cs-leads{border-color:rgba(232,112,112,.3)} .crm-stat.cs-leads .cs-num{color:var(--red)}
+.crm-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:auto;max-height:62vh}
+.crm-table{width:100%;border-collapse:collapse;font-size:12px;min-width:1180px}
+.crm-table th{position:sticky;top:0;z-index:2;text-align:left;padding:11px 13px;font-size:9px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--gold);background:var(--bg3);border-bottom:1px solid var(--border-hi);white-space:nowrap}
+.crm-table td{padding:10px 13px;border-bottom:1px solid var(--border);vertical-align:middle}
+.crm-table tr:last-child td{border-bottom:none}
+.crm-table tr:hover td{background:rgba(201,169,110,.04)}
+.crm-id{font-family:'Inter',monospace;font-size:11px;color:var(--gold);font-weight:600;white-space:nowrap}
+.crm-name{font-weight:600;color:var(--text);white-space:nowrap}
+.crm-money{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--green);font-weight:500}
+.crm-note-cell{max-width:200px;font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crm-fav{font-size:11px;color:var(--text2);white-space:nowrap}
+.crm-st-badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  padding:3px 9px;border-radius:20px;border:1px solid;white-space:nowrap}
+.crm-st-badge.st-new{color:var(--blue);border-color:rgba(126,168,201,.5);background:rgba(126,168,201,.1)}
+.crm-st-badge.st-repeat{color:var(--green);border-color:rgba(122,191,142,.5);background:rgba(122,191,142,.1)}
+.crm-st-badge.st-agen{color:var(--amber);border-color:rgba(232,184,110,.5);background:rgba(232,184,110,.1)}
+.crm-st-badge.st-reseller{color:#d98ec0;border-color:rgba(217,142,192,.5);background:rgba(217,142,192,.12)}
+.crm-st-badge.st-leads{color:var(--red);border-color:rgba(232,112,112,.5);background:rgba(232,112,112,.1)}
+.crm-row-acts{display:flex;gap:6px;white-space:nowrap}
+.crm-ico-btn{background:transparent;border:1px solid var(--border);color:var(--text2);width:28px;height:28px;
+  border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all var(--trans)}
+.crm-ico-btn:hover{border-color:var(--gold);color:var(--gold)}
+.crm-ico-btn.del:hover{border-color:var(--red);color:var(--red)}
+.crm-foot-note{margin-top:10px;font-size:10px;color:var(--muted);font-style:italic;text-align:right}
+/* Import modal */
+.crm-imp-drop{border:1.5px dashed var(--border-hi);border-radius:10px;padding:26px 18px;text-align:center;
+  cursor:pointer;transition:all var(--trans);background:var(--surface2)}
+.crm-imp-drop:hover,.crm-imp-drop.drag{border-color:var(--gold);background:rgba(201,169,110,.06)}
+.crm-imp-drop svg{opacity:.5;margin-bottom:10px}
+.crm-imp-hint{font-size:11px;color:var(--text2);margin-top:6px;line-height:1.5}
+.crm-imp-tpl{font-size:11px;color:var(--gold);cursor:pointer;text-decoration:underline;background:none;border:none;font-family:inherit}
+.crm-imp-tpl:hover{color:var(--gold-hi)}
+.crm-imp-preview{margin-top:14px;max-height:200px;overflow:auto;border:1px solid var(--border);border-radius:8px}
+.crm-imp-preview table{width:100%;border-collapse:collapse;font-size:10px}
+.crm-imp-preview th{position:sticky;top:0;background:var(--bg3);padding:6px 8px;text-align:left;color:var(--gold);white-space:nowrap;border-bottom:1px solid var(--border)}
+.crm-imp-preview td{padding:5px 8px;border-bottom:1px solid var(--border);white-space:nowrap;color:var(--text2)}
+.crm-imp-summary{font-size:12px;color:var(--text);margin-top:12px;padding:10px 12px;background:rgba(122,191,142,.08);
+  border:1px solid rgba(122,191,142,.3);border-radius:8px}
+.crm-imp-summary b{color:var(--green)}
+.crm-imp-mode{display:flex;gap:8px;margin-top:12px}
+.crm-imp-mode label{flex:1;display:flex;gap:7px;align-items:flex-start;padding:10px 12px;border:1px solid var(--border);
+  border-radius:8px;cursor:pointer;font-size:11px;transition:all var(--trans)}
+.crm-imp-mode label:hover{border-color:var(--border-hi)}
+.crm-imp-mode input:checked + .crm-imp-mode-txt{color:var(--gold)}
+.crm-imp-mode label:has(input:checked){border-color:var(--gold);background:rgba(201,169,110,.06)}
+.crm-imp-mode-txt strong{display:block;font-size:12px;color:var(--text);margin-bottom:2px}
+/* Light mode */
+body.light .crm-table-wrap,body.light .crm-stat{background:var(--surface);border:1px solid var(--border-hi)}
+body.light .crm-table th{background:var(--bg3);color:var(--gold-dk);border-bottom:1px solid var(--border-hi)}
+body.light .crm-table td{color:#1a0e04}
+body.light .crm-name{color:#140d04}
+body.light .crm-id{color:var(--gold-dk)}
+body.light .crm-money{color:#1f6b38}
+body.light .crm-stat .cs-num{color:var(--gold-dk)}
+body.light .crm-stat.cs-money .cs-num{color:#1f6b38}
+body.light .crm-stat .cs-lbl{color:rgba(20,13,4,.78)}
+body.light .crm-stat .cs-sub{color:rgba(20,13,4,.6)}
+body.light .crm-st-badge{font-weight:700}
+body.light .crm-imp-drop{background:var(--surface)}
+body.light .crm-foot-note{color:rgba(20,13,4,.6)}
+@media(max-width:768px){
+  .crm-acts{width:100%}
+  .crm-search{min-width:0;flex:1 1 100%}
+  .crm-stat{min-width:calc(50% - 5px)}
+}
+
 /* Unlock request form */
 .unlock-form{display:flex;flex-direction:column;align-items:center;text-align:center}
 .unlock-lockicon{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;
@@ -1917,8 +2003,8 @@ body.light .unlock-task-theme{color:#140d04}
         <span data-i18n="settings">Settings</span>
       </button>
 
-      <!-- Manage — Ads Schedule · Ads Customers · Ads Task -->
-      <div class="nav-sec-lbl" id="ns-manage" style="display:none" data-i18n="manage">Manage</div>
+      <!-- Manage Ads — Ads Schedule · Ads Customers · Ads Task -->
+      <div class="nav-sec-lbl" id="ns-manage" style="display:none" data-i18n="manageAds">Manage Ads</div>
       <button class="nav-item mod-only" onclick="navTo('ad_scheduler',this)" id="n-ad-scheduler" style="display:none">
         <span class="nav-icon">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -1951,6 +2037,20 @@ body.light .unlock-task-theme{color:#140d04}
         </span>
         <span data-i18n="adsTask">Ads Task</span>
         <span class="nav-badge" id="ad-task-badge" style="display:none">0</span>
+      </button>
+
+      <!-- Manage CRM — Database Customer -->
+      <div class="nav-sec-lbl" id="ns-crm" style="display:none" data-i18n="manageCRM">Manage CRM</div>
+      <button class="nav-item mod-only" onclick="navTo('crm',this)" id="n-crm" style="display:none">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <ellipse cx="8" cy="3.4" rx="5.5" ry="2.2" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M2.5 3.4v4.2c0 1.2 2.46 2.2 5.5 2.2s5.5-1 5.5-2.2V3.4" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M2.5 7.6v4.2c0 1.2 2.46 2.2 5.5 2.2s5.5-1 5.5-2.2V7.6" stroke="currentColor" stroke-width="1.4"/>
+          </svg>
+        </span>
+        <span data-i18n="crmDatabaseCustomer">Database Customer</span>
+        <span class="nav-badge" id="crm-badge" style="display:none">0</span>
       </button>
 
       <!-- System -->
@@ -2423,6 +2523,65 @@ body.light .unlock-task-theme{color:#140d04}
           </div>
         </div>
         <div class="adtask-grid" id="adtask-grid"></div>
+      </div>
+
+      <!-- ⑪ CRM — DATABASE CUSTOMER PAGE -->
+      <div class="sp" id="pg-crm">
+        <div class="ph">
+          <div class="ph-left">
+            <div class="pt">
+              <span data-i18n="crmDatabaseCustomer">Database Customer</span>
+              <span class="mod-badge" id="crm-page-badge">◆</span>
+            </div>
+            <div class="ps" data-i18n="crmSub">Data customer utama — import, kelola & export rapi ke Excel</div>
+          </div>
+          <div class="ph-acts crm-acts">
+            <input class="search-box crm-search" id="crm-search" placeholder="Cari nama / WA / kota / produk…" oninput="renderCRM()"/>
+            <select class="fi crm-filter" id="crm-status-filter" onchange="renderCRM()">
+              <option value="all" data-i18n="crmAllStatus">Semua Status</option>
+              <option value="New">New</option>
+              <option value="Repeat">Repeat</option>
+              <option value="Agen">Agen</option>
+              <option value="Reseller">Reseller</option>
+              <option value="Leads">Leads</option>
+            </select>
+            <button class="btn-g btn-sm crm-btn" onclick="openCRMImport()" title="Import dari Excel/CSV">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px"><path d="M8 1v9M8 10L5 7M8 10l3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <span data-i18n="crmImport">Import</span>
+            </button>
+            <button class="btn-g btn-sm crm-btn" onclick="exportCRMExcel()" title="Export ke Excel rapi + statistik">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px"><path d="M8 10V1M8 1L5 4M8 1l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <span data-i18n="crmExport">Export Excel</span>
+            </button>
+            <button class="btn-add crm-btn" onclick="openCRMModal()" data-i18n="addNew">+ Add</button>
+          </div>
+        </div>
+
+        <!-- Statistik & ringkasan -->
+        <div class="crm-stats" id="crm-stats"></div>
+
+        <div class="crm-table-wrap">
+          <table class="crm-table">
+            <thead>
+              <tr>
+                <th data-i18n="crmColId">ID Customer</th>
+                <th data-i18n="crmColName">Nama</th>
+                <th data-i18n="crmColWA">Nomor WhatsApp</th>
+                <th data-i18n="crmColCity">Kota</th>
+                <th data-i18n="crmColChannel">Marketplace / Channel</th>
+                <th data-i18n="crmColFirstOrder">Tgl First Order</th>
+                <th data-i18n="crmColTotalOrder">Total Order</th>
+                <th data-i18n="crmColTotalSpend">Total Belanja</th>
+                <th data-i18n="crmColStatus">Status</th>
+                <th data-i18n="crmColFavProduct">Produk Favorit</th>
+                <th data-i18n="crmColNote">Catatan Admin</th>
+                <th data-i18n="action">Action</th>
+              </tr>
+            </thead>
+            <tbody id="crm-body"></tbody>
+          </table>
+        </div>
+        <div class="crm-foot-note" id="crm-foot-note"></div>
       </div>
 
       <!-- ⑩ PRESENCE PAGE -->
@@ -3266,6 +3425,30 @@ const i18n = {
     b2bPipelineSub:'Track partnerships and enterprise deals through the funnel',
     // Ad Scheduler
     manage:'Manage', adScheduler:'Ad Schedule', adSchedulerSub:'Manage ad theme, category & target per date',
+    manageAds:'Manage Ads', manageCRM:'Manage CRM',
+    crmDatabaseCustomer:'Database Customer',
+    crmSub:'Master customer data — import, manage & export neatly to Excel',
+    crmAllStatus:'All Status',
+    crmImport:'Import', crmExport:'Export Excel',
+    crmColId:'Customer ID', crmColName:'Name', crmColWA:'WhatsApp Number', crmColCity:'City',
+    crmColChannel:'Marketplace / Channel', crmColFirstOrder:'First Order Date', crmColTotalOrder:'Total Orders',
+    crmColTotalSpend:'Total Spend', crmColStatus:'Status', crmColFavProduct:'Favorite Product', crmColNote:'Admin Note',
+    crmAddCustomer:'Add Customer', crmEditCustomer:'Edit Customer',
+    crmSaved:'Customer saved.', crmDeleted:'Customer deleted.', crmDeleteConfirm:'Delete this customer from CRM?',
+    crmEmpty:'No customer data yet. Add manually or import from Excel/CSV.',
+    crmTotalCust:'Total Customers', crmTotalSpendStat:'Total Revenue', crmTotalOrdersStat:'Total Orders',
+    crmAvgSpend:'Avg / Customer',
+    crmImportTitle:'Import Customer Data', crmImportSub:'Upload an Excel (.xlsx) or CSV file. Column headers must match the template.',
+    crmDownloadTpl:'Download import template', crmDropHint:'Click or drop your .xlsx / .csv file here',
+    crmImportMode:'Import mode', crmModeAppend:'Append', crmModeAppendSub:'Add to existing data',
+    crmModeReplace:'Replace', crmModeReplaceSub:'Clear all then import',
+    crmImportRows:'rows detected', crmImportDo:'Import Now', crmImportDone:'Imported',
+    crmImportErr:'Could not read the file. Make sure the format & headers are correct.',
+    crmImportEmpty:'No valid rows found in the file.',
+    crmNoLib:'Excel library not loaded yet. Please wait a moment and retry.',
+    crmExportDone:'Excel exported successfully.',
+    crmFillName:'Please fill in the customer name.',
+    crmFootNote:'Tip: empty cells can be filled directly in the table after importing.',
     viewCalendar:'Calendar', viewTable:'Table', today:'Today',
     legHoliday:'Public Holiday', allCategories:'All Categories',
     tdate:'Date', ttheme:'Theme', tcategory:'Category', ttarget:'Target',
@@ -3457,6 +3640,30 @@ const i18n = {
     b2bPipelineSub:'Lacak kemitraan dan kesepakatan enterprise melalui funnel',
     // Ad Scheduler
     manage:'Kelola', adScheduler:'Atur Jadwal Iklan', adSchedulerSub:'Kelola tema, kategori & target iklan per tanggal',
+    manageAds:'Manage Ads', manageCRM:'Manage CRM',
+    crmDatabaseCustomer:'Database Customer',
+    crmSub:'Data customer utama — import, kelola & export rapi ke Excel',
+    crmAllStatus:'Semua Status',
+    crmImport:'Import', crmExport:'Export Excel',
+    crmColId:'ID Customer', crmColName:'Nama', crmColWA:'Nomor WhatsApp', crmColCity:'Kota',
+    crmColChannel:'Marketplace / Channel', crmColFirstOrder:'Tgl First Order', crmColTotalOrder:'Total Order',
+    crmColTotalSpend:'Total Belanja', crmColStatus:'Status', crmColFavProduct:'Produk Favorit', crmColNote:'Catatan Admin',
+    crmAddCustomer:'Tambah Customer', crmEditCustomer:'Edit Customer',
+    crmSaved:'Data customer tersimpan.', crmDeleted:'Customer dihapus.', crmDeleteConfirm:'Hapus customer ini dari CRM?',
+    crmEmpty:'Belum ada data customer. Tambah manual atau import dari Excel/CSV.',
+    crmTotalCust:'Total Customer', crmTotalSpendStat:'Total Omzet', crmTotalOrdersStat:'Total Order',
+    crmAvgSpend:'Rata-rata / Customer',
+    crmImportTitle:'Import Data Customer', crmImportSub:'Upload file Excel (.xlsx) atau CSV. Judul kolom harus sesuai template.',
+    crmDownloadTpl:'Unduh template import', crmDropHint:'Klik atau seret file .xlsx / .csv ke sini',
+    crmImportMode:'Mode import', crmModeAppend:'Tambah', crmModeAppendSub:'Gabung ke data lama',
+    crmModeReplace:'Ganti', crmModeReplaceSub:'Hapus semua lalu import',
+    crmImportRows:'baris terdeteksi', crmImportDo:'Import Sekarang', crmImportDone:'Berhasil import',
+    crmImportErr:'Gagal membaca file. Pastikan format & judul kolom benar.',
+    crmImportEmpty:'Tidak ada baris valid di dalam file.',
+    crmNoLib:'Library Excel belum termuat. Tunggu sebentar lalu coba lagi.',
+    crmExportDone:'Excel berhasil di-export.',
+    crmFillName:'Mohon isi nama customer.',
+    crmFootNote:'Tip: sel yang kosong bisa langsung diisi di tabel setelah import.',
     viewCalendar:'Kalender', viewTable:'Tabel', today:'Hari Ini',
     legHoliday:'Tanggal Merah', allCategories:'Semua Kategori',
     tdate:'Tanggal', ttheme:'Tema', tcategory:'Kategori', ttarget:'Target',
@@ -3988,6 +4195,7 @@ function handleLogout() {
     if (currentUser.role === 'guest') releaseGuest(currentUser.id);
     if (presChannel) { presChannel.untrack(); presChannel.unsubscribe(); presChannel = null; }
     if (adChannel) { try { adChannel.unsubscribe(); } catch(e){} adChannel = null; }
+    if (crmChannel) { try { crmChannel.unsubscribe(); } catch(e){} crmChannel = null; }
     stopAdPolling();
     if (presHB) { clearInterval(presHB); presHB = null; }
     if (presStaleIv) { clearInterval(presStaleIv); presStaleIv = null; }
@@ -4074,13 +4282,17 @@ async function initDashboard() {
   // Settings — Sovereign only (otherwise moderator can rename their own role)
   navShow('n-settings',       isHead);
 
-  // Manage — Ads Schedule / Ads Customers / Ads Task
+  // Manage Ads — Ads Schedule / Ads Customers / Ads Task
   // moderator (kelola penuh) + admin/b2b (lihat task, isi leads, lihat customers)
   const canSeeAds = can.canSeeAds(r);
   navShow('ns-manage',        canSeeAds);
   navShow('n-ad-scheduler',   canSeeAds);
   navShow('n-ad-customers',   canSeeAds);
   navShow('n-ad-task',        canSeeAds);
+
+  // Manage CRM — Database Customer (moderator + admin + b2b)
+  navShow('ns-crm',           canSeeAds);
+  navShow('n-crm',            canSeeAds);
 
   // Bell tampil untuk semua user — notif login/join terlihat oleh siapa pun.
   // (Notif registrasi dengan tombol Review tetap hanya muncul untuk moderator,
@@ -4122,6 +4334,9 @@ async function initDashboard() {
     // supaya task baru tetap masuk lewat polling.
     try { initAdRealtime(); }
     catch (e) { console.warn('[DHP] initAdRealtime gagal:', e); }
+    // CRM — muat data awal + realtime sync antar admin
+    try { await loadCRM(); initCRMRealtime(); }
+    catch (e) { console.warn('[DHP] CRM init gagal:', e); }
   }
 
   try { renderStats(); renderActivity(); renderCust(); renderBcHistory(); }
@@ -6630,6 +6845,652 @@ function fmtDateTime(iso) {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   ㉓ CRM — DATABASE CUSTOMER
+   ─────────────────────────────────────────────────────────────
+   FLOW DATA (rapi, satu pintu):
+     • Sumber kebenaran  : tabel Supabase `crm_customers` (bila DB aktif).
+     • Cache di memori    : array `crmData` (selalu dipakai untuk render).
+     • Fallback offline   : localStorage (saat DB belum dikonfigurasi).
+     • Tulis              : SEMUA perubahan lewat RPC
+                            (upsert_crm_customer / delete_crm_customer /
+                             import_crm_customers) → lalu reload dari DB.
+     • Realtime           : channel `dhp_crm` → setiap INSERT/UPDATE/DELETE
+                            otomatis reload + re-render (sync antar admin).
+   Bentuk baris di memori memakai key UI (id_customer/nama/wa/…); konversi
+   ke/dari kolom DB dilakukan oleh crmFromDb() & crmToRpc().
+   ═══════════════════════════════════════════════════════════ */
+
+// Apakah CRM memakai Supabase? (otomatis bila client db tersedia)
+const crmUsesDB = () => !!db;
+
+// Definisi kolom resmi — judul template import HARUS sama persis (urutan ini).
+const CRM_COLUMNS = [
+  { key:'id_customer', header:'ID Customer'       },
+  { key:'nama',        header:'Nama'              },
+  { key:'wa',          header:'Nomor WhatsApp'    },
+  { key:'kota',        header:'Kota'              },
+  { key:'channel',     header:'Marketplace / TikTok / Shopee / Live' },
+  { key:'first_order', header:'Tanggal First Order' },
+  { key:'total_order', header:'Total Order'       },
+  { key:'total_belanja', header:'Total Belanja'   },
+  { key:'status',      header:'Status Customer'   },
+  { key:'produk_fav',  header:'Produk Favorit'    },
+  { key:'catatan',     header:'Catatan Admin'     },
+];
+const CRM_STATUSES = ['New','Repeat','Agen','Reseller','Leads'];
+// Sinonim header agar import tetap dikenali walau penulisan sedikit beda.
+const CRM_HEADER_ALIASES = {
+  'id customer':'id_customer','id':'id_customer','idcustomer':'id_customer','customer id':'id_customer',
+  'nama':'nama','name':'nama','nama customer':'nama','nama pelanggan':'nama',
+  'nomor whatsapp':'wa','whatsapp':'wa','no whatsapp':'wa','no wa':'wa','wa':'wa','nomor wa':'wa','phone':'wa','hp':'wa',
+  'kota':'kota','city':'kota','wilayah':'kota','domisili':'kota',
+  'marketplace / tiktok / shopee / live':'channel','marketplace':'channel','channel':'channel','platform':'channel','sumber':'channel','asal':'channel',
+  'tanggal first order':'first_order','first order':'first_order','tgl first order':'first_order','tanggal order pertama':'first_order','first order date':'first_order',
+  'total order':'total_order','jumlah order':'total_order','total orders':'total_order','qty order':'total_order',
+  'total belanja':'total_belanja','total spend':'total_belanja','nilai belanja':'total_belanja','omzet':'total_belanja','total spending':'total_belanja',
+  'status customer':'status','status':'status','tipe':'status','kategori':'status',
+  'produk favorit':'produk_fav','produk fav':'produk_fav','favorite product':'produk_fav','produk':'produk_fav','best product':'produk_fav',
+  'catatan admin':'catatan','catatan':'catatan','note':'catatan','notes':'catatan','keterangan':'catatan','admin note':'catatan',
+};
+
+const CRM_LS_KEY = 'dhp_crm_customers';
+let crmData = [];
+let _crmImportRows = null;  // staging hasil parse import sebelum dikonfirmasi
+let crmChannel = null;      // channel realtime Supabase
+let _crmLoading = false;
+
+// ── Konversi baris DB → bentuk UI (key internal) ──
+function crmFromDb(row) {
+  return {
+    _uuid:       row.id,                       // simpan UUID asli utk update/hapus
+    id_customer: row.cust_code || '',
+    nama:        row.full_name || '',
+    wa:          row.wa_phone || '',
+    kota:        row.city || '',
+    channel:     row.channel || '',
+    first_order: row.first_order || '',
+    total_order: Number(row.total_order) || 0,
+    total_belanja: Number(row.total_spend) || 0,
+    status:      row.status || 'New',
+    produk_fav:  row.fav_product || '',
+    catatan:     row.admin_note || '',
+  };
+}
+
+// ── Muat data CRM (DB bila ada, else localStorage) ──
+async function loadCRM() {
+  if (crmUsesDB()) {
+    _crmLoading = true;
+    const res = await dbQ(d => d.from('crm_customers').select('*').order('created_at', { ascending:false }));
+    _crmLoading = false;
+    if (res && res.data) { crmData = res.data.map(crmFromDb); updateCRMBadge(); return crmData; }
+    // DB error → jangan timpa cache yang sudah ada
+    return crmData;
+  }
+  // Fallback localStorage
+  try { crmData = JSON.parse(localStorage.getItem(CRM_LS_KEY) || '[]'); }
+  catch(e) { crmData = []; }
+  if (!Array.isArray(crmData)) crmData = [];
+  updateCRMBadge();
+  return crmData;
+}
+
+// ── Simpan cache ke localStorage (hanya mode offline) ──
+function saveCRM() {
+  if (!crmUsesDB()) {
+    try { localStorage.setItem(CRM_LS_KEY, JSON.stringify(crmData)); } catch(e) {}
+  }
+  updateCRMBadge();
+}
+
+function updateCRMBadge() {
+  const b = document.getElementById('crm-badge');
+  if (b) { b.textContent = crmData.length; b.style.display = crmData.length ? '' : 'none'; }
+}
+
+// ── Realtime: sinkron antar admin ──
+function initCRMRealtime() {
+  if (!crmUsesDB() || crmChannel) return;
+  try {
+    crmChannel = db.channel('dhp_crm')
+      .on('postgres_changes', { event:'*', schema:'public', table:'crm_customers' }, () => {
+        // reload + re-render hanya bila halaman CRM sedang aktif (hemat)
+        loadCRM().then(() => {
+          if (document.getElementById('pg-crm')?.classList.contains('active')) renderCRM();
+          else updateCRMBadge();
+        });
+      })
+      .subscribe();
+  } catch(e) { console.warn('[CRM] realtime gagal:', e); }
+}
+
+// ── Helper format & parsing ──
+function crmParseMoney(v) {
+  if (v == null || v === '') return 0;
+  if (typeof v === 'number') return v;
+  // buang Rp, titik ribuan, spasi; koma desimal jadi titik
+  const s = String(v).replace(/[Rp\s]/gi,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(/,(\d{1,2})$/,'.$1').replace(/[^0-9.\-]/g,'');
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+function crmParseInt(v) {
+  if (v == null || v === '') return 0;
+  const n = parseInt(String(v).replace(/[^0-9\-]/g,''), 10);
+  return isNaN(n) ? 0 : n;
+}
+function crmFmtRupiah(n) {
+  const v = Number(n) || 0;
+  return 'Rp ' + v.toLocaleString('id-ID');
+}
+function crmNormStatus(v) {
+  const s = String(v||'').trim().toLowerCase();
+  if (!s) return 'New';
+  if (s.startsWith('rep')) return 'Repeat';
+  if (s.startsWith('age')) return 'Agen';
+  if (s.startsWith('res')) return 'Reseller';
+  if (s.startsWith('lea') || s === 'lead') return 'Leads';
+  if (s.startsWith('new') || s === 'baru') return 'New';
+  // fallback: capitalize
+  return CRM_STATUSES.find(x => x.toLowerCase() === s) || 'New';
+}
+function crmStatusCls(s){ return 'st-' + crmNormStatus(s).toLowerCase(); }
+function crmGenId() {
+  // CST-0001 berurutan berdasar nomor terbesar yang ada
+  let max = 0;
+  crmData.forEach(c => { const m = String(c.id_customer||'').match(/(\d+)/); if (m) max = Math.max(max, parseInt(m[1],10)); });
+  return 'CST-' + String(max+1).padStart(4,'0');
+}
+
+// ── RENDER ──
+async function renderCRM() {
+  // Selalu tarik data terbaru dari DB saat halaman dibuka (kalau pakai DB),
+  // supaya admin lain melihat data yang sama. Mode offline: muat dari LS sekali.
+  if (crmUsesDB()) { await loadCRM(); }
+  else if (!crmData.length) { await loadCRM(); }
+  const body = document.getElementById('crm-body');
+  const statsEl = document.getElementById('crm-stats');
+  const footEl = document.getElementById('crm-foot-note');
+  if (!body) return;
+
+  // Badge halaman
+  const pb = document.getElementById('crm-page-badge');
+  if (pb) {
+    const isMod = can.isMod(currentUser?.role);
+    pb.textContent = isMod ? '♔ Moderator' : '◆ ' + rn(currentUser.role);
+    pb.style.color = isMod ? 'var(--gold)' : (ROLE_COLORS[currentUser.role] || '#888');
+  }
+  updateCRMBadge();
+
+  const q = (document.getElementById('crm-search')?.value || '').toLowerCase().trim();
+  const sf = document.getElementById('crm-status-filter')?.value || 'all';
+  let rows = crmData.slice();
+  if (sf !== 'all') rows = rows.filter(c => crmNormStatus(c.status) === sf);
+  if (q) rows = rows.filter(c =>
+    (c.nama||'').toLowerCase().includes(q) ||
+    (c.wa||'').toLowerCase().includes(q) ||
+    (c.kota||'').toLowerCase().includes(q) ||
+    (c.produk_fav||'').toLowerCase().includes(q) ||
+    (c.id_customer||'').toLowerCase().includes(q));
+
+  // ── Statistik & ringkasan ──
+  if (statsEl) {
+    const total = crmData.length;
+    const totalSpend = crmData.reduce((s,c)=>s+crmParseMoney(c.total_belanja),0);
+    const totalOrders = crmData.reduce((s,c)=>s+crmParseInt(c.total_order),0);
+    const avg = total ? totalSpend/total : 0;
+    const cnt = s => crmData.filter(c => crmNormStatus(c.status)===s).length;
+    statsEl.innerHTML = `
+      <div class="crm-stat"><span class="cs-num">${total}</span><span class="cs-lbl">${t('crmTotalCust')}</span></div>
+      <div class="crm-stat cs-money"><span class="cs-num">${crmFmtRupiah(totalSpend)}</span><span class="cs-lbl">${t('crmTotalSpendStat')}</span></div>
+      <div class="crm-stat"><span class="cs-num">${totalOrders.toLocaleString('id-ID')}</span><span class="cs-lbl">${t('crmTotalOrdersStat')}</span></div>
+      <div class="crm-stat cs-money"><span class="cs-num">${crmFmtRupiah(Math.round(avg))}</span><span class="cs-lbl">${t('crmAvgSpend')}</span></div>
+      <div class="crm-stat cs-new"><span class="cs-num">${cnt('New')}</span><span class="cs-lbl">New</span></div>
+      <div class="crm-stat cs-repeat"><span class="cs-num">${cnt('Repeat')}</span><span class="cs-lbl">Repeat</span></div>
+      <div class="crm-stat cs-agen"><span class="cs-num">${cnt('Agen')}</span><span class="cs-lbl">Agen</span></div>
+      <div class="crm-stat cs-reseller"><span class="cs-num">${cnt('Reseller')}</span><span class="cs-lbl">Reseller</span></div>
+      <div class="crm-stat cs-leads"><span class="cs-num">${cnt('Leads')}</span><span class="cs-lbl">Leads</span></div>`;
+  }
+
+  if (footEl) footEl.textContent = crmData.length ? `${rows.length} / ${crmData.length} · ${t('crmFootNote')}` : '';
+
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="12" class="tbl-empty">${crmData.length ? t('noCustomers') : t('crmEmpty')}</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = rows.map(c => {
+    const idx = crmData.indexOf(c);
+    const waDigits = (c.wa||'').replace(/[^0-9]/g,'');
+    const waCell = waDigits
+      ? `<a href="https://wa.me/${waDigits}" target="_blank" rel="noopener" class="wa-link">${escHtml(c.wa)}</a>`
+      : `<span style="color:var(--muted)">—</span>`;
+    return `<tr>
+      <td><span class="crm-id">${escHtml(c.id_customer||'—')}</span></td>
+      <td><span class="crm-name">${escHtml(c.nama||'—')}</span></td>
+      <td>${waCell}</td>
+      <td>${escHtml(c.kota||'—')}</td>
+      <td>${escHtml(c.channel||'—')}</td>
+      <td style="white-space:nowrap">${escHtml(c.first_order||'—')}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums">${crmParseInt(c.total_order)||0}</td>
+      <td class="crm-money">${crmFmtRupiah(crmParseMoney(c.total_belanja))}</td>
+      <td><span class="crm-st-badge ${crmStatusCls(c.status)}">${crmNormStatus(c.status)}</span></td>
+      <td><span class="crm-fav">${escHtml(c.produk_fav||'—')}</span></td>
+      <td><span class="crm-note-cell" title="${escHtml(c.catatan||'')}">${escHtml(c.catatan||'—')}</span></td>
+      <td>
+        <div class="crm-row-acts">
+          <button class="crm-ico-btn" onclick="openCRMModal(${idx})" title="${t('edit')||'Edit'}">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5l2 2L6 12l-2.5.5L4 10l7.5-7.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="crm-ico-btn del" onclick="deleteCRM(${idx})" title="Delete">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5 4l.5 9h5L11 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── ADD / EDIT MODAL ──
+function openCRMModal(idx) {
+  const editing = (typeof idx === 'number' && idx >= 0);
+  const c = editing ? crmData[idx] : {};
+  document.getElementById('m-title').textContent = editing ? t('crmEditCustomer') : t('crmAddCustomer');
+  const opts = CRM_STATUSES.map(s => `<option value="${s}" ${crmNormStatus(c.status)===s?'selected':''}>${s}</option>`).join('');
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg"><label>${t('crmColId')}</label><input class="fi" id="crm-f-id" value="${escHtml(c.id_customer||'')}" placeholder="${editing?'':'(auto)'}"/></div>
+    <div class="fg"><label>${t('crmColName')} *</label><input class="fi" id="crm-f-nama" value="${escHtml(c.nama||'')}"/></div>
+    <div class="fg"><label>${t('crmColWA')}</label><input class="fi" id="crm-f-wa" value="${escHtml(c.wa||'')}" placeholder="08xxxxxxxxxx"/></div>
+    <div class="fg"><label>${t('crmColCity')}</label><input class="fi" id="crm-f-kota" value="${escHtml(c.kota||'')}"/></div>
+    <div class="fg"><label>${t('crmColChannel')}</label><input class="fi" id="crm-f-channel" value="${escHtml(c.channel||'')}" placeholder="Shopee / TikTok / Live / Marketplace"/></div>
+    <div class="fg"><label>${t('crmColFirstOrder')}</label><input class="fi" id="crm-f-first" type="date" value="${crmToDateInput(c.first_order)}"/></div>
+    <div style="display:flex;gap:10px">
+      <div class="fg" style="flex:1"><label>${t('crmColTotalOrder')}</label><input class="fi" id="crm-f-torder" type="number" min="0" value="${crmParseInt(c.total_order)||''}"/></div>
+      <div class="fg" style="flex:1"><label>${t('crmColTotalSpend')}</label><input class="fi" id="crm-f-tspend" type="number" min="0" value="${crmParseMoney(c.total_belanja)||''}" placeholder="Rp"/></div>
+    </div>
+    <div class="fg"><label>${t('crmColStatus')}</label><select class="fi" id="crm-f-status">${opts}</select></div>
+    <div class="fg"><label>${t('crmColFavProduct')}</label><input class="fi" id="crm-f-fav" value="${escHtml(c.produk_fav||'')}"/></div>
+    <div class="fg"><label>${t('crmColNote')}</label><textarea class="fi" id="crm-f-note" rows="2">${escHtml(c.catatan||'')}</textarea></div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>
+    <button class="btn-sm btn-gold" onclick="saveCRMCustomer(${editing?idx:-1})">${t('saveChanges')||'Save'}</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+
+function crmToDateInput(v){
+  if (!v) return '';
+  // coba parse ke yyyy-mm-dd
+  const d = new Date(v);
+  if (!isNaN(d) && String(v).match(/\d{4}/)) {
+    return d.toISOString().slice(0,10);
+  }
+  return '';
+}
+
+async function saveCRMCustomer(idx) {
+  const nama = document.getElementById('crm-f-nama').value.trim();
+  if (!nama) { toast(t('crmFillName')); return; }
+  const rec = {
+    id_customer: document.getElementById('crm-f-id').value.trim(),
+    nama,
+    wa:          document.getElementById('crm-f-wa').value.trim(),
+    kota:        document.getElementById('crm-f-kota').value.trim(),
+    channel:     document.getElementById('crm-f-channel').value.trim(),
+    first_order: document.getElementById('crm-f-first').value.trim(),
+    total_order: crmParseInt(document.getElementById('crm-f-torder').value),
+    total_belanja: crmParseMoney(document.getElementById('crm-f-tspend').value),
+    status:      document.getElementById('crm-f-status').value,
+    produk_fav:  document.getElementById('crm-f-fav').value.trim(),
+    catatan:     document.getElementById('crm-f-note').value.trim(),
+  };
+
+  // ── Mode DB: simpan lewat RPC, lalu reload dari server ──
+  if (crmUsesDB()) {
+    const editing = (idx >= 0);
+    const res = await dbQ(d => d.rpc('upsert_crm_customer', {
+      p_id:          editing ? (crmData[idx]?._uuid || null) : null,
+      p_user_id:     currentUser.id,
+      p_cust_code:   rec.id_customer || null,
+      p_full_name:   rec.nama,
+      p_wa_phone:    rec.wa || null,
+      p_city:        rec.kota || null,
+      p_channel:     rec.channel || null,
+      p_first_order: rec.first_order || null,
+      p_total_order: rec.total_order,
+      p_total_spend: rec.total_belanja,
+      p_status:      crmNormStatus(rec.status),
+      p_fav_product: rec.produk_fav || null,
+      p_admin_note:  rec.catatan || null,
+    }));
+    if (!res || res.error) {
+      const msg = res?.error?.message || '';
+      toast(msg.includes('akses') ? t('adAccessReq') : (msg.includes('NAME') ? t('crmFillName') : t('crmImportErr')));
+      return;
+    }
+    closeModal();
+    await loadCRM();
+    renderCRM();
+    toast(t('crmSaved'));
+    return;
+  }
+
+  // ── Mode offline (localStorage) ──
+  if (idx >= 0) {
+    if (!rec.id_customer) rec.id_customer = crmData[idx].id_customer || crmGenId();
+    crmData[idx] = rec;
+  } else {
+    if (!rec.id_customer) rec.id_customer = crmGenId();
+    crmData.unshift(rec);
+  }
+  saveCRM();
+  closeModal();
+  renderCRM();
+  toast(t('crmSaved'));
+  pushActivity(`CRM: ${idx>=0?'update':'tambah'} customer "${rec.nama}"`, 'info');
+}
+
+async function deleteCRM(idx) {
+  const c = crmData[idx]; if (!c) return;
+  const ok = await uiConfirm({ title:t('deleteTitle'), message:`${t('crmDeleteConfirm')}\n\n${c.nama||c.id_customer}`, okText:t('cfmDelete'), tone:'danger', icon:'danger' });
+  if (!ok) return;
+
+  if (crmUsesDB()) {
+    const res = await dbQ(d => d.rpc('delete_crm_customer', { p_id: c._uuid, p_user_id: currentUser.id }));
+    if (!res || res.error) { toast(t('adAccessReq')); return; }
+    await loadCRM();
+    renderCRM();
+    toast(t('crmDeleted'));
+    return;
+  }
+
+  crmData.splice(idx,1);
+  saveCRM();
+  renderCRM();
+  toast(t('crmDeleted'));
+}
+
+// ═══════════ IMPORT ═══════════
+function openCRMImport() {
+  document.getElementById('m-title').textContent = t('crmImportTitle');
+  _crmImportRows = null;
+  document.getElementById('m-body').innerHTML = `
+    <p style="font-size:12px;color:var(--text2);margin-bottom:6px">${t('crmImportSub')}</p>
+    <button class="crm-imp-tpl" onclick="downloadCRMTemplate()">⬇ ${t('crmDownloadTpl')}</button>
+    <div class="crm-imp-drop" id="crm-drop" onclick="document.getElementById('crm-file').click()">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5-5 5 5"/><path d="M12 5v12"/></svg>
+      <div style="font-size:13px;color:var(--text)">${t('crmDropHint')}</div>
+      <div class="crm-imp-hint">Excel .xlsx / .xls · CSV — ${CRM_COLUMNS.length} kolom sesuai template</div>
+    </div>
+    <input type="file" id="crm-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleCRMFile(this.files[0])"/>
+    <div id="crm-imp-result"></div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>
+    <button class="btn-sm btn-gold" id="crm-imp-confirm" style="display:none" onclick="confirmCRMImport()">${t('crmImportDo')}</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+
+  // drag & drop
+  const drop = document.getElementById('crm-drop');
+  if (drop) {
+    ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e=>{e.preventDefault();drop.classList.add('drag');}));
+    ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e=>{e.preventDefault();drop.classList.remove('drag');}));
+    drop.addEventListener('drop', e => { if (e.dataTransfer.files[0]) handleCRMFile(e.dataTransfer.files[0]); });
+  }
+}
+
+function downloadCRMTemplate() {
+  if (!window.XLSX) { toast(t('crmNoLib')); return; }
+  const headers = CRM_COLUMNS.map(c => c.header);
+  // 2 baris contoh agar user paham format
+  const example = [
+    ['CST-0001','Budi Santoso','08123456789','Jakarta','Shopee','2024-01-15','12','3500000','Repeat','Hijab Premium','Pelanggan loyal, suka COD'],
+    ['CST-0002','Siti Aminah','08987654321','Bandung','TikTok','2024-03-02','1','150000','New','Gamis Polos','Dari iklan TikTok'],
+  ];
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...example]);
+  ws['!cols'] = headers.map(h => ({ wch: Math.max(14, h.length + 2) }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Template Import');
+  XLSX.writeFile(wb, 'Template_Import_CRM_DHP.xlsx');
+  toast('Template diunduh.');
+}
+
+function handleCRMFile(file) {
+  if (!file) return;
+  if (!window.XLSX) { toast(t('crmNoLib')); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, { type:'array', cellDates:true });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const aoa = XLSX.utils.sheet_to_json(ws, { header:1, raw:false, defval:'' });
+      parseCRMImport(aoa);
+    } catch(err) {
+      console.warn('[CRM import]', err);
+      toast(t('crmImportErr'));
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function parseCRMImport(aoa) {
+  // buang baris kosong di atas, cari baris header
+  let headerRow = -1;
+  for (let i=0;i<Math.min(aoa.length,8);i++){
+    const cells = (aoa[i]||[]).map(x => String(x||'').trim().toLowerCase());
+    const hit = cells.filter(c => CRM_HEADER_ALIASES[c]).length;
+    if (hit >= 2) { headerRow = i; break; }
+  }
+  if (headerRow < 0) { toast(t('crmImportErr')); return; }
+  // peta kolom: index -> key
+  const map = {};
+  (aoa[headerRow]||[]).forEach((h,ci) => {
+    const key = CRM_HEADER_ALIASES[String(h||'').trim().toLowerCase()];
+    if (key) map[ci] = key;
+  });
+  const rows = [];
+  for (let i=headerRow+1;i<aoa.length;i++){
+    const r = aoa[i]||[];
+    const rec = { id_customer:'',nama:'',wa:'',kota:'',channel:'',first_order:'',total_order:0,total_belanja:0,status:'New',produk_fav:'',catatan:'' };
+    let hasData = false;
+    Object.keys(map).forEach(ci => {
+      const key = map[ci];
+      let val = r[ci];
+      if (val instanceof Date) val = val.toISOString().slice(0,10);
+      val = String(val==null?'':val).trim();
+      if (val) hasData = true;
+      if (key === 'total_order') rec[key] = crmParseInt(val);
+      else if (key === 'total_belanja') rec[key] = crmParseMoney(val);
+      else if (key === 'status') rec[key] = val ? crmNormStatus(val) : 'New';
+      else rec[key] = val;
+    });
+    // baris dianggap valid bila ada nama atau wa atau id
+    if (hasData && (rec.nama || rec.wa || rec.id_customer)) rows.push(rec);
+  }
+  if (!rows.length) { toast(t('crmImportEmpty')); return; }
+  _crmImportRows = rows;
+
+  // Preview
+  const previewCols = ['id_customer','nama','wa','kota','channel','status','total_order','total_belanja'];
+  const head = previewCols.map(k => `<th>${escHtml(CRM_COLUMNS.find(c=>c.key===k).header)}</th>`).join('');
+  const trs = rows.slice(0,30).map(r => `<tr>${previewCols.map(k=>{
+    let v = r[k]; if (k==='total_belanja') v = crmFmtRupiah(v); 
+    return `<td>${escHtml(v===''||v==null?'—':v)}</td>`;
+  }).join('')}</tr>`).join('');
+  const blank = rows.filter(r=>!r.id_customer || !r.kota || !r.first_order).length;
+  document.getElementById('crm-imp-result').innerHTML = `
+    <div class="crm-imp-summary"><b>${rows.length}</b> ${t('crmImportRows')}${rows.length>30?' (preview 30)':''}. 
+      ${blank?`<br>${blank} baris ada sel kosong — bisa diisi langsung di tabel setelah import.`:''}</div>
+    <div class="crm-imp-mode">
+      <label><input type="radio" name="crm-imp-mode" value="append" checked><span class="crm-imp-mode-txt"><strong>${t('crmModeAppend')}</strong>${t('crmModeAppendSub')}</span></label>
+      <label><input type="radio" name="crm-imp-mode" value="replace"><span class="crm-imp-mode-txt"><strong>${t('crmModeReplace')}</strong>${t('crmModeReplaceSub')}</span></label>
+    </div>
+    <div class="crm-imp-preview"><table><thead><tr>${head}</tr></thead><tbody>${trs}</tbody></table></div>`;
+  document.getElementById('crm-imp-confirm').style.display = '';
+}
+
+async function confirmCRMImport() {
+  if (!_crmImportRows || !_crmImportRows.length) return;
+  const mode = (document.querySelector('input[name="crm-imp-mode"]:checked')?.value) || 'append';
+  const n = _crmImportRows.length;
+
+  // ── Mode DB: kirim seluruh baris ke RPC import (transaksi server) ──
+  if (crmUsesDB()) {
+    const btn = document.getElementById('crm-imp-confirm');
+    if (btn) { btn.disabled = true; btn.textContent = '…'; }
+    // kirim baris apa adanya (key UI cocok dgn yang dibaca RPC: id_customer,nama,wa,…)
+    const payload = _crmImportRows.map(r => ({
+      id_customer: r.id_customer || '',
+      nama: r.nama || '', wa: r.wa || '', kota: r.kota || '', channel: r.channel || '',
+      first_order: r.first_order || '', total_order: r.total_order || 0,
+      total_belanja: r.total_belanja || 0, status: r.status || 'New',
+      produk_fav: r.produk_fav || '', catatan: r.catatan || '',
+    }));
+    const res = await dbQ(d => d.rpc('import_crm_customers', {
+      p_rows: payload, p_user_id: currentUser.id, p_mode: mode, p_gen_code: true
+    }));
+    if (!res || res.error) {
+      if (btn) { btn.disabled = false; btn.textContent = t('crmImportDo'); }
+      toast(res?.error?.message?.includes('akses') ? t('adAccessReq') : t('crmImportErr'));
+      return;
+    }
+    const inserted = (typeof res.data === 'number') ? res.data : n;
+    _crmImportRows = null;
+    closeModal();
+    await loadCRM();
+    renderCRM();
+    toast(`${t('crmImportDone')}: ${inserted} customer.`);
+    return;
+  }
+
+  // ── Mode offline (localStorage) ──
+  if (mode === 'replace') crmData = [];
+  _crmImportRows.forEach(r => {
+    if (!r.id_customer) r.id_customer = crmGenId();
+    if (mode === 'replace') crmData.push(r); else crmData.unshift(r);
+  });
+  _crmImportRows = null;
+  saveCRM();
+  closeModal();
+  renderCRM();
+  toast(`${t('crmImportDone')}: ${n} customer.`);
+  pushActivity(`CRM: import ${n} customer (${mode})`, 'info');
+}
+
+// ═══════════ EXPORT — Excel rapi + statistik + rekap + ringkasan ═══════════
+async function exportCRMExcel() {
+  if (!window.XLSX) { toast(t('crmNoLib')); return; }
+  if (!crmData.length) { await loadCRM(); }
+  if (!crmData.length) { toast(t('crmEmpty')); return; }
+
+  const wb = XLSX.utils.book_new();
+  const now = new Date();
+  const stamp = now.toLocaleString('id-ID');
+
+  // ── Sheet 1: RINGKASAN ──
+  const total = crmData.length;
+  const totalSpend = crmData.reduce((s,c)=>s+crmParseMoney(c.total_belanja),0);
+  const totalOrders = crmData.reduce((s,c)=>s+crmParseInt(c.total_order),0);
+  const avgSpend = total ? totalSpend/total : 0;
+  const avgOrder = total ? totalOrders/total : 0;
+  const byStatus = {}; CRM_STATUSES.forEach(s=>byStatus[s]=0);
+  crmData.forEach(c => byStatus[crmNormStatus(c.status)]++);
+  // rekap kota & channel
+  const byCity = {}, byChannel = {};
+  crmData.forEach(c => {
+    const city = (c.kota||'(Kosong)').trim()||'(Kosong)';
+    const ch = (c.channel||'(Kosong)').trim()||'(Kosong)';
+    byCity[city] = byCity[city]||{n:0,spend:0}; byCity[city].n++; byCity[city].spend+=crmParseMoney(c.total_belanja);
+    byChannel[ch] = byChannel[ch]||{n:0,spend:0}; byChannel[ch].n++; byChannel[ch].spend+=crmParseMoney(c.total_belanja);
+  });
+
+  const sumAoa = [
+    ['DHP CREATIVE — LAPORAN DATABASE CUSTOMER (CRM)'],
+    ['Dibuat pada', stamp],
+    [],
+    ['RINGKASAN UTAMA'],
+    ['Total Customer', total],
+    ['Total Omzet (Belanja)', totalSpend],
+    ['Total Order', totalOrders],
+    ['Rata-rata Belanja / Customer', Math.round(avgSpend)],
+    ['Rata-rata Order / Customer', Math.round(avgOrder*100)/100],
+    [],
+    ['REKAP STATUS CUSTOMER'],
+    ['Status','Jumlah','% dari Total'],
+    ...CRM_STATUSES.map(s => [s, byStatus[s], total?(byStatus[s]/total):0]),
+    ['TOTAL', total, total?1:0],
+  ];
+  const wsSum = XLSX.utils.aoa_to_sheet(sumAoa);
+  wsSum['!cols'] = [{wch:34},{wch:20},{wch:14}];
+  wsSum['!merges'] = [{s:{r:0,c:0},e:{r:0,c:2}}];
+  // format angka rupiah & persen pada sheet ringkasan
+  const rp = '#,##0';
+  ['B6','B8'].forEach(a=>{ if(wsSum[a]) wsSum[a].z = rp; });
+  // status percent rows
+  for (let i=0;i<CRM_STATUSES.length;i++){ const cell='C'+(13+i); if(wsSum[cell]) wsSum[cell].z='0.0%'; }
+  const totPctCell = 'C'+(13+CRM_STATUSES.length); if (wsSum[totPctCell]) wsSum[totPctCell].z='0.0%';
+  XLSX.utils.book_append_sheet(wb, wsSum, 'Ringkasan');
+
+  // ── Sheet 2: DATABASE CUSTOMER (data utama, rapi) ──
+  const headers = CRM_COLUMNS.map(c => c.header);
+  const dataAoa = [headers, ...crmData.map(c => [
+    c.id_customer||'', c.nama||'', c.wa||'', c.kota||'', c.channel||'',
+    c.first_order||'', crmParseInt(c.total_order), crmParseMoney(c.total_belanja),
+    crmNormStatus(c.status), c.produk_fav||'', c.catatan||''
+  ])];
+  // baris total di bawah
+  dataAoa.push(['','','','','','TOTAL', totalOrders, totalSpend, '', '', '']);
+  const wsData = XLSX.utils.aoa_to_sheet(dataAoa);
+  wsData['!cols'] = [
+    {wch:12},{wch:22},{wch:16},{wch:14},{wch:20},{wch:16},{wch:12},{wch:16},{wch:12},{wch:20},{wch:28}
+  ];
+  wsData['!autofilter'] = { ref: XLSX.utils.encode_range({s:{r:0,c:0},e:{r:0,c:headers.length-1}}) };
+  wsData['!freeze'] = { xSplit:0, ySplit:1 };
+  // format kolom Total Order (G) & Total Belanja (H)
+  for (let r=1;r<dataAoa.length;r++){
+    const gO = 'G'+(r+1); if (wsData[gO]) wsData[gO].z = '#,##0';
+    const hO = 'H'+(r+1); if (wsData[hO]) wsData[hO].z = '"Rp" #,##0';
+  }
+  XLSX.utils.book_append_sheet(wb, wsData, 'Database Customer');
+
+  // ── Sheet 3: REKAP per KOTA ──
+  const cityRows = Object.keys(byCity).sort((a,b)=>byCity[b].n-byCity[a].n)
+    .map(k => [k, byCity[k].n, byCity[k].spend]);
+  const cityAoa = [['REKAP PER KOTA'],['Kota','Jumlah Customer','Total Belanja'],...cityRows,['TOTAL',total,totalSpend]];
+  const wsCity = XLSX.utils.aoa_to_sheet(cityAoa);
+  wsCity['!cols']=[{wch:22},{wch:18},{wch:18}];
+  wsCity['!merges']=[{s:{r:0,c:0},e:{r:0,c:2}}];
+  for (let r=2;r<cityAoa.length;r++){ const c='C'+(r+1); if(wsCity[c]) wsCity[c].z='"Rp" #,##0'; }
+  XLSX.utils.book_append_sheet(wb, wsCity, 'Rekap Kota');
+
+  // ── Sheet 4: REKAP per CHANNEL ──
+  const chRows = Object.keys(byChannel).sort((a,b)=>byChannel[b].n-byChannel[a].n)
+    .map(k => [k, byChannel[k].n, byChannel[k].spend]);
+  const chAoa = [['REKAP PER MARKETPLACE / CHANNEL'],['Channel','Jumlah Customer','Total Belanja'],...chRows,['TOTAL',total,totalSpend]];
+  const wsCh = XLSX.utils.aoa_to_sheet(chAoa);
+  wsCh['!cols']=[{wch:24},{wch:18},{wch:18}];
+  wsCh['!merges']=[{s:{r:0,c:0},e:{r:0,c:2}}];
+  for (let r=2;r<chAoa.length;r++){ const c='C'+(r+1); if(wsCh[c]) wsCh[c].z='"Rp" #,##0'; }
+  XLSX.utils.book_append_sheet(wb, wsCh, 'Rekap Channel');
+
+  const fname = `Database_Customer_DHP_${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}.xlsx`;
+  XLSX.writeFile(wb, fname);
+  toast(t('crmExportDone'));
+  pushActivity(`CRM: export Excel (${total} customer)`, 'info');
+}
+
+// expose ke window (dipanggil dari atribut onclick)
+window.renderCRM = renderCRM;
+window.openCRMModal = openCRMModal;
+window.saveCRMCustomer = saveCRMCustomer;
+window.deleteCRM = deleteCRM;
+window.openCRMImport = openCRMImport;
+window.handleCRMFile = handleCRMFile;
+window.confirmCRMImport = confirmCRMImport;
+window.downloadCRMTemplate = downloadCRMTemplate;
+window.exportCRMExcel = exportCRMExcel;
+
+// Muat data awal: mode offline saja (mode DB dimuat saat login oleh setupNav).
+if (!crmUsesDB()) loadCRM();
+
+/* ═══════════════════════════════════════════════════════════
    ADS TASK PAGE — daftar task dalam bentuk halaman penuh
    ═══════════════════════════════════════════════════════════ */
 let taskPageFilter = 'active';
@@ -6823,6 +7684,8 @@ function navTo(page, btn) {
   if (['registrations','users'].includes(page) && !can.isMod(r)) { toast('Moderator access required'); return; }
   // Manage (Ads) pages: moderator + admin/b2b (target)
   if (['ad_scheduler','ad_customers','ad_task'].includes(page) && !can.canSeeAds(r)) { toast(t('adAccessReq')); return; }
+  // Manage CRM page: moderator + admin/b2b
+  if (page === 'crm' && !can.canSeeAds(r)) { toast(t('adAccessReq')); return; }
   if (page === 'settings' && currentUser.id !== HEAD_MODERATOR_ID) { toast('Sovereign Moderator access required'); return; }
   // Studio pages — role-specific
   if (page === 'content_studio' && !can.isContent(r) && !can.isMod(r)) { toast('Content Creator access required'); return; }
@@ -6850,6 +7713,7 @@ function navTo(page, btn) {
     }
   }
   if (page === 'ad_customers')    renderAdCustomers();
+  if (page === 'crm')             renderCRM();
   if (page === 'ad_task')         {
     // Non-mod: reload task dari DB setiap kali buka halaman
     if (db && currentUser && !can.isMod(currentUser.role)) {
