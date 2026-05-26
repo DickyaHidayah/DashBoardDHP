@@ -2544,7 +2544,8 @@ body.light .unlock-task-theme{color:#140d04}
                 <option value="Hot">Hot</option>
                 <option value="Closing">Closing</option>
               </select>
-              <button class="btn-g btn-sm" id="adcust-sort-btn" onclick="adCustSortDir=adCustSortDir==='desc'?'asc':'desc';renderAdCustomers()" style="min-width:90px">↓ Terbaru</button>
+              <button class="btn-g btn-sm" id="adcust-sort-btn" onclick="adCustCycleSortBtn()" style="min-width:100px">↓ Terbaru</button>
+              <button class="btn-g btn-sm" id="adcust-sort-field-btn" onclick="adCustSortField=adCustSortField==='created_at'?'ad_date':'created_at';renderAdCustomers()" style="min-width:90px" title="Ganti urutan berdasarkan">📅 Tgl Masuk</button>
             </div>
           </div>
         </div>
@@ -2559,9 +2560,9 @@ body.light .unlock-task-theme{color:#140d04}
                 <th data-i18n="leadWA">WhatsApp</th>
                 <th data-i18n="leadRegion">Wilayah</th>
                 <th data-i18n="leadCategory">Kategori</th>
-                <th data-i18n="adColumn">Iklan</th>
+                <th>Channel / Iklan</th>
                 <th data-i18n="ownerColumn">Diinput oleh</th>
-                <th data-i18n="timeColumn" style="cursor:pointer" onclick="adCustSortDir=adCustSortDir==='desc'?'asc':'desc';renderAdCustomers()">Waktu ↕</th>
+                <th style="cursor:pointer" onclick="adCustCycleSortBtn()" title="Klik untuk balik urutan">Waktu ↕</th>
                 <th>Aksi</th>
               </tr>
             </thead>
@@ -6828,8 +6829,8 @@ function pickLeadCat(btn) {
   if (cf) {
     if (cat === 'Closing') {
       cf.style.display = '';
-      // Fokus ke nominal
-      setTimeout(() => { const n = document.getElementById('lead-nominal'); if (n) n.focus(); }, 80);
+      // Fokus ke field display nominal
+      setTimeout(() => { const n = document.getElementById('lead-nominal-display'); if (n) n.focus(); }, 80);
     } else {
       cf.style.display = 'none';
     }
@@ -6901,6 +6902,8 @@ async function submitLead() {
       const nominal     = parseFloat(document.getElementById('lead-nominal')?.value || '0') || 0;
       const totalOrd    = parseInt(document.getElementById('lead-total-order')?.value || '1', 10) || 1;
       const product     = document.getElementById('lead-product')?.value?.trim() || '';
+      // Channel: "Leads · <judul iklan>" agar tiap iklan bisa dibedakan
+      const channelLabel = `Leads · ${tk.title}`;
       await loadCRM();
       const newCustId = crmGenId();
       const today = new Date().toISOString().slice(0,10);
@@ -6912,25 +6915,25 @@ async function submitLead() {
           p_full_name:   name,
           p_wa_phone:    wa || null,
           p_city:        region || null,
-          p_channel:     'Leads',
+          p_channel:     channelLabel,
           p_first_order: today,
           p_total_order: totalOrd,
           p_total_spend: nominal,
-          p_status:      'New',
+          p_status:      'Leads',
           p_fav_product: product || null,
           p_admin_note:  `Closing dari Leads — Ads: ${tk.title}${note ? ' | ' + note : ''}`,
         }));
       } else {
         crmData.unshift({
           id_customer: newCustId, nama: name, wa: wa, kota: region,
-          channel: 'Leads', first_order: today, total_order: totalOrd, total_belanja: nominal,
-          status: 'New', produk_fav: product,
+          channel: channelLabel, first_order: today, total_order: totalOrd, total_belanja: nominal,
+          status: 'Leads', produk_fav: product,
           catatan: `Closing dari Leads — Ads: ${tk.title}${note ? ' | ' + note : ''}`,
         });
         saveCRM && saveCRM();
       }
       pushActivity(`CRM closing: ${name} (${newCustId})${nominal ? ' — Rp ' + nominal.toLocaleString('id-ID') : ''}`, 'lead');
-      toast(`✓ Lead + Closing masuk CRM (${newCustId}) · Channel: Leads`);
+      toast(`✓ Lead + Closing masuk CRM (${newCustId}) · Channel: ${channelLabel}`);
     } catch(e) {
       console.warn('[DHP] Auto CRM Closing gagal:', e);
       toast(t('leadAdded') + ' (CRM skip)');
@@ -7033,33 +7036,47 @@ async function openRecapModal(adId) {
    admin & b2b: lihat SEMUA leads (semua orang), moderator juga.
    ═══════════════════════════════════════════════════════════ */
 let adCustomersCache = [];
-let adCustSortDir = 'desc'; // 'asc' | 'desc' — sort by created_at
+let adCustSortDir   = 'desc';        // 'asc' | 'desc'
+let adCustSortField = 'created_at';  // 'created_at' | 'ad_date'
+
+function adCustCycleSortBtn() {
+  adCustSortDir = adCustSortDir === 'desc' ? 'asc' : 'desc';
+  renderAdCustomers();
+}
 
 async function loadAdCustomers() {
   const isMod = can.isMod(currentUser?.role);
   const res = await dbQ(d => {
-    let q = d.from('leads').select('*');
+    // Join leads → ad_tasks untuk ambil tema iklan
+    let q = d.from('leads').select('*, ad_tasks(title, category)');
     if (!isMod && currentUser) q = q.eq('owner_id', currentUser.id);
     return q.order('created_at', { ascending: false });
   });
-  adCustomersCache = (res?.data) ? res.data : [];
+  adCustomersCache = (res?.data) ? res.data.map(r => ({
+    ...r,
+    ad_theme: r.ad_tasks?.title || r.ad_theme || null,
+    ad_category: r.ad_tasks?.category || null,
+  })) : [];
   return adCustomersCache;
 }
 
 /* Helper: apakah lead ini masih bisa diedit/dihapus?
-   Rule: hanya boleh di HARI-H ads (bukan hari submit).
-   Moderator boleh kapan saja. */
+   - Non-moderator: hanya di HARI-H iklan (bukan hari submit/tanggal biasa).
+   - Moderator: boleh kapan saja. */
 function leadIsEditable(row) {
-  if (can.isMod(currentUser?.role)) return true;
+  if (can.isMod(currentUser?.role)) return true;   // moderator bebas
   if (!row.ad_date) return false;
-  const today = (new Date()).toLocaleDateString('sv-SE'); // yyyy-mm-dd
-  return row.ad_date === today;
+  const today = (new Date()).toLocaleDateString('sv-SE'); // yyyy-mm-dd lokal
+  return row.ad_date === today;                           // hanya di hari-H
 }
 
 async function deleteAdCustomerLead(leadId) {
   const row = adCustomersCache.find(r => r.id === leadId);
   if (!row) return;
-  if (!leadIsEditable(row)) { toast('Tidak bisa dihapus — sudah lewat hari iklan'); return; }
+  if (!leadIsEditable(row)) {
+    toast(`Tidak bisa dihapus — iklan tanggal ${row.ad_date||'?'} sudah lewat`);
+    return;
+  }
   const ok = await uiConfirm({ title:'Hapus Lead', message:`Hapus lead "${row.name}"?`, icon:'danger', okText:'Hapus', cancelText:'Batal' });
   if (!ok) return;
   if (db && !String(leadId).startsWith('local_')) {
@@ -7077,10 +7094,16 @@ async function deleteAdCustomerLead(leadId) {
 async function editAdCustomerLead(leadId) {
   const row = adCustomersCache.find(r => r.id === leadId);
   if (!row) return;
-  if (!leadIsEditable(row)) { toast('Tidak bisa diedit — sudah lewat hari iklan'); return; }
+  if (!leadIsEditable(row)) { toast(`Tidak bisa diedit — iklan tanggal ${row.ad_date||'?'} sudah lewat`); return; }
+
+  const isMod = can.isMod(currentUser?.role);
+  const modNote = isMod && row.ad_date !== (new Date()).toLocaleDateString('sv-SE')
+    ? `<div style="background:rgba(201,169,110,.08);border:1px solid rgba(201,169,110,.22);border-radius:6px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:var(--amber)">
+        ♔ Mode moderator — lead iklan ${row.ad_date||'?'} (sudah lewat)
+       </div>` : '';
 
   document.getElementById('m-title').textContent = 'Edit Lead';
-  document.getElementById('m-body').innerHTML = `
+  document.getElementById('m-body').innerHTML = `${modNote}
     <div class="fg"><label>Nama *</label><input class="fi" id="el-name" value="${escHtml(row.name||'')}"/></div>
     <div class="fg"><label>WhatsApp</label>
       <div class="wa-wrap"><span class="wa-prefix">+62</span>
@@ -7175,10 +7198,10 @@ async function renderAdCustomers() {
     (r.wa_phone||'').toLowerCase().includes(q) ||
     (r.region||'').toLowerCase().includes(q));
 
-  // Sort by created_at
+  // Sort
   rows.sort((a,b) => {
-    const da = new Date(a.created_at||0), db2 = new Date(b.created_at||0);
-    return adCustSortDir === 'asc' ? da - db2 : db2 - da;
+    const va = new Date(a[adCustSortField]||0), vb = new Date(b[adCustSortField]||0);
+    return adCustSortDir === 'asc' ? va - vb : vb - va;
   });
 
   // Statistik
@@ -7198,7 +7221,16 @@ async function renderAdCustomers() {
 
   // Sort button label update
   const sortBtn = document.getElementById('adcust-sort-btn');
-  if (sortBtn) sortBtn.textContent = adCustSortDir === 'desc' ? '↓ Terbaru' : '↑ Terlama';
+  if (sortBtn) {
+    const arrow = adCustSortDir === 'desc' ? '↓' : '↑';
+    const fieldLbl = adCustSortField === 'ad_date' ? 'Tgl Iklan' : 'Terbaru';
+    sortBtn.textContent = `${arrow} ${fieldLbl}`;
+  }
+  const sortFieldBtn = document.getElementById('adcust-sort-field-btn');
+  if (sortFieldBtn) {
+    sortFieldBtn.textContent = adCustSortField === 'ad_date' ? '📅 Tgl Iklan' : '📅 Tgl Masuk';
+    sortFieldBtn.title = adCustSortField === 'ad_date' ? 'Urut berdasarkan tanggal iklan' : 'Urut berdasarkan tanggal masuk';
+  }
 
   if (!rows.length) {
     body.innerHTML = `<tr><td colspan="9" class="tbl-empty">${t('noCustomers')}</td></tr>`;
@@ -7212,23 +7244,32 @@ async function renderAdCustomers() {
     const catCls = (r.category||'Cold').toLowerCase();
     const waLink = `https://wa.me/${(r.wa_phone||'').replace(/[^0-9]/g,'')}`;
     const editable = leadIsEditable(r);
+    // Channel badge — warna berbeda per tipe channel
+    const channelRaw = r.ad_theme || '—';
+    const isLeadsCh  = channelRaw.startsWith('Leads ·');
+    const chBgColor  = isLeadsCh ? 'rgba(122,191,142,.14)' : 'rgba(232,184,110,.10)';
+    const chTxColor  = isLeadsCh ? 'var(--green)' : 'var(--amber)';
+    const channelBadge = `<span style="display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:.04em;background:${chBgColor};color:${chTxColor};white-space:nowrap;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="${escHtml(channelRaw)}">${escHtml(channelRaw.length>22?channelRaw.slice(0,22)+'…':channelRaw)}</span>`;
     const actHtml = (editable || isMod) ? `
       <div class="crm-row-acts">
-        ${editable ? `<button class="crm-ico-btn" onclick="editAdCustomerLead('${r.id}')" title="Edit">
+        ${editable || isMod ? `<button class="crm-ico-btn" onclick="editAdCustomerLead('${r.id}')" title="Edit">
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5l2 2L6 12l-2.5.5L4 10l7.5-7.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
         </button>
         <button class="crm-ico-btn del" onclick="deleteAdCustomerLead('${r.id}')" title="Hapus">
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5 4l.5 9h5L11 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>` : `<span style="font-size:9px;color:var(--muted);letter-spacing:.04em">Terkunci</span>`}
       </div>` : `<span style="font-size:9px;color:var(--muted)">—</span>`;
+    const timeDisplay = adCustSortField === 'ad_date'
+      ? `<div style="font-size:10px;color:var(--muted);white-space:nowrap">${r.ad_date||'—'}</div><div style="font-size:9px;color:var(--muted);opacity:.6">${fmtDateTime(r.created_at)}</div>`
+      : `<div style="font-size:10px;color:var(--muted);white-space:nowrap">${fmtDateTime(r.created_at)}</div>`;
     return `<tr>
       <td style="font-weight:600;color:var(--text)">${escHtml(r.name)}</td>
       <td><a href="${waLink}" target="_blank" rel="noopener" class="wa-link">${escHtml(r.wa_phone)}</a></td>
       <td>${escHtml(r.region)}</td>
       <td><span class="lead-cat-badge lc-${catCls}">${t('leadCat'+(r.category||'Cold'))}</span></td>
-      <td style="font-size:11px;color:var(--text2)">${escHtml(r.ad_theme||'—')}</td>
+      <td>${channelBadge}</td>
       <td><span class="adcust-owner"><span class="role-dot" style="background:${clr}"></span>${escHtml(u.name)}</span></td>
-      <td style="font-size:10px;color:var(--muted);white-space:nowrap">${fmtDateTime(r.created_at)}</td>
+      <td>${timeDisplay}</td>
       <td>${actHtml}</td>
     </tr>`;
   }).join('');
