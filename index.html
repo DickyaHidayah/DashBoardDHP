@@ -2568,12 +2568,12 @@ body.light .unlock-task-theme{color:#140d04}
                 <th data-i18n="crmColName">Nama</th>
                 <th data-i18n="crmColWA">Nomor WhatsApp</th>
                 <th data-i18n="crmColCity">Kota</th>
-                <th data-i18n="crmColChannel">Marketplace / Channel</th>
+                <th data-i18n="crmColChannel">Channel</th>
                 <th data-i18n="crmColFirstOrder">Tgl First Order</th>
                 <th data-i18n="crmColTotalOrder">Total Order</th>
                 <th data-i18n="crmColTotalSpend">Total Belanja</th>
                 <th data-i18n="crmColStatus">Status</th>
-                <th data-i18n="crmColFavProduct">Produk Favorit</th>
+                <th data-i18n="crmColFavProduct">Produk</th>
                 <th data-i18n="crmColNote">Catatan Admin</th>
                 <th data-i18n="action">Action</th>
               </tr>
@@ -3431,8 +3431,8 @@ const i18n = {
     crmAllStatus:'All Status',
     crmImport:'Import', crmExport:'Export Excel',
     crmColId:'Customer ID', crmColName:'Name', crmColWA:'WhatsApp Number', crmColCity:'City',
-    crmColChannel:'Marketplace / Channel', crmColFirstOrder:'First Order Date', crmColTotalOrder:'Total Orders',
-    crmColTotalSpend:'Total Spend', crmColStatus:'Status', crmColFavProduct:'Favorite Product', crmColNote:'Admin Note',
+    crmColChannel:'Channel', crmColFirstOrder:'First Order Date', crmColTotalOrder:'Total Orders',
+    crmColTotalSpend:'Total Spend', crmColStatus:'Status', crmColFavProduct:'Product', crmColNote:'Admin Note',
     crmAddCustomer:'Add Customer', crmEditCustomer:'Edit Customer',
     crmSaved:'Customer saved.', crmDeleted:'Customer deleted.', crmDeleteConfirm:'Delete this customer from CRM?',
     crmEmpty:'No customer data yet. Add manually or import from Excel/CSV.',
@@ -3646,8 +3646,8 @@ const i18n = {
     crmAllStatus:'Semua Status',
     crmImport:'Import', crmExport:'Export Excel',
     crmColId:'ID Customer', crmColName:'Nama', crmColWA:'Nomor WhatsApp', crmColCity:'Kota',
-    crmColChannel:'Marketplace / Channel', crmColFirstOrder:'Tgl First Order', crmColTotalOrder:'Total Order',
-    crmColTotalSpend:'Total Belanja', crmColStatus:'Status', crmColFavProduct:'Produk Favorit', crmColNote:'Catatan Admin',
+    crmColChannel:'Channel', crmColFirstOrder:'Tgl First Order', crmColTotalOrder:'Total Order',
+    crmColTotalSpend:'Total Belanja', crmColStatus:'Status', crmColFavProduct:'Produk', crmColNote:'Catatan Admin',
     crmAddCustomer:'Tambah Customer', crmEditCustomer:'Edit Customer',
     crmSaved:'Data customer tersimpan.', crmDeleted:'Customer dihapus.', crmDeleteConfirm:'Hapus customer ini dari CRM?',
     crmEmpty:'Belum ada data customer. Tambah manual atau import dari Excel/CSV.',
@@ -6136,6 +6136,41 @@ function openAdModal(ymd, id) {
           ${userOpts}
         </div>
       </div>
+    </div>
+    <div style="border-top:1px solid var(--border);margin-top:4px;padding-top:14px">
+      <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:10px">
+        ◆ Hasil Ads — Auto Masuk Database Customer
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:10px">
+        <div class="fg" style="flex:1">
+          <label>Total Order</label>
+          <input class="fi" id="ad-total-order" type="number" min="0" placeholder="0" value="${a?escHtml(a.total_order||''):''}" style="font-variant-numeric:tabular-nums"/>
+        </div>
+        <div class="fg" style="flex:1">
+          <label>Total Spend (Rp)</label>
+          <input class="fi" id="ad-total-spend" type="number" min="0" placeholder="0" value="${a?escHtml(a.total_spend||''):''}" style="font-variant-numeric:tabular-nums"/>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <div class="fg" style="flex:1">
+          <label>Channel</label>
+          <select class="fi" id="ad-channel">
+            <option value="">— Pilih Channel —</option>
+            <option value="Shopee" ${a&&a.channel==='Shopee'?'selected':''}>Shopee</option>
+            <option value="TikTok" ${a&&a.channel==='TikTok'?'selected':''}>TikTok</option>
+            <option value="Instagram" ${a&&a.channel==='Instagram'?'selected':''}>Instagram</option>
+            <option value="WhatsApp" ${a&&a.channel==='WhatsApp'?'selected':''}>WhatsApp</option>
+            <option value="Lainnya" ${a&&a.channel==='Lainnya'?'selected':''}>Lainnya</option>
+          </select>
+        </div>
+        <div class="fg" style="flex:1">
+          <label>Produk</label>
+          <input class="fi" id="ad-product" placeholder="Nama produk…" value="${a?escHtml(a.product||''):''}" />
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px;font-style:italic">
+        ℹ Jika Total Order ≥ 1, data ini akan otomatis dicatat ke Database Customer.
+      </div>
     </div>`;
   document.getElementById('m-foot').innerHTML = `
     <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>
@@ -6220,13 +6255,20 @@ async function saveAd(thenPublish) {
   // Wajib pilih target (admin/b2b) — terutama bila langsung publish
   if (!targetIds.length) { toast(t('adNeedTarget')); return; }
 
+  // Ambil data hasil ads (Total Order, Total Spend, Channel, Product)
+  const adTotalOrder = parseInt(document.getElementById('ad-total-order')?.value || '0', 10) || 0;
+  const adTotalSpend = parseFloat(document.getElementById('ad-total-spend')?.value || '0') || 0;
+  const adChannel    = document.getElementById('ad-channel')?.value || '';
+  const adProduct    = document.getElementById('ad-product')?.value?.trim() || '';
+
   let savedId = editAdId;
   if (editAdId) {
     const a = ads.find(x => x.id === editAdId);
-    if (a) Object.assign(a, { date, theme, category:cat, target });
+    if (a) Object.assign(a, { date, theme, category:cat, target, total_order:adTotalOrder, total_spend:adTotalSpend, channel:adChannel, product:adProduct });
   } else {
     savedId = 'local_' + Date.now();
     ads.push({ id:savedId, date, theme, category:cat, target, note:'', status:'draft',
+               total_order:adTotalOrder, total_spend:adTotalSpend, channel:adChannel, product:adProduct,
                createdBy: currentUser.id, createdAt: Date.now() });
   }
 
@@ -6251,6 +6293,56 @@ async function saveAd(thenPublish) {
     toast('⚠ Server tidak merespons. Pastikan SQL v4.0 sudah dijalankan.');
   }
 
+  // ── AUTO SIMPAN KE DATABASE CUSTOMER (CRM) bila ada total order ──
+  if (adTotalOrder >= 1) {
+    try {
+      // Buat ID customer baru otomatis
+      await loadCRM();
+      const newCustId = crmGenId();
+      const custName  = theme; // Gunakan tema iklan sebagai nama referensi
+      const newRec = {
+        id_customer: newCustId,
+        nama:        custName,
+        wa:          '',
+        kota:        '',
+        channel:     adChannel,
+        first_order: date,
+        total_order: adTotalOrder,
+        total_belanja: adTotalSpend,
+        status:      'New',
+        produk_fav:  adProduct,
+        catatan:     `Auto dari Ads: ${theme} (${cat}) — ${date}`,
+      };
+      if (crmUsesDB()) {
+        await dbQ(d => d.rpc('upsert_crm_customer', {
+          p_id:          null,
+          p_user_id:     currentUser.id,
+          p_cust_code:   newCustId,
+          p_full_name:   custName,
+          p_wa_phone:    null,
+          p_city:        null,
+          p_channel:     adChannel || null,
+          p_first_order: date || null,
+          p_total_order: adTotalOrder,
+          p_total_spend: adTotalSpend,
+          p_status:      'New',
+          p_fav_product: adProduct || null,
+          p_admin_note:  newRec.catatan,
+        }));
+      } else {
+        crmData.unshift(newRec);
+        saveCRM && saveCRM();
+      }
+      pushActivity(`CRM auto-entry dari Ads: "${theme}" — ${adChannel||'—'} — ${crmFmtRupiah(adTotalSpend)}`, 'ad');
+      toast(`✓ Tersimpan ke Ads & CRM (${newCustId})`);
+    } catch(e) {
+      console.warn('[DHP] Auto CRM dari Ads gagal:', e);
+      toast(t('adSaved') + ' (CRM skip)');
+    }
+  } else {
+    toast(t('adSaved'));
+  }
+
   // Jika DB aktif tapi id masih lokal (RPC gagal) → JANGAN lanjut publish palsu,
   // karena task lokal tidak akan pernah sampai ke target.
   if (db && thenPublish && String(savedId).startsWith('local_')) {
@@ -6260,7 +6352,6 @@ async function saveAd(thenPublish) {
     return;
   }
 
-  toast(t('adSaved'));
   pushActivity(`Iklan: ${theme} (${cat})`, 'info');
   closeModal();
   renderAdScheduler();
@@ -6869,12 +6960,12 @@ const CRM_COLUMNS = [
   { key:'nama',        header:'Nama'              },
   { key:'wa',          header:'Nomor WhatsApp'    },
   { key:'kota',        header:'Kota'              },
-  { key:'channel',     header:'Marketplace / TikTok / Shopee / Live' },
+  { key:'channel',     header:'Channel'           },
   { key:'first_order', header:'Tanggal First Order' },
   { key:'total_order', header:'Total Order'       },
   { key:'total_belanja', header:'Total Belanja'   },
   { key:'status',      header:'Status Customer'   },
-  { key:'produk_fav',  header:'Produk Favorit'    },
+  { key:'produk_fav',  header:'Produk'            },
   { key:'catatan',     header:'Catatan Admin'     },
 ];
 const CRM_STATUSES = ['New','Repeat','Agen','Reseller','Leads'];
@@ -6884,7 +6975,7 @@ const CRM_HEADER_ALIASES = {
   'nama':'nama','name':'nama','nama customer':'nama','nama pelanggan':'nama',
   'nomor whatsapp':'wa','whatsapp':'wa','no whatsapp':'wa','no wa':'wa','wa':'wa','nomor wa':'wa','phone':'wa','hp':'wa',
   'kota':'kota','city':'kota','wilayah':'kota','domisili':'kota',
-  'marketplace / tiktok / shopee / live':'channel','marketplace':'channel','channel':'channel','platform':'channel','sumber':'channel','asal':'channel',
+  'marketplace / tiktok / shopee / live':'channel','marketplace':'channel','channel':'channel','platform':'channel','sumber':'channel','asal':'channel','shopee':'channel','tiktok':'channel','instagram':'channel','whatsapp':'channel',
   'tanggal first order':'first_order','first order':'first_order','tgl first order':'first_order','tanggal order pertama':'first_order','first order date':'first_order',
   'total order':'total_order','jumlah order':'total_order','total orders':'total_order','qty order':'total_order',
   'total belanja':'total_belanja','total spend':'total_belanja','nilai belanja':'total_belanja','omzet':'total_belanja','total spending':'total_belanja',
@@ -7096,12 +7187,24 @@ function openCRMModal(idx) {
   const c = editing ? crmData[idx] : {};
   document.getElementById('m-title').textContent = editing ? t('crmEditCustomer') : t('crmAddCustomer');
   const opts = CRM_STATUSES.map(s => `<option value="${s}" ${crmNormStatus(c.status)===s?'selected':''}>${s}</option>`).join('');
+  const channelOpts = ['Shopee','TikTok','Instagram','WhatsApp','Lainnya'].map(ch => `<option value="${ch}" ${(c.channel||'')=== ch?'selected':''}>${ch}</option>`).join('');
+  const autoId = editing ? escHtml(c.id_customer||'') : crmGenId();
   document.getElementById('m-body').innerHTML = `
-    <div class="fg"><label>${t('crmColId')}</label><input class="fi" id="crm-f-id" value="${escHtml(c.id_customer||'')}" placeholder="${editing?'':'(auto)'}"/></div>
+    <div class="fg"><label>${t('crmColId')}</label>
+      <div style="position:relative">
+        <input class="fi" id="crm-f-id" value="${editing ? escHtml(c.id_customer||'') : autoId}" readonly style="background:rgba(201,169,110,.06);color:var(--gold);font-family:monospace;font-weight:600;cursor:default;padding-right:36px"/>
+        <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:9px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase">${editing?'FIXED':'AUTO'}</span>
+      </div>
+    </div>
     <div class="fg"><label>${t('crmColName')} *</label><input class="fi" id="crm-f-nama" value="${escHtml(c.nama||'')}"/></div>
     <div class="fg"><label>${t('crmColWA')}</label><input class="fi" id="crm-f-wa" value="${escHtml(c.wa||'')}" placeholder="08xxxxxxxxxx"/></div>
     <div class="fg"><label>${t('crmColCity')}</label><input class="fi" id="crm-f-kota" value="${escHtml(c.kota||'')}"/></div>
-    <div class="fg"><label>${t('crmColChannel')}</label><input class="fi" id="crm-f-channel" value="${escHtml(c.channel||'')}" placeholder="Shopee / TikTok / Live / Marketplace"/></div>
+    <div class="fg"><label>${t('crmColChannel')}</label>
+      <select class="fi" id="crm-f-channel">
+        <option value="">— Pilih Channel —</option>
+        ${channelOpts}
+      </select>
+    </div>
     <div class="fg"><label>${t('crmColFirstOrder')}</label><input class="fi" id="crm-f-first" type="date" value="${crmToDateInput(c.first_order)}"/></div>
     <div style="display:flex;gap:10px">
       <div class="fg" style="flex:1"><label>${t('crmColTotalOrder')}</label><input class="fi" id="crm-f-torder" type="number" min="0" value="${crmParseInt(c.total_order)||''}"/></div>
@@ -7383,97 +7486,276 @@ async function exportCRMExcel() {
   const wb = XLSX.utils.book_new();
   const now = new Date();
   const stamp = now.toLocaleString('id-ID');
+  const dateStr = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
 
-  // ── Sheet 1: RINGKASAN ──
-  const total = crmData.length;
-  const totalSpend = crmData.reduce((s,c)=>s+crmParseMoney(c.total_belanja),0);
-  const totalOrders = crmData.reduce((s,c)=>s+crmParseInt(c.total_order),0);
-  const avgSpend = total ? totalSpend/total : 0;
-  const avgOrder = total ? totalOrders/total : 0;
+  // ── Hitung semua metrik ──
+  const total        = crmData.length;
+  const totalSpend   = crmData.reduce((s,c)=>s+crmParseMoney(c.total_belanja),0);
+  const totalOrders  = crmData.reduce((s,c)=>s+crmParseInt(c.total_order),0);
+  const avgSpend     = total ? totalSpend/total : 0;
+  const avgOrder     = total ? totalOrders/total : 0;
+  const maxSpend     = Math.max(...crmData.map(c=>crmParseMoney(c.total_belanja)));
+  const topCustomer  = crmData.find(c=>crmParseMoney(c.total_belanja)===maxSpend);
+
+  // rekap status
   const byStatus = {}; CRM_STATUSES.forEach(s=>byStatus[s]=0);
-  crmData.forEach(c => byStatus[crmNormStatus(c.status)]++);
+  const spendByStatus = {}; CRM_STATUSES.forEach(s=>spendByStatus[s]=0);
+  const orderByStatus = {}; CRM_STATUSES.forEach(s=>orderByStatus[s]=0);
+  crmData.forEach(c => {
+    const st = crmNormStatus(c.status);
+    byStatus[st]++;
+    spendByStatus[st] += crmParseMoney(c.total_belanja);
+    orderByStatus[st] += crmParseInt(c.total_order);
+  });
+
   // rekap kota & channel
   const byCity = {}, byChannel = {};
   crmData.forEach(c => {
-    const city = (c.kota||'(Kosong)').trim()||'(Kosong)';
-    const ch = (c.channel||'(Kosong)').trim()||'(Kosong)';
-    byCity[city] = byCity[city]||{n:0,spend:0}; byCity[city].n++; byCity[city].spend+=crmParseMoney(c.total_belanja);
-    byChannel[ch] = byChannel[ch]||{n:0,spend:0}; byChannel[ch].n++; byChannel[ch].spend+=crmParseMoney(c.total_belanja);
+    const city = (c.kota||'').trim()||'(Tidak diisi)';
+    const ch   = (c.channel||'').trim()||'(Tidak diisi)';
+    byCity[city] = byCity[city]||{n:0,spend:0,orders:0};
+    byCity[city].n++; byCity[city].spend+=crmParseMoney(c.total_belanja);
+    byCity[city].orders+=crmParseInt(c.total_order);
+    byChannel[ch] = byChannel[ch]||{n:0,spend:0,orders:0};
+    byChannel[ch].n++; byChannel[ch].spend+=crmParseMoney(c.total_belanja);
+    byChannel[ch].orders+=crmParseInt(c.total_order);
   });
 
+  // rekap produk
+  const byProduct = {};
+  crmData.forEach(c => {
+    if (!c.produk_fav) return;
+    const pr = c.produk_fav.trim();
+    byProduct[pr] = byProduct[pr]||{n:0,spend:0};
+    byProduct[pr].n++; byProduct[pr].spend+=crmParseMoney(c.total_belanja);
+  });
+
+  // ── Periode (first_order range) ──
+  const orderDates = crmData.filter(c=>c.first_order).map(c=>new Date(c.first_order)).filter(d=>!isNaN(d));
+  const minDate = orderDates.length ? new Date(Math.min(...orderDates)) : null;
+  const maxDate = orderDates.length ? new Date(Math.max(...orderDates)) : null;
+  const fmtDate = d => d ? `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}` : '—';
+
+  // ══════════════════════════════════════════════
+  // SHEET 1 — RINGKASAN & ANALITIK
+  // ══════════════════════════════════════════════
   const sumAoa = [
     ['DHP CREATIVE — LAPORAN DATABASE CUSTOMER (CRM)'],
-    ['Dibuat pada', stamp],
-    [],
-    ['RINGKASAN UTAMA'],
-    ['Total Customer', total],
-    ['Total Omzet (Belanja)', totalSpend],
-    ['Total Order', totalOrders],
-    ['Rata-rata Belanja / Customer', Math.round(avgSpend)],
-    ['Rata-rata Order / Customer', Math.round(avgOrder*100)/100],
-    [],
-    ['REKAP STATUS CUSTOMER'],
-    ['Status','Jumlah','% dari Total'],
-    ...CRM_STATUSES.map(s => [s, byStatus[s], total?(byStatus[s]/total):0]),
-    ['TOTAL', total, total?1:0],
+    [''],
+    ['Diekspor oleh', currentUser?.id || 'Admin', '', 'Tanggal Export', stamp],
+    ['Periode Data', `${fmtDate(minDate)} — ${fmtDate(maxDate)}`],
+    [''],
+    ['═══════════════════════════', 'RINGKASAN UTAMA', '═══════════════════════════'],
+    ['Metrik', 'Nilai', 'Keterangan'],
+    ['Total Customer', total, 'Jumlah keseluruhan customer terdaftar'],
+    ['Total Omzet (Belanja)', totalSpend, 'Akumulasi total belanja seluruh customer'],
+    ['Total Transaksi (Order)', totalOrders, 'Akumulasi total transaksi seluruh customer'],
+    ['Rata-rata Belanja / Customer', Math.round(avgSpend), 'Average Order Value (AOV)'],
+    ['Rata-rata Transaksi / Customer', Math.round(avgOrder*100)/100, 'Frekuensi pembelian rata-rata'],
+    ['Customer Tertinggi Belanja', topCustomer?.nama||'—', `${topCustomer?.id_customer||''} — Rp ${maxSpend.toLocaleString('id-ID')}`],
+    [''],
+    ['═══════════════════════════', 'REKAP PER STATUS', '═══════════════════════════'],
+    ['Status', 'Jumlah', '% Customer', 'Total Belanja', '% Omzet', 'Total Order', 'Avg Belanja'],
+    ...CRM_STATUSES.map(s => [
+      s,
+      byStatus[s],
+      total ? byStatus[s]/total : 0,
+      spendByStatus[s],
+      totalSpend ? spendByStatus[s]/totalSpend : 0,
+      orderByStatus[s],
+      byStatus[s] ? Math.round(spendByStatus[s]/byStatus[s]) : 0,
+    ]),
+    ['TOTAL', total, 1, totalSpend, 1, totalOrders, Math.round(avgSpend)],
+    [''],
+    ['═══════════════════════════', 'REKAP PER CHANNEL', '═══════════════════════════'],
+    ['Channel', 'Jumlah Customer', '% Customer', 'Total Belanja', 'Total Order'],
+    ...Object.keys(byChannel).sort((a,b)=>byChannel[b].spend-byChannel[a].spend)
+      .map(k => [k, byChannel[k].n, total?byChannel[k].n/total:0, byChannel[k].spend, byChannel[k].orders]),
+    ['TOTAL', total, 1, totalSpend, totalOrders],
+    [''],
+    ['═══════════════════════════', 'REKAP PER KOTA', '═══════════════════════════'],
+    ['Kota', 'Jumlah Customer', '% Customer', 'Total Belanja', 'Total Order'],
+    ...Object.keys(byCity).sort((a,b)=>byCity[b].n-byCity[a].n).slice(0,20)
+      .map(k => [k, byCity[k].n, total?byCity[k].n/total:0, byCity[k].spend, byCity[k].orders]),
+    [''],
+    ['═══════════════════════════', 'TOP 10 PRODUK', '═══════════════════════════'],
+    ['Produk', 'Jumlah Customer', 'Total Belanja'],
+    ...Object.keys(byProduct).sort((a,b)=>byProduct[b].spend-byProduct[a].spend).slice(0,10)
+      .map(k => [k, byProduct[k].n, byProduct[k].spend]),
   ];
+
   const wsSum = XLSX.utils.aoa_to_sheet(sumAoa);
-  wsSum['!cols'] = [{wch:34},{wch:20},{wch:14}];
-  wsSum['!merges'] = [{s:{r:0,c:0},e:{r:0,c:2}}];
-  // format angka rupiah & persen pada sheet ringkasan
-  const rp = '#,##0';
-  ['B6','B8'].forEach(a=>{ if(wsSum[a]) wsSum[a].z = rp; });
-  // status percent rows
-  for (let i=0;i<CRM_STATUSES.length;i++){ const cell='C'+(13+i); if(wsSum[cell]) wsSum[cell].z='0.0%'; }
-  const totPctCell = 'C'+(13+CRM_STATUSES.length); if (wsSum[totPctCell]) wsSum[totPctCell].z='0.0%';
-  XLSX.utils.book_append_sheet(wb, wsSum, 'Ringkasan');
+  wsSum['!cols'] = [{wch:36},{wch:22},{wch:28},{wch:18},{wch:14},{wch:14},{wch:16}];
+  wsSum['!merges'] = [{s:{r:0,c:0},e:{r:0,c:6}}];
 
-  // ── Sheet 2: DATABASE CUSTOMER (data utama, rapi) ──
-  const headers = CRM_COLUMNS.map(c => c.header);
-  const dataAoa = [headers, ...crmData.map(c => [
-    c.id_customer||'', c.nama||'', c.wa||'', c.kota||'', c.channel||'',
-    c.first_order||'', crmParseInt(c.total_order), crmParseMoney(c.total_belanja),
-    crmNormStatus(c.status), c.produk_fav||'', c.catatan||''
-  ])];
-  // baris total di bawah
-  dataAoa.push(['','','','','','TOTAL', totalOrders, totalSpend, '', '', '']);
-  const wsData = XLSX.utils.aoa_to_sheet(dataAoa);
-  wsData['!cols'] = [
-    {wch:12},{wch:22},{wch:16},{wch:14},{wch:20},{wch:16},{wch:12},{wch:16},{wch:12},{wch:20},{wch:28}
-  ];
-  wsData['!autofilter'] = { ref: XLSX.utils.encode_range({s:{r:0,c:0},e:{r:0,c:headers.length-1}}) };
-  wsData['!freeze'] = { xSplit:0, ySplit:1 };
-  // format kolom Total Order (G) & Total Belanja (H)
-  for (let r=1;r<dataAoa.length;r++){
-    const gO = 'G'+(r+1); if (wsData[gO]) wsData[gO].z = '#,##0';
-    const hO = 'H'+(r+1); if (wsData[hO]) wsData[hO].z = '"Rp" #,##0';
+  // Format angka & persen
+  const rp = '"Rp "#,##0', pct = '0.0%', num = '#,##0';
+  // Ringkasan utama
+  if (wsSum['B9'])  wsSum['B9'].z  = rp;
+  if (wsSum['B11']) wsSum['B11'].z = rp;
+  if (wsSum['B12']) wsSum['B12'].z = rp;
+  // Status rows
+  const statusStartRow = 16;
+  for (let i=0;i<CRM_STATUSES.length;i++){
+    const r = statusStartRow + i;
+    ['B','C','D','E','F','G'].forEach((col,ci) => {
+      const cell = col+(r+1); if (!wsSum[cell]) return;
+      if (ci===1) wsSum[cell].z = pct;
+      if (ci===2) wsSum[cell].z = rp;
+      if (ci===3) wsSum[cell].z = pct;
+      if (ci===5) wsSum[cell].z = rp;
+    });
   }
-  XLSX.utils.book_append_sheet(wb, wsData, 'Database Customer');
+  // Total row status
+  const totRow = statusStartRow + CRM_STATUSES.length;
+  if (wsSum[`C${totRow+1}`]) wsSum[`C${totRow+1}`].z = pct;
+  if (wsSum[`D${totRow+1}`]) wsSum[`D${totRow+1}`].z = rp;
+  if (wsSum[`E${totRow+1}`]) wsSum[`E${totRow+1}`].z = pct;
+  if (wsSum[`G${totRow+1}`]) wsSum[`G${totRow+1}`].z = rp;
 
-  // ── Sheet 3: REKAP per KOTA ──
-  const cityRows = Object.keys(byCity).sort((a,b)=>byCity[b].n-byCity[a].n)
-    .map(k => [k, byCity[k].n, byCity[k].spend]);
-  const cityAoa = [['REKAP PER KOTA'],['Kota','Jumlah Customer','Total Belanja'],...cityRows,['TOTAL',total,totalSpend]];
-  const wsCity = XLSX.utils.aoa_to_sheet(cityAoa);
-  wsCity['!cols']=[{wch:22},{wch:18},{wch:18}];
-  wsCity['!merges']=[{s:{r:0,c:0},e:{r:0,c:2}}];
-  for (let r=2;r<cityAoa.length;r++){ const c='C'+(r+1); if(wsCity[c]) wsCity[c].z='"Rp" #,##0'; }
-  XLSX.utils.book_append_sheet(wb, wsCity, 'Rekap Kota');
+  // Channel rekap rows
+  const chStart = totRow + 4;
+  const chKeys = Object.keys(byChannel).sort((a,b)=>byChannel[b].spend-byChannel[a].spend);
+  for (let i=0;i<chKeys.length;i++){
+    const r = chStart + i + 1;
+    if (wsSum[`C${r}`]) wsSum[`C${r}`].z = pct;
+    if (wsSum[`D${r}`]) wsSum[`D${r}`].z = rp;
+  }
 
-  // ── Sheet 4: REKAP per CHANNEL ──
-  const chRows = Object.keys(byChannel).sort((a,b)=>byChannel[b].n-byChannel[a].n)
-    .map(k => [k, byChannel[k].n, byChannel[k].spend]);
-  const chAoa = [['REKAP PER MARKETPLACE / CHANNEL'],['Channel','Jumlah Customer','Total Belanja'],...chRows,['TOTAL',total,totalSpend]];
+  XLSX.utils.book_append_sheet(wb, wsSum, '📊 Ringkasan & Analitik');
+
+  // ══════════════════════════════════════════════
+  // SHEET 2 — DATABASE CUSTOMER (data lengkap)
+  // ══════════════════════════════════════════════
+  const headers = ['No.','ID Customer','Nama','Nomor WhatsApp','Kota','Channel',
+    'Tgl First Order','Total Order','Total Belanja (Rp)','Status','Produk','Catatan Admin'];
+  const dataAoa = [
+    ['DHP CREATIVE — DATABASE CUSTOMER'],
+    [`Export: ${stamp}  |  Total: ${total} customer`],
+    [],
+    headers,
+    ...crmData.map((c, i) => [
+      i+1,
+      c.id_customer||'',
+      c.nama||'',
+      c.wa||'',
+      c.kota||'',
+      c.channel||'',
+      c.first_order||'',
+      crmParseInt(c.total_order),
+      crmParseMoney(c.total_belanja),
+      crmNormStatus(c.status),
+      c.produk_fav||'',
+      c.catatan||''
+    ]),
+    [],
+    ['','','','','','','TOTAL', totalOrders, totalSpend, '', '', ''],
+  ];
+  const wsData = XLSX.utils.aoa_to_sheet(dataAoa);
+  wsData['!cols'] = [{wch:5},{wch:12},{wch:24},{wch:16},{wch:16},{wch:14},{wch:16},{wch:12},{wch:18},{wch:12},{wch:22},{wch:32}];
+  wsData['!merges'] = [
+    {s:{r:0,c:0},e:{r:0,c:11}},
+    {s:{r:1,c:0},e:{r:1,c:11}},
+  ];
+  wsData['!autofilter'] = { ref: XLSX.utils.encode_range({s:{r:3,c:0},e:{r:3,c:11}}) };
+  wsData['!freeze'] = { xSplit:0, ySplit:4 };
+  // Format kolom Total Order (H) & Total Belanja (I) — baris 5 dst (index 4+)
+  for (let r=5; r<dataAoa.length-1; r++){
+    const hO = 'H'+(r+1); if (wsData[hO]) wsData[hO].z = '#,##0';
+    const iO = 'I'+(r+1); if (wsData[iO]) wsData[iO].z = '"Rp "#,##0';
+  }
+  // Total row
+  const totalRowIdx = dataAoa.length;
+  if (wsData[`H${totalRowIdx}`]) wsData[`H${totalRowIdx}`].z = '#,##0';
+  if (wsData[`I${totalRowIdx}`]) wsData[`I${totalRowIdx}`].z = '"Rp "#,##0';
+  XLSX.utils.book_append_sheet(wb, wsData, '📋 Database Customer');
+
+  // ══════════════════════════════════════════════
+  // SHEET 3 — ANALITIK CHANNEL
+  // ══════════════════════════════════════════════
+  const chRows = Object.keys(byChannel).sort((a,b)=>byChannel[b].spend-byChannel[a].spend);
+  const chAoa = [
+    ['DHP CREATIVE — ANALITIK PER CHANNEL'],
+    [`Export: ${stamp}`],
+    [],
+    ['Channel','Jumlah Customer','% Customer','Total Belanja','% Omzet','Total Order','Avg Belanja/Customer'],
+    ...chRows.map(k => [
+      k, byChannel[k].n,
+      total?byChannel[k].n/total:0,
+      byChannel[k].spend,
+      totalSpend?byChannel[k].spend/totalSpend:0,
+      byChannel[k].orders,
+      byChannel[k].n ? Math.round(byChannel[k].spend/byChannel[k].n) : 0,
+    ]),
+    [],
+    ['TOTAL', total, 1, totalSpend, 1, totalOrders, Math.round(avgSpend)],
+  ];
   const wsCh = XLSX.utils.aoa_to_sheet(chAoa);
-  wsCh['!cols']=[{wch:24},{wch:18},{wch:18}];
-  wsCh['!merges']=[{s:{r:0,c:0},e:{r:0,c:2}}];
-  for (let r=2;r<chAoa.length;r++){ const c='C'+(r+1); if(wsCh[c]) wsCh[c].z='"Rp" #,##0'; }
-  XLSX.utils.book_append_sheet(wb, wsCh, 'Rekap Channel');
+  wsCh['!cols']=[{wch:18},{wch:18},{wch:14},{wch:20},{wch:12},{wch:14},{wch:22}];
+  wsCh['!merges']=[{s:{r:0,c:0},e:{r:0,c:6}},{s:{r:1,c:0},e:{r:1,c:6}}];
+  for (let r=4;r<chAoa.length;r++){
+    if (wsCh[`C${r+1}`]) wsCh[`C${r+1}`].z='0.0%';
+    if (wsCh[`D${r+1}`]) wsCh[`D${r+1}`].z='"Rp "#,##0';
+    if (wsCh[`E${r+1}`]) wsCh[`E${r+1}`].z='0.0%';
+    if (wsCh[`G${r+1}`]) wsCh[`G${r+1}`].z='"Rp "#,##0';
+  }
+  XLSX.utils.book_append_sheet(wb, wsCh, '📡 Analitik Channel');
 
-  const fname = `Database_Customer_DHP_${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}.xlsx`;
+  // ══════════════════════════════════════════════
+  // SHEET 4 — ANALITIK KOTA
+  // ══════════════════════════════════════════════
+  const cityKeys = Object.keys(byCity).sort((a,b)=>byCity[b].spend-byCity[a].spend);
+  const cityAoa = [
+    ['DHP CREATIVE — ANALITIK PER KOTA'],
+    [`Export: ${stamp}`],
+    [],
+    ['Kota','Jumlah Customer','% Customer','Total Belanja','% Omzet','Total Order'],
+    ...cityKeys.map(k => [
+      k, byCity[k].n,
+      total?byCity[k].n/total:0,
+      byCity[k].spend,
+      totalSpend?byCity[k].spend/totalSpend:0,
+      byCity[k].orders,
+    ]),
+    [],
+    ['TOTAL', total, 1, totalSpend, 1, totalOrders],
+  ];
+  const wsCity = XLSX.utils.aoa_to_sheet(cityAoa);
+  wsCity['!cols']=[{wch:22},{wch:18},{wch:14},{wch:20},{wch:12},{wch:14}];
+  wsCity['!merges']=[{s:{r:0,c:0},e:{r:0,c:5}},{s:{r:1,c:0},e:{r:1,c:5}}];
+  for (let r=4;r<cityAoa.length;r++){
+    if (wsCity[`C${r+1}`]) wsCity[`C${r+1}`].z='0.0%';
+    if (wsCity[`D${r+1}`]) wsCity[`D${r+1}`].z='"Rp "#,##0';
+    if (wsCity[`E${r+1}`]) wsCity[`E${r+1}`].z='0.0%';
+  }
+  XLSX.utils.book_append_sheet(wb, wsCity, '🏙 Analitik Kota');
+
+  // ══════════════════════════════════════════════
+  // SHEET 5 — TOP PRODUK
+  // ══════════════════════════════════════════════
+  const prodKeys = Object.keys(byProduct).sort((a,b)=>byProduct[b].spend-byProduct[a].spend);
+  const prodAoa = [
+    ['DHP CREATIVE — TOP PRODUK CUSTOMER'],
+    [`Export: ${stamp}`],
+    [],
+    ['Rank','Produk','Jumlah Customer','Total Belanja','% dari Total Omzet'],
+    ...prodKeys.map((k,i) => [i+1, k, byProduct[k].n, byProduct[k].spend, totalSpend?byProduct[k].spend/totalSpend:0]),
+    [],
+    ['','TOTAL', total, totalSpend, 1],
+  ];
+  const wsProd = XLSX.utils.aoa_to_sheet(prodAoa);
+  wsProd['!cols']=[{wch:6},{wch:28},{wch:18},{wch:20},{wch:20}];
+  wsProd['!merges']=[{s:{r:0,c:0},e:{r:0,c:4}},{s:{r:1,c:0},e:{r:1,c:4}}];
+  for (let r=4;r<prodAoa.length;r++){
+    if (wsProd[`D${r+1}`]) wsProd[`D${r+1}`].z='"Rp "#,##0';
+    if (wsProd[`E${r+1}`]) wsProd[`E${r+1}`].z='0.0%';
+  }
+  XLSX.utils.book_append_sheet(wb, wsProd, '🏆 Top Produk');
+
+  const fname = `DHP_CRM_Export_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.xlsx`;
   XLSX.writeFile(wb, fname);
-  toast(t('crmExportDone'));
-  pushActivity(`CRM: export Excel (${total} customer)`, 'info');
+  toast(`✓ Export selesai — ${total} customer, 5 sheet analitik`);
+  pushActivity(`CRM: export Excel profesional (${total} customer, 5 sheet)`, 'info');
 }
 
 // expose ke window (dipanggil dari atribut onclick)
