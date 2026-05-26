@@ -1706,6 +1706,58 @@ body.light .unlock-task-theme{color:#140d04}
 }
 #ads-refresh-btn:active svg { animation: spin-once .5s ease; }
 .tp-lastupd { margin-left: auto; }
+
+/* ══ ADS CUSTOMER DIAGRAM ══ */
+.adcust-diagram{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:16px 20px;margin-bottom:14px;
+}
+.adcust-chart-title{
+  font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  font-weight:600;margin-bottom:12px;
+}
+.adcust-bars{display:flex;flex-direction:column;gap:8px}
+.adcust-bar-group{display:grid;grid-template-columns:1fr;gap:3px}
+.adcust-bar-track{
+  height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;flex:1;
+}
+.adcust-bar-fill{height:100%;border-radius:4px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.adcust-bar-meta{display:flex;justify-content:space-between;align-items:center}
+.adcust-bar-lbl{font-size:10px;color:var(--text2);font-weight:600;min-width:60px}
+.adcust-bar-val{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
+
+/* ══ CRM DIAGRAM ══ */
+.crm-diagram-wrap{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:16px 20px;margin-bottom:14px;
+}
+.crm-diag-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:640px){.crm-diag-grid{grid-template-columns:1fr}}
+.crm-diag-card{}
+.crm-diag-title{
+  font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  font-weight:600;margin-bottom:12px;
+}
+.crm-diag-bars{display:flex;flex-direction:column;gap:7px}
+.crm-diag-bar-row{display:grid;grid-template-columns:80px 1fr 60px;gap:8px;align-items:center}
+.crm-diag-bar-lbl{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crm-diag-bar-track{height:7px;background:var(--bg3);border-radius:4px;overflow:hidden}
+.crm-diag-bar-fill{height:100%;border-radius:4px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.crm-diag-bar-val{font-size:11px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+
+/* CRM table toolbar */
+.crm-tbl-toolbar{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:8px;gap:10px;flex-wrap:wrap;
+}
+.crm-tbl-info{font-size:11px;color:var(--muted)}
+
+/* CRM channel badge */
+.crm-ch-badge{
+  display:inline-block;padding:2px 7px;border-radius:3px;
+  font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  border:1px solid transparent;
+}
 </style>
 </head>
 <body>
@@ -2484,7 +2536,7 @@ body.light .unlock-task-theme{color:#140d04}
           </div>
           <div class="ph-acts">
             <div class="ads-month-sel">
-              <input type="text" class="ads-select adcust-search" id="adcust-search" placeholder="Cari nama / WA / wilayah…" oninput="renderAdCustomers()" style="min-width:200px">
+              <input type="text" class="ads-select adcust-search" id="adcust-search" placeholder="Cari nama / WA / wilayah…" oninput="renderAdCustomers()" style="min-width:180px">
               <select class="ads-select" id="adcust-cat-filter" onchange="renderAdCustomers()">
                 <option value="all" data-i18n="allCats">Semua Kategori</option>
                 <option value="Cold">Cold</option>
@@ -2492,10 +2544,13 @@ body.light .unlock-task-theme{color:#140d04}
                 <option value="Hot">Hot</option>
                 <option value="Closing">Closing</option>
               </select>
+              <button class="btn-g btn-sm" id="adcust-sort-btn" onclick="adCustSortDir=adCustSortDir==='desc'?'asc':'desc';renderAdCustomers()" style="min-width:90px">↓ Terbaru</button>
             </div>
           </div>
         </div>
         <div class="adcust-stats" id="adcust-stats"></div>
+        <!-- Diagram -->
+        <div id="adcust-diagram" class="adcust-diagram"></div>
         <div class="adcust-table-wrap">
           <table class="adcust-table">
             <thead>
@@ -2506,7 +2561,8 @@ body.light .unlock-task-theme{color:#140d04}
                 <th data-i18n="leadCategory">Kategori</th>
                 <th data-i18n="adColumn">Iklan</th>
                 <th data-i18n="ownerColumn">Diinput oleh</th>
-                <th data-i18n="timeColumn">Waktu Input</th>
+                <th data-i18n="timeColumn" style="cursor:pointer" onclick="adCustSortDir=adCustSortDir==='desc'?'asc':'desc';renderAdCustomers()">Waktu ↕</th>
+                <th>Aksi</th>
               </tr>
             </thead>
             <tbody id="adcust-body"></tbody>
@@ -2569,7 +2625,14 @@ body.light .unlock-task-theme{color:#140d04}
         <!-- Statistik & ringkasan -->
         <div class="crm-stats" id="crm-stats"></div>
 
+        <!-- Diagram CRM -->
+        <div id="crm-diagram" class="crm-diagram-wrap"></div>
+
         <div class="crm-table-wrap">
+          <div class="crm-tbl-toolbar">
+            <span class="crm-tbl-info" id="crm-foot-note2"></span>
+            <button class="btn-g btn-sm" id="crm-sort-btn" onclick="crmSortByDate()" style="min-width:120px;font-size:11px">↓ Tgl Masuk Terbaru</button>
+          </div>
           <table class="crm-table">
             <thead>
               <tr>
@@ -2578,7 +2641,9 @@ body.light .unlock-task-theme{color:#140d04}
                 <th data-i18n="crmColWA">Nomor WhatsApp</th>
                 <th data-i18n="crmColCity">Kota</th>
                 <th data-i18n="crmColChannel">Channel</th>
-                <th data-i18n="crmColFirstOrder">Tgl First Order</th>
+                <th data-i18n="crmColFirstOrder" style="cursor:pointer" onclick="crmSortByDate()" title="Klik untuk sortir">
+                  Tgl First Order ↕
+                </th>
                 <th data-i18n="crmColTotalOrder" style="white-space:nowrap">
                   Total Order
                   <div style="font-size:8px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;margin-top:1px">Jumlah transaksi</div>
@@ -6693,18 +6758,28 @@ async function openLeadsModal(taskId) {
             <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 8l2 2 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Closing — Detail Transaksi
           </div>
-          <div style="display:flex;gap:10px">
+          <div style="display:flex;gap:10px;margin-bottom:10px">
             <div class="fg" style="flex:1;margin-bottom:0">
-              <label>Nominal (Rp)</label>
-              <input class="fi" id="lead-nominal" type="number" min="0" placeholder="0" style="font-variant-numeric:tabular-nums"/>
-            </div>
-            <div class="fg" style="flex:1;margin-bottom:0">
-              <label>Produk</label>
-              <input class="fi" id="lead-product" placeholder="Nama produk…"/>
+              <label>Total Order</label>
+              <input class="fi" id="lead-total-order" type="number" min="1" value="1" placeholder="1" style="font-variant-numeric:tabular-nums"/>
             </div>
           </div>
-          <div style="font-size:10px;color:var(--green);margin-top:4px;font-style:italic;opacity:.85">
-            ✓ Otomatis dicatat ke Database Customer
+          <div class="fg" style="margin-bottom:8px">
+            <label>Nominal Transaksi</label>
+            <div style="position:relative">
+              <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12px;pointer-events:none;font-weight:600">Rp</span>
+              <input class="fi" id="lead-nominal-display" type="text" placeholder="0" oninput="formatNominalInput(this)" style="padding-left:34px;font-variant-numeric:tabular-nums"/>
+              <input type="hidden" id="lead-nominal"/>
+            </div>
+            <div style="font-size:10px;color:var(--muted);margin-top:3px" id="nominal-preview"></div>
+          </div>
+          <div class="fg" style="margin-bottom:0">
+            <label>Produk</label>
+            <input class="fi" id="lead-product" placeholder="Nama produk yang dibeli…"/>
+          </div>
+          <div style="font-size:10px;color:var(--green);margin-top:8px;font-style:italic;opacity:.85;display:flex;align-items:center;gap:4px">
+            <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Otomatis masuk Database Customer · Channel: <strong>Leads</strong>
           </div>
         </div>
       </div>` : ''}
@@ -6771,6 +6846,17 @@ function validateWAField() {
   hint.textContent = `✕ ${t('waInvalid')}`; hint.className = 'wa-hint err'; return false;
 }
 
+/* Format input nominal dengan pemisah ribuan */
+function formatNominalInput(el) {
+  const raw = el.value.replace(/[^0-9]/g, '');
+  const num = parseInt(raw, 10) || 0;
+  el.value = raw ? num.toLocaleString('id-ID') : '';
+  const hidden = document.getElementById('lead-nominal');
+  if (hidden) hidden.value = num;
+  const preview = document.getElementById('nominal-preview');
+  if (preview) preview.textContent = num > 0 ? 'Rp ' + num.toLocaleString('id-ID') : '';
+}
+
 async function submitLead() {
   const tk = activeLeadTask;
   if (!tk) return;
@@ -6812,8 +6898,9 @@ async function submitLead() {
   // ── AUTO SIMPAN KE DATABASE CUSTOMER saat category = Closing ──
   if (ok && cat === 'Closing' && can.isAdTarget(currentUser?.role)) {
     try {
-      const nominal  = parseFloat(document.getElementById('lead-nominal')?.value || '0') || 0;
-      const product  = document.getElementById('lead-product')?.value?.trim() || '';
+      const nominal     = parseFloat(document.getElementById('lead-nominal')?.value || '0') || 0;
+      const totalOrd    = parseInt(document.getElementById('lead-total-order')?.value || '1', 10) || 1;
+      const product     = document.getElementById('lead-product')?.value?.trim() || '';
       await loadCRM();
       const newCustId = crmGenId();
       const today = new Date().toISOString().slice(0,10);
@@ -6825,9 +6912,9 @@ async function submitLead() {
           p_full_name:   name,
           p_wa_phone:    wa || null,
           p_city:        region || null,
-          p_channel:     null,
+          p_channel:     'Leads',
           p_first_order: today,
-          p_total_order: 1,
+          p_total_order: totalOrd,
           p_total_spend: nominal,
           p_status:      'New',
           p_fav_product: product || null,
@@ -6836,14 +6923,14 @@ async function submitLead() {
       } else {
         crmData.unshift({
           id_customer: newCustId, nama: name, wa: wa, kota: region,
-          channel: '', first_order: today, total_order: 1, total_belanja: nominal,
+          channel: 'Leads', first_order: today, total_order: totalOrd, total_belanja: nominal,
           status: 'New', produk_fav: product,
           catatan: `Closing dari Leads — Ads: ${tk.title}${note ? ' | ' + note : ''}`,
         });
         saveCRM && saveCRM();
       }
       pushActivity(`CRM closing: ${name} (${newCustId})${nominal ? ' — Rp ' + nominal.toLocaleString('id-ID') : ''}`, 'lead');
-      toast(`✓ Lead + Closing masuk CRM (${newCustId})`);
+      toast(`✓ Lead + Closing masuk CRM (${newCustId}) · Channel: Leads`);
     } catch(e) {
       console.warn('[DHP] Auto CRM Closing gagal:', e);
       toast(t('leadAdded') + ' (CRM skip)');
@@ -6946,17 +7033,122 @@ async function openRecapModal(adId) {
    admin & b2b: lihat SEMUA leads (semua orang), moderator juga.
    ═══════════════════════════════════════════════════════════ */
 let adCustomersCache = [];
+let adCustSortDir = 'desc'; // 'asc' | 'desc' — sort by created_at
 
 async function loadAdCustomers() {
   const isMod = can.isMod(currentUser?.role);
   const res = await dbQ(d => {
     let q = d.from('leads').select('*');
-    // Admin/B2B hanya lihat leads miliknya sendiri (data tiap dashboard terpisah)
     if (!isMod && currentUser) q = q.eq('owner_id', currentUser.id);
-    return q.order('created_at', { ascending:false });
+    return q.order('created_at', { ascending: false });
   });
   adCustomersCache = (res?.data) ? res.data : [];
   return adCustomersCache;
+}
+
+/* Helper: apakah lead ini masih bisa diedit/dihapus?
+   Rule: hanya boleh di HARI-H ads (bukan hari submit).
+   Moderator boleh kapan saja. */
+function leadIsEditable(row) {
+  if (can.isMod(currentUser?.role)) return true;
+  if (!row.ad_date) return false;
+  const today = (new Date()).toLocaleDateString('sv-SE'); // yyyy-mm-dd
+  return row.ad_date === today;
+}
+
+async function deleteAdCustomerLead(leadId) {
+  const row = adCustomersCache.find(r => r.id === leadId);
+  if (!row) return;
+  if (!leadIsEditable(row)) { toast('Tidak bisa dihapus — sudah lewat hari iklan'); return; }
+  const ok = await uiConfirm({ title:'Hapus Lead', message:`Hapus lead "${row.name}"?`, icon:'danger', okText:'Hapus', cancelText:'Batal' });
+  if (!ok) return;
+  if (db && !String(leadId).startsWith('local_')) {
+    const res = await dbQ(d => d.from('leads').delete().eq('id', leadId));
+    if (res?.error) { toast('Gagal menghapus lead'); return; }
+  }
+  adCustomersCache = adCustomersCache.filter(r => r.id !== leadId);
+  taskLeadCount = {};
+  await loadLeadCounts();
+  toast('Lead dihapus');
+  renderAdCustomers();
+  updateTaskBadges();
+}
+
+async function editAdCustomerLead(leadId) {
+  const row = adCustomersCache.find(r => r.id === leadId);
+  if (!row) return;
+  if (!leadIsEditable(row)) { toast('Tidak bisa diedit — sudah lewat hari iklan'); return; }
+
+  document.getElementById('m-title').textContent = 'Edit Lead';
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg"><label>Nama *</label><input class="fi" id="el-name" value="${escHtml(row.name||'')}"/></div>
+    <div class="fg"><label>WhatsApp</label>
+      <div class="wa-wrap"><span class="wa-prefix">+62</span>
+        <input class="fi wa-input" id="el-wa" inputmode="numeric" value="${escHtml((row.wa_phone||'').replace(/^\+62/,''))}" oninput="validateWAField()"/>
+      </div>
+    </div>
+    <div class="fg"><label>Wilayah *</label><input class="fi" id="el-region" value="${escHtml(row.region||'')}"/></div>
+    <div class="fg"><label>Kategori</label>
+      <div class="lead-cat-row" id="lead-cat-row-edit">
+        ${['Cold','Warm','Hot','Closing'].map(c => `
+          <button type="button" class="lead-cat-btn lc-${c.toLowerCase()}${(row.category||'Cold')===c?' active':''}" data-cat="${c}"
+            onclick="this.closest('.lead-cat-row-edit,#lead-cat-row-edit').querySelectorAll('.lead-cat-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active');document.getElementById('el-cat').value=this.dataset.cat"
+          >${t('leadCat'+c)}</button>`).join('')}
+      </div>
+      <input type="hidden" id="el-cat" value="${escHtml(row.category||'Cold')}"/>
+    </div>
+    <div class="fg"><label>Catatan</label><input class="fi" id="el-note" value="${escHtml(row.note||'')}"/></div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button>
+    <button class="btn-sm btn-gold" onclick="saveAdCustomerLead('${leadId}')">Simpan</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+
+async function saveAdCustomerLead(leadId) {
+  const name   = document.getElementById('el-name')?.value.trim();
+  const waRaw  = document.getElementById('el-wa')?.value.trim();
+  const region = document.getElementById('el-region')?.value.trim();
+  const cat    = document.getElementById('el-cat')?.value;
+  const note   = document.getElementById('el-note')?.value.trim();
+  if (!name)   { toast('Nama wajib diisi'); return; }
+  if (!region) { toast('Wilayah wajib diisi'); return; }
+  const wa = waRaw ? normalizeWA('+62' + waRaw.replace(/^\+?62/,'')) : '';
+  if (waRaw && !isValidWA(wa)) { toast(t('waInvalidToast')); return; }
+
+  if (db) {
+    const upd = { name, wa_phone: wa || null, region, category: cat, note: note || null };
+    const res = await dbQ(d => d.from('leads').update(upd).eq('id', leadId));
+    if (res?.error) { toast('Gagal menyimpan'); return; }
+  }
+  // update cache
+  const row = adCustomersCache.find(r => r.id === leadId);
+  if (row) { row.name = name; row.wa_phone = wa || row.wa_phone; row.region = region; row.category = cat; row.note = note; }
+  closeModal();
+  toast('Lead diperbarui');
+  renderAdCustomers();
+}
+
+/* Render bar diagram kategori leads */
+function renderAdCustDiagram(data) {
+  const el = document.getElementById('adcust-diagram');
+  if (!el) return;
+  const cats = ['Cold','Warm','Hot','Closing'];
+  const colors = { Cold:'#7ea8c9', Warm:'#e8b86e', Hot:'#e87070', Closing:'#7abf8e' };
+  const counts = cats.map(c => data.filter(r => r.category === c).length);
+  const max = Math.max(...counts, 1);
+  el.innerHTML = `<div class="adcust-chart-title">Distribusi Kategori Leads</div>
+    <div class="adcust-bars">${cats.map((c,i) => {
+      const pct = Math.round(counts[i]/max*100);
+      return `<div class="adcust-bar-group">
+        <div class="adcust-bar-track">
+          <div class="adcust-bar-fill" style="width:${pct}%;background:${colors[c]}"></div>
+        </div>
+        <div class="adcust-bar-meta">
+          <span class="adcust-bar-lbl">${c}</span>
+          <span class="adcust-bar-val" style="color:${colors[c]}">${counts[i]}</span>
+        </div>
+      </div>`;
+    }).join('')}</div>`;
 }
 
 async function renderAdCustomers() {
@@ -6964,8 +7156,7 @@ async function renderAdCustomers() {
   const statsEl = document.getElementById('adcust-stats');
   if (!body) return;
 
-  // muat data bila belum ada
-  if (!adCustomersCache.length) await loadAdCustomers();
+  await loadAdCustomers();
 
   const badge = document.getElementById('adcust-badge');
   if (badge) {
@@ -6984,6 +7175,12 @@ async function renderAdCustomers() {
     (r.wa_phone||'').toLowerCase().includes(q) ||
     (r.region||'').toLowerCase().includes(q));
 
+  // Sort by created_at
+  rows.sort((a,b) => {
+    const da = new Date(a.created_at||0), db2 = new Date(b.created_at||0);
+    return adCustSortDir === 'asc' ? da - db2 : db2 - da;
+  });
+
   // Statistik
   if (statsEl) {
     const total = adCustomersCache.length;
@@ -6996,16 +7193,34 @@ async function renderAdCustomers() {
       <div class="adcust-stat lc-closing"><span class="acs-num">${byCat('Closing')}</span><span class="acs-lbl">Closing</span></div>`;
   }
 
+  // Diagram
+  renderAdCustDiagram(adCustomersCache);
+
+  // Sort button label update
+  const sortBtn = document.getElementById('adcust-sort-btn');
+  if (sortBtn) sortBtn.textContent = adCustSortDir === 'desc' ? '↓ Terbaru' : '↑ Terlama';
+
   if (!rows.length) {
-    body.innerHTML = `<tr><td colspan="7" class="tbl-empty">${t('noCustomers')}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="9" class="tbl-empty">${t('noCustomers')}</td></tr>`;
     return;
   }
 
+  const isMod = can.isMod(currentUser?.role);
   body.innerHTML = rows.map(r => {
     const u = getUserMeta(r.owner_id);
     const clr = ROLE_COLORS[u.role] || '#888';
     const catCls = (r.category||'Cold').toLowerCase();
     const waLink = `https://wa.me/${(r.wa_phone||'').replace(/[^0-9]/g,'')}`;
+    const editable = leadIsEditable(r);
+    const actHtml = (editable || isMod) ? `
+      <div class="crm-row-acts">
+        ${editable ? `<button class="crm-ico-btn" onclick="editAdCustomerLead('${r.id}')" title="Edit">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5l2 2L6 12l-2.5.5L4 10l7.5-7.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="crm-ico-btn del" onclick="deleteAdCustomerLead('${r.id}')" title="Hapus">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5 4l.5 9h5L11 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>` : `<span style="font-size:9px;color:var(--muted);letter-spacing:.04em">Terkunci</span>`}
+      </div>` : `<span style="font-size:9px;color:var(--muted)">—</span>`;
     return `<tr>
       <td style="font-weight:600;color:var(--text)">${escHtml(r.name)}</td>
       <td><a href="${waLink}" target="_blank" rel="noopener" class="wa-link">${escHtml(r.wa_phone)}</a></td>
@@ -7014,6 +7229,7 @@ async function renderAdCustomers() {
       <td style="font-size:11px;color:var(--text2)">${escHtml(r.ad_theme||'—')}</td>
       <td><span class="adcust-owner"><span class="role-dot" style="background:${clr}"></span>${escHtml(u.name)}</span></td>
       <td style="font-size:10px;color:var(--muted);white-space:nowrap">${fmtDateTime(r.created_at)}</td>
+      <td>${actHtml}</td>
     </tr>`;
   }).join('');
 }
@@ -7183,6 +7399,75 @@ function crmGenId() {
   return 'CST-' + String(max+1).padStart(4,'0');
 }
 
+// ── Sort CRM ──
+let crmSortField = 'id'; // 'id' (default, urut customer_id) | 'date' (tgl first_order)
+let crmSortDir2  = 'asc';
+
+function crmSortByDate() {
+  if (crmSortField === 'date') {
+    crmSortDir2 = crmSortDir2 === 'asc' ? 'desc' : 'asc';
+  } else {
+    crmSortField = 'date';
+    crmSortDir2  = 'desc';
+  }
+  const btn = document.getElementById('crm-sort-btn');
+  if (btn) btn.textContent = crmSortDir2 === 'desc' ? '↓ First Order Terbaru' : '↑ First Order Terlama';
+  renderCRM();
+}
+
+// ── Diagram CRM ──
+function renderCRMDiagram(data) {
+  const el = document.getElementById('crm-diagram');
+  if (!el || !data.length) { if (el) el.innerHTML = ''; return; }
+
+  // Status pie (bar chart horizontal)
+  const statColors = { New:'#7ea8c9', Repeat:'#c9a96e', Agen:'#d98ec0', Reseller:'#7abf8e', Leads:'#e8b86e' };
+  const statCounts = {};
+  CRM_STATUSES.forEach(s => statCounts[s] = 0);
+  data.forEach(c => { const s = crmNormStatus(c.status); statCounts[s]++; });
+  const maxSt = Math.max(...Object.values(statCounts), 1);
+
+  // Channel distribution
+  const chCount = {};
+  data.forEach(c => { const ch = (c.channel||'—').trim()||'—'; chCount[ch] = (chCount[ch]||0)+1; });
+  const chEntries = Object.entries(chCount).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const maxCh = Math.max(...chEntries.map(e=>e[1]), 1);
+  const chColors = ['#c9a96e','#7ea8c9','#7abf8e','#d98ec0','#e87070','#e8b86e'];
+
+  el.innerHTML = `
+    <div class="crm-diag-grid">
+      <div class="crm-diag-card">
+        <div class="crm-diag-title">Status Customer</div>
+        <div class="crm-diag-bars">
+          ${CRM_STATUSES.map(s => {
+            const n = statCounts[s];
+            const pct = Math.round(n/maxSt*100);
+            const pctTotal = data.length ? Math.round(n/data.length*100) : 0;
+            return `<div class="crm-diag-bar-row">
+              <div class="crm-diag-bar-lbl" style="color:${statColors[s]}">${s}</div>
+              <div class="crm-diag-bar-track"><div class="crm-diag-bar-fill" style="width:${pct}%;background:${statColors[s]}"></div></div>
+              <div class="crm-diag-bar-val">${n} <span style="color:var(--muted);font-size:9px">(${pctTotal}%)</span></div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+      <div class="crm-diag-card">
+        <div class="crm-diag-title">Channel / Marketplace</div>
+        <div class="crm-diag-bars">
+          ${chEntries.map(([ch,n],i) => {
+            const pct = Math.round(n/maxCh*100);
+            const pctTotal = data.length ? Math.round(n/data.length*100) : 0;
+            return `<div class="crm-diag-bar-row">
+              <div class="crm-diag-bar-lbl" style="color:${chColors[i]}">${escHtml(ch)}</div>
+              <div class="crm-diag-bar-track"><div class="crm-diag-bar-fill" style="width:${pct}%;background:${chColors[i]}"></div></div>
+              <div class="crm-diag-bar-val">${n} <span style="color:var(--muted);font-size:9px">(${pctTotal}%)</span></div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+
 // ── RENDER ──
 async function renderCRM() {
   // Selalu tarik data terbaru dari DB saat halaman dibuka (kalau pakai DB),
@@ -7214,6 +7499,22 @@ async function renderCRM() {
     (c.produk_fav||'').toLowerCase().includes(q) ||
     (c.id_customer||'').toLowerCase().includes(q));
 
+  // Sort: default by customer ID (urut CST), atau by first_order date
+  if (crmSortField === 'date') {
+    rows.sort((a,b) => {
+      const da = a.first_order ? new Date(a.first_order) : new Date(0);
+      const db2 = b.first_order ? new Date(b.first_order) : new Date(0);
+      return crmSortDir2 === 'asc' ? da - db2 : db2 - da;
+    });
+  } else {
+    // default: urut by customer_id numerik (CST-0001, CST-0002, …)
+    rows.sort((a,b) => {
+      const na = parseInt((String(a.id_customer||'').match(/(\d+)/)||[0,0])[1], 10);
+      const nb = parseInt((String(b.id_customer||'').match(/(\d+)/)||[0,0])[1], 10);
+      return na - nb;
+    });
+  }
+
   // ── Statistik & ringkasan ──
   if (statsEl) {
     const total = crmData.length;
@@ -7233,6 +7534,13 @@ async function renderCRM() {
       <div class="crm-stat cs-leads"><span class="cs-num">${cnt('Leads')}</span><span class="cs-lbl">Leads</span></div>`;
   }
 
+  // Diagram
+  renderCRMDiagram(crmData);
+
+  // Toolbar info
+  const foot2 = document.getElementById('crm-foot-note2');
+  if (foot2) foot2.textContent = crmData.length ? `Menampilkan ${rows.length} dari ${crmData.length} customer` : '';
+
   if (footEl) footEl.textContent = crmData.length ? `${rows.length} / ${crmData.length} · ${t('crmFootNote')}` : '';
 
   if (!rows.length) {
@@ -7246,12 +7554,16 @@ async function renderCRM() {
     const waCell = waDigits
       ? `<a href="https://wa.me/${waDigits}" target="_blank" rel="noopener" class="wa-link">${escHtml(c.wa)}</a>`
       : `<span style="color:var(--muted)">—</span>`;
+    const chClr = {'Shopee':'#e87070','TikTok':'#7ea8c9','Instagram':'#d98ec0','WhatsApp':'#7abf8e','Leads':'#e8b86e','Lainnya':'#888'}[c.channel||''] || 'var(--muted)';
+    const chBadge = c.channel
+      ? `<span class="crm-ch-badge" style="background:${chClr}18;color:${chClr};border-color:${chClr}44">${escHtml(c.channel)}</span>`
+      : `<span style="color:var(--muted)">—</span>`;
     return `<tr>
       <td><span class="crm-id">${escHtml(c.id_customer||'—')}</span></td>
       <td><span class="crm-name">${escHtml(c.nama||'—')}</span></td>
       <td>${waCell}</td>
       <td>${escHtml(c.kota||'—')}</td>
-      <td>${escHtml(c.channel||'—')}</td>
+      <td>${chBadge}</td>
       <td style="white-space:nowrap">${escHtml(c.first_order||'—')}</td>
       <td style="text-align:right;font-variant-numeric:tabular-nums">${crmParseInt(c.total_order)||0}</td>
       <td class="crm-money">${crmFmtRupiah(crmParseMoney(c.total_belanja))}</td>
@@ -7278,7 +7590,7 @@ function openCRMModal(idx) {
   const c = editing ? crmData[idx] : {};
   document.getElementById('m-title').textContent = editing ? t('crmEditCustomer') : t('crmAddCustomer');
   const opts = CRM_STATUSES.map(s => `<option value="${s}" ${crmNormStatus(c.status)===s?'selected':''}>${s}</option>`).join('');
-  const channelOpts = ['Shopee','TikTok','Instagram','WhatsApp','Lainnya'].map(ch => `<option value="${ch}" ${(c.channel||'')=== ch?'selected':''}>${ch}</option>`).join('');
+  const channelOpts = ['Shopee','TikTok','Instagram','WhatsApp','Leads','Lainnya'].map(ch => `<option value="${ch}" ${(c.channel||'')=== ch?'selected':''}>${ch}</option>`).join('');
   const autoId = editing ? escHtml(c.id_customer||'') : crmGenId();
   document.getElementById('m-body').innerHTML = `
     <div class="fg"><label>${t('crmColId')}</label>
