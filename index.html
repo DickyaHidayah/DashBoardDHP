@@ -2611,6 +2611,10 @@ body.light .unlock-task-theme{color:#140d04}
               <option value="Reseller">Reseller</option>
               <option value="Leads">Leads</option>
             </select>
+            <!-- Filter per user — hanya tampil untuk moderator -->
+            <select class="fi crm-filter" id="crm-owner-filter" onchange="crmOwnerFilter=this.value;renderCRM()" style="display:none">
+              <option value="all">Semua Admin & B2B</option>
+            </select>
             <button class="btn-g btn-sm crm-btn" onclick="openCRMImport()" title="Import dari Excel/CSV">
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px"><path d="M8 1v9M8 10L5 7M8 10l3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
               <span data-i18n="crmImport">Import</span>
@@ -2655,7 +2659,7 @@ body.light .unlock-task-theme{color:#140d04}
                 </th>
                 <th data-i18n="crmColStatus">Status</th>
                 <th data-i18n="crmColFavProduct">Produk</th>
-                <th data-i18n="crmColNote">Catatan Admin</th>
+                <th>Input By</th>
                 <th data-i18n="action">Action</th>
               </tr>
             </thead>
@@ -4515,18 +4519,17 @@ async function loadDataFromDB(isMod) {
   // Users — sync dari DB ke LOCAL_USERS supaya renderUsers & login selalu up-to-date
   const uRes = await dbQ(d => d.from('users').select('*').eq('is_active', true));
   if (uRes?.data) {
+    window._allUsers = uRes.data.map(u => ({ user_id: u.user_id, full_name: u.full_name, role: roleFromDb(u.role) }));
     uRes.data.forEach(u => {
       const jsRole = roleFromDb(u.role);
       if (!LOCAL_USERS[u.user_id]) {
         LOCAL_USERS[u.user_id] = { pass: u.password_hash, role: jsRole, name: u.full_name, email: u.email };
       } else {
-        // Update role & name dari DB (bisa berubah via changeRole)
         LOCAL_USERS[u.user_id].role  = jsRole;
         LOCAL_USERS[u.user_id].name  = u.full_name;
         LOCAL_USERS[u.user_id].email = u.email;
         LOCAL_USERS[u.user_id].pass  = u.password_hash;
       }
-      // Sync ke presenceMap juga
       if (!presenceMap[u.user_id]) {
         presenceMap[u.user_id] = { id:u.user_id, role:jsRole, name:u.full_name, online:false, loginAt:0, lastSeen:0 };
       } else {
@@ -7334,14 +7337,15 @@ const CRM_HEADER_ALIASES = {
 
 const CRM_LS_KEY = 'dhp_crm_customers';
 let crmData = [];
-let _crmImportRows = null;  // staging hasil parse import sebelum dikonfirmasi
-let crmChannel = null;      // channel realtime Supabase
+let _crmImportRows = null;
+let crmChannel = null;
 let _crmLoading = false;
+let crmOwnerFilter = 'all';  // moderator: filter per user (user_id atau 'all')
 
 // ── Konversi baris DB → bentuk UI (key internal) ──
 function crmFromDb(row) {
   return {
-    _uuid:       row.id,                       // simpan UUID asli utk update/hapus
+    _uuid:       row.id,
     id_customer: row.cust_code || '',
     nama:        row.full_name || '',
     wa:          row.wa_phone || '',
@@ -7353,6 +7357,10 @@ function crmFromDb(row) {
     status:      row.status || 'New',
     produk_fav:  row.fav_product || '',
     catatan:     row.admin_note || '',
+    owner_id:    row.owner_id || row.created_by || '',   // siapa yang input
+    created_by:  row.created_by || '',
+    created_at:  row.created_at || '',
+    updated_by:  row.updated_by || '',
   };
 }
 
@@ -7360,10 +7368,20 @@ function crmFromDb(row) {
 async function loadCRM() {
   if (crmUsesDB()) {
     _crmLoading = true;
-    const res = await dbQ(d => d.from('crm_customers').select('*').order('created_at', { ascending:false }));
+    const isMod = can.isMod(currentUser?.role);
+    let q = db.from('crm_customers').select('*');
+    // Non-moderator hanya melihat data yang mereka sendiri input
+    if (!isMod && currentUser?.id) {
+      q = q.eq('owner_id', currentUser.id);
+    }
+    // Moderator bisa filter per user via dropdown (crmOwnerFilter)
+    if (isMod && crmOwnerFilter && crmOwnerFilter !== 'all') {
+      q = q.eq('owner_id', crmOwnerFilter);
+    }
+    q = q.order('cust_code', { ascending: true });
+    const res = await dbQ(() => q);
     _crmLoading = false;
     if (res && res.data) { crmData = res.data.map(crmFromDb); updateCRMBadge(); return crmData; }
-    // DB error → jangan timpa cache yang sudah ada
     return crmData;
   }
   // Fallback localStorage
@@ -7461,22 +7479,53 @@ function renderCRMDiagram(data) {
   const el = document.getElementById('crm-diagram');
   if (!el || !data.length) { if (el) el.innerHTML = ''; return; }
 
-  // Status pie (bar chart horizontal)
-  const statColors = { New:'#7ea8c9', Repeat:'#c9a96e', Agen:'#d98ec0', Reseller:'#7abf8e', Leads:'#e8b86e' };
+  const isMod = can.isMod(currentUser?.role);
+
+  // Status bar chart
+  const statColors = { New:'#7ea8c9', Repeat:'#c9a96e', Agen:'#d98ec0', Reseller:'#7abf8e', Leads:'#e87070' };
   const statCounts = {};
   CRM_STATUSES.forEach(s => statCounts[s] = 0);
   data.forEach(c => { const s = crmNormStatus(c.status); statCounts[s]++; });
   const maxSt = Math.max(...Object.values(statCounts), 1);
 
-  // Channel distribution
+  // Channel distribution (top 6)
   const chCount = {};
   data.forEach(c => { const ch = (c.channel||'—').trim()||'—'; chCount[ch] = (chCount[ch]||0)+1; });
   const chEntries = Object.entries(chCount).sort((a,b)=>b[1]-a[1]).slice(0,6);
   const maxCh = Math.max(...chEntries.map(e=>e[1]), 1);
   const chColors = ['#c9a96e','#7ea8c9','#7abf8e','#d98ec0','#e87070','#e8b86e'];
 
+  // Per-user distribution (hanya moderator)
+  let userChartHtml = '';
+  if (isMod) {
+    const userCount = {};
+    data.forEach(c => {
+      const uid = c.owner_id || c.created_by || '—';
+      userCount[uid] = (userCount[uid]||0)+1;
+    });
+    const userEntries = Object.entries(userCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    const maxUser = Math.max(...userEntries.map(e=>e[1]), 1);
+    const uColors = ['#c9a96e','#7ea8c9','#7abf8e','#d98ec0','#e87070','#e8b86e','#a0c4ff','#ffadad'];
+    userChartHtml = `
+      <div class="crm-diag-card">
+        <div class="crm-diag-title">Input By — Per User</div>
+        <div class="crm-diag-bars">
+          ${userEntries.map(([uid,n],i) => {
+            const um = getUserMeta(uid);
+            const pct = Math.round(n/maxUser*100);
+            const pctTotal = data.length ? Math.round(n/data.length*100) : 0;
+            return `<div class="crm-diag-bar-row">
+              <div class="crm-diag-bar-lbl" style="color:${uColors[i]}">${escHtml(um.name||uid)}</div>
+              <div class="crm-diag-bar-track"><div class="crm-diag-bar-fill" style="width:${pct}%;background:${uColors[i]}"></div></div>
+              <div class="crm-diag-bar-val">${n} <span style="color:var(--muted);font-size:9px">(${pctTotal}%)</span></div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }
+
   el.innerHTML = `
-    <div class="crm-diag-grid">
+    <div class="crm-diag-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
       <div class="crm-diag-card">
         <div class="crm-diag-title">Status Customer</div>
         <div class="crm-diag-bars">
@@ -7506,6 +7555,7 @@ function renderCRMDiagram(data) {
           }).join('')}
         </div>
       </div>
+      ${userChartHtml}
     </div>`;
 }
 
@@ -7526,6 +7576,27 @@ async function renderCRM() {
     const isMod = can.isMod(currentUser?.role);
     pb.textContent = isMod ? '♔ Moderator' : '◆ ' + rn(currentUser.role);
     pb.style.color = isMod ? 'var(--gold)' : (ROLE_COLORS[currentUser.role] || '#888');
+  }
+
+  // Owner filter dropdown — hanya moderator
+  const ownerFilterEl = document.getElementById('crm-owner-filter');
+  const isMod2 = can.isMod(currentUser?.role);
+  if (ownerFilterEl) {
+    if (isMod2) {
+      ownerFilterEl.style.display = '';
+      // Bangun opsi dari daftar users role admin+b2b
+      const targets = (window._allUsers || []).filter(u => ['admin','b2b-marketing'].includes(u.role));
+      if (targets.length && ownerFilterEl.options.length <= 1) {
+        targets.forEach(u => {
+          const opt = document.createElement('option');
+          opt.value = u.user_id; opt.textContent = u.full_name + ' (' + rn(u.role) + ')';
+          ownerFilterEl.appendChild(opt);
+        });
+      }
+      ownerFilterEl.value = crmOwnerFilter;
+    } else {
+      ownerFilterEl.style.display = 'none';
+    }
   }
   updateCRMBadge();
 
@@ -7595,13 +7666,23 @@ async function renderCRM() {
     const waCell = waDigits
       ? `<a href="https://wa.me/${waDigits}" target="_blank" rel="noopener" class="wa-link">${escHtml(c.wa)}</a>`
       : `<span style="color:var(--muted)">—</span>`;
-    const chClr = {'Shopee':'#e87070','TikTok':'#7ea8c9','Instagram':'#d98ec0','WhatsApp':'#7abf8e','Leads':'#e8b86e','Lainnya':'#888'}[c.channel||''] || 'var(--muted)';
-    const chBadge = c.channel
-      ? `<span class="crm-ch-badge" style="background:${chClr}18;color:${chClr};border-color:${chClr}44">${escHtml(c.channel)}</span>`
+    // Channel badge — warna dinamis: green jika Leads·, gold jika Shopee/TikTok, dll.
+    const chRaw = (c.channel||'').trim();
+    const isLeadsCh = chRaw.startsWith('Leads ·') || chRaw.toLowerCase() === 'leads';
+    const chColorMap = {'Shopee':'#e87070','TikTok':'#7ea8c9','Instagram':'#d98ec0','WhatsApp':'#7abf8e','Tokopedia':'#e8b86e','Live':'#d98ec0'};
+    const chBaseColor = isLeadsCh ? '#7abf8e' : (Object.keys(chColorMap).find(k => chRaw.includes(k)) ? chColorMap[Object.keys(chColorMap).find(k => chRaw.includes(k))] : '#c9a96e');
+    const chBadge = chRaw
+      ? `<span class="crm-ch-badge" style="background:${chBaseColor}18;color:${chBaseColor};border-color:${chBaseColor}44;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block" title="${escHtml(chRaw)}">${escHtml(chRaw.length>18?chRaw.slice(0,18)+'…':chRaw)}</span>`
+      : `<span style="color:var(--muted)">—</span>`;
+    // Input By — tampilkan nama + role dot
+    const ownerMeta = getUserMeta(c.owner_id || c.created_by);
+    const ownerClr  = ROLE_COLORS[ownerMeta.role] || '#888';
+    const inputByCell = c.owner_id || c.created_by
+      ? `<span class="adcust-owner" title="${escHtml(c.catatan||'')}"><span class="role-dot" style="background:${ownerClr}"></span>${escHtml(ownerMeta.name)}</span>`
       : `<span style="color:var(--muted)">—</span>`;
     return `<tr>
       <td><span class="crm-id">${escHtml(c.id_customer||'—')}</span></td>
-      <td><span class="crm-name">${escHtml(c.nama||'—')}</span></td>
+      <td><span class="crm-name">${escHtml(c.nama||'—')}</span>${c.catatan?`<div style="font-size:9px;color:var(--muted);margin-top:2px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(c.catatan)}">${escHtml(c.catatan)}</div>`:''}</td>
       <td>${waCell}</td>
       <td>${escHtml(c.kota||'—')}</td>
       <td>${chBadge}</td>
@@ -7610,7 +7691,7 @@ async function renderCRM() {
       <td class="crm-money">${crmFmtRupiah(crmParseMoney(c.total_belanja))}</td>
       <td><span class="crm-st-badge ${crmStatusCls(c.status)}">${crmNormStatus(c.status)}</span></td>
       <td><span class="crm-fav">${escHtml(c.produk_fav||'—')}</span></td>
-      <td><span class="crm-note-cell" title="${escHtml(c.catatan||'')}">${escHtml(c.catatan||'—')}</span></td>
+      <td>${inputByCell}</td>
       <td>
         <div class="crm-row-acts">
           <button class="crm-ico-btn" onclick="openCRMModal(${idx})" title="${t('edit')||'Edit'}">
@@ -7934,6 +8015,9 @@ async function exportCRMExcel() {
 
   // ── Hitung semua metrik ──
   const total        = crmData.length;
+  const exportedBy   = currentUser?.full_name || currentUser?.id || 'Admin';
+  const filterLabel  = (crmOwnerFilter !== 'all' && can.isMod(currentUser?.role))
+    ? ` · Filter: ${getUserMeta(crmOwnerFilter).name}` : '';
   const totalSpend   = crmData.reduce((s,c)=>s+crmParseMoney(c.total_belanja),0);
   const totalOrders  = crmData.reduce((s,c)=>s+crmParseInt(c.total_order),0);
   const avgSpend     = total ? totalSpend/total : 0;
@@ -7986,7 +8070,7 @@ async function exportCRMExcel() {
   const sumAoa = [
     ['DHP CREATIVE — LAPORAN DATABASE CUSTOMER (CRM)'],
     [''],
-    ['Diekspor oleh', currentUser?.id || 'Admin', '', 'Tanggal Export', stamp],
+    ['Diekspor oleh', exportedBy + filterLabel, '', 'Tanggal Export', stamp],
     ['Periode Data', `${fmtDate(minDate)} — ${fmtDate(maxDate)}`],
     [''],
     ['═══════════════════════════', 'RINGKASAN UTAMA', '═══════════════════════════'],
@@ -8072,10 +8156,10 @@ async function exportCRMExcel() {
   // SHEET 2 — DATABASE CUSTOMER (data lengkap)
   // ══════════════════════════════════════════════
   const headers = ['No.','ID Customer','Nama','Nomor WhatsApp','Kota','Channel',
-    'Tgl First Order','Total Order','Total Belanja (Rp)','Status','Produk','Catatan Admin'];
+    'Tgl First Order','Total Order','Total Belanja (Rp)','Status','Produk','Catatan','Input By'];
   const dataAoa = [
     ['DHP CREATIVE — DATABASE CUSTOMER'],
-    [`Export: ${stamp}  |  Total: ${total} customer`],
+    [`Export: ${stamp}  |  Total: ${total} customer${filterLabel}`],
     [],
     headers,
     ...crmData.map((c, i) => [
@@ -8090,18 +8174,19 @@ async function exportCRMExcel() {
       crmParseMoney(c.total_belanja),
       crmNormStatus(c.status),
       c.produk_fav||'',
-      c.catatan||''
+      c.catatan||'',
+      getUserMeta(c.owner_id||c.created_by).name || c.owner_id || '',
     ]),
     [],
-    ['','','','','','','TOTAL', totalOrders, totalSpend, '', '', ''],
+    ['','','','','','','TOTAL', totalOrders, totalSpend, '', '', '', ''],
   ];
   const wsData = XLSX.utils.aoa_to_sheet(dataAoa);
-  wsData['!cols'] = [{wch:5},{wch:12},{wch:24},{wch:16},{wch:16},{wch:14},{wch:16},{wch:12},{wch:18},{wch:12},{wch:22},{wch:32}];
+  wsData['!cols'] = [{wch:5},{wch:12},{wch:24},{wch:16},{wch:16},{wch:22},{wch:16},{wch:12},{wch:18},{wch:12},{wch:22},{wch:32},{wch:18}];
   wsData['!merges'] = [
-    {s:{r:0,c:0},e:{r:0,c:11}},
-    {s:{r:1,c:0},e:{r:1,c:11}},
+    {s:{r:0,c:0},e:{r:0,c:12}},
+    {s:{r:1,c:0},e:{r:1,c:12}},
   ];
-  wsData['!autofilter'] = { ref: XLSX.utils.encode_range({s:{r:3,c:0},e:{r:3,c:11}}) };
+  wsData['!autofilter'] = { ref: XLSX.utils.encode_range({s:{r:3,c:0},e:{r:3,c:12}}) };
   wsData['!freeze'] = { xSplit:0, ySplit:4 };
   // Format kolom Total Order (H) & Total Belanja (I) — baris 5 dst (index 4+)
   for (let r=5; r<dataAoa.length-1; r++){
@@ -8196,10 +8281,50 @@ async function exportCRMExcel() {
   }
   XLSX.utils.book_append_sheet(wb, wsProd, '🏆 Top Produk');
 
+  // ══════════════════════════════════════════════
+  // SHEET 6 — PER USER (hanya untuk moderator)
+  // ══════════════════════════════════════════════
+  if (can.isMod(currentUser?.role)) {
+    // Kelompokkan data per owner
+    const byOwner = {};
+    crmData.forEach(c => {
+      const ownerId = c.owner_id || c.created_by || 'unknown';
+      if (!byOwner[ownerId]) byOwner[ownerId] = [];
+      byOwner[ownerId].push(c);
+    });
+    const ownerIds = Object.keys(byOwner);
+    if (ownerIds.length > 1) {
+      const userSumAoa = [
+        ['DHP CREATIVE — REKAP DATABASE PER USER'],
+        [`Export: ${stamp}`],
+        [],
+        ['User','Role','Total Customer','Total Belanja','Total Order','Avg Belanja'],
+        ...ownerIds.map(uid => {
+          const um = getUserMeta(uid);
+          const udata = byOwner[uid];
+          const uSpend = udata.reduce((s,c)=>s+crmParseMoney(c.total_belanja),0);
+          const uOrder = udata.reduce((s,c)=>s+crmParseInt(c.total_order),0);
+          return [um.name||uid, rn(um.role||''), udata.length, uSpend, uOrder, udata.length?Math.round(uSpend/udata.length):0];
+        }),
+        [],
+        ['TOTAL','',total,totalSpend,totalOrders,Math.round(totalSpend/Math.max(total,1))],
+      ];
+      const wsUser = XLSX.utils.aoa_to_sheet(userSumAoa);
+      wsUser['!cols']=[{wch:20},{wch:18},{wch:16},{wch:22},{wch:14},{wch:20}];
+      wsUser['!merges']=[{s:{r:0,c:0},e:{r:0,c:5}},{s:{r:1,c:0},e:{r:1,c:5}}];
+      for (let r=4;r<userSumAoa.length;r++){
+        if (wsUser[`D${r+1}`]) wsUser[`D${r+1}`].z='"Rp "#,##0';
+        if (wsUser[`F${r+1}`]) wsUser[`F${r+1}`].z='"Rp "#,##0';
+      }
+      XLSX.utils.book_append_sheet(wb, wsUser, '👥 Rekap Per User');
+    }
+  }
+
+  const sheetCount = wb.SheetNames.length;
   const fname = `DHP_CRM_Export_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.xlsx`;
   XLSX.writeFile(wb, fname);
-  toast(`✓ Export selesai — ${total} customer, 5 sheet analitik`);
-  pushActivity(`CRM: export Excel profesional (${total} customer, 5 sheet)`, 'info');
+  toast(`✓ Export selesai — ${total} customer, ${sheetCount} sheet analitik`);
+  pushActivity(`CRM: export Excel profesional (${total} customer, ${sheetCount} sheet${filterLabel})`, 'info');
 }
 
 // expose ke window (dipanggil dari atribut onclick)
