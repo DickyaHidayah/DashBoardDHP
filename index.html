@@ -1504,9 +1504,29 @@ body.light .crm-foot-note{color:rgba(20,13,4,.6)}
   .crm-stat{min-width:calc(50% - 5px)}
 }
 
+/* ══ MY PROFILE MODAL ══ */
+#profile-modal-ov.open{display:flex!important}
+.profile-avatar-big{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;margin:0 auto 14px;border:2px solid var(--border-hi)}
+.profile-info-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px}
+.profile-info-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:12px;border-bottom:1px solid var(--border)}
+.profile-info-row:last-child{border-bottom:none}
+.profile-info-key{color:var(--muted);letter-spacing:.08em;font-size:10px;text-transform:uppercase}
+.profile-info-val{color:var(--text);font-weight:500}
+.pw-reveal-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:2px 6px;font-size:11px;transition:color var(--trans)}
+.pw-reveal-btn:hover{color:var(--gold)}
+.pw-dots{letter-spacing:.1em;color:var(--muted)}
+/* Moderator user list password reveal */
+.uc-pw-row{margin-top:8px;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.uc-pw-label{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.uc-pw-val{font-family:monospace;font-size:12px;color:var(--text)}
+.uc-pw-toggle{background:none;border:1px solid var(--border);color:var(--muted);cursor:pointer;padding:2px 7px;font-size:9px;border-radius:4px;transition:all var(--trans)}
+.uc-pw-toggle:hover{border-color:var(--gold);color:var(--gold)}
+body.light .profile-info-card{background:var(--surface);border:1px solid var(--border-hi)}
+body.light .profile-info-key{color:rgba(20,13,4,.55)}
+body.light .uc-pw-row{background:var(--surface);border-color:var(--border-hi)}
+
 /* Unlock request form */
-.unlock-form{display:flex;flex-direction:column;align-items:center;text-align:center}
-.unlock-lockicon{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+.unlock-form{display:flex;flex-direction:column;align-items:center;text-align:center}.unlock-lockicon{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;
   background:rgba(232,184,110,.1);border:1px solid rgba(232,184,110,.3);color:var(--amber);margin-bottom:14px}
 .unlock-task-info{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;
   padding:13px;margin-bottom:14px}
@@ -1954,7 +1974,7 @@ body.light .unlock-task-theme{color:#140d04}
           <div class="sb-tagline" data-i18n="recordsSystem">Records System</div>
         </div>
       </div>
-      <div class="sb-user-card">
+      <div class="sb-user-card" onclick="openMyProfile()" style="cursor:pointer" title="Klik untuk edit profil">
         <div class="sb-user-name" id="sb-uname">—</div>
         <div class="sb-user-role">
           <div class="role-dot" id="sb-rdot"></div>
@@ -2130,6 +2150,16 @@ body.light .unlock-task-theme{color:#140d04}
     </div>
 
     <div class="sb-foot">
+      <button class="logout-btn" id="btn-my-profile" onclick="openMyProfile()" style="color:var(--gold-lo)">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="5.5" r="3" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M2 14c0-2.761 2.686-4.5 6-4.5s6 1.739 6 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M10 9.5l1.5 1.5-1.5 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity=".6"/>
+          </svg>
+        </span>
+        <span>My Profile</span>
+      </button>
       <button class="logout-btn" onclick="handleLogout()">
         <span class="nav-icon">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -2779,6 +2809,18 @@ body.light .unlock-task-theme{color:#140d04}
   </div>
 </div>
 
+<!-- ══ MY PROFILE MODAL ══ -->
+<div id="profile-modal-ov" onclick="if(event.target===this)closeProfileModal()" style="position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9000;display:none;align-items:center;justify-content:center;padding:16px">
+  <div class="modal" style="max-width:460px;width:100%">
+    <div class="modal-head">
+      <div class="modal-title" id="profile-modal-title">My Profile</div>
+      <button class="modal-close" onclick="closeProfileModal()">✕</button>
+    </div>
+    <div class="modal-body" id="profile-modal-body"></div>
+    <div class="modal-foot" id="profile-modal-foot"></div>
+  </div>
+</div>
+
 
 
 <script>
@@ -3065,6 +3107,39 @@ function initRealtimePresence(userId, role, name) {
         updateRegBadge();
         renderRegs();
         pushNotif({ type:'reg', title:t_('npReg'), body:`${r.full_name||r.name} (${r.user_id||r.userId})`, msg:`New registration: ${r.full_name||r.name} (${r.user_id||r.userId})`, regId:r.id });
+      })
+      .subscribe();
+  }
+
+  // Semua role: subscribe ke perubahan tabel users — agar ganti nama/password
+  // langsung terlihat di sesi lain tanpa reload (realtime profile sync)
+  if (db) {
+    db.channel('dhp_users_profile')
+      .on('postgres_changes', { event:'UPDATE', schema:'public', table:'users' }, payload => {
+        const u = payload.new;
+        if (!u || !u.user_id) return;
+        const jsRole = roleFromDb(u.role);
+        // Update LOCAL_USERS (nama + password)
+        if (!LOCAL_USERS[u.user_id]) {
+          LOCAL_USERS[u.user_id] = { pass: u.password_hash, role: jsRole, name: u.full_name, email: u.email };
+        } else {
+          LOCAL_USERS[u.user_id].name  = u.full_name;
+          LOCAL_USERS[u.user_id].email = u.email;
+          LOCAL_USERS[u.user_id].pass  = u.password_hash;
+          LOCAL_USERS[u.user_id].role  = jsRole;
+        }
+        // Update presenceMap nama
+        if (presenceMap[u.user_id]) presenceMap[u.user_id].name = u.full_name;
+        // Kalau user ini adalah diri sendiri (tab lain yg sudah login), perbarui currentUser juga
+        if (currentUser && u.user_id === currentUser.id) {
+          currentUser.name = u.full_name;
+          document.getElementById('sb-uname').textContent = u.full_name;
+        }
+        // Moderator: refresh daftar user agar perubahan langsung terlihat
+        if (can.isMod(currentUser?.role) && document.getElementById('pg-users')?.classList.contains('active')) {
+          renderUsers();
+        }
+        refreshPresenceUI();
       })
       .subscribe();
   }
@@ -5042,6 +5117,7 @@ function renderUsers() {
   const entries = Object.entries(LOCAL_USERS).filter(([id, u]) => !q || u.name.toLowerCase().includes(q) || id.toLowerCase().includes(q));
   const grid = document.getElementById('user-grid'); if (!grid) return;
   if (!entries.length) { grid.innerHTML = `<div class="tbl-empty">No users found</div>`; return; }
+  const viewerIsMod = can.isMod(currentUser?.role);
   grid.innerHTML = entries.map(([id, u]) => {
     const p = presenceMap[id], online = p?.online;
     const av = u.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
@@ -5051,6 +5127,14 @@ function renderUsers() {
     const protectedNote = isHeadAcc
       ? `<div style="font-size:10px;color:var(--gold-hi);margin-top:10px;padding:6px 8px;background:rgba(201,169,110,.08);border:1px solid var(--border-hi);border-radius:6px;letter-spacing:.08em">★ SOVEREIGN MODERATOR · SUPREME AUTHORITY</div>`
       : `<div style="font-size:10px;color:var(--muted);margin-top:10px;padding:6px 0">Cannot edit your own role</div>`;
+    // ── Password row: tampil hanya untuk moderator, TIDAK untuk dickya ──
+    const pwRowHtml = (viewerIsMod && !isHeadAcc)
+      ? `<div class="uc-pw-row">
+          <span class="uc-pw-label">Password</span>
+          <span class="uc-pw-val" id="uc-pw-val-${id}">••••••</span>
+          <button class="uc-pw-toggle" id="uc-pw-btn-${id}" data-showing="0" onclick="toggleUserPW('${id}','uc-pw-btn-${id}','uc-pw-val-${id}')">Lihat</button>
+        </div>`
+      : '';
     return `<div class="user-card${isHeadAcc?' head-mod-card':''}">
       <div class="uc-top">
         <div class="uc-avatar" style="${getAvatarBg(u.role)}" title="${u.name}">
@@ -5069,6 +5153,7 @@ function renderUsers() {
           <span style="color:${online?'var(--green)':'var(--muted)'};font-size:10px">${online ? `Active ${durSince(p.loginAt)}` : p ? timeAgo(p.lastSeen) : '—'}</span>
         </div>
       </div>
+      ${pwRowHtml}
       ${canEdit ? `
       <div class="uc-role-change">
         <select class="fi" id="role-sel-${id}">
@@ -5150,6 +5235,214 @@ function savePortalConfig() {
   if (name) { document.title = `${name} — Command Portal`; document.querySelector('.sb-brand').textContent = name; document.querySelector('.lbrand').textContent = name; }
   if (tag)  { document.querySelector('.ltag').textContent = tag; }
   toast('Portal config saved');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ㉒-b MY PROFILE — Ganti nama & password sendiri (semua role)
+   ═══════════════════════════════════════════════════════════ */
+function openMyProfile() {
+  const u = currentUser;
+  if (!u) return;
+  const av = u.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  const clr = ROLE_COLORS[u.role] || '#888';
+  const isMod = can.isMod(u.role);
+  const isHead = u.id === HEAD_MODERATOR_ID;
+
+  document.getElementById('profile-modal-title').textContent = 'My Profile';
+  document.getElementById('profile-modal-body').innerHTML = `
+    <div class="profile-avatar-big" style="background:${clr}22;color:${clr}">${av}</div>
+    <div class="profile-info-card">
+      <div class="profile-info-row">
+        <span class="profile-info-key">User ID</span>
+        <span class="profile-info-val" style="font-family:monospace;color:var(--gold-lo)">@${u.id}</span>
+      </div>
+      <div class="profile-info-row">
+        <span class="profile-info-key">Role</span>
+        <span class="profile-info-val">${isHead ? '★ Sovereign Moderator' : rn(u.role)}</span>
+      </div>
+      <div class="profile-info-row">
+        <span class="profile-info-key">Nama Saat Ini</span>
+        <span class="profile-info-val">${escHtml(u.name)}</span>
+      </div>
+    </div>
+
+    <!-- Ganti Nama -->
+    <div class="fg" style="margin-bottom:16px">
+      <label>Nama Baru</label>
+      <input class="fi" id="prof-name" placeholder="Nama tampil Anda" value="${escHtml(u.name)}" maxlength="60"/>
+    </div>
+
+    <div style="height:1px;background:var(--border);margin:18px 0"></div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:14px;letter-spacing:.05em">
+      🔐 Ganti Password
+    </div>
+
+    <!-- Ganti Password -->
+    <div class="fg">
+      <label>Password Lama *</label>
+      <input class="fi" id="prof-pw-old" type="password" placeholder="Masukkan password saat ini"/>
+    </div>
+    <div class="fg">
+      <label>Password Baru *</label>
+      <input class="fi" id="prof-pw-new" type="password" placeholder="Min. 4 karakter" oninput="checkProfStrength(this.value)"/>
+      <div class="str-wrap">
+        <div class="str-bar" id="psbr1"></div>
+        <div class="str-bar" id="psbr2"></div>
+        <div class="str-bar" id="psbr3"></div>
+        <div class="str-bar" id="psbr4"></div>
+        <span class="str-lbl" id="pstr-lbl">—</span>
+      </div>
+    </div>
+    <div class="fg">
+      <label>Konfirmasi Password Baru</label>
+      <input class="fi" id="prof-pw-new2" type="password" placeholder="Ulangi password baru"/>
+    </div>
+    <div id="prof-al" class="al" style="margin-top:4px"></div>`;
+
+  document.getElementById('profile-modal-foot').innerHTML = `
+    <button class="btn-sm btn-cancel" onclick="closeProfileModal()">Batal</button>
+    <button class="btn-sm btn-gold" onclick="saveMyProfile()">💾 Simpan Perubahan</button>`;
+
+  const ov = document.getElementById('profile-modal-ov');
+  ov.classList.add('open');
+  ov.style.display = 'flex';
+}
+
+function closeProfileModal() {
+  const ov = document.getElementById('profile-modal-ov');
+  ov.classList.remove('open');
+  ov.style.display = 'none';
+}
+
+function checkProfStrength(v) {
+  const bars = ['psbr1','psbr2','psbr3','psbr4'], lbl = document.getElementById('pstr-lbl');
+  bars.forEach(id => { const el = document.getElementById(id); if (el) el.className = 'str-bar'; });
+  if (!v) { if (lbl) lbl.textContent = '—'; return; }
+  let sc = 0;
+  if (v.length >= 4) sc++; if (v.length >= 8) sc++; if (/[A-Z]/.test(v) && /[0-9]/.test(v)) sc++; if (/[^A-Za-z0-9]/.test(v)) sc++;
+  const cls = sc <= 1 ? 'w' : sc === 2 ? 'f' : sc === 3 ? 's' : 'v';
+  const lbls = { w:t('weakPw')||'Lemah', f:t('fairPw')||'Cukup', s:t('strongPw')||'Kuat', v:t('veryStrongPw')||'Sangat Kuat' };
+  bars.slice(0, sc).forEach(id => { const el = document.getElementById(id); if (el) el.className = `str-bar ${cls}`; });
+  if (lbl) lbl.textContent = lbls[cls] || '';
+}
+
+async function saveMyProfile() {
+  const u = currentUser; if (!u) return;
+  const newName = (document.getElementById('prof-name')?.value || '').trim();
+  const oldPw   = (document.getElementById('prof-pw-old')?.value || '').trim();
+  const newPw   = (document.getElementById('prof-pw-new')?.value || '').trim();
+  const newPw2  = (document.getElementById('prof-pw-new2')?.value || '').trim();
+  const alEl    = document.getElementById('prof-al');
+
+  const showAl = (msg, type='error') => {
+    if (alEl) { alEl.className = `al ${type} show`; alEl.textContent = msg; }
+  };
+  const clearAl = () => { if (alEl) alEl.className = 'al'; };
+  clearAl();
+
+  const nameChanged = newName && newName !== u.name;
+  const pwChanging  = !!(oldPw || newPw || newPw2);
+
+  if (!newName) { showAl('Nama tidak boleh kosong.'); return; }
+
+  // Validasi sisi client sebelum kirim ke server
+  if (pwChanging) {
+    if (!oldPw) { showAl('Password lama wajib diisi untuk mengganti password.'); return; }
+    if (newPw.length < 4) { showAl('Password baru minimal 4 karakter.'); return; }
+    if (newPw !== newPw2) { showAl('Konfirmasi password tidak cocok.'); return; }
+  }
+
+  if (!nameChanged && !pwChanging) {
+    showAl('Tidak ada perubahan yang disimpan.', 'info'); return;
+  }
+
+  // ── Kirim ke Supabase via RPC update_user_profile ──
+  if (db) {
+    const res = await dbQ(d => d.rpc('update_user_profile', {
+      p_caller_id: u.id,
+      p_new_name:  nameChanged ? newName : null,
+      p_old_pw:    pwChanging  ? oldPw   : null,
+      p_new_pw:    pwChanging  ? newPw   : null
+    }));
+
+    if (!res || res.error) {
+      const m = String(res?.error?.message || '');
+      if      (m.includes('OLD_PW_WRONG'))    showAl('Password lama salah.');
+      else if (m.includes('OLD_PW_REQUIRED')) showAl('Password lama wajib diisi.');
+      else if (m.includes('NEW_PW_TOO_SHORT'))showAl('Password baru minimal 4 karakter.');
+      else if (m.includes('USER_NOT_FOUND'))  showAl('Akun tidak ditemukan. Coba login ulang.');
+      else showAl('Gagal menyimpan: ' + (m || 'error tidak diketahui'));
+      return;
+    }
+    // res.data = 'OK' atau 'NO_CHANGE'
+  } else {
+    // Mode offline (tanpa DB): validasi manual terhadap LOCAL_USERS
+    if (pwChanging) {
+      const currentPass = LOCAL_USERS[u.id]?.pass || '';
+      if (oldPw !== currentPass) { showAl('Password lama salah.'); return; }
+    }
+  }
+
+  // ── Update state lokal setelah DB berhasil ──
+  const displayName = nameChanged ? newName : u.name;
+
+  if (nameChanged) {
+    currentUser.name = newName;
+    if (LOCAL_USERS[u.id]) LOCAL_USERS[u.id].name = newName;
+    if (presenceMap[u.id]) presenceMap[u.id].name = newName;
+    document.getElementById('sb-uname').textContent = newName;
+    const tgText = document.getElementById('tg-text');
+    if (tgText) {
+      const g = getGreeting();
+      tgText.textContent = (u.id === HEAD_MODERATOR_ID)
+        ? `${currentLang==='id'?g.id:g.en}, Yang Mulia ${newName}`
+        : `${currentLang==='id'?g.id:g.en}, ${newName}`;
+    }
+    // Re-track presence agar semua sesi online lihat nama baru
+    if (typeof presChannel !== 'undefined' && presChannel) {
+      try {
+        await presChannel.track({
+          userId: currentUser.id, role: currentUser.role, name: newName,
+          loginAt: presenceMap[currentUser.id]?.loginAt || Date.now(), ts: Date.now()
+        });
+      } catch(e) { console.warn('[DHP] presence re-track gagal:', e); }
+    }
+  }
+  if (pwChanging) {
+    if (LOCAL_USERS[u.id]) LOCAL_USERS[u.id].pass = newPw;
+  }
+
+  closeProfileModal();
+  const parts = [];
+  if (nameChanged) parts.push('nama → ' + newName);
+  if (pwChanging)  parts.push('password diperbarui');
+  toast('✓ Profil disimpan' + (parts.length ? ' · ' + parts.join(', ') : ''));
+  pushActivity(`${displayName} memperbarui profil`, 'info');
+
+  // Reload data agar moderator lihat perubahan terbaru
+  if (db) {
+    await loadDataFromDB(can.isMod(currentUser?.role));
+    if (can.isMod(currentUser?.role)) renderUsers();
+    renderStats();
+  }
+}
+
+/* Moderator: lihat / toggle password user di user card (kecuali dickya) */
+function toggleUserPW(uid, btnId, valId) {
+  const btn = document.getElementById(btnId);
+  const val = document.getElementById(valId);
+  if (!btn || !val) return;
+  const showing = btn.dataset.showing === '1';
+  if (showing) {
+    val.textContent = '••••••';
+    btn.textContent = 'Lihat';
+    btn.dataset.showing = '0';
+  } else {
+    const pw = LOCAL_USERS[uid]?.pass || '—';
+    val.textContent = pw;
+    btn.textContent = 'Sembunyikan';
+    btn.dataset.showing = '1';
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════
