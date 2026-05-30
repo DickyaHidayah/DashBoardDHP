@@ -478,11 +478,14 @@ body.light.is-head-mod .sb-user-name{ background:none; -webkit-text-fill-color:#
 /* ═══════════════════════════════════════════════════════
    LIGHT MODE — LOGIN PAGE (definitive, no duplicates)
    ═══════════════════════════════════════════════════════ */
-body.light #scene{display:none!important}
-body.light .bg-ov{background:#f5f5f7!important}
-body.light .login-wrap{background:#f5f5f7}
 
 /* Card */
+/* ── Scene: hide canvas only, keep login-wrap visible ── */
+body.light #three-canvas{display:none!important}
+body.light .bg-ov{background:#f0f0f2!important}
+body.light #scene{background:#f0f0f2}
+body.light .login-wrap{background:transparent;position:relative;z-index:10}
+
 body.light .card{
   background:#ffffff;
   border:1.5px solid rgba(0,0,0,.16);
