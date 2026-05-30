@@ -11,7 +11,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 /* ══════════════════════════════════════════════════════════
-   DHP CREATIVE PORTAL  v12  —  Command System
+   DHP CREATIVE PORTAL  v5.2  —  Command System
    ══════════════════════════════════════════════════════════ */
 :root{
   --gold:#c9a96e; --gold-hi:#e8cc99; --gold-lo:#a06840; --gold-dk:#6b4218;
@@ -57,6 +57,81 @@ body.light{background:#ffffff;color:#0d0d0d}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:2px}
+
+
+/* ══ v5.2 HEAT CATEGORY BADGES ══ */
+.heat-badge {
+  display:inline-flex;align-items:center;gap:4px;
+  padding:2px 8px;border-radius:20px;
+  font-size:10px;font-weight:700;letter-spacing:.06em;
+  white-space:nowrap;
+}
+.heat-hot   { background:rgba(232,112,112,.15);color:#e87070;border:1px solid rgba(232,112,112,.3); }
+.heat-warm  { background:rgba(232,184,110,.15);color:#e8b86e;border:1px solid rgba(232,184,110,.3); }
+.heat-cold  { background:rgba(126,168,201,.15);color:#7ea8c9;border:1px solid rgba(126,168,201,.3); }
+.heat-none  { background:rgba(232,228,220,.06);color:var(--muted);border:1px solid var(--border); }
+body.light .heat-hot  { background:rgba(192,57,43,.10);color:#c0392b;border-color:rgba(192,57,43,.2); }
+body.light .heat-warm { background:rgba(160,88,0,.10); color:#a05800;border-color:rgba(160,88,0,.2); }
+body.light .heat-cold { background:rgba(26,86,160,.10);color:#1a56a0;border-color:rgba(26,86,160,.2); }
+
+/* CRM channel badge — lock icon for Ads channel */
+.crm-ads-lock {
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:9px;color:var(--green);margin-left:4px;opacity:.75;
+}
+
+/* Profile modal icon gear button */
+.profile-settings-icon {
+  position:absolute;top:14px;right:14px;
+  width:32px;height:32px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;cursor:pointer;color:var(--muted);
+  transition:all var(--trans);
+}
+.profile-settings-icon:hover {
+  background:rgba(201,169,110,.12);color:var(--gold);
+  border-color:var(--gold-lo);transform:rotate(45deg);
+}
+body.light .profile-settings-icon {
+  background:#f0f0f0;border-color:rgba(0,0,0,.14);color:#888;
+}
+body.light .profile-settings-icon:hover {
+  background:rgba(160,88,0,.08);color:#a05800;border-color:rgba(160,88,0,.25);
+}
+
+/* Sidebar user card with gear icon */
+.sb-user-card-wrap { position:relative; }
+.sb-user-gear {
+  position:absolute;top:50%;right:10px;transform:translateY(-50%);
+  width:26px;height:26px;
+  display:flex;align-items:center;justify-content:center;
+  background:transparent;border:1px solid transparent;
+  border-radius:6px;cursor:pointer;color:var(--muted);
+  transition:all .18s ease;opacity:0;
+}
+.sb-user-card:hover .sb-user-gear {
+  opacity:1;color:var(--gold-lo);border-color:var(--border-hi);
+  background:rgba(201,169,110,.08);
+}
+.sb-user-gear:hover { transform:translateY(-50%) rotate(60deg)!important;color:var(--gold)!important; }
+body.light .sb-user-gear { color:#888; }
+body.light .sb-user-card:hover .sb-user-gear { color:#a05800; }
+
+
+/* Profile gear spin on hover */
+.profile-gear-hint:hover svg {
+  transform: rotate(60deg);
+  transition: transform .3s ease;
+}
+.logout-btn:hover .profile-gear-hint {
+  background: rgba(201,169,110,.18) !important;
+  color: var(--gold) !important;
+}
+body.light .logout-btn:hover .profile-gear-hint {
+  background: rgba(160,88,0,.12) !important;
+  color: #a05800 !important;
+}
 
 /* loading screen dihapus */
 #ls{display:none !important}
@@ -2397,11 +2472,19 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
           <div class="sb-tagline" data-i18n="recordsSystem">Records System</div>
         </div>
       </div>
-      <div class="sb-user-card" onclick="openMyProfile()" style="cursor:pointer" title="Klik untuk edit profil">
-        <div class="sb-user-name" id="sb-uname">—</div>
-        <div class="sb-user-role">
-          <div class="role-dot" id="sb-rdot"></div>
-          <div class="sb-user-role-lbl" id="sb-rlbl">—</div>
+      <div class="sb-user-card-wrap">
+        <div class="sb-user-card" onclick="openMyProfile()" style="cursor:pointer;padding-right:36px" title="Klik untuk edit profil">
+          <div class="sb-user-name" id="sb-uname">—</div>
+          <div class="sb-user-role">
+            <div class="role-dot" id="sb-rdot"></div>
+            <div class="sb-user-role-lbl" id="sb-rlbl">—</div>
+          </div>
+          <div class="sb-user-gear" onclick="event.stopPropagation();openMyProfile()" title="Edit Profil">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.4"/>
+              <path d="M8 1.5v1.2M8 13.3v1.2M1.5 8h1.2M13.3 8h1.2M3.4 3.4l.85.85M11.75 11.75l.85.85M3.4 12.6l.85-.85M11.75 4.25l.85-.85" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+          </div>
         </div>
       </div>
     </div>
@@ -2578,10 +2661,15 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <circle cx="8" cy="5.5" r="3" stroke="currentColor" stroke-width="1.4"/>
             <path d="M2 14c0-2.761 2.686-4.5 6-4.5s6 1.739 6 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-            <path d="M10 9.5l1.5 1.5-1.5 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity=".6"/>
           </svg>
         </span>
-        <span>My Profile</span>
+        <span style="flex:1">My Profile</span>
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:5px;background:rgba(201,169,110,.1);color:var(--gold-lo);transition:all .18s ease;flex-shrink:0" class="profile-gear-hint" title="Pengaturan">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="2.4" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M8 1.5v1.2M8 13.3v1.2M1.5 8h1.2M13.3 8h1.2M3.4 3.4l.8.8M11.8 11.8l.8.8M3.4 12.6l.8-.8M11.8 4.2l.8-.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </span>
       </button>
       <button class="logout-btn" onclick="handleLogout()">
         <span class="nav-icon">
@@ -3064,6 +3152,12 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
               <option value="Reseller">Reseller</option>
               <option value="Leads">Leads</option>
             </select>
+            <select class="fi crm-filter" id="crm-heat-filter" onchange="renderCRM()" title="Filter Heat Category" style="max-width:130px">
+              <option value="all">Semua Heat</option>
+              <option value="Hot">🔥 Hot</option>
+              <option value="Warm">☀️ Warm</option>
+              <option value="Cold">❄️ Cold</option>
+            </select>
             <!-- Filter per user — hanya tampil untuk moderator -->
             <select class="fi crm-filter" id="crm-owner-filter" onchange="crmOwnerFilter=this.value;renderCRM()" style="display:none">
               <option value="all">Semua Admin & B2B</option>
@@ -3111,6 +3205,10 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
                   <div style="font-size:8px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;margin-top:1px">Akumulasi (Rp)</div>
                 </th>
                 <th data-i18n="crmColStatus">Status</th>
+                <th style="white-space:nowrap">
+                  Heat
+                  <div style="font-size:8px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;margin-top:1px">🔥/☀️/❄️</div>
+                </th>
                 <th data-i18n="crmColFavProduct">Produk</th>
                 <th>Input By</th>
                 <th data-i18n="action">Action</th>
@@ -3235,8 +3333,8 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
 <!-- ══ MY PROFILE MODAL ══ -->
 <div id="profile-modal-ov" onclick="if(event.target===this)closeProfileModal()" style="position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9000;display:none;align-items:center;justify-content:center;padding:16px">
   <div class="modal" style="max-width:460px;width:100%">
-    <div class="modal-head">
-      <div class="modal-title" id="profile-modal-title">My Profile</div>
+    <div class="modal-head" style="position:relative">
+      <div class="modal-title" id="profile-modal-title" style="display:flex;align-items:center;gap:10px">My Profile</div>
       <button class="modal-close" onclick="closeProfileModal()">✕</button>
     </div>
     <div class="modal-body" id="profile-modal-body"></div>
@@ -5671,7 +5769,14 @@ function openMyProfile() {
   const isMod = can.isMod(u.role);
   const isHead = u.id === HEAD_MODERATOR_ID;
 
-  document.getElementById('profile-modal-title').textContent = 'My Profile';
+  document.getElementById('profile-modal-title').innerHTML = `
+    My Profile
+    <button class="profile-settings-icon" onclick="void(0)" title="Pengaturan Profil" style="pointer-events:none">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="2.4" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M8 1.5v1.2M8 13.3v1.2M1.5 8h1.2M13.3 8h1.2M3.4 3.4l.8.8M11.8 11.8l.8.8M3.4 12.6l.8-.8M11.8 4.2l.8-.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+    </button>`;
   document.getElementById('profile-modal-body').innerHTML = `
     <div class="profile-avatar-big" style="background:${clr}22;color:${clr}">${av}</div>
     <div class="profile-info-card">
@@ -7470,6 +7575,10 @@ async function openLeadsModal(taskId) {
           `).join('')}
         </div>
         <input type="hidden" id="lead-cat" value="Cold"/>
+        <div style="margin-top:6px;font-size:9px;color:var(--green);opacity:.8;display:flex;align-items:center;gap:4px">
+          <svg width="9" height="9" viewBox="0 0 16 16" fill="none"><path d="M8 1v14M1 8h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".6"/></svg>
+          Semua kategori otomatis masuk Database Customer sebagai <strong>Leads</strong>
+        </div>
       </div>
       ${can.isAdTarget(currentUser?.role) ? `
       <div id="closing-fields" style="display:none">
@@ -7499,7 +7608,7 @@ async function openLeadsModal(taskId) {
           </div>
           <div style="font-size:10px;color:var(--green);margin-top:8px;font-style:italic;opacity:.85;display:flex;align-items:center;gap:4px">
             <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Otomatis masuk Database Customer · Channel: <strong>Leads</strong>
+            Otomatis masuk Database Customer · Channel: <strong>Leads · ${tk.title}</strong>
           </div>
         </div>
       </div>` : ''}
@@ -7615,46 +7724,80 @@ async function submitLead() {
     ok = true; // mode lokal tanpa DB
   }
 
-  // ── AUTO SIMPAN KE DATABASE CUSTOMER saat category = Closing ──
-  if (ok && cat === 'Closing' && can.isAdTarget(currentUser?.role)) {
+  // ── v5.2: AUTO SIMPAN KE CRM UNTUK SEMUA KATEGORI LEAD ──────
+  // Cold/Warm/Hot → masuk CRM dengan total_order=0, total_spend=0
+  // Closing → masuk CRM dengan total_order & total_spend dari form
+  if (ok && can.isAdTarget(currentUser?.role)) {
     try {
-      const nominal     = parseFloat(document.getElementById('lead-nominal')?.value || '0') || 0;
-      const totalOrd    = parseInt(document.getElementById('lead-total-order')?.value || '1', 10) || 1;
-      const product     = document.getElementById('lead-product')?.value?.trim() || '';
-      // Channel: "Leads · <judul iklan>" agar tiap iklan bisa dibedakan
       const channelLabel = `Leads · ${tk.title}`;
+      const today = new Date().toISOString().slice(0,10);
+      let nominal = 0, totalOrd = 0, product = '';
+
+      if (cat === 'Closing') {
+        nominal  = parseFloat(document.getElementById('lead-nominal')?.value || '0') || 0;
+        totalOrd = parseInt(document.getElementById('lead-total-order')?.value || '1', 10) || 1;
+        product  = document.getElementById('lead-product')?.value?.trim() || '';
+      }
+      // heat_category dihitung di sisi client untuk tampilan instan
+      const heatCat = cat === 'Closing' && totalOrd >= 5 ? 'Hot'
+                    : cat === 'Closing' && totalOrd >= 1  ? 'Warm'
+                    : 'Cold';
+
       await loadCRM();
       const newCustId = crmGenId();
-      const today = new Date().toISOString().slice(0,10);
+
       if (crmUsesDB()) {
+        // Kirim lewat add_lead di DB yang sudah handle auto-CRM di server
+        // (fallback: upsert_crm_customer bila RPC lama)
         await dbQ(d => d.rpc('upsert_crm_customer', {
-          p_id:          null,
-          p_user_id:     currentUser.id,
-          p_cust_code:   newCustId,
-          p_full_name:   name,
-          p_wa_phone:    wa || null,
-          p_city:        region || null,
-          p_channel:     channelLabel,
-          p_first_order: today,
-          p_total_order: totalOrd,
-          p_total_spend: nominal,
-          p_status:      'Leads',
-          p_fav_product: product || null,
-          p_admin_note:  `Closing dari Leads — Ads: ${tk.title}${note ? ' | ' + note : ''}`,
+          p_id:             null,
+          p_user_id:        currentUser.id,
+          p_cust_code:      newCustId,
+          p_full_name:      name,
+          p_wa_phone:       wa || null,
+          p_city:           region || null,
+          p_channel:        channelLabel,
+          p_first_order:    today,
+          p_total_order:    totalOrd,
+          p_total_spend:    nominal,
+          p_status:         'Leads',
+          p_fav_product:    product || null,
+          p_admin_note:     `${cat} via Ads: ${tk.title}${note ? ' | ' + note : ''}`,
+          p_channel_is_ads: true,
+          p_ads_title:      tk.title,
         }));
       } else {
-        crmData.unshift({
-          id_customer: newCustId, nama: name, wa: wa, kota: region,
-          channel: channelLabel, first_order: today, total_order: totalOrd, total_belanja: nominal,
-          status: 'Leads', produk_fav: product,
-          catatan: `Closing dari Leads — Ads: ${tk.title}${note ? ' | ' + note : ''}`,
-        });
+        // Offline: cek duplikat WA dulu
+        const waDigits = (wa||'').replace(/[^0-9]/g,'');
+        const existIdx = crmData.findIndex(c => (c.wa||'').replace(/[^0-9]/g,'') === waDigits);
+        if (existIdx >= 0) {
+          // Update existing
+          const ex = crmData[existIdx];
+          if (cat === 'Closing') {
+            ex.total_order = (parseInt(ex.total_order,10)||0) + totalOrd;
+            ex.total_belanja = (parseFloat(ex.total_belanja)||0) + nominal;
+          }
+          ex.heat_category = heatCat;
+          ex.catatan = (ex.catatan||'') + `\n[${today}] ${cat} via "${tk.title}"${note?': '+note:''}`;
+        } else {
+          crmData.unshift({
+            id_customer: newCustId, nama: name, wa: wa, kota: region,
+            channel: channelLabel, channel_is_ads: true, ads_title: tk.title,
+            first_order: today, total_order: totalOrd, total_belanja: nominal,
+            status: 'Leads', heat_category: heatCat,
+            produk_fav: product,
+            catatan: `${cat} via Ads: ${tk.title}${note ? ' | ' + note : ''}`,
+          });
+        }
         saveCRM && saveCRM();
       }
-      pushActivity(`CRM closing: ${name} (${newCustId})${nominal ? ' — Rp ' + nominal.toLocaleString('id-ID') : ''}`, 'lead');
-      toast(`✓ Lead + Closing masuk CRM (${newCustId}) · Channel: ${channelLabel}`);
+      const leadTypeMsg = cat === 'Closing'
+        ? `✓ Closing masuk CRM · Rp ${nominal.toLocaleString('id-ID')}`
+        : `✓ Lead (${cat}) masuk CRM sebagai Leads`;
+      pushActivity(`CRM ${cat}: ${name} (${newCustId}) · ${channelLabel}`, 'lead');
+      toast(leadTypeMsg);
     } catch(e) {
-      console.warn('[DHP] Auto CRM Closing gagal:', e);
+      console.warn('[DHP] Auto CRM gagal:', e);
       toast(t('leadAdded') + ' (CRM skip)');
     }
   } else {
@@ -8036,6 +8179,26 @@ const CRM_COLUMNS = [
   { key:'catatan',     header:'Catatan Admin'     },
 ];
 const CRM_STATUSES = ['New','Repeat','Agen','Reseller','Leads'];
+
+// v5.2: heat category helpers
+const HEAT_ICONS = { Hot:'🔥', Warm:'☀️', Cold:'❄️', None:'—' };
+const HEAT_LABELS = { Hot:'Hot', Warm:'Warm', Cold:'Cold', None:'—' };
+
+function crmComputeHeat(totalOrder, status) {
+  const ord = parseInt(totalOrder,10) || 0;
+  const st  = String(status||'');
+  if (ord >= 5 || ['Repeat','Agen','Reseller'].includes(st)) return 'Hot';
+  if (ord >= 1 && ord <= 4) return 'Warm';
+  if (ord === 0) return 'Cold';
+  return 'None';
+}
+
+function crmHeatBadge(heat) {
+  const h = heat || 'None';
+  const icon = { Hot:'🔥', Warm:'☀️', Cold:'❄️', None:'—' }[h] || '—';
+  if (h === 'None') return `<span class="heat-badge heat-none">—</span>`;
+  return `<span class="heat-badge heat-${h.toLowerCase()}">${icon} ${h}</span>`;
+}
 // Sinonim header agar import tetap dikenali walau penulisan sedikit beda.
 const CRM_HEADER_ALIASES = {
   'id customer':'id_customer','id':'id_customer','idcustomer':'id_customer','customer id':'id_customer',
@@ -8061,22 +8224,25 @@ let crmOwnerFilter = 'all';  // moderator: filter per user (user_id atau 'all')
 // ── Konversi baris DB → bentuk UI (key internal) ──
 function crmFromDb(row) {
   return {
-    _uuid:       row.id,
-    id_customer: row.cust_code || '',
-    nama:        row.full_name || '',
-    wa:          row.wa_phone || '',
-    kota:        row.city || '',
-    channel:     row.channel || '',
-    first_order: row.first_order || '',
-    total_order: Number(row.total_order) || 0,
-    total_belanja: Number(row.total_spend) || 0,
-    status:      row.status || 'New',
-    produk_fav:  row.fav_product || '',
-    catatan:     row.admin_note || '',
-    owner_id:    row.owner_id || row.created_by || '',   // siapa yang input
-    created_by:  row.created_by || '',
-    created_at:  row.created_at || '',
-    updated_by:  row.updated_by || '',
+    _uuid:          row.id,
+    id_customer:    row.cust_code || '',
+    nama:           row.full_name || '',
+    wa:             row.wa_phone || '',
+    kota:           row.city || '',
+    channel:        row.channel || '',
+    channel_is_ads: row.channel_is_ads || false,  // v5.2
+    ads_title:      row.ads_title || '',           // v5.2
+    first_order:    row.first_order || '',
+    total_order:    Number(row.total_order) || 0,
+    total_belanja:  Number(row.total_spend) || 0,
+    status:         row.status || 'New',
+    heat_category:  row.heat_category || 'None',   // v5.2
+    produk_fav:     row.fav_product || '',
+    catatan:        row.admin_note || '',
+    owner_id:       row.owner_id || row.created_by || '',
+    created_by:     row.created_by || '',
+    created_at:     row.created_at || '',
+    updated_by:     row.updated_by || '',
   };
 }
 
@@ -8272,6 +8438,33 @@ function renderCRMDiagram(data) {
         </div>
       </div>
       ${userChartHtml}
+      <!-- v5.2: Heat Category chart -->
+      <div class="crm-diag-card">
+        <div class="crm-diag-title">🔥 Heat Category</div>
+        <div class="crm-diag-bars">
+          ${(() => {
+            const heatDef = [
+              { key:'Hot',  color:'#e87070', icon:'🔥' },
+              { key:'Warm', color:'#e8b86e', icon:'☀️' },
+              { key:'Cold', color:'#7ea8c9', icon:'❄️' },
+            ];
+            const counts = heatDef.map(h => ({
+              ...h,
+              n: data.filter(c => (c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status))) === h.key).length
+            }));
+            const maxH = Math.max(...counts.map(x => x.n), 1);
+            return counts.map(h => {
+              const pct = Math.round(h.n / maxH * 100);
+              const pctTotal = data.length ? Math.round(h.n / data.length * 100) : 0;
+              return \`<div class="crm-diag-bar-row">
+                <div class="crm-diag-bar-lbl" style="color:\${h.color}">\${h.icon} \${h.key}</div>
+                <div class="crm-diag-bar-track"><div class="crm-diag-bar-fill" style="width:\${pct}%;background:\${h.color}"></div></div>
+                <div class="crm-diag-bar-val">\${h.n} <span style="color:var(--muted);font-size:9px">(\${pctTotal}%)</span></div>
+              </div>\`;
+            }).join('');
+          })()}
+        </div>
+      </div>
     </div>`;
 }
 
@@ -8318,8 +8511,13 @@ async function renderCRM() {
 
   const q = (document.getElementById('crm-search')?.value || '').toLowerCase().trim();
   const sf = document.getElementById('crm-status-filter')?.value || 'all';
+  const hf = document.getElementById('crm-heat-filter')?.value || 'all'; // v5.2
   let rows = crmData.slice();
   if (sf !== 'all') rows = rows.filter(c => crmNormStatus(c.status) === sf);
+  // v5.2: filter by heat
+  if (hf !== 'all') rows = rows.filter(c =>
+    (c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status))) === hf
+  );
   if (q) rows = rows.filter(c =>
     (c.nama||'').toLowerCase().includes(q) ||
     (c.wa||'').toLowerCase().includes(q) ||
@@ -8359,7 +8557,11 @@ async function renderCRM() {
       <div class="crm-stat cs-repeat"><span class="cs-num">${cnt('Repeat')}</span><span class="cs-lbl">Repeat</span></div>
       <div class="crm-stat cs-agen"><span class="cs-num">${cnt('Agen')}</span><span class="cs-lbl">Agen</span></div>
       <div class="crm-stat cs-reseller"><span class="cs-num">${cnt('Reseller')}</span><span class="cs-lbl">Reseller</span></div>
-      <div class="crm-stat cs-leads"><span class="cs-num">${cnt('Leads')}</span><span class="cs-lbl">Leads</span></div>`;
+      <div class="crm-stat cs-leads"><span class="cs-num">${cnt('Leads')}</span><span class="cs-lbl">Leads</span></div>
+      <div style="width:1px;background:var(--border);margin:0 4px;align-self:stretch"></div>
+      <div class="crm-stat" style="background:rgba(232,112,112,.06)"><span class="cs-num" style="color:#e87070">${crmData.filter(c=>((c.heat_category||crmComputeHeat(crmParseInt(c.total_order),crmNormStatus(c.status)))==='Hot')).length}</span><span class="cs-lbl">🔥 Hot</span></div>
+      <div class="crm-stat" style="background:rgba(232,184,110,.06)"><span class="cs-num" style="color:#e8b86e">${crmData.filter(c=>((c.heat_category||crmComputeHeat(crmParseInt(c.total_order),crmNormStatus(c.status)))==='Warm')).length}</span><span class="cs-lbl">☀️ Warm</span></div>
+      <div class="crm-stat" style="background:rgba(126,168,201,.06)"><span class="cs-num" style="color:#7ea8c9">${crmData.filter(c=>((c.heat_category||crmComputeHeat(crmParseInt(c.total_order),crmNormStatus(c.status)))==='Cold')).length}</span><span class="cs-lbl">❄️ Cold</span></div>`;
   }
 
   // Diagram
@@ -8383,12 +8585,17 @@ async function renderCRM() {
       ? `<a href="https://wa.me/${waDigits}" target="_blank" rel="noopener" class="wa-link">${escHtml(c.wa)}</a>`
       : `<span style="color:var(--muted)">—</span>`;
     // Channel badge — warna dinamis: green jika Leads·, gold jika Shopee/TikTok, dll.
+    // v5.2: channel_is_ads → tampilkan ikon kunci (tidak bisa diubah manual)
     const chRaw = (c.channel||'').trim();
-    const isLeadsCh = chRaw.startsWith('Leads ·') || chRaw.toLowerCase() === 'leads';
+    const isLeadsCh = c.channel_is_ads || chRaw.startsWith('Leads ·') || chRaw.toLowerCase() === 'leads';
     const chColorMap = {'Shopee':'#e87070','TikTok':'#7ea8c9','Instagram':'#d98ec0','WhatsApp':'#7abf8e','Tokopedia':'#e8b86e','Live':'#d98ec0'};
     const chBaseColor = isLeadsCh ? '#7abf8e' : (Object.keys(chColorMap).find(k => chRaw.includes(k)) ? chColorMap[Object.keys(chColorMap).find(k => chRaw.includes(k))] : '#c9a96e');
+    const lockIcon = isLeadsCh
+      ? `<span class="crm-ads-lock" title="Channel dari Ads — otomatis">
+          <svg width="8" height="8" viewBox="0 0 12 12" fill="none"><rect x="2" y="5" width="8" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M4 5V4a2 2 0 0 1 4 0v1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </span>` : '';
     const chBadge = chRaw
-      ? `<span class="crm-ch-badge" style="background:${chBaseColor}18;color:${chBaseColor};border-color:${chBaseColor}44;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block" title="${escHtml(chRaw)}">${escHtml(chRaw.length>18?chRaw.slice(0,18)+'…':chRaw)}</span>`
+      ? `<span class="crm-ch-badge" style="background:${chBaseColor}18;color:${chBaseColor};border-color:${chBaseColor}44;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-flex;align-items:center;gap:3px" title="${escHtml(chRaw)}${isLeadsCh?' — dari Ads (otomatis)':''}">${escHtml(chRaw.length>18?chRaw.slice(0,18)+'…':chRaw)}${lockIcon}</span>`
       : `<span style="color:var(--muted)">—</span>`;
     // Input By — tampilkan nama + role dot
     const ownerMeta = getUserMeta(c.owner_id || c.created_by);
@@ -8403,9 +8610,18 @@ async function renderCRM() {
       <td>${escHtml(c.kota||'—')}</td>
       <td>${chBadge}</td>
       <td style="white-space:nowrap">${escHtml(c.first_order||'—')}</td>
-      <td style="text-align:right;font-variant-numeric:tabular-nums">${crmParseInt(c.total_order)||0}</td>
-      <td class="crm-money">${crmFmtRupiah(crmParseMoney(c.total_belanja))}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums">${(function(){
+        const heat = c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status));
+        const ord = crmParseInt(c.total_order);
+        return heat === 'Cold' && ord === 0 ? '<span style="color:var(--muted)">—</span>' : (ord||0);
+      })()}</td>
+      <td class="crm-money">${(function(){
+        const heat = c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status));
+        const sp = crmParseMoney(c.total_belanja);
+        return heat === 'Cold' && sp === 0 ? '<span style="color:var(--muted)">—</span>' : crmFmtRupiah(sp);
+      })()}</td>
       <td><span class="crm-st-badge ${crmStatusCls(c.status)}">${crmNormStatus(c.status)}</span></td>
+      <td>${crmHeatBadge(c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status)))}</td>
       <td><span class="crm-fav">${escHtml(c.produk_fav||'—')}</span></td>
       <td>${inputByCell}</td>
       <td>
@@ -8441,17 +8657,34 @@ function openCRMModal(idx) {
     <div class="fg"><label>${t('crmColWA')}</label><input class="fi" id="crm-f-wa" value="${escHtml(c.wa||'')}" placeholder="08xxxxxxxxxx"/></div>
     <div class="fg"><label>${t('crmColCity')}</label><input class="fi" id="crm-f-kota" value="${escHtml(c.kota||'')}"/></div>
     <div class="fg"><label>${t('crmColChannel')}</label>
-      <select class="fi" id="crm-f-channel">
-        <option value="">— Pilih Channel —</option>
-        ${channelOpts}
-      </select>
+      ${isAdsEntry
+        ? `<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r);background:rgba(122,191,142,.06)">
+            <span style="color:#7abf8e;font-size:11px;font-weight:600">${escHtml(c.channel||'Leads')}</span>
+            <span style="font-size:9px;color:var(--muted);display:flex;align-items:center;gap:3px">
+              <svg width="9" height="9" viewBox="0 0 12 12" fill="none"><rect x="2" y="5" width="8" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M4 5V4a2 2 0 0 1 4 0v1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              Dari Ads — tidak bisa diubah
+            </span>
+          </div>`
+        : `<select class="fi" id="crm-f-channel">
+            <option value="">— Pilih Channel —</option>
+            ${channelOpts}
+          </select>`
+      }
+      ${!isAdsEntry ? '' : '<input type="hidden" id="crm-f-channel" value="' + escHtml(c.channel||'') + '"/>'}
     </div>
     <div class="fg"><label>${t('crmColFirstOrder')}</label><input class="fi" id="crm-f-first" type="date" value="${crmToDateInput(c.first_order)}"/></div>
     <div style="display:flex;gap:10px">
       <div class="fg" style="flex:1"><label>${t('crmColTotalOrder')}</label><input class="fi" id="crm-f-torder" type="number" min="0" value="${crmParseInt(c.total_order)||''}"/></div>
       <div class="fg" style="flex:1"><label>${t('crmColTotalSpend')}</label><input class="fi" id="crm-f-tspend" type="number" min="0" value="${crmParseMoney(c.total_belanja)||''}" placeholder="Rp"/></div>
     </div>
-    <div class="fg"><label>${t('crmColStatus')}</label><select class="fi" id="crm-f-status">${opts}</select></div>
+    <div class="fg"><label>${t('crmColStatus')}</label><select class="fi" id="crm-f-status" onchange="updateHeatPreview()">${opts}</select></div>
+    <div class="fg" style="margin-bottom:12px">
+      <label style="font-size:10px;color:var(--muted)">Heat Category (auto)</label>
+      <div id="heat-preview-modal" style="margin-top:4px">
+        ${crmHeatBadge(editing && c.heat_category ? c.heat_category : crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status)))}
+        <span style="font-size:9px;color:var(--muted);margin-left:8px">Dihitung otomatis dari total order & status</span>
+      </div>
+    </div>
     <div class="fg"><label>${t('crmColFavProduct')}</label><input class="fi" id="crm-f-fav" value="${escHtml(c.produk_fav||'')}"/></div>
     <div class="fg"><label>${t('crmColNote')}</label><textarea class="fi" id="crm-f-note" rows="2">${escHtml(c.catatan||'')}</textarea></div>`;
   document.getElementById('m-foot').innerHTML = `
@@ -8473,19 +8706,26 @@ function crmToDateInput(v){
 async function saveCRMCustomer(idx) {
   const nama = document.getElementById('crm-f-nama').value.trim();
   if (!nama) { toast(t('crmFillName')); return; }
+  const _existingEntry = idx >= 0 ? crmData[idx] : null;
   const rec = {
-    id_customer: document.getElementById('crm-f-id').value.trim(),
+    id_customer:    document.getElementById('crm-f-id').value.trim(),
     nama,
-    wa:          document.getElementById('crm-f-wa').value.trim(),
-    kota:        document.getElementById('crm-f-kota').value.trim(),
-    channel:     document.getElementById('crm-f-channel').value.trim(),
-    first_order: document.getElementById('crm-f-first').value.trim(),
-    total_order: crmParseInt(document.getElementById('crm-f-torder').value),
-    total_belanja: crmParseMoney(document.getElementById('crm-f-tspend').value),
-    status:      document.getElementById('crm-f-status').value,
-    produk_fav:  document.getElementById('crm-f-fav').value.trim(),
-    catatan:     document.getElementById('crm-f-note').value.trim(),
+    wa:             document.getElementById('crm-f-wa').value.trim(),
+    kota:           document.getElementById('crm-f-kota').value.trim(),
+    // v5.2: jaga channel bila dari Ads
+    channel:        (_existingEntry?.channel_is_ads)
+                      ? (_existingEntry.channel||'')
+                      : document.getElementById('crm-f-channel').value.trim(),
+    channel_is_ads: _existingEntry?.channel_is_ads || false,
+    first_order:    document.getElementById('crm-f-first').value.trim(),
+    total_order:    crmParseInt(document.getElementById('crm-f-torder').value),
+    total_belanja:  crmParseMoney(document.getElementById('crm-f-tspend').value),
+    status:         document.getElementById('crm-f-status').value,
+    produk_fav:     document.getElementById('crm-f-fav').value.trim(),
+    catatan:        document.getElementById('crm-f-note').value.trim(),
   };
+  // v5.2: compute heat_category
+  rec.heat_category = crmComputeHeat(rec.total_order, rec.status);
 
   // ── Mode DB: simpan lewat RPC, lalu reload dari server ──
   if (crmUsesDB()) {
@@ -8502,8 +8742,9 @@ async function saveCRMCustomer(idx) {
       p_total_order: rec.total_order,
       p_total_spend: rec.total_belanja,
       p_status:      crmNormStatus(rec.status),
-      p_fav_product: rec.produk_fav || null,
-      p_admin_note:  rec.catatan || null,
+      p_fav_product:    rec.produk_fav || null,
+      p_admin_note:     rec.catatan || null,
+      p_channel_is_ads: rec.channel_is_ads || false,  // v5.2
     }));
     if (!res || res.error) {
       const msg = res?.error?.message || '';
@@ -9042,6 +9283,19 @@ async function exportCRMExcel() {
   toast(`✓ Export selesai — ${total} customer, ${sheetCount} sheet analitik`);
   pushActivity(`CRM: export Excel profesional (${total} customer, ${sheetCount} sheet${filterLabel})`, 'info');
 }
+
+// v5.2: live heat preview in CRM modal
+function updateHeatPreview() {
+  const statusEl = document.getElementById('crm-f-status');
+  const orderEl  = document.getElementById('crm-f-torder');
+  const previewEl = document.getElementById('heat-preview-modal');
+  if (!previewEl || !statusEl) return;
+  const ord  = parseInt(orderEl?.value || '0', 10) || 0;
+  const stat = statusEl.value || 'New';
+  const heat = crmComputeHeat(ord, stat);
+  previewEl.innerHTML = crmHeatBadge(heat) + '<span style="font-size:9px;color:var(--muted);margin-left:8px">Dihitung otomatis dari total order & status</span>';
+}
+window.updateHeatPreview = updateHeatPreview;
 
 // expose ke window (dipanggil dari atribut onclick)
 window.renderCRM = renderCRM;
