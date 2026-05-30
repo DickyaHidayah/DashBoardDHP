@@ -81,35 +81,6 @@ body.light .main{ background:#ffffff; }
 body.light .content{ background:#ffffff; }
 
 /* ── Login card ── */
-body.light .card{ background:#ffffff; border:1px solid rgba(0,0,0,.14); box-shadow:0 4px 24px rgba(0,0,0,.09); }
-body.light .card-glow{ display:none; }
-body.light .cb{ background:#ffffff; color:#0d0d0d; border:1px solid rgba(0,0,0,.2); }
-body.light .cb:hover{ background:#f5f5f5; border-color:#0d0d0d; }
-body.light .brand-name{ color:#0d0d0d; }
-body.light .brand-sub{ color:rgba(13,13,13,.5); }
-body.light .login-quote{ color:rgba(13,13,13,.42); }
-body.light .panel-title{ color:#0d0d0d; font-weight:700; }
-body.light .panel-sub{ color:rgba(13,13,13,.65); }
-body.light .panel-logo-svg{ background:#f7f7f8; border:1px solid rgba(0,0,0,.12); }
-body.light .panel-logo-svg svg path,body.light .panel-logo-svg svg polygon,body.light .panel-logo-svg svg line{ stroke:#0d0d0d !important; }
-body.light .new-here-hint{ color:rgba(13,13,13,.6); }
-body.light .inline-lnk{ color:var(--blue); }
-body.light .txt-lnk{ color:var(--blue); }
-body.light .fg label{ color:#0d0d0d; font-weight:600; font-size:11px; letter-spacing:.04em; }
-body.light .fi{ background:#ffffff; border:1.5px solid rgba(0,0,0,.18); color:#0d0d0d; }
-body.light .fi:focus{ border-color:#0d0d0d; background:#ffffff; box-shadow:0 0 0 3px rgba(0,0,0,.06); }
-body.light select.fi{ background:#ffffff; color:#0d0d0d; border-color:rgba(0,0,0,.18); }
-body.light select.fi option{ background:#ffffff; color:#0d0d0d; }
-body.light .btn-p{ background:#0d0d0d; color:#ffffff; border:none; }
-body.light .btn-p:hover{ background:#222; box-shadow:0 4px 14px rgba(0,0,0,.2); }
-body.light .btn-g{ background:#ffffff; border:1.5px solid rgba(0,0,0,.2); color:#0d0d0d; }
-body.light .btn-g:hover{ background:#f5f5f5; border-color:#0d0d0d; color:#0d0d0d; }
-body.light .divider{ color:rgba(13,13,13,.38); }
-body.light .divider::before,body.light .divider::after{ background:rgba(0,0,0,.12); }
-body.light .al.error{ background:#fff0f0; border:1.5px solid #e8b0b0; color:#c0392b; }
-body.light .al.success{ background:#f0fff4; border:1.5px solid #9ed9b6; color:#1a7a3e; }
-body.light .al.info{ background:#f0f6ff; border:1.5px solid #a0bce0; color:#1a56a0; }
-body.light .str-lbl{ color:rgba(13,13,13,.55); }
 
 /* ── Sidebar ── */
 body.light .sb{ background:#f7f7f8; border-right:1.5px solid rgba(0,0,0,.1); }
@@ -124,7 +95,7 @@ body.light .sb-logo-mark path,body.light .sb-logo-mark line,body.light .sb-logo-
 body.light .nav-sec-lbl{ color:rgba(13,13,13,.42); font-weight:700; font-size:9px; letter-spacing:.14em; }
 body.light .nav-item{ color:#0d0d0d; font-weight:500; }
 body.light .nav-item:hover{ background:rgba(0,0,0,.06); color:#0d0d0d; }
-body.light .nav-item.active{ background:#0d0d0d; color:#ffffff; border-left-color:#0d0d0d; border-radius:6px; }
+body.light .nav-item.active{background:#0d0d0d;color:#ffffff;border-left-color:#0d0d0d;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 body.light .nav-item.active .nav-icon svg{ filter:brightness(10); }
 body.light .nav-icon svg{ opacity:1; filter:brightness(0); }
 body.light .sb-foot{ border-top:1.5px solid rgba(0,0,0,.09); }
@@ -153,13 +124,13 @@ body.light .rt-item{ color:#0d0d0d; }
 body.light .rt-count{ color:rgba(13,13,13,.55); font-weight:600; }
 
 /* ── Content / Page header ── */
-body.light .ph .pt{ color:#0d0d0d; font-weight:800; }
+body.light .ph .pt{color:#0d0d0d;font-weight:800;font-size:18px;letter-spacing:-.01em}
 body.light .ph .ps{ color:rgba(13,13,13,.55); font-weight:500; }
 body.light .tbl-head{ border-bottom:1.5px solid rgba(0,0,0,.12); background:#ffffff; }
 body.light .tbl-title{ color:#0d0d0d; font-weight:700; }
 
 /* ── Tables ── */
-body.light .tbl-wrap{ background:#ffffff; border:1.5px solid rgba(0,0,0,.1); border-radius:var(--r); }
+body.light .tbl-wrap{background:#ffffff;border:1.5px solid rgba(0,0,0,.14);border-radius:var(--r);overflow:hidden}
 body.light .tbl-scroll{ background:#ffffff; }
 body.light table th{ background:#f7f7f8; color:#0d0d0d; border-bottom:2px solid rgba(0,0,0,.12); font-weight:700; font-size:11px; letter-spacing:.06em; }
 body.light table td{ color:#0d0d0d; border-bottom:1px solid rgba(0,0,0,.07); }
@@ -304,7 +275,7 @@ body.light .uc-role-change{ background:#f7f7f8; border-top:1px solid rgba(0,0,0,
 body.light .uc-pw-row{ background:#f7f7f8; border:1.5px solid rgba(0,0,0,.1); }
 body.light .uc-pw-label{ color:rgba(13,13,13,.5); }
 body.light .uc-pw-val{ color:#0d0d0d; font-family:monospace; font-weight:700; }
-body.light .uc-pw-toggle{ background:#ffffff; border:1.5px solid rgba(0,0,0,.15); color:#0d0d0d; font-weight:600; }
+body.light .uc-pw-toggle{background:#f7f7f8;border:1.5px solid rgba(0,0,0,.18);color:#0d0d0d;font-weight:700;font-size:10px;letter-spacing:.04em}
 body.light .uc-pw-toggle:hover{ background:#0d0d0d; color:#ffffff; border-color:#0d0d0d; }
 
 /* ── Registration review ── */
@@ -348,14 +319,14 @@ body.light .ads-today-btn{ background:#0d0d0d; color:#ffffff; border:none; font-
 /* ── Calendar ── */
 body.light .cal-wrap{ background:#ffffff; border:1.5px solid rgba(0,0,0,.1); }
 body.light .cal-dow{ color:rgba(13,13,13,.5); font-weight:700; background:#f7f7f8; }
-body.light .cal-daynum{ color:#0d0d0d; font-weight:700; }
+body.light .cal-daynum{color:#0d0d0d;font-weight:700;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;}
 body.light .cal-cell{ border:1px solid rgba(0,0,0,.07); background:#ffffff; }
 body.light .cal-cell:hover{ background:#f5f5f5; }
 body.light .cal-cell.empty{ background:#f7f7f8; }
-body.light .cal-cell.today .cal-daynum{ color:#ffffff; background:#0d0d0d; border-radius:50%; padding:2px 6px; }
+body.light .cal-cell.today .cal-daynum{color:#ffffff!important;background:#0d0d0d!important;border-radius:50%!important;width:26px!important;height:26px!important;padding:0!important;}
 body.light .cal-month-name{ color:#0d0d0d; font-weight:800; }
-body.light .cal-holiday-tag{ background:#fff0f0; color:#c0392b; border:1px solid rgba(192,57,43,.2); font-weight:600; }
-body.light .cal-add-hint{ color:rgba(13,13,13,.35); }
+body.light .cal-holiday-tag{background:#fff0f0;color:#c0392b;border:1.5px solid rgba(192,57,43,.3);font-weight:700;font-size:9px}
+body.light .cal-add-hint{color:rgba(13,13,13,.38);font-weight:500}
 
 /* ── Ad task cards ── */
 body.light .adtask-card{ background:#ffffff; border:1.5px solid rgba(0,0,0,.1); border-left:3px solid #0d0d0d; box-shadow:0 1px 4px rgba(0,0,0,.05); }
@@ -504,17 +475,126 @@ body.light.is-head-mod .sb-user-name{ background:none; -webkit-text-fill-color:#
 /* welcome banner dihapus */
 
 /* ══════ 3D SCENE ══════ */
+/* ═══════════════════════════════════════════════════════
+   LIGHT MODE — LOGIN PAGE (definitive, no duplicates)
+   ═══════════════════════════════════════════════════════ */
+body.light #scene{display:none!important}
+body.light .bg-ov{background:#f5f5f7!important}
+body.light .login-wrap{background:#f5f5f7}
+
+/* Card */
+body.light .card{
+  background:#ffffff;
+  border:1.5px solid rgba(0,0,0,.16);
+  box-shadow:0 2px 12px rgba(0,0,0,.08), 0 8px 40px rgba(0,0,0,.06);
+  border-radius:16px;
+}
+body.light .card-glow{display:none}
+
+/* Logo */
+body.light .panel-logo-svg{
+  background:#f5f5f7;
+  border:1.5px solid rgba(0,0,0,.14);
+}
+body.light .panel-logo-svg svg path,
+body.light .panel-logo-svg svg polygon,
+body.light .panel-logo-svg svg line{stroke:#111111!important}
+
+/* Brand text */
+body.light .brand-name{color:#111111;font-weight:800;letter-spacing:.22em}
+body.light .brand-sub{color:rgba(17,17,17,.5);letter-spacing:.38em;font-weight:600}
+body.light .login-quote{color:rgba(17,17,17,.4);font-style:italic}
+
+/* Panel title & sub */
+body.light .panel-title{color:#111111;font-weight:800;font-size:22px}
+body.light .panel-sub{color:rgba(17,17,17,.58);font-size:12px;font-weight:500}
+
+/* Form labels */
+body.light .fg label{
+  color:#111111;
+  font-weight:700;
+  font-size:10px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  display:block;
+  margin-bottom:6px;
+}
+
+/* Inputs */
+body.light .fi{
+  background:#ffffff;
+  border:1.5px solid rgba(0,0,0,.22);
+  color:#111111;
+  font-weight:500;
+  font-size:14px;
+}
+body.light .fi::placeholder{color:rgba(17,17,17,.35)}
+body.light .fi:focus{
+  background:#ffffff;
+  border-color:#111111;
+  box-shadow:0 0 0 3px rgba(17,17,17,.08);
+  outline:none;
+}
+body.light select.fi{background:#ffffff;color:#111111;border-color:rgba(0,0,0,.22)}
+body.light select.fi option{background:#ffffff;color:#111111}
+
+/* Buttons */
+body.light .btn-p{
+  background:#111111;
+  color:#ffffff;
+  border:none;
+  font-weight:800;
+  font-size:11px;
+  letter-spacing:.18em;
+}
+body.light .btn-p:hover{background:#333333;box-shadow:0 4px 16px rgba(0,0,0,.18)}
+body.light .btn-g{
+  background:#ffffff;
+  border:1.5px solid rgba(0,0,0,.2);
+  color:#111111;
+  font-weight:600;
+}
+body.light .btn-g:hover{background:#f0f0f0;border-color:#111111}
+
+/* Divider */
+body.light .divider{color:rgba(17,17,17,.35)}
+body.light .divider::before,body.light .divider::after{background:rgba(0,0,0,.14)}
+
+/* Links */
+body.light .txt-lnk{color:#1a56a0;font-weight:600}
+body.light .txt-lnk:hover{color:#0d3d7a}
+body.light .inline-lnk{color:#1a56a0;font-weight:600}
+body.light .new-here-hint{color:rgba(17,17,17,.55)}
+
+/* Alerts */
+body.light .al.error{background:#fff2f2;border:1.5px solid rgba(192,57,43,.35);color:#b91c1c}
+body.light .al.success{background:#f0fdf4;border:1.5px solid rgba(21,128,61,.3);color:#15803d}
+body.light .al.info{background:#eff6ff;border:1.5px solid rgba(37,99,235,.25);color:#1d4ed8}
+
+/* Password strength */
+body.light .str-lbl{color:rgba(17,17,17,.5);font-weight:600}
+
+/* Ctrl bar (ID/Dark buttons top-right on login) */
+body.light .cb{
+  background:#ffffff;
+  color:#111111;
+  border:1.5px solid rgba(0,0,0,.18);
+  font-weight:700;
+  box-shadow:0 1px 4px rgba(0,0,0,.08);
+}
+body.light .cb:hover{background:#f0f0f0;border-color:#111111}
+
 #scene{position:fixed;inset:0;z-index:0;transition:opacity .5s}
-body.light #scene{opacity:.25!important}
+
 #three-canvas{width:100%;height:100%;display:block}
 .bg-ov{position:absolute;inset:0;background:radial-gradient(ellipse 120% 80% at 50% 120%,rgba(10,9,6,0),rgba(10,9,6,.7))}
-body.light .bg-ov{background:rgba(255,255,255,.55)}
+
+
 
 /* ══════ LOGIN CARD ══════ */
 .login-wrap{position:relative;z-index:10;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px 16px}
 .card{background:rgba(14,12,9,.88);border:1px solid var(--border-hi);border-radius:16px;
     width:100%;max-width:400px;overflow:hidden;backdrop-filter:blur(24px);box-shadow:var(--shadow);position:relative}
-body.light .card{background:#ffffff;border:1px solid rgba(0,0,0,.14);box-shadow:0 4px 24px rgba(0,0,0,.09)}
 .card-glow{position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:200px;height:60px;
     background:radial-gradient(ellipse,rgba(201,169,110,.12),transparent);pointer-events:none}
 
@@ -541,8 +621,6 @@ body.light .card{background:#ffffff;border:1px solid rgba(0,0,0,.14);box-shadow:
     padding:11px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;
     transition:border-color var(--trans),background var(--trans)}
 .fi:focus{border-color:rgba(201,169,110,.45);background:rgba(255,255,255,.06)}
-body.light .fi{background:#ffffff;border:1.5px solid rgba(0,0,0,.18);color:#0d0d0d}
-body.light .fi:focus{background:#ffffff;border-color:#0d0d0d;box-shadow:0 0 0 3px rgba(0,0,0,.06)}
 
 /* Primary button */
 .btn-p{width:100%;padding:13px;background:linear-gradient(135deg,var(--gold-dk),var(--gold));
@@ -1231,9 +1309,16 @@ body.light .ads-select{background:#ffffff;color:#0d0d0d;border:1.5px solid rgba(
 body.light .cal-cell.empty{background:#f9f9f9}
 .cal-cell:not(.empty):hover{background:rgba(201,169,110,.06)}
 .cal-cell.today{background:rgba(201,169,110,.08);box-shadow:inset 0 0 0 1px var(--gold-lo)}
-.cal-daynum{font-size:13px;font-weight:600;color:var(--text2);font-family:'Cormorant Garamond',serif;line-height:1}
+body.light .cal-cell.today{background:#f5f9ff;box-shadow:inset 0 0 0 1.5px #1a56a0}
+/* ── Sunday & holiday red numbers in light mode ── */
+body.light .cal-cell.is-sun .cal-daynum,
+body.light .cal-cell.is-holiday .cal-daynum{color:#c0392b!important;background:transparent!important}
+body.light .cal-cell.today.is-sun .cal-daynum,
+body.light .cal-cell.today.is-holiday .cal-daynum{color:#ffffff!important;background:#c0392b!important}
+
+.cal-daynum{font-size:13px;font-weight:600;color:var(--text2);font-family:'Cormorant Garamond',serif;line-height:1;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;}
 .cal-cell.is-sun .cal-daynum,.cal-cell.is-holiday .cal-daynum{color:var(--red)}
-.cal-cell.today .cal-daynum{color:var(--gold-hi)}
+.cal-cell.today .cal-daynum{color:var(--bg);background:var(--gold);}
 .cal-holiday-tag{font-size:7.5px;color:var(--red);line-height:1.25;letter-spacing:.02em;
     overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;opacity:.85}
 .cal-holiday-dot{position:absolute;top:7px;right:7px;width:6px;height:6px;border-radius:50%;background:var(--red);box-shadow:0 0 5px var(--red)}
@@ -1574,9 +1659,9 @@ body.light .task-card{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
 
 /* Light-mode tweaks untuk Ad Scheduler & Task panel */
 body.light .cal-wrap{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
-body.light .cal-daynum{color:#0d0d0d;font-weight:700}
+/* dup removed */
 body.light .cal-month-name{color:#0d0d0d;font-weight:800}
-body.light .cal-cell.today .cal-daynum{color:#ffffff;background:#0d0d0d;border-radius:50%;padding:2px 6px}
+/* dup removed */
 body.light .cal-dow{color:rgba(13,13,13,.55);font-weight:700;background:#f7f7f8}
 body.light #task-panel{background:#ffffff;border:1.5px solid rgba(0,0,0,.12)}
 body.light .tp-title{color:#0d0d0d;font-weight:800}
