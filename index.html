@@ -8441,28 +8441,26 @@ function renderCRMDiagram(data) {
       <!-- v5.2: Heat Category chart -->
       <div class="crm-diag-card">
         <div class="crm-diag-title">🔥 Heat Category</div>
-        <div class="crm-diag-bars">
-          ${(() => {
-            const heatDef = [
-              { key:'Hot',  color:'#e87070', icon:'🔥' },
-              { key:'Warm', color:'#e8b86e', icon:'☀️' },
-              { key:'Cold', color:'#7ea8c9', icon:'❄️' },
-            ];
-            const counts = heatDef.map(h => ({
-              ...h,
-              n: data.filter(c => (c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status))) === h.key).length
-            }));
-            const maxH = Math.max(...counts.map(x => x.n), 1);
-            return counts.map(h => {
-              const pct = Math.round(h.n / maxH * 100);
-              const pctTotal = data.length ? Math.round(h.n / data.length * 100) : 0;
-              return \`<div class="crm-diag-bar-row">
-                <div class="crm-diag-bar-lbl" style="color:\${h.color}">\${h.icon} \${h.key}</div>
-                <div class="crm-diag-bar-track"><div class="crm-diag-bar-fill" style="width:\${pct}%;background:\${h.color}"></div></div>
-                <div class="crm-diag-bar-val">\${h.n} <span style="color:var(--muted);font-size:9px">(\${pctTotal}%)</span></div>
-              </div>\`;
+        <div class="crm-diag-bars" id="crm-heat-bars-${Math.random().toString(36).slice(2,7)}">
+          ${(function() {
+            var heatKeys  = ['Hot','Warm','Cold'];
+            var heatColors= {'Hot':'#e87070','Warm':'#e8b86e','Cold':'#7ea8c9'};
+            var heatIcons = {'Hot':'🔥','Warm':'☀️','Cold':'❄️'};
+            var counts = heatKeys.map(function(k){
+              return { key:k, color:heatColors[k], icon:heatIcons[k],
+                n: data.filter(function(c){ return (c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status))) === k; }).length };
+            });
+            var maxH = Math.max.apply(null, counts.map(function(x){ return x.n; }).concat([1]));
+            return counts.map(function(h) {
+              var pct = Math.round(h.n / maxH * 100);
+              var pctTotal = data.length ? Math.round(h.n / data.length * 100) : 0;
+              return '<div class="crm-diag-bar-row">'
+                + '<div class="crm-diag-bar-lbl" style="color:' + h.color + '">' + h.icon + ' ' + h.key + '</div>'
+                + '<div class="crm-diag-bar-track"><div class="crm-diag-bar-fill" style="width:' + pct + '%;background:' + h.color + '"></div></div>'
+                + '<div class="crm-diag-bar-val">' + h.n + ' <span style="color:var(--muted);font-size:9px">(' + pctTotal + '%)</span></div>'
+                + '</div>';
             }).join('');
-          })()}
+          }())}
         </div>
       </div>
     </div>`;
@@ -8658,19 +8656,14 @@ function openCRMModal(idx) {
     <div class="fg"><label>${t('crmColCity')}</label><input class="fi" id="crm-f-kota" value="${escHtml(c.kota||'')}"/></div>
     <div class="fg"><label>${t('crmColChannel')}</label>
       ${isAdsEntry
-        ? `<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r);background:rgba(122,191,142,.06)">
-            <span style="color:#7abf8e;font-size:11px;font-weight:600">${escHtml(c.channel||'Leads')}</span>
-            <span style="font-size:9px;color:var(--muted);display:flex;align-items:center;gap:3px">
-              <svg width="9" height="9" viewBox="0 0 12 12" fill="none"><rect x="2" y="5" width="8" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M4 5V4a2 2 0 0 1 4 0v1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-              Dari Ads — tidak bisa diubah
-            </span>
-          </div>`
-        : `<select class="fi" id="crm-f-channel">
-            <option value="">— Pilih Channel —</option>
-            ${channelOpts}
-          </select>`
+        ? '<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r);background:rgba(122,191,142,.06)">'
+          + '<span style="color:#7abf8e;font-size:11px;font-weight:600">' + escHtml(c.channel||'Leads') + '</span>'
+          + '<span style="font-size:9px;color:var(--muted);display:flex;align-items:center;gap:3px">'
+          + '<svg width="9" height="9" viewBox="0 0 12 12" fill="none"><rect x="2" y="5" width="8" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M4 5V4a2 2 0 0 1 4 0v1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>'
+          + ' Dari Ads — tidak bisa diubah</span></div>'
+          + '<input type="hidden" id="crm-f-channel" value="' + escHtml(c.channel||'') + '"/>'
+        : '<select class="fi" id="crm-f-channel"><option value="">— Pilih Channel —</option>' + channelOpts + '</select>'
       }
-      ${!isAdsEntry ? '' : '<input type="hidden" id="crm-f-channel" value="' + escHtml(c.channel||'') + '"/>'}
     </div>
     <div class="fg"><label>${t('crmColFirstOrder')}</label><input class="fi" id="crm-f-first" type="date" value="${crmToDateInput(c.first_order)}"/></div>
     <div style="display:flex;gap:10px">
