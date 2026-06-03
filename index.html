@@ -4737,18 +4737,6 @@ function toggleMode() {
    ⑩ 3D BACKGROUND
    ═══════════════════════════════════════════════════════════ */
 let bgRenderer = null;
-// ── Load brand + aktifkan realtime listener sejak halaman pertama dibuka ──
-// Ini fix utama: login screen di device mana pun langsung dapat brand terbaru
-// bahkan sebelum user login, dan realtime sudah aktif sejak awal
-(function initEarlyBrand() {
-  if (!db) return;
-  // Load brand segera (untuk login screen)
-  loadBrandFromDB().then(data => { if (data) applyBrandIdentity(data); }).catch(() => {});
-  // Aktifkan realtime listener sejak halaman dibuka
-  // Sehingga kalau dickya ubah brand saat user lain di halaman login,
-  // login screen mereka juga ikut update
-  initBrandRealtimeListener();
-})();
 (function initBackground() {
   if (typeof THREE === 'undefined') { bgRenderer = { setMode:()=>{} }; return; }
   const canvas = document.getElementById('three-canvas');
@@ -10192,6 +10180,26 @@ document.addEventListener('keydown', e => {
 
 /* ══ INIT ══ */
 applyTranslations();
+
+// ── Brand Identity: load dari Supabase saat halaman pertama dibuka ──
+// Dipanggil di sini (paling bawah) supaya semua fungsi sudah terdefinisi.
+// Fix: login screen di SEMUA device langsung tampilkan brand terbaru.
+// Fix: realtime listener aktif sejak awal, termasuk saat di halaman login.
+(function initEarlyBrand() {
+  if (!db) return;
+  try {
+    // 1. Load brand langsung untuk login screen
+    loadBrandFromDB()
+      .then(data => { if (data) applyBrandIdentity(data); })
+      .catch(() => {});
+    // 2. Aktifkan realtime listener — semua device dapat update realtime
+    //    bahkan sebelum login
+    initBrandRealtimeListener();
+  } catch(e) {
+    // Jangan biarkan error brand menghalangi portal berjalan
+    console.warn('[DHP] Brand init error (non-fatal):', e);
+  }
+})();
 </script>
 </body>
 </html>
