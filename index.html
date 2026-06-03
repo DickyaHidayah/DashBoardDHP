@@ -3741,8 +3741,9 @@ function sweepStalePresence() {
 
 function initRealtimePresence(userId, role, name) {
   if (!db) { startLocalTick(); return; }
-  // Start brand identity realtime listener (all users get live updates)
-  try { initBrandRealtimeListener(); } catch(e) {}
+  // Brand listener sudah diinit sejak halaman pertama dibuka (initEarlyBrand)
+  // Tidak perlu inisialisasi ulang di sini — cukup pastikan channel aktif
+  if (!_brandChannel) { try { initBrandRealtimeListener(); } catch(e) {} }
 
   // Bersihkan channel lama bila ada (mis. login ulang)
   if (presChannel) { try { presChannel.untrack(); presChannel.unsubscribe(); } catch(e){} presChannel = null; }
@@ -4736,8 +4737,18 @@ function toggleMode() {
    ⑩ 3D BACKGROUND
    ═══════════════════════════════════════════════════════════ */
 let bgRenderer = null;
-// Apply saved brand identity from Supabase after DB is ready (called in initDashboard)
-// earlyLoadBrand() is called after login to pull fresh brand from DB
+// ── Load brand + aktifkan realtime listener sejak halaman pertama dibuka ──
+// Ini fix utama: login screen di device mana pun langsung dapat brand terbaru
+// bahkan sebelum user login, dan realtime sudah aktif sejak awal
+(function initEarlyBrand() {
+  if (!db) return;
+  // Load brand segera (untuk login screen)
+  loadBrandFromDB().then(data => { if (data) applyBrandIdentity(data); }).catch(() => {});
+  // Aktifkan realtime listener sejak halaman dibuka
+  // Sehingga kalau dickya ubah brand saat user lain di halaman login,
+  // login screen mereka juga ikut update
+  initBrandRealtimeListener();
+})();
 (function initBackground() {
   if (typeof THREE === 'undefined') { bgRenderer = { setMode:()=>{} }; return; }
   const canvas = document.getElementById('three-canvas');
@@ -5060,8 +5071,6 @@ function loginSuccess(id, role, name) {
   if (!presenceMap[id]) presenceMap[id] = { id, role, name, online:false, loginAt:0, lastSeen:0 };
   Object.assign(presenceMap[id], { online:true, loginAt:Date.now(), lastSeen:Date.now(), role, name });
   dbQ(d => d.rpc('update_user_presence', { p_user_id:id, p_event:'login' }));
-  // Apply any saved brand identity immediately (async, non-blocking)
-  try { earlyLoadBrand(); } catch(e) {}
   const sc = document.getElementById('scene');
   sc.style.opacity = '0';
   setTimeout(async () => {
@@ -5074,8 +5083,13 @@ function loginSuccess(id, role, name) {
     if (can.isMod(role)) document.body.classList.add('is-mod');
     if (role === 'head_moderator') document.body.classList.add('is-head-mod');
     document.body.classList.add(`role-theme-${role}`);
+    // ── Load brand SEBELUM dashboard render ──────────────────────
+    // Ini yang fix: device lain dapat brand terbaru saat login
+    await earlyLoadBrand();
     await initDashboard();
     initRealtimePresence(id, role, name);
+    // ── Start brand polling sebagai fallback realtime ─────────────
+    startBrandPolling();
     if (role === 'guest') toast(t('guestReadOnly'));
     // Notif/aktivitas login diri sendiri:
     // Kalau Supabase aktif, event 'join' channel yang akan memunculkannya (anti-dobel).
@@ -5095,8 +5109,11 @@ function handleLogout() {
     if (presenceMap[currentUser.id]) Object.assign(presenceMap[currentUser.id], { online:false, lastSeen:Date.now() });
     if (currentUser.role === 'guest') releaseGuest(currentUser.id);
     if (presChannel) { presChannel.untrack(); presChannel.unsubscribe(); presChannel = null; }
-    if (adChannel) { try { adChannel.unsubscribe(); } catch(e){} adChannel = null; }
-    if (crmChannel) { try { crmChannel.unsubscribe(); } catch(e){} crmChannel = null; }
+    if (adChannel)   { try { adChannel.unsubscribe();  } catch(e){} adChannel  = null; }
+    if (crmChannel)  { try { crmChannel.unsubscribe(); } catch(e){} crmChannel = null; }
+    // ── Cleanup brand channel & polling ──────────────────────────
+    if (_brandChannel)  { try { _brandChannel.unsubscribe();  } catch(e){} _brandChannel  = null; }
+    if (_brandPollInterval) { clearInterval(_brandPollInterval); _brandPollInterval = null; }
     stopAdPolling();
     if (presHB) { clearInterval(presHB); presHB = null; }
     if (presStaleIv) { clearInterval(presStaleIv); presStaleIv = null; }
@@ -6277,28 +6294,67 @@ async function resetBrandIdentity() {
 }
 
 // ── Realtime listener: semua client dapat update otomatis ────────
+// ── Brand Realtime channel ref (global, satu instance saja) ─────
+let _brandChannel = null;
+
 function initBrandRealtimeListener() {
   if (!db) return;
-  db.channel('brand-config-changes')
+
+  // Unsubscribe channel lama jika sudah ada — cegah duplikat
+  if (_brandChannel) {
+    try { _brandChannel.unsubscribe(); } catch(e) {}
+    _brandChannel = null;
+  }
+
+  _brandChannel = db.channel('dhp-brand-identity')
+    // Tangkap INSERT dan UPDATE pada portal_config
+    .on('postgres_changes', {
+      event:  'INSERT',
+      schema: 'public',
+      table:  'portal_config'
+    }, async () => {
+      const fresh = await loadBrandFromDB();
+      if (fresh) applyBrandIdentity(fresh);
+    })
     .on('postgres_changes', {
       event:  'UPDATE',
       schema: 'public',
       table:  'portal_config'
-    }, async (payload) => {
-      // Ada perubahan di portal_config — reload brand
+    }, async () => {
       const fresh = await loadBrandFromDB();
       if (fresh) applyBrandIdentity(fresh);
     })
-    .subscribe();
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        // Langsung load brand terbaru saat channel pertama kali terkoneksi
+        // Ini fix untuk device yang sudah login sebelum brand diubah
+        loadBrandFromDB().then(data => { if (data) applyBrandIdentity(data); });
+      }
+    });
 }
 
-// ── Fallback: load brand di early page init (sebelum login) ──────
+// ── Load brand dari DB dan apply ke seluruh halaman ──────────────
+// Dipanggil: saat halaman load (login screen), saat login berhasil,
+// dan saat realtime event masuk
 async function earlyLoadBrand() {
   if (!db) return;
   try {
     const data = await loadBrandFromDB();
     if (data) applyBrandIdentity(data);
-  } catch(e) {}
+  } catch(e) { console.warn('[Brand] earlyLoadBrand:', e); }
+}
+
+// ── Brand polling fallback untuk device yang tidak dapat realtime ─
+// Jalan setiap 30 detik sebagai safety net
+let _brandPollInterval = null;
+function startBrandPolling() {
+  if (_brandPollInterval) clearInterval(_brandPollInterval);
+  _brandPollInterval = setInterval(async () => {
+    try {
+      const data = await loadBrandFromDB();
+      if (data) applyBrandIdentity(data);
+    } catch(e) {}
+  }, 30000); // 30 detik
 }
 
 
