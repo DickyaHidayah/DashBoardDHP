@@ -81,6 +81,85 @@ body.light .heat-cold { background:rgba(26,86,160,.10);color:#1a56a0;border-colo
 }
 
 /* Profile modal icon gear button */
+/* ══ BRAND SETTINGS PANEL (dickya only) ══ */
+.brand-settings-card{
+  grid-column:1/-1;
+  background:linear-gradient(135deg,rgba(201,169,110,.07) 0%,rgba(201,169,110,.03) 100%);
+  border:1px solid rgba(201,169,110,.22);
+  border-radius:12px;padding:28px;position:relative;overflow:hidden;
+}
+.brand-settings-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(201,169,110,.5),transparent);
+}
+.brand-settings-card .sc-title{
+  color:var(--gold-hi);font-size:13px;font-family:'Cormorant Garamond',serif;
+  font-weight:500;letter-spacing:.12em;margin-bottom:20px;display:flex;align-items:center;gap:8px;
+}
+.brand-settings-inner{display:grid;grid-template-columns:auto 1fr;gap:32px;align-items:start}
+@media(max-width:600px){.brand-settings-inner{grid-template-columns:1fr}}
+
+/* Upload zone */
+.brand-upload-zone{
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  padding:20px 16px;border-radius:10px;
+  border:1.5px dashed rgba(201,169,110,.2);
+  background:rgba(201,169,110,.04);cursor:pointer;
+  transition:all .2s ease;min-width:140px;text-align:center;
+}
+.brand-upload-zone:hover{border-color:rgba(201,169,110,.4);background:rgba(201,169,110,.08)}
+.brand-upload-preview{
+  width:80px;height:80px;border-radius:50%;object-fit:cover;
+  border:2px solid rgba(201,169,110,.3);
+  box-shadow:0 4px 20px rgba(0,0,0,.4);
+  display:block;transition:all .3s ease;
+}
+.brand-upload-preview.has-logo{border-color:rgba(201,169,110,.6)}
+.brand-upload-preview-svg{
+  width:80px;height:80px;border-radius:50%;
+  background:radial-gradient(circle,rgba(201,169,110,.1),rgba(201,169,110,.03));
+  border:2px solid rgba(201,169,110,.25);
+  display:flex;align-items:center;justify-content:center;
+}
+.brand-upload-label{font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.brand-upload-hint{font-size:9px;color:var(--muted);opacity:.6;margin-top:2px}
+.brand-remove-btn{
+  font-size:9px;color:var(--red);letter-spacing:.08em;cursor:pointer;
+  background:none;border:none;text-transform:uppercase;opacity:.7;
+  font-family:'Inter',sans-serif;padding:2px 6px;
+  transition:opacity .2s;
+}
+.brand-remove-btn:hover{opacity:1}
+
+/* Preview live */
+.brand-preview-section{
+  margin-top:20px;padding:14px 18px;border-radius:8px;
+  background:rgba(201,169,110,.04);border:1px solid var(--border);
+}
+.brand-preview-title{font-size:9px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
+.brand-preview-login{
+  display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 0 4px;
+}
+.bpl-name{font-family:'Cormorant Garamond',serif;font-size:15px;letter-spacing:.3em;color:var(--gold-hi)}
+.bpl-tag{font-size:7px;letter-spacing:.5em;color:var(--muted);text-transform:uppercase}
+.bpl-quote{font-family:'Cormorant Garamond',serif;font-size:10px;font-style:italic;color:rgba(201,169,110,.45);margin-top:2px}
+.brand-preview-sidebar{
+  display:flex;align-items:center;gap:8px;padding:8px 0;
+  border-top:1px solid var(--border);margin-top:8px;
+}
+.bps-name{font-family:'Cormorant Garamond',serif;font-size:12px;letter-spacing:.18em;color:var(--gold-hi)}
+.bps-tag{font-size:7px;letter-spacing:.3em;color:var(--muted);text-transform:uppercase;margin-top:1px}
+
+body.light .brand-settings-card{
+  background:linear-gradient(135deg,rgba(160,88,0,.05) 0%,rgba(160,88,0,.02) 100%);
+  border-color:rgba(160,88,0,.18);
+}
+body.light .brand-upload-zone{border-color:rgba(160,88,0,.2);background:rgba(160,88,0,.03)}
+body.light .brand-upload-zone:hover{border-color:rgba(160,88,0,.4);background:rgba(160,88,0,.07)}
+body.light .brand-preview-section{background:rgba(160,88,0,.03)}
+body.light .bpl-name,body.light .bps-name{color:#7a5010}
+body.light .bpl-quote{color:rgba(160,88,0,.4)}
+
 .profile-settings-icon {
   position:absolute;top:14px;right:14px;
   width:32px;height:32px;
@@ -685,6 +764,23 @@ body.light .cb:hover{background:#f0f0f0;border-color:#111111}
     width:60px;height:60px;border-radius:50%;
     background:radial-gradient(circle,rgba(201,169,110,.1),transparent);
     border:1px solid rgba(201,169,110,.2)}
+
+/* ══ BRAND PHOTO — Login & Sidebar ══ */
+.brand-photo-wrap{position:relative;display:inline-block;margin-bottom:6px}
+.brand-photo{width:72px;height:72px;border-radius:50%;object-fit:cover;
+    border:2px solid rgba(201,169,110,.35);
+    box-shadow:0 0 0 4px rgba(201,169,110,.06),0 4px 24px rgba(0,0,0,.5);
+    display:block;transition:all .3s ease}
+.brand-photo-ring{position:absolute;inset:-4px;border-radius:50%;
+    border:1px solid rgba(201,169,110,.18);pointer-events:none;
+    animation:ring-pulse 3s ease-in-out infinite}
+@keyframes ring-pulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:.8;transform:scale(1.02)}}
+body.light .brand-photo{border-color:rgba(160,88,0,.4);box-shadow:0 0 0 4px rgba(160,88,0,.06),0 4px 16px rgba(0,0,0,.15)}
+
+/* Sidebar brand photo (small) */
+.sb-brand-photo{width:28px;height:28px;border-radius:50%;object-fit:cover;
+    border:1.5px solid rgba(201,169,110,.3);flex-shrink:0;display:block}
+body.light .sb-brand-photo{border-color:rgba(160,88,0,.35)}
 .brand-name{font-family:'Cormorant Garamond',serif;font-size:18px;letter-spacing:.3em;color:var(--gold-hi);margin-top:10px}
 .brand-sub{font-size:8px;letter-spacing:.5em;color:var(--muted);text-transform:uppercase;margin-top:3px}
 .login-quote{font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;font-weight:300;letter-spacing:.06em;color:rgba(201,169,110,.45);margin-top:8px}
@@ -2329,7 +2425,13 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
       <!-- PANEL: LOGIN -->
       <div class="panel active" id="panel-login">
         <div class="panel-logo">
-          <div class="panel-logo-svg">
+          <!-- Brand photo (shown when set) -->
+          <div class="brand-photo-wrap" id="login-brand-photo-wrap" style="display:none">
+            <img class="brand-photo" id="login-brand-photo" src="" alt="Brand Logo"/>
+            <div class="brand-photo-ring"></div>
+          </div>
+          <!-- Default SVG (shown when no photo) -->
+          <div class="panel-logo-svg" id="login-brand-svg">
             <svg width="36" height="36" viewBox="0 0 48 48" fill="none">
               <defs>
                 <linearGradient id="plg" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -2344,9 +2446,9 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
               <line x1="30" y1="24" x2="36" y2="24" stroke="url(#plg)" stroke-width="1.6" stroke-linecap="round"/>
             </svg>
           </div>
-          <div class="brand-name">DHP Creative</div>
-          <div class="brand-sub" data-i18n="brandTagline">Design · Heritage · Presence</div>
-          <div class="login-quote">Where creativity meets command.</div>
+          <div class="brand-name" id="login-brand-name">DHP Creative</div>
+          <div class="brand-sub" id="login-brand-tagline" data-i18n="brandTagline">Design · Heritage · Presence</div>
+          <div class="login-quote" id="login-brand-quote">Where creativity meets command.</div>
         </div>
         <div id="login-al" class="al"></div>
         <div class="fg">
@@ -2460,7 +2562,10 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
     </button>
     <div class="sb-head">
       <div class="sb-logo">
-        <svg class="sb-logo-mark" viewBox="0 0 32 32" fill="none">
+        <!-- Sidebar brand photo (when set) -->
+        <img class="sb-brand-photo" id="sb-brand-photo" src="" alt="" style="display:none"/>
+        <!-- Sidebar SVG logo (default) -->
+        <svg class="sb-logo-mark" id="sb-brand-svg" viewBox="0 0 32 32" fill="none">
           <polygon points="16,2 28,9 28,23 16,30 4,23 4,9" stroke="rgba(201,169,110,.6)" stroke-width=".8" fill="rgba(201,169,110,.06)"/>
           <path d="M10 11L10 21L14 21Q18 21 18 16Q18 11 14 11Z" stroke="#c9a96e" stroke-width="1.2" fill="none"/>
           <line x1="20" y1="11" x2="20" y2="21" stroke="#c9a96e" stroke-width="1.2" stroke-linecap="round"/>
@@ -2882,6 +2987,115 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
           </div>
         </div>
         <div class="settings-grid">
+
+          <!-- ══ BRAND IDENTITY CARD — dickya only ══ -->
+          <div class="brand-settings-card" id="brand-settings-card" style="display:none">
+            <div class="sc-title">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="opacity:.85">
+                <circle cx="8" cy="6" r="3" stroke="currentColor" stroke-width="1.3"/>
+                <path d="M2 13.5c0-2.5 2.7-4 6-4s6 1.5 6 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                <path d="M11.5 2.5l.8-.8M11.5 2.5a2 2 0 0 1 2.8 2.8l-4.6 4.6-3.2.4.4-3.2z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>Brand Identity — Sovereign Settings</span>
+              <span style="font-size:9px;background:rgba(201,169,110,.12);border:1px solid rgba(201,169,110,.25);color:var(--gold);padding:2px 8px;border-radius:20px;letter-spacing:.1em;margin-left:4px">♔ DICKYA ONLY</span>
+            </div>
+
+            <div class="brand-settings-inner">
+              <!-- Upload Zone -->
+              <div>
+                <div class="brand-upload-zone" id="brand-upload-zone" onclick="document.getElementById('brand-photo-input').click()" title="Klik untuk upload foto brand">
+                  <!-- Preview: SVG default atau foto -->
+                  <div id="brand-upload-preview-svg" class="brand-upload-preview-svg">
+                    <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+                      <defs><linearGradient id="bupg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#c9a96e"/><stop offset="100%" stop-color="#e8cc99"/></linearGradient></defs>
+                      <polygon points="24,3 42,13.5 42,34.5 24,45 6,34.5 6,13.5" stroke="url(#bupg)" stroke-width="1" fill="rgba(201,169,110,.08)"/>
+                      <path d="M15 16L15 32L21 32Q28 32 28 24Q28 16 21 16Z" stroke="url(#bupg)" stroke-width="2" fill="none"/>
+                      <line x1="30" y1="16" x2="30" y2="32" stroke="url(#bupg)" stroke-width="2" stroke-linecap="round"/>
+                      <line x1="36" y1="16" x2="36" y2="32" stroke="url(#bupg)" stroke-width="2" stroke-linecap="round"/>
+                      <line x1="30" y1="24" x2="36" y2="24" stroke="url(#bupg)" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                  </div>
+                  <img id="brand-upload-preview-img" class="brand-upload-preview has-logo" src="" alt="" style="display:none"/>
+                  <div class="brand-upload-label">Foto Brand</div>
+                  <div class="brand-upload-hint">Max 200KB · JPG/PNG/SVG</div>
+                </div>
+                <input type="file" id="brand-photo-input" accept="image/jpeg,image/png,image/webp,image/svg+xml" style="display:none" onchange="handleBrandPhotoUpload(this)"/>
+                <button class="brand-remove-btn" id="brand-remove-btn" onclick="removeBrandPhoto()" style="display:none;width:100%;margin-top:6px">
+                  ✕ Hapus Foto
+                </button>
+              </div>
+
+              <!-- Fields -->
+              <div>
+                <div class="fg">
+                  <label style="font-size:10px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-bottom:7px;display:block;font-weight:500">Nama Brand</label>
+                  <input class="fi rn-input" id="brand-cfg-name" placeholder="DHP Creative" oninput="updateBrandPreview()"/>
+                </div>
+                <div class="fg">
+                  <label style="font-size:10px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-bottom:7px;display:block;font-weight:500">Tagline / Sub-judul</label>
+                  <input class="fi rn-input" id="brand-cfg-tagline" placeholder="Design · Heritage · Presence" oninput="updateBrandPreview()"/>
+                </div>
+                <div class="fg">
+                  <label style="font-size:10px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-bottom:7px;display:block;font-weight:500">Deskripsi / Quote Login</label>
+                  <input class="fi rn-input" id="brand-cfg-quote" placeholder="Where creativity meets command." oninput="updateBrandPreview()"/>
+                </div>
+                <div class="fg">
+                  <label style="font-size:10px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-bottom:7px;display:block;font-weight:500">Label Sidebar</label>
+                  <input class="fi rn-input" id="brand-cfg-sblabel" placeholder="Records System" oninput="updateBrandPreview()"/>
+                </div>
+
+                <!-- Live Preview -->
+                <div class="brand-preview-section">
+                  <div class="brand-preview-title">Preview Tampilan</div>
+                  <div class="brand-preview-login">
+                    <div style="position:relative;display:inline-block">
+                      <div id="bprev-svg-wrap" class="brand-upload-preview-svg" style="width:48px;height:48px">
+                        <svg width="22" height="22" viewBox="0 0 48 48" fill="none">
+                          <defs><linearGradient id="bpg2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#c9a96e"/><stop offset="100%" stop-color="#e8cc99"/></linearGradient></defs>
+                          <polygon points="24,3 42,13.5 42,34.5 24,45 6,34.5 6,13.5" stroke="url(#bpg2)" stroke-width="1" fill="rgba(201,169,110,.08)"/>
+                          <path d="M15 16L15 32L21 32Q28 32 28 24Q28 16 21 16Z" stroke="url(#bpg2)" stroke-width="2" fill="none"/>
+                          <line x1="30" y1="16" x2="30" y2="32" stroke="url(#bpg2)" stroke-width="2" stroke-linecap="round"/>
+                          <line x1="36" y1="16" x2="36" y2="32" stroke="url(#bpg2)" stroke-width="2" stroke-linecap="round"/>
+                          <line x1="30" y1="24" x2="36" y2="24" stroke="url(#bpg2)" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                      </div>
+                      <img id="bprev-photo" src="" alt="" style="display:none;width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid rgba(201,169,110,.35)"/>
+                    </div>
+                    <div class="bpl-name" id="bprev-name">DHP Creative</div>
+                    <div class="bpl-tag" id="bprev-tag">Design · Heritage · Presence</div>
+                    <div class="bpl-quote" id="bprev-quote">Where creativity meets command.</div>
+                  </div>
+                  <div class="brand-preview-sidebar">
+                    <div id="bprev-sb-svg" style="width:22px;height:22px;flex-shrink:0">
+                      <svg viewBox="0 0 32 32" fill="none" width="22" height="22">
+                        <polygon points="16,2 28,9 28,23 16,30 4,23 4,9" stroke="rgba(201,169,110,.5)" stroke-width=".8" fill="rgba(201,169,110,.06)"/>
+                        <path d="M10 11L10 21L14 21Q18 21 18 16Q18 11 14 11Z" stroke="#c9a96e" stroke-width="1.2" fill="none"/>
+                        <line x1="20" y1="11" x2="20" y2="21" stroke="#c9a96e" stroke-width="1.2" stroke-linecap="round"/>
+                        <line x1="24" y1="11" x2="24" y2="21" stroke="#c9a96e" stroke-width="1.2" stroke-linecap="round"/>
+                        <line x1="20" y1="16" x2="24" y2="16" stroke="#c9a96e" stroke-width="1.2" stroke-linecap="round"/>
+                      </svg>
+                    </div>
+                    <img id="bprev-sb-photo" src="" alt="" style="display:none;width:22px;height:22px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(201,169,110,.3);flex-shrink:0"/>
+                    <div>
+                      <div class="bps-name" id="bprev-sb-name">DHP Creative</div>
+                      <div class="bps-tag" id="bprev-sb-label">Records System</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display:flex;gap:8px;margin-top:16px">
+                  <button class="btn-gold btn-sm" onclick="saveBrandIdentity()" style="flex:1">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="margin-right:5px"><path d="M13 5l-6 6-3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Simpan & Terapkan
+                  </button>
+                  <button class="btn-sm" onclick="resetBrandIdentity()" style="background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:7px 14px;cursor:pointer;font-size:11px;font-family:inherit;transition:all .2s" onmouseover="this.style.background='rgba(255,255,255,.08)'" onmouseout="this.style.background='rgba(255,255,255,.04)'">
+                    Reset
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="settings-card">
             <div class="sc-title">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="opacity:.7"><path d="M3 4h10M5 8h6M6 12h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
@@ -3527,6 +3741,8 @@ function sweepStalePresence() {
 
 function initRealtimePresence(userId, role, name) {
   if (!db) { startLocalTick(); return; }
+  // Start brand identity realtime listener (all users get live updates)
+  try { initBrandRealtimeListener(); } catch(e) {}
 
   // Bersihkan channel lama bila ada (mis. login ulang)
   if (presChannel) { try { presChannel.untrack(); presChannel.unsubscribe(); } catch(e){} presChannel = null; }
@@ -4520,6 +4736,8 @@ function toggleMode() {
    ⑩ 3D BACKGROUND
    ═══════════════════════════════════════════════════════════ */
 let bgRenderer = null;
+// Apply saved brand identity from Supabase after DB is ready (called in initDashboard)
+// earlyLoadBrand() is called after login to pull fresh brand from DB
 (function initBackground() {
   if (typeof THREE === 'undefined') { bgRenderer = { setMode:()=>{} }; return; }
   const canvas = document.getElementById('three-canvas');
@@ -4842,6 +5060,8 @@ function loginSuccess(id, role, name) {
   if (!presenceMap[id]) presenceMap[id] = { id, role, name, online:false, loginAt:0, lastSeen:0 };
   Object.assign(presenceMap[id], { online:true, loginAt:Date.now(), lastSeen:Date.now(), role, name });
   dbQ(d => d.rpc('update_user_presence', { p_user_id:id, p_event:'login' }));
+  // Apply any saved brand identity immediately (async, non-blocking)
+  try { earlyLoadBrand(); } catch(e) {}
   const sc = document.getElementById('scene');
   sc.style.opacity = '0';
   setTimeout(async () => {
@@ -5709,6 +5929,16 @@ async function changeRole(uid) {
    ㉒ SETTINGS (Moderator only — full access)
    ═══════════════════════════════════════════════════════════ */
 function renderSettings() {
+  // Show brand settings card only for dickya
+  const brandCard = document.getElementById('brand-settings-card');
+  if (brandCard) {
+    if (currentUser?.id === HEAD_MODERATOR_ID || currentUser?.role === 'head_moderator') {
+      brandCard.style.display = 'block';
+      initBrandSettings();
+    } else {
+      brandCard.style.display = 'none';
+    }
+  }
   const rf = document.getElementById('role-names-form'); if (!rf) return;
   rf.innerHTML = `<div style="font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.6">Customise how each role appears across the portal.</div>` +
     ROLE_KEYS.map(k => `
@@ -5757,6 +5987,320 @@ function savePortalConfig() {
   if (tag)  { document.querySelector('.ltag').textContent = tag; }
   toast('Portal config saved');
 }
+
+// ══════════════════════════════════════════════════════════
+//  BRAND IDENTITY SETTINGS  (dickya / head_moderator only)
+//  Storage: Supabase portal_config + Storage bucket
+//  Real-time: semua user otomatis update via Realtime channel
+// ══════════════════════════════════════════════════════════
+
+// Cache in-memory supaya tidak query ulang tiap render
+let _brandCache = null;
+let _brandPhotoFile = null;   // File object untuk upload
+let _brandPhotoDataUrl = null; // Preview lokal sebelum upload
+
+// ── Load brand dari Supabase portal_config ──────────────────────
+async function loadBrandFromDB() {
+  if (!db) return null;
+  const { data, error } = await db.from('portal_config')
+    .select('key, value')
+    .in('key', ['brand_name','brand_tagline','brand_quote','brand_sblabel','brand_photo_url']);
+  if (error || !data) return null;
+  const map = {};
+  data.forEach(r => { map[r.key] = r.value; });
+  return {
+    name:    map['brand_name']      || 'DHP Creative',
+    tagline: map['brand_tagline']   || 'Design · Heritage · Presence',
+    quote:   map['brand_quote']     || 'Where creativity meets command.',
+    sblabel: map['brand_sblabel']   || 'Records System',
+    photo:   map['brand_photo_url'] || null
+  };
+}
+
+// ── Apply brand ke seluruh DOM ───────────────────────────────────
+function applyBrandIdentity(data) {
+  if (!data) return;
+  _brandCache = data;
+
+  if (data.name) {
+    document.querySelectorAll('.brand-name').forEach(e => e.textContent = data.name);
+    document.title = data.name + ' — Command Portal';
+  }
+  if (data.tagline) document.querySelectorAll('.brand-sub').forEach(e => e.textContent = data.tagline);
+  if (data.quote)   document.querySelectorAll('.login-quote').forEach(e => e.textContent = data.quote);
+
+  const sbBrand = document.querySelector('.sb-brand');
+  if (sbBrand && data.name) sbBrand.textContent = data.name;
+  const sbTag = document.querySelector('.sb-tagline');
+  if (sbTag && data.sblabel) sbTag.textContent = data.sblabel;
+
+  // Login brand photo
+  const photoWrap = document.getElementById('login-brand-photo-wrap');
+  const photoImg  = document.getElementById('login-brand-photo');
+  const svgWrap   = document.getElementById('login-brand-svg');
+  const hasPhoto  = data.photo && data.photo.trim() !== '';
+  if (photoWrap && photoImg && svgWrap) {
+    if (hasPhoto) {
+      photoImg.src = data.photo;
+      photoWrap.style.display = 'inline-block';
+      svgWrap.style.display   = 'none';
+    } else {
+      photoWrap.style.display = 'none';
+      svgWrap.style.display   = 'inline-flex';
+    }
+  }
+
+  // Sidebar brand photo
+  const sbPhoto = document.getElementById('sb-brand-photo');
+  const sbSvg   = document.getElementById('sb-brand-svg');
+  if (sbPhoto && sbSvg) {
+    if (hasPhoto) {
+      sbPhoto.src = data.photo;
+      sbPhoto.style.display = 'block';
+      sbSvg.style.display   = 'none';
+    } else {
+      sbPhoto.style.display = 'none';
+      sbSvg.style.display   = 'block';
+    }
+  }
+}
+
+// ── Init brand settings panel (dipanggil saat renderSettings) ───
+async function initBrandSettings() {
+  const card = document.getElementById('brand-settings-card');
+  if (!card) return;
+
+  // Hanya untuk dickya
+  if (currentUser?.id !== HEAD_MODERATOR_ID && currentUser?.role !== 'head_moderator') {
+    card.style.display = 'none';
+    return;
+  }
+  card.style.display = 'block';
+
+  // Tampilkan loading state di kartu
+  card.style.opacity = '.6';
+
+  // Load dari DB
+  const data = await loadBrandFromDB();
+  card.style.opacity = '1';
+
+  if (data) {
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+    setVal('brand-cfg-name',    data.name);
+    setVal('brand-cfg-tagline', data.tagline);
+    setVal('brand-cfg-quote',   data.quote);
+    setVal('brand-cfg-sblabel', data.sblabel);
+
+    if (data.photo && data.photo.trim() !== '') {
+      _brandPhotoDataUrl = data.photo;
+      const previewImg = document.getElementById('brand-upload-preview-img');
+      const previewSvg = document.getElementById('brand-upload-preview-svg');
+      const removeBtn  = document.getElementById('brand-remove-btn');
+      if (previewImg) { previewImg.src = data.photo; previewImg.style.display = 'block'; }
+      if (previewSvg) previewSvg.style.display = 'none';
+      if (removeBtn)  removeBtn.style.display  = 'block';
+    }
+  }
+  updateBrandPreview();
+}
+
+// ── Handle file pilih ────────────────────────────────────────────
+function handleBrandPhotoUpload(input) {
+  const file = input.files?.[0];
+  if (!file) return;
+
+  if (file.size > 200 * 1024) {
+    toast('❌ Foto terlalu besar! Maksimal 200KB.'); input.value = ''; return;
+  }
+
+  _brandPhotoFile = file;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    _brandPhotoDataUrl = e.target.result;
+    const previewImg = document.getElementById('brand-upload-preview-img');
+    const previewSvg = document.getElementById('brand-upload-preview-svg');
+    const removeBtn  = document.getElementById('brand-remove-btn');
+    if (previewImg) { previewImg.src = _brandPhotoDataUrl; previewImg.style.display = 'block'; }
+    if (previewSvg) previewSvg.style.display = 'none';
+    if (removeBtn)  removeBtn.style.display  = 'block';
+    updateBrandPreview();
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeBrandPhoto() {
+  _brandPhotoFile    = null;
+  _brandPhotoDataUrl = null;
+  const previewImg = document.getElementById('brand-upload-preview-img');
+  const previewSvg = document.getElementById('brand-upload-preview-svg');
+  const removeBtn  = document.getElementById('brand-remove-btn');
+  const input      = document.getElementById('brand-photo-input');
+  if (previewImg) { previewImg.src = ''; previewImg.style.display = 'none'; }
+  if (previewSvg) previewSvg.style.display = 'flex';
+  if (removeBtn)  removeBtn.style.display  = 'none';
+  if (input)      input.value = '';
+  ['bprev-photo','bprev-sb-photo'].forEach(id => {
+    const el = document.getElementById(id); if (el) { el.src = ''; el.style.display = 'none'; }
+  });
+  const bpSvg  = document.getElementById('bprev-svg-wrap');
+  const bpSbSvg = document.getElementById('bprev-sb-svg');
+  if (bpSvg)   bpSvg.style.display   = 'flex';
+  if (bpSbSvg) bpSbSvg.style.display = 'block';
+}
+
+function updateBrandPreview() {
+  const name    = document.getElementById('brand-cfg-name')?.value    || 'DHP Creative';
+  const tagline = document.getElementById('brand-cfg-tagline')?.value || 'Design · Heritage · Presence';
+  const quote   = document.getElementById('brand-cfg-quote')?.value   || 'Where creativity meets command.';
+  const sblabel = document.getElementById('brand-cfg-sblabel')?.value || 'Records System';
+  const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  set('bprev-name',     name);
+  set('bprev-tag',      tagline);
+  set('bprev-quote',    quote);
+  set('bprev-sb-name',  name);
+  set('bprev-sb-label', sblabel);
+
+  const photo = _brandPhotoDataUrl;
+  const bpSvg    = document.getElementById('bprev-svg-wrap');
+  const bpPhoto  = document.getElementById('bprev-photo');
+  const bpSbSvg  = document.getElementById('bprev-sb-svg');
+  const bpSbPhoto= document.getElementById('bprev-sb-photo');
+  if (photo) {
+    if (bpSvg)    bpSvg.style.display   = 'none';
+    if (bpSbSvg)  bpSbSvg.style.display = 'none';
+    if (bpPhoto)  { bpPhoto.src = photo; bpPhoto.style.display = 'block'; }
+    if (bpSbPhoto){ bpSbPhoto.src = photo; bpSbPhoto.style.display = 'block'; }
+  } else {
+    if (bpSvg)    bpSvg.style.display   = 'flex';
+    if (bpSbSvg)  bpSbSvg.style.display = 'block';
+    if (bpPhoto)  { bpPhoto.src = ''; bpPhoto.style.display = 'none'; }
+    if (bpSbPhoto){ bpSbPhoto.src = ''; bpSbPhoto.style.display = 'none'; }
+  }
+}
+
+// ── Simpan ke Supabase ───────────────────────────────────────────
+async function saveBrandIdentity() {
+  if (!db) { toast('⚠️ Supabase tidak aktif'); return; }
+
+  const btn     = document.querySelector('[onclick="saveBrandIdentity()"]');
+  const origTxt = btn?.innerHTML;
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span style="opacity:.6">Menyimpan…</span>'; }
+
+  const name    = document.getElementById('brand-cfg-name')?.value.trim()    || 'DHP Creative';
+  const tagline = document.getElementById('brand-cfg-tagline')?.value.trim() || 'Design · Heritage · Presence';
+  const quote   = document.getElementById('brand-cfg-quote')?.value.trim()   || 'Where creativity meets command.';
+  const sblabel = document.getElementById('brand-cfg-sblabel')?.value.trim() || 'Records System';
+
+  let photoUrl = _brandCache?.photo || '';
+
+  // Upload foto ke Supabase Storage jika ada file baru
+  if (_brandPhotoFile && db) {
+    try {
+      const ext      = _brandPhotoFile.name.split('.').pop() || 'jpg';
+      const fileName = `brand-logo.${ext}`;
+      // Hapus file lama dulu (ignore error)
+      await db.storage.from('brand-assets').remove([fileName]);
+      // Upload baru
+      const { data: upData, error: upErr } = await db.storage
+        .from('brand-assets')
+        .upload(fileName, _brandPhotoFile, {
+          cacheControl: '3600',
+          upsert: true,
+          contentType: _brandPhotoFile.type
+        });
+      if (upErr) throw upErr;
+      // Dapatkan public URL
+      const { data: urlData } = db.storage.from('brand-assets').getPublicUrl(fileName);
+      photoUrl = urlData?.publicUrl || '';
+      // Tambah cache-buster supaya browser reload gambar
+      if (photoUrl) photoUrl = photoUrl + '?t=' + Date.now();
+    } catch (e) {
+      console.warn('[Brand] Gagal upload foto:', e);
+      toast('⚠️ Gagal upload foto — teks brand tetap disimpan');
+      // Fallback: simpan sebagai data URL (tapi tidak ideal untuk multi-user)
+      photoUrl = _brandPhotoDataUrl || '';
+    }
+  }
+
+  // Simpan via fungsi SQL save_brand_identity
+  const { error } = await db.rpc('save_brand_identity', {
+    p_user_id:   currentUser.id,
+    p_name:      name,
+    p_tagline:   tagline,
+    p_quote:     quote,
+    p_sblabel:   sblabel,
+    p_photo_url: photoUrl
+  });
+
+  if (btn) { btn.disabled = false; btn.innerHTML = origTxt; }
+
+  if (error) {
+    console.error('[Brand] Save error:', error);
+    toast('❌ Gagal menyimpan: ' + (error.message || 'Unknown error'));
+    return;
+  }
+
+  // Terapkan ke DOM lokal langsung
+  _brandPhotoFile = null; // file sudah diupload
+  if (photoUrl) _brandPhotoDataUrl = photoUrl;
+  applyBrandIdentity({ name, tagline, quote, sblabel, photo: photoUrl });
+  toast('✓ Brand identity tersimpan & otomatis update ke semua user');
+}
+
+// ── Reset ke default ─────────────────────────────────────────────
+async function resetBrandIdentity() {
+  if (!confirm('Reset brand identity ke default DHP Creative? Foto & teks kustom akan dihapus.')) return;
+  if (!db) { toast('⚠️ Supabase tidak aktif'); return; }
+
+  _brandPhotoFile    = null;
+  _brandPhotoDataUrl = null;
+
+  ['brand-cfg-name','brand-cfg-tagline','brand-cfg-quote','brand-cfg-sblabel'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  removeBrandPhoto();
+
+  const defaults = { name:'DHP Creative', tagline:'Design · Heritage · Presence', quote:'Where creativity meets command.', sblabel:'Records System', photo:'' };
+
+  await db.rpc('save_brand_identity', {
+    p_user_id:   currentUser.id,
+    p_name:      defaults.name,
+    p_tagline:   defaults.tagline,
+    p_quote:     defaults.quote,
+    p_sblabel:   defaults.sblabel,
+    p_photo_url: ''
+  });
+
+  applyBrandIdentity(defaults);
+  updateBrandPreview();
+  toast('Brand identity direset ke default');
+}
+
+// ── Realtime listener: semua client dapat update otomatis ────────
+function initBrandRealtimeListener() {
+  if (!db) return;
+  db.channel('brand-config-changes')
+    .on('postgres_changes', {
+      event:  'UPDATE',
+      schema: 'public',
+      table:  'portal_config'
+    }, async (payload) => {
+      // Ada perubahan di portal_config — reload brand
+      const fresh = await loadBrandFromDB();
+      if (fresh) applyBrandIdentity(fresh);
+    })
+    .subscribe();
+}
+
+// ── Fallback: load brand di early page init (sebelum login) ──────
+async function earlyLoadBrand() {
+  if (!db) return;
+  try {
+    const data = await loadBrandFromDB();
+    if (data) applyBrandIdentity(data);
+  } catch(e) {}
+}
+
 
 /* ═══════════════════════════════════════════════════════════
    ㉒-b MY PROFILE — Ganti nama & password sendiri (semua role)
