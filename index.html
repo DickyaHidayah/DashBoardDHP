@@ -8315,6 +8315,8 @@ async function submitLead() {
   // ── v5.2: AUTO SIMPAN KE CRM UNTUK SEMUA KATEGORI LEAD ──────
   // Cold/Warm/Hot → masuk CRM dengan total_order=0, total_spend=0
   // Closing → masuk CRM dengan total_order & total_spend dari form
+  // CATATAN: untuk DB mode, add_lead RPC sudah handle auto-CRM di server.
+  // Jangan panggil upsert_crm_customer lagi → akan double entry.
   if (ok && can.isAdTarget(currentUser?.role)) {
     try {
       const channelLabel = `Leads · ${tk.title}`;
@@ -8335,25 +8337,9 @@ async function submitLead() {
       const newCustId = crmGenId();
 
       if (crmUsesDB()) {
-        // Kirim lewat add_lead di DB yang sudah handle auto-CRM di server
-        // (fallback: upsert_crm_customer bila RPC lama)
-        await dbQ(d => d.rpc('upsert_crm_customer', {
-          p_id:             null,
-          p_user_id:        currentUser.id,
-          p_cust_code:      newCustId,
-          p_full_name:      name,
-          p_wa_phone:       wa || null,
-          p_city:           region || null,
-          p_channel:        channelLabel,
-          p_first_order:    today,
-          p_total_order:    totalOrd,
-          p_total_spend:    nominal,
-          p_status:         'Leads',
-          p_fav_product:    product || null,
-          p_admin_note:     `${cat} via Ads: ${tk.title}${note ? ' | ' + note : ''}`,
-          p_channel_is_ads: true,
-          p_ads_title:      tk.title,
-        }));
+        // add_lead RPC sudah otomatis menyimpan ke crm_customers di server.
+        // Tidak perlu upsert_crm_customer di sini — cukup refresh CRM cache.
+        // (Memanggil upsert_crm_customer lagi = double entry)
       } else {
         // Offline: cek duplikat WA dulu
         const waDigits = (wa||'').replace(/[^0-9]/g,'');
