@@ -3444,7 +3444,12 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
         <div class="crm-table-wrap">
           <div class="crm-tbl-toolbar">
             <span class="crm-tbl-info" id="crm-foot-note2"></span>
-            <button class="btn-g btn-sm" id="crm-sort-btn" onclick="crmSortByDate()" style="min-width:120px;font-size:11px">↓ Tgl Masuk Terbaru</button>
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+              <button class="btn-g btn-sm" id="crm-sort-btn" onclick="crmSortByDate()" style="min-width:120px;font-size:11px">↓ Tgl Masuk Terbaru</button>
+              <button class="btn-g btn-sm" onclick="exportCRMDatabaseOnly()" title="Export hanya isi database customer ke Excel" style="font-size:11px;white-space:nowrap">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px"><path d="M8 10V1M8 1L5 4M8 1l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Export Database
+              </button>
+            </div>
           </div>
           <table class="crm-table">
             <thead>
@@ -8376,9 +8381,25 @@ async function submitLead() {
         product  = document.getElementById('lead-product')?.value?.trim() || '';
       }
       // heat_category dihitung di sisi client untuk tampilan instan
-      const heatCat = cat === 'Closing' && totalOrd >= 5 ? 'Hot'
-                    : cat === 'Closing' && totalOrd >= 1  ? 'Warm'
-                    : 'Cold';
+      // Sesuai crm_compute_heat di server:
+      //   Hot   = total_order ≥ 5 ATAU status Repeat/Agen/Reseller
+      //   Warm  = total_order 1–4
+      //   Cold  = total_order = 0 (Leads baru)
+      // Mapping dari lead_category ke heat:
+      //   Hot      → total_order tetap 0 tapi kita tandai sebagai Hot prospect
+      //   Warm     → Warm prospect
+      //   Cold     → Cold (0 order)
+      //   Closing  → hitung dari total_order yang diisi
+      let heatCat;
+      if (cat === 'Closing') {
+        heatCat = totalOrd >= 5 ? 'Hot' : totalOrd >= 1 ? 'Warm' : 'Cold';
+      } else if (cat === 'Hot') {
+        heatCat = 'Hot';
+      } else if (cat === 'Warm') {
+        heatCat = 'Warm';
+      } else {
+        heatCat = 'Cold'; // Cold
+      }
 
       await loadCRM();
       const newCustId = crmGenId();
@@ -9909,6 +9930,93 @@ async function exportCRMExcel() {
   pushActivity(`CRM: export Excel profesional (${total} customer, ${sheetCount} sheet${filterLabel})`, 'info');
 }
 
+// ══════════════════════════════════════════════════════════════
+// EXPORT DATABASE CUSTOMER ONLY — Tabel rapi, 1 sheet, tanpa analitik
+// ══════════════════════════════════════════════════════════════
+async function exportCRMDatabaseOnly() {
+  if (!window.XLSX) { toast(t('crmNoLib')); return; }
+  if (!crmData.length) { await loadCRM(); }
+  if (!crmData.length) { toast(t('crmEmpty')); return; }
+
+  const wb   = XLSX.utils.book_new();
+  const now  = new Date();
+  const stamp = now.toLocaleString('id-ID');
+  const total = crmData.length;
+  const filterLabel = (crmOwnerFilter !== 'all' && can.isMod(currentUser?.role))
+    ? ` · Filter: ${getUserMeta(crmOwnerFilter).name}` : '';
+  const totalSpend  = crmData.reduce((s,c)=>s+crmParseMoney(c.total_belanja),0);
+  const totalOrders = crmData.reduce((s,c)=>s+crmParseInt(c.total_order),0);
+
+  // ── Kolom: sesuaikan dengan field DB v5.3 ──
+  const headers = [
+    'No.', 'ID Customer', 'Nama', 'Nomor WhatsApp', 'Kota', 'Channel',
+    'Tgl First Order', 'Total Order', 'Total Belanja (Rp)',
+    'Status', 'Heat', 'Produk Favorit', 'Catatan / Note', 'Input By'
+  ];
+
+  const HEAT_LABEL = { Hot:'🔥 Hot', Warm:'☀️ Warm', Cold:'❄️ Cold', None:'—' };
+
+  const dataAoa = [
+    ['DHP CREATIVE — DATABASE CUSTOMER'],
+    [`Export: ${stamp}  |  Total: ${total} customer${filterLabel}`],
+    [],
+    headers,
+    ...crmData.map((c, i) => {
+      const heat = c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status));
+      return [
+        i + 1,
+        c.id_customer || c.cust_code || '',
+        c.nama        || c.full_name || '',
+        c.wa          || c.wa_phone  || '',
+        c.kota        || c.city      || '',
+        c.channel     || '',
+        c.first_order || '',
+        crmParseInt(c.total_order),
+        crmParseMoney(c.total_belanja || c.total_spend),
+        crmNormStatus(c.status),
+        HEAT_LABEL[heat] || heat || '—',
+        c.produk_fav  || c.fav_product || '',
+        c.catatan     || c.admin_note  || '',
+        getUserMeta(c.owner_id || c.created_by).name || c.owner_id || '',
+      ];
+    }),
+    [],
+    ['', '', '', '', '', '', 'TOTAL', totalOrders, totalSpend, '', '', '', '', ''],
+  ];
+
+  const ws = XLSX.utils.aoa_to_sheet(dataAoa);
+
+  // Lebar kolom rapi
+  ws['!cols'] = [
+    {wch:5},  {wch:13}, {wch:26}, {wch:17}, {wch:18}, {wch:24},
+    {wch:16}, {wch:13}, {wch:20}, {wch:12}, {wch:10}, {wch:24}, {wch:34}, {wch:18}
+  ];
+  // Merge judul & sub-judul
+  ws['!merges'] = [
+    {s:{r:0,c:0}, e:{r:0,c:13}},
+    {s:{r:1,c:0}, e:{r:1,c:13}},
+  ];
+  // AutoFilter & Freeze header
+  ws['!autofilter'] = { ref: XLSX.utils.encode_range({s:{r:3,c:0}, e:{r:3,c:13}}) };
+  ws['!freeze']     = { xSplit:0, ySplit:4 };
+
+  // Format angka
+  for (let r = 5; r < dataAoa.length - 1; r++) {
+    const hO = 'H' + (r + 1); if (ws[hO]) ws[hO].z = '#,##0';
+    const iO = 'I' + (r + 1); if (ws[iO]) ws[iO].z = '"Rp "#,##0';
+  }
+  const totR = dataAoa.length;
+  if (ws[`H${totR}`]) ws[`H${totR}`].z = '#,##0';
+  if (ws[`I${totR}`]) ws[`I${totR}`].z = '"Rp "#,##0';
+
+  XLSX.utils.book_append_sheet(wb, ws, '📋 Database Customer');
+
+  const fname = `DHP_Database_Customer_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.xlsx`;
+  XLSX.writeFile(wb, fname);
+  toast(`✓ Export Database Customer — ${total} data`);
+  pushActivity(`CRM: export Database Customer (${total} customer)`, 'info');
+}
+
 // v5.2: live heat preview in CRM modal
 function updateHeatPreview() {
   const statusEl = document.getElementById('crm-f-status');
@@ -9932,6 +10040,7 @@ window.handleCRMFile = handleCRMFile;
 window.confirmCRMImport = confirmCRMImport;
 window.downloadCRMTemplate = downloadCRMTemplate;
 window.exportCRMExcel = exportCRMExcel;
+window.exportCRMDatabaseOnly = exportCRMDatabaseOnly;
 
 // Muat data awal: mode offline saja (mode DB dimuat saat login oleh setupNav).
 if (!crmUsesDB()) loadCRM();
