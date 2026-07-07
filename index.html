@@ -2145,6 +2145,41 @@ body.light .crm-foot-note{color:rgba(13,13,13,.42)}
   .crm-stat{min-width:calc(50% - 5px)}
 }
 
+/* ══════ TASK DASHBOARD HARIAN — Follow Up Customer (Admin & B2B) ══════ */
+.task-dash-top{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:20px}
+.task-ring-card{position:relative;width:150px;height:150px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.task-ring-svg{width:140px;height:140px;transform:rotate(-90deg)}
+.task-ring-bg{fill:none;stroke:var(--border);stroke-width:10}
+.task-ring-fg{fill:none;stroke:var(--gold);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .6s cubic-bezier(.4,0,.2,1),stroke .3s}
+.task-ring-mid{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.task-ring-num{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;color:var(--text);line-height:1}
+.task-ring-lbl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:4px;line-height:1.3}
+.task-dash-stats{flex:1;min-width:260px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.tds-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:3px;justify-content:center}
+.tds-num{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;line-height:1}
+.tds-lbl{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);line-height:1.3}
+.task-list-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;max-height:56vh;overflow:auto}
+.task-list-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;font-size:12px;font-weight:600;color:var(--gold);letter-spacing:.04em;flex-wrap:wrap}
+.task-followup-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;transition:border-color var(--trans)}
+.task-followup-row:hover{border-color:var(--border-hi)}
+.task-followup-name{font-size:13px;font-weight:600;color:var(--text)}
+.task-followup-meta{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text2);margin-top:3px;flex-wrap:wrap}
+.task-followup-btn{white-space:nowrap;flex-shrink:0}
+.task-empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px}
+.crm-followup-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;white-space:nowrap}
+body.light .task-ring-mid .task-ring-num{color:#0d0d0d}
+body.light .tds-card{background:#f7f7f8;border:1.5px solid rgba(0,0,0,.1)}
+body.light .tds-num{color:#0d0d0d}
+body.light .task-list-wrap{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
+body.light .task-followup-row{border-color:rgba(0,0,0,.1)}
+body.light .task-followup-name{color:#0d0d0d}
+@media(max-width:600px){
+  .task-dash-top{flex-direction:column;align-items:center}
+  .task-dash-stats{grid-template-columns:1fr 1fr;width:100%}
+  .task-followup-row{flex-direction:column;align-items:stretch}
+  .task-followup-btn{width:100%}
+}
+
 /* ══ MY PROFILE MODAL ══ */
 #profile-modal-ov.open{display:flex!important}
 .profile-avatar-big{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;margin:0 auto 14px;border:2px solid var(--border-hi)}
@@ -2642,6 +2677,19 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
     </div>
 
     <div class="sb-nav" id="sb-nav">
+      <!-- Task Harian — HANYA Admin & B2B (dashboard kerja utama mereka) -->
+      <div class="nav-sec-lbl" id="ns-task" style="display:none">Task Harian</div>
+      <button class="nav-item" onclick="navTo('task_dashboard',this)" id="n-task-dashboard" style="display:none">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M8 5v3l2 1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span>Dashboard Task</span>
+        <span class="nav-badge" id="task-pending-badge" style="display:none">0</span>
+      </button>
+
       <!-- General -->
       <div class="nav-sec-lbl" data-i18n="navigation">Navigation</div>
       <button class="nav-item active" onclick="navTo('overview',this)" id="n-overview">
@@ -3393,6 +3441,63 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
         <div class="adtask-grid" id="adtask-grid"></div>
       </div>
 
+      <!-- ⑪-b DASHBOARD TASK HARIAN — Follow Up Customer (Admin & B2B) -->
+      <div class="sp" id="pg-task_dashboard">
+        <div class="ph">
+          <div class="ph-left">
+            <div class="pt">
+              <span>Dashboard Task Harian</span>
+            </div>
+            <div class="ps">Target follow up customer setiap hari — jaga hubungan tetap hangat</div>
+          </div>
+          <div class="ph-acts">
+            <button class="btn-g btn-sm" onclick="navTo('crm', document.getElementById('n-crm'))">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px"><ellipse cx="8" cy="3.4" rx="5.5" ry="2.2" stroke="currentColor" stroke-width="1.4"/><path d="M2.5 3.4v4.2c0 1.2 2.46 2.2 5.5 2.2s5.5-1 5.5-2.2V3.4" stroke="currentColor" stroke-width="1.4"/><path d="M2.5 7.6v4.2c0 1.2 2.46 2.2 5.5 2.2s5.5-1 5.5-2.2V7.6" stroke="currentColor" stroke-width="1.4"/></svg>
+              Buka Database Customer
+            </button>
+          </div>
+        </div>
+
+        <div class="task-dash-top">
+          <div class="task-ring-card">
+            <svg class="task-ring-svg" viewBox="0 0 140 140">
+              <circle class="task-ring-bg" cx="70" cy="70" r="60"/>
+              <circle class="task-ring-fg" id="task-ring-fg" cx="70" cy="70" r="60"/>
+            </svg>
+            <div class="task-ring-mid">
+              <div class="task-ring-num" id="task-ring-num">0/50</div>
+              <div class="task-ring-lbl">Follow Up<br/>Hari Ini</div>
+            </div>
+          </div>
+          <div class="task-dash-stats">
+            <div class="tds-card">
+              <div class="tds-num" id="tds-done" style="color:var(--green)">0</div>
+              <div class="tds-lbl">Sudah Follow Up</div>
+            </div>
+            <div class="tds-card">
+              <div class="tds-num" id="tds-remain" style="color:var(--amber)">50</div>
+              <div class="tds-lbl">Sisa Target</div>
+            </div>
+            <div class="tds-card">
+              <div class="tds-num" id="tds-pending" style="color:var(--red)">0</div>
+              <div class="tds-lbl">Belum Follow Up<br/>Hari Ini</div>
+            </div>
+            <div class="tds-card">
+              <div class="tds-num" id="tds-total" style="color:var(--text)">0</div>
+              <div class="tds-lbl">Total Customer Anda</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-list-wrap">
+          <div class="task-list-head">
+            <span>Belum Follow Up Hari Ini</span>
+            <input class="search-box" id="task-search" placeholder="Cari nama / WA…" oninput="renderTaskDashboard()" style="max-width:220px"/>
+          </div>
+          <div id="task-followup-list"></div>
+        </div>
+      </div>
+
       <!-- ⑪ CRM — DATABASE CUSTOMER PAGE -->
       <div class="sp" id="pg-crm">
         <div class="ph">
@@ -3477,6 +3582,10 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
                 </th>
                 <th data-i18n="crmColFavProduct">Produk</th>
                 <th>Diinput Oleh</th>
+                <th style="white-space:nowrap">
+                  Follow Up
+                  <div style="font-size:8px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;margin-top:1px">Terakhir dihubungi</div>
+                </th>
                 <th data-i18n="action">Aksi</th>
               </tr>
             </thead>
@@ -5252,6 +5361,11 @@ async function initDashboard() {
   navShow('ns-crm',           canSeeAds);
   navShow('n-crm',            canSeeAds);
 
+  // Dashboard Task Harian — HANYA Admin & B2B (dashboard kerja utama mereka)
+  const showTaskDash = isAdmin || isB2B;
+  navShow('ns-task',          showTaskDash);
+  navShow('n-task-dashboard', showTaskDash);
+
   // Bell tampil untuk semua user — notif login/join terlihat oleh siapa pun.
   // (Notif registrasi dengan tombol Review tetap hanya muncul untuk moderator,
   //  karena hanya moderator yang subscribe ke channel registrasi.)
@@ -5313,6 +5427,7 @@ async function initDashboard() {
   // ─── Pre-render specialty pages so they're ready on first nav ───
   if (isContent) renderContentStudio();
   if (isLive)    renderLiveStudio();
+  if (isAdmin || isB2B) { try { await renderTaskDashboard(); } catch(e) { console.warn('[DHP] renderTaskDashboard awal gagal:', e); } }
 
   // Moderator pending notifs
   if (isMod) {
@@ -5340,26 +5455,26 @@ async function initDashboard() {
   try {
     const homePage = isContent      ? 'content_studio' :
                      isLive         ? 'live_studio'    :
-                     (isAdmin||isB2B)? 'ad_scheduler'  :
+                     (isAdmin||isB2B)? 'task_dashboard' :
                                        'overview';
     const homeNavBtn = document.getElementById(
       homePage === 'content_studio' ? 'n-content-studio' :
       homePage === 'live_studio'    ? 'n-live-studio'    :
-      homePage === 'ad_scheduler'   ? 'n-ad-scheduler'   :
+      homePage === 'task_dashboard' ? 'n-task-dashboard' :
                                       'n-overview'
     );
     navTo(homePage, homeNavBtn);
   } catch (e) {
     console.warn('[DHP] navigasi home gagal, fallback:', e);
     // Fallback manual: paksa tampilkan halaman kerja tanpa lewat navTo
-    const fallback = (isAdmin || isB2B) ? 'ad_scheduler'
+    const fallback = (isAdmin || isB2B) ? 'task_dashboard'
                    : isContent ? 'content_studio'
                    : isLive ? 'live_studio'
                    : 'overview';
     document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
     const tgt = document.getElementById(`pg-${fallback}`);
     if (tgt) tgt.classList.add('active');
-    try { if (fallback === 'ad_scheduler') renderAdScheduler(); } catch(_){}
+    try { if (fallback === 'task_dashboard') renderTaskDashboard(); } catch(_){}
   }
 }
 
@@ -8891,6 +9006,8 @@ function crmFromDb(row) {
     created_by:     row.created_by || '',
     created_at:     row.created_at || '',
     updated_by:     row.updated_by || '',
+    last_followup_at: row.last_followup_at || '',   // v5.4 — task follow up harian
+    last_followup_by: row.last_followup_by || '',
   };
 }
 
@@ -8945,11 +9062,169 @@ function initCRMRealtime() {
         loadCRM().then(() => {
           if (document.getElementById('pg-crm')?.classList.contains('active')) renderCRM();
           else updateCRMBadge();
+          if (document.getElementById('pg-task_dashboard')?.classList.contains('active')) renderTaskDashboard();
         });
       })
       .subscribe();
   } catch(e) { console.warn('[CRM] realtime gagal:', e); }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   ⑪-b DASHBOARD TASK HARIAN — Follow Up Customer (Admin & B2B)
+   ─ Target: minimal 50 customer di-follow up per hari, per user
+   ─ Sumber data  : tabel `crm_customers` (sudah difilter per-owner
+                     oleh loadCRM() untuk role non-moderator)
+   ─ Log follow up: tabel `followup_logs` (customer_id, user_id,
+                     followed_up_at) — 1 baris tiap kali tombol
+                     "Follow Up" ditekan. Progress harian dihitung
+                     dari jumlah customer UNIK yang sudah di-log
+                     hari ini oleh user yang sedang login.
+   ═══════════════════════════════════════════════════════════ */
+const FOLLOWUP_DAILY_TARGET = 50;
+let followupDoneTodayIds = new Set();     // set of crm_customers._uuid (atau id_customer di mode offline)
+
+function _followupTodayKey() {
+  const ymd = new Date().toISOString().slice(0,10);
+  return `dhp_followup_${(currentUser && currentUser.id) || 'x'}_${ymd}`;
+}
+function _todayStartISO() {
+  const d = new Date(); d.setHours(0,0,0,0);
+  return d.toISOString();
+}
+// Berapa hari sejak customer terakhir di-follow up. null = belum pernah sama sekali.
+function daysSinceFollowup(c) {
+  if (!c || !c.last_followup_at) return null;
+  const then = new Date(c.last_followup_at);
+  if (isNaN(then.getTime())) return null;
+  return Math.max(0, Math.floor((Date.now() - then.getTime()) / 86400000));
+}
+function _followupCustKey(c) { return c._uuid || c.id_customer || ''; }
+
+async function loadFollowupLogsToday() {
+  followupDoneTodayIds = new Set();
+  if (crmUsesDB() && currentUser) {
+    try {
+      const res = await dbQ(d => d.from('followup_logs')
+        .select('customer_id')
+        .eq('user_id', currentUser.id)
+        .gte('followed_up_at', _todayStartISO()));
+      if (res && res.data) res.data.forEach(row => followupDoneTodayIds.add(row.customer_id));
+      return;
+    } catch(e) { console.warn('[DHP] loadFollowupLogsToday gagal:', e); }
+  }
+  // Fallback offline (localStorage) — per user per tanggal
+  try {
+    const arr = JSON.parse(localStorage.getItem(_followupTodayKey()) || '[]');
+    arr.forEach(id => followupDoneTodayIds.add(id));
+  } catch(e) {}
+}
+
+async function renderTaskDashboard() {
+  if (!currentUser) return;
+  // Selalu tarik data customer terbaru milik user ini (loadCRM sudah filter per-owner utk non-mod)
+  if (crmUsesDB()) { try { await loadCRM(); } catch(e){} }
+  await loadFollowupLogsToday();
+
+  const mine = crmData.slice();
+  const doneCount = mine.filter(c => followupDoneTodayIds.has(_followupCustKey(c))).length;
+  const target = FOLLOWUP_DAILY_TARGET;
+  const pct = target ? Math.min(100, Math.round((doneCount/target)*100)) : 0;
+
+  // ── Lingkaran progress ──
+  const circumference = 2 * Math.PI * 60;
+  const fg = document.getElementById('task-ring-fg');
+  if (fg) {
+    fg.style.strokeDasharray  = `${circumference}`;
+    fg.style.strokeDashoffset = `${circumference * (1 - pct/100)}`;
+    fg.style.stroke = doneCount >= target ? 'var(--green)' : 'var(--gold)';
+  }
+  const numEl = document.getElementById('task-ring-num');
+  if (numEl) numEl.textContent = `${doneCount}/${target}`;
+
+  const pendingList = mine.filter(c => !followupDoneTodayIds.has(_followupCustKey(c)));
+
+  const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  setTxt('tds-done',    doneCount);
+  setTxt('tds-remain',  Math.max(0, target - doneCount));
+  setTxt('tds-pending', pendingList.length);
+  setTxt('tds-total',   mine.length);
+
+  // Badge di sidebar
+  const navBadge = document.getElementById('task-pending-badge');
+  if (navBadge) {
+    navBadge.textContent = pendingList.length;
+    navBadge.style.display = pendingList.length ? '' : 'none';
+  }
+
+  // ── Pencarian ──
+  const q = (document.getElementById('task-search')?.value || '').toLowerCase().trim();
+  let rows = pendingList;
+  if (q) rows = rows.filter(c => (c.nama||'').toLowerCase().includes(q) || (c.wa||'').toLowerCase().includes(q) || (c.id_customer||'').toLowerCase().includes(q));
+
+  // Urut: yang paling lama TIDAK di-follow up (atau belum pernah) tampil paling atas
+  rows = rows.slice().sort((a,b) => {
+    const da = daysSinceFollowup(a), db2 = daysSinceFollowup(b);
+    if (da === null && db2 === null) return 0;
+    if (da === null) return -1;
+    if (db2 === null) return 1;
+    return db2 - da;
+  });
+
+  const listEl = document.getElementById('task-followup-list');
+  if (!listEl) return;
+  if (!rows.length) {
+    listEl.innerHTML = `<div class="task-empty">${mine.length ? '🎉 Semua customer Anda sudah di-follow up hari ini!' : 'Belum ada customer di database Anda. Silakan tambahkan lewat Database Customer.'}</div>`;
+    return;
+  }
+  listEl.innerHTML = rows.map(c => {
+    const idx = crmData.indexOf(c);
+    const days = daysSinceFollowup(c);
+    const daysTxt   = days === null ? 'Belum pernah difollow up' : `Terakhir difollow up ${days} hari lalu`;
+    const daysColor = days === null ? 'var(--red)' : days >= 3 ? 'var(--red)' : days >= 1 ? 'var(--amber)' : 'var(--green)';
+    const waDigits = (c.wa||'').replace(/[^0-9]/g,'');
+    return `<div class="task-followup-row">
+      <div class="task-followup-info">
+        <div class="task-followup-name">${escHtml(c.nama||'—')} <span class="crm-id" style="margin-left:6px">${escHtml(c.id_customer||'')}</span></div>
+        <div class="task-followup-meta">
+          ${waDigits ? `<a href="https://wa.me/${waDigits}" target="_blank" rel="noopener" class="wa-link">${escHtml(c.wa)}</a>` : '<span style="color:var(--muted)">Tanpa WA</span>'}
+          <span style="color:${daysColor}">● ${daysTxt}</span>
+        </div>
+      </div>
+      <button class="btn-sm btn-gold task-followup-btn" onclick="markFollowedUp(${idx})">✓ Follow Up</button>
+    </div>`;
+  }).join('');
+}
+
+async function markFollowedUp(idx) {
+  const c = crmData[idx];
+  if (!c || !currentUser) return;
+  const now = new Date().toISOString();
+  const key = _followupCustKey(c);
+
+  if (crmUsesDB() && c._uuid) {
+    try {
+      await dbQ(d => d.from('followup_logs').insert({ customer_id: c._uuid, user_id: currentUser.id, followed_up_at: now }));
+      await dbQ(d => d.from('crm_customers').update({ last_followup_at: now, last_followup_by: currentUser.id }).eq('id', c._uuid));
+    } catch(e) { console.warn('[DHP] markFollowedUp gagal:', e); }
+  } else {
+    // Mode offline — simpan progress harian di localStorage
+    try {
+      const k = _followupTodayKey();
+      const arr = JSON.parse(localStorage.getItem(k) || '[]');
+      if (!arr.includes(key)) { arr.push(key); localStorage.setItem(k, JSON.stringify(arr)); }
+    } catch(e) {}
+  }
+
+  c.last_followup_at = now;
+  c.last_followup_by  = currentUser.id;
+  followupDoneTodayIds.add(key);
+  saveCRM();
+  toast(`✓ ${c.nama || 'Customer'} sudah di-follow up hari ini`);
+  renderTaskDashboard();
+  if (document.getElementById('pg-crm')?.classList.contains('active')) renderCRM();
+}
+window.renderTaskDashboard = renderTaskDashboard;
+window.markFollowedUp      = markFollowedUp;
 
 // ── Helper format & parsing ──
 function crmParseMoney(v) {
@@ -9123,6 +9398,8 @@ async function renderCRM() {
   // supaya admin lain melihat data yang sama. Mode offline: muat dari LS sekali.
   if (crmUsesDB()) { await loadCRM(); }
   else if (!crmData.length) { await loadCRM(); }
+  // Status follow up hari ini — dipakai untuk badge kolom "Follow Up"
+  try { await loadFollowupLogsToday(); } catch(e) {}
   const body = document.getElementById('crm-body');
   const statsEl = document.getElementById('crm-stats');
   const footEl = document.getElementById('crm-foot-note');
@@ -9225,7 +9502,7 @@ async function renderCRM() {
   if (footEl) footEl.textContent = crmData.length ? `${rows.length} / ${crmData.length} · ${t('crmFootNote')}` : '';
 
   if (!rows.length) {
-    body.innerHTML = `<tr><td colspan="12" class="tbl-empty">${crmData.length ? t('noCustomers') : t('crmEmpty')}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="14" class="tbl-empty">${crmData.length ? t('noCustomers') : t('crmEmpty')}</td></tr>`;
     return;
   }
 
@@ -9275,10 +9552,20 @@ async function renderCRM() {
       <td>${crmHeatBadge(c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status)))}</td>
       <td><span class="crm-fav">${escHtml(c.produk_fav||'—')}</span></td>
       <td>${inputByCell}</td>
+      <td>${(function(){
+        const days = daysSinceFollowup(c);
+        const doneToday = followupDoneTodayIds.has(_followupCustKey(c));
+        const color = doneToday ? 'var(--green)' : days === null ? 'var(--red)' : days >= 3 ? 'var(--red)' : days >= 1 ? 'var(--amber)' : 'var(--green)';
+        const label = doneToday ? '✓ Hari ini' : days === null ? 'Belum pernah' : `${days} hari lalu`;
+        return `<span class="crm-followup-badge" style="color:${color}">● ${label}</span>`;
+      })()}</td>
       <td>
         <div class="crm-row-acts">
           <button class="crm-ico-btn" onclick="openCRMModal(${idx})" title="Edit">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5l2 2L6 12l-2.5.5L4 10l7.5-7.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="crm-ico-btn" onclick="markFollowedUp(${idx})" title="Tandai sudah di-follow up hari ini">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3 3 7-7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
           <button class="crm-ico-btn del" onclick="deleteCRM(${idx})" title="Hapus">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5 4l.5 9h5L11 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -10229,10 +10516,11 @@ function navTo(page, btn) {
   // Overview / Customers / Broadcast — moderator only (admin & b2b tidak punya halaman ini)
   if (['overview','customers','broadcast'].includes(page) && !can.isMod(r)) {
     // arahkan diam-diam ke dashboard kerja mereka, bukan tampilkan toast error
-    const home = can.isContent(r) ? 'content_studio' : can.isHostLive(r) ? 'live_studio' : 'ad_scheduler';
+    const home = can.isContent(r) ? 'content_studio' : can.isHostLive(r) ? 'live_studio' : (can.isB2B(r) || r === 'admin') ? 'task_dashboard' : 'ad_scheduler';
     const homeBtn = document.getElementById(
-      home === 'content_studio' ? 'n-content-studio' :
-      home === 'live_studio'    ? 'n-live-studio'    : 'n-ad-scheduler');
+      home === 'content_studio'  ? 'n-content-studio' :
+      home === 'live_studio'     ? 'n-live-studio'    :
+      home === 'task_dashboard'  ? 'n-task-dashboard' : 'n-ad-scheduler');
     return navTo(home, homeBtn);
   }
   // Moderator-only pages
@@ -10241,6 +10529,8 @@ function navTo(page, btn) {
   if (['ad_scheduler','ad_customers','ad_task'].includes(page) && !can.canSeeAds(r)) { toast(t('adAccessReq')); return; }
   // Manage CRM page: moderator + admin/b2b
   if (page === 'crm' && !can.canSeeAds(r)) { toast(t('adAccessReq')); return; }
+  // Dashboard Task Harian: HANYA admin & b2b
+  if (page === 'task_dashboard' && !(can.isB2B(r) || r === 'admin')) { toast(t('adAccessReq')); return; }
   if (page === 'settings' && currentUser.id !== HEAD_MODERATOR_ID) { toast('Sovereign Moderator access required'); return; }
   // Studio pages — role-specific
   if (page === 'content_studio' && !can.isContent(r) && !can.isMod(r)) { toast('Content Creator access required'); return; }
@@ -10269,6 +10559,7 @@ function navTo(page, btn) {
   }
   if (page === 'ad_customers')    renderAdCustomers();
   if (page === 'crm')             renderCRM();
+  if (page === 'task_dashboard')  renderTaskDashboard();
   if (page === 'ad_task')         {
     // Non-mod: reload task dari DB setiap kali buka halaman
     if (db && currentUser && !can.isMod(currentUser.role)) {
