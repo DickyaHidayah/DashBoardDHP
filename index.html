@@ -1469,6 +1469,39 @@ body.is-mod #mod-indicator{display:block}
 /* ── PRESENCE PAGE CARDS ── */
 .user-card .uc-badge-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-top:8px}
 
+/* ═══════════════════════════════════════════════════════════════════
+   ★ ABSENSI (ATTENDANCE) — Calendar check-in + Moderator management
+   ═══════════════════════════════════════════════════════════════════ */
+.att-cell{align-items:flex-start}
+.att-cell.att-editable{cursor:pointer}
+.att-cell.att-editable:hover{background:rgba(201,169,110,.1)}
+.att-pill{display:inline-flex;align-items:center;font-size:8.5px;font-weight:700;letter-spacing:.04em;
+  padding:2px 6px;border-radius:5px;border:1px solid transparent;white-space:nowrap}
+.att-pill-empty{background:rgba(232,228,220,.05);color:var(--muted);border-color:var(--border)}
+body.light .att-pill-empty{background:#f2f2f3;color:rgba(13,13,13,.35)}
+#att-mod-panel .ads-select{min-width:220px}
+
+/* Check-in overlay — shown once, elegant single-shot animation */
+.checkin-ov{position:fixed;inset:0;z-index:12000;display:flex;align-items:center;justify-content:center;
+  background:rgba(6,5,3,.72);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .5s ease}
+body.light .checkin-ov{background:rgba(255,255,255,.78)}
+.checkin-ov.show{opacity:1;pointer-events:auto}
+.checkin-card{display:flex;flex-direction:column;align-items:center;gap:12px;
+  padding:42px 50px;border-radius:18px;background:var(--surface);border:1px solid var(--border-hi);
+  box-shadow:0 24px 70px rgba(0,0,0,.5);transform:scale(.85) translateY(10px);opacity:0;
+  transition:transform .55s cubic-bezier(.16,1,.3,1), opacity .5s ease}
+.checkin-ov.show .checkin-card{transform:scale(1) translateY(0);opacity:1}
+.checkin-svg{color:var(--green)}
+.checkin-circle{stroke-dasharray:264;stroke-dashoffset:264}
+.checkin-ov.show .checkin-circle{animation:checkin-draw-circle .65s ease forwards .12s}
+.checkin-check{stroke-dasharray:60;stroke-dashoffset:60}
+.checkin-ov.show .checkin-check{animation:checkin-draw-check .4s ease forwards .6s}
+@keyframes checkin-draw-circle{to{stroke-dashoffset:0}}
+@keyframes checkin-draw-check{to{stroke-dashoffset:0}}
+.checkin-title{font-family:'Cormorant Garamond',serif;font-size:23px;letter-spacing:.05em;color:var(--gold-hi);margin-top:2px}
+.checkin-date{font-size:12px;color:var(--text2);letter-spacing:.03em;text-transform:capitalize}
+.checkin-streak{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+
 /* ── NOTIFICATION BELL ── */
 .notif-bell-btn{transition:all var(--trans);position:relative}
 .notif-bell-btn .badge-dot{background:var(--red) !important;border:2px solid var(--bg2)}
@@ -2853,6 +2886,18 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
         <span data-i18n="presencePage">Kehadiran</span>
         <span class="nav-badge green" id="online-badge">0</span>
       </button>
+      <button class="nav-item" onclick="navTo('attendance',this)" id="n-attendance">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="2.5" y="3" width="11" height="10.5" rx="1.6" stroke="currentColor" stroke-width="1.3"/>
+            <line x1="2.5" y1="6" x2="13.5" y2="6" stroke="currentColor" stroke-width="1.3"/>
+            <line x1="5" y1="1.5" x2="5" y2="4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <line x1="11" y1="1.5" x2="11" y2="4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M5.5 9.3l1.4 1.4L10.5 7.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span data-i18n="attPage">Absensi</span>
+      </button>
     </div>
 
     <div class="sb-foot">
@@ -3607,6 +3652,42 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
         <div class="user-grid" id="pres-grid"></div>
       </div>
 
+      <!-- ⑪ ATTENDANCE / ABSENSI PAGE -->
+      <div class="sp" id="pg-attendance">
+        <div class="ph">
+          <div class="ph-left">
+            <div class="pt" data-i18n="attPage">Absensi</div>
+            <div class="ps" id="att-sub-line" data-i18n="attSub">Kehadiran harian — check-in otomatis saat masuk</div>
+          </div>
+        </div>
+
+        <!-- Self view — semua role kecuali moderator -->
+        <div id="att-self-panel">
+          <div class="stats-grid" id="att-self-stats"></div>
+          <div class="ads-toolbar">
+            <div class="ads-month-nav">
+              <button class="ads-nav-btn" onclick="attGotoMonth(-1)">‹</button>
+              <button class="ads-nav-btn" onclick="attGotoMonth(1)">›</button>
+            </div>
+          </div>
+          <div class="cal-wrap" id="att-self-cal"></div>
+        </div>
+
+        <!-- Moderator management view -->
+        <div id="att-mod-panel" style="display:none">
+          <div class="ads-toolbar">
+            <select class="ads-select" id="att-user-sel" onchange="attUserChanged(this)"></select>
+            <div class="ads-month-nav" style="margin-left:auto">
+              <button class="ads-nav-btn" onclick="attGotoMonth(-1)">‹</button>
+              <button class="ads-nav-btn" onclick="attGotoMonth(1)">›</button>
+            </div>
+          </div>
+          <div class="stats-grid" id="att-mod-stats"></div>
+          <div class="cal-wrap" id="att-mod-cal"></div>
+          <div class="unlock-desc" style="margin-top:14px" data-i18n="attModHint">Klik tanggal pada kalender untuk mengubah status kehadiran: Izin, WFH, Sakit, atau Alpha.</div>
+        </div>
+      </div>
+
     </div><!-- /content -->
   </div><!-- /main -->
 </div><!-- /dash -->
@@ -3717,7 +3798,18 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
   </div>
 </div>
 
-
+<!-- ══ ABSENSI · CHECK-IN ANIMATION OVERLAY (1x per login/hari) ══ -->
+<div id="checkin-anim-ov" class="checkin-ov">
+  <div class="checkin-card">
+    <svg class="checkin-svg" viewBox="0 0 100 100" width="86" height="86">
+      <circle class="checkin-circle" cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="3"/>
+      <path class="checkin-check" d="M30 52 L44 66 L72 34" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="checkin-title" id="checkin-anim-title" data-i18n="attCheckinTitle">Absen Berhasil</div>
+    <div class="checkin-date" id="checkin-anim-date"></div>
+    <div class="checkin-streak" id="checkin-anim-streak"></div>
+  </div>
+</div>
 
 <script>
 'use strict';
@@ -3864,6 +3956,11 @@ function roleFromDb(r) {
 let customers     = [];
 let registrations = [];
 let broadcasts    = [];
+
+/* Absensi — state kalender aktif (default: bulan berjalan) */
+let attCalYear  = new Date().getFullYear();
+let attCalMonth = new Date().getMonth();
+let attSelectedUser = null;
 
 /* ═══════════════════════════════════════════════════════════
    ④ PRESENCE — Realtime multi-user tracking
@@ -4583,6 +4680,15 @@ const i18n = {
     unlockDesc:'This task is locked because the ad date has passed. Send a request and the moderator can reopen it for 24 hours.',
     unlockReasonLabel:'Reason (optional)',
     unlockReasonPh:'e.g. I was on leave and missed the input window…',
+    // ── Attendance / Absensi ──
+    attPage:'Attendance', attSub:'Daily attendance — auto check-in on login',
+    attSubMod:'Manage attendance — set Excused, WFH, Sick, or Absent per day',
+    attModHint:'Click a date on the calendar to change attendance status: Excused, WFH, Sick, or Absent.',
+    attClickEdit:'Click to edit',
+    attEditTitle:'Edit Attendance', attUser:'Employee', attDate:'Date', attStatus:'Status',
+    attNote:'Note', attNotePh:'Optional note',
+    attSaved:'Attendance updated', attSaveErr:'Failed to update attendance',
+    attCheckinTitle:'Checked In',
   },
   id: {
     brandTagline:'Desain · Warisan · Kehadiran', signIn:'Masuk',
@@ -4798,6 +4904,15 @@ const i18n = {
     unlockDesc:'Task ini terkunci karena tanggal iklan sudah lewat. Kirim permintaan, moderator bisa membuka kembali selama 24 jam.',
     unlockReasonLabel:'Alasan (opsional)',
     unlockReasonPh:'cth. Saya sedang cuti dan terlewat jendela input…',
+    // ── Absensi ──
+    attPage:'Absensi', attSub:'Kehadiran harian — check-in otomatis saat login',
+    attSubMod:'Kelola absensi — atur Izin, WFH, Sakit, atau Alpha per tanggal',
+    attModHint:'Klik tanggal pada kalender untuk mengubah status kehadiran: Izin, WFH, Sakit, atau Alpha.',
+    attClickEdit:'Klik untuk mengubah',
+    attEditTitle:'Ubah Absensi', attUser:'Karyawan', attDate:'Tanggal', attStatus:'Status',
+    attNote:'Catatan', attNotePh:'Catatan opsional',
+    attSaved:'Absensi berhasil diperbarui', attSaveErr:'Gagal memperbarui absensi',
+    attCheckinTitle:'Absen Berhasil',
   }
 };
 const t = k => i18n[currentLang][k] || i18n.en[k] || k;
@@ -5236,6 +5351,7 @@ function loginSuccess(id, role, name) {
     // Ini yang fix: device lain dapat brand terbaru saat login
     await earlyLoadBrand();
     await initDashboard();
+    runAttendanceCheckin();
     initRealtimePresence(id, role, name);
     // ── Start brand polling sebagai fallback realtime ─────────────
     startBrandPolling();
@@ -10509,6 +10625,261 @@ async function submitUnlockRequest() {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   ㉓·B ABSENSI (ATTENDANCE) — check-in kalender + kelola moderator
+   ═══════════════════════════════════════════════════════════ */
+const ATT_STATUS_META = {
+  hadir: { label:'Hadir', labelEn:'Present', color:'#7abf8e' },
+  wfh:   { label:'WFH',   labelEn:'WFH',     color:'#7ea8c9' },
+  izin:  { label:'Izin',  labelEn:'Excused', color:'#e8b86e' },
+  sakit: { label:'Sakit', labelEn:'Sick',    color:'#d98ec0' },
+  alpha: { label:'Alpha', labelEn:'Absent',  color:'#e87070' },
+};
+let attCache = {};             // `${userId}_${YYYY-MM}` -> { 'YYYY-MM-DD': record }
+let activeAttEdit = null;
+
+function attMK(y,m){ return `${y}-${String(m+1).padStart(2,'0')}`; }
+function attPad(n){ return String(n).padStart(2,'0'); }
+function todayStr(){ const d=new Date(); return `${d.getFullYear()}-${attPad(d.getMonth()+1)}-${attPad(d.getDate())}`; }
+function attLocalKey(userId){ return 'dhp_att_' + userId; }
+function invalidateAttCache(userId, year, month){ delete attCache[userId + '_' + attMK(year, month)]; }
+
+async function loadAttendanceMonth(userId, year, month) {
+  const cacheKey = userId + '_' + attMK(year, month);
+  if (attCache[cacheKey]) return attCache[cacheKey];
+  const first = `${year}-${attPad(month+1)}-01`;
+  const lastDay = new Date(year, month+1, 0).getDate();
+  const last = `${year}-${attPad(month+1)}-${attPad(lastDay)}`;
+  const map = {};
+  if (db) {
+    const res = await dbQ(d => d.from('attendance').select('*').eq('user_id', userId).gte('att_date', first).lte('att_date', last));
+    if (res?.data) res.data.forEach(r => { map[r.att_date] = r; });
+  } else {
+    const raw = JSON.parse(localStorage.getItem(attLocalKey(userId)) || '{}');
+    Object.keys(raw).forEach(d => { if (d >= first && d <= last) map[d] = raw[d]; });
+  }
+  attCache[cacheKey] = map;
+  return map;
+}
+
+/* ── Check-in otomatis saat login — SEMUA ROLE KECUALI MODERATOR ── */
+async function runAttendanceCheckin() {
+  if (!currentUser || can.isMod(currentUser.role)) return; // moderator dikecualikan dari check-in
+  const dateStr  = todayStr();
+  const seenKey  = 'dhp_att_seen_' + currentUser.id + '_' + dateStr;
+  let isNew = false;
+  if (db) {
+    const res = await dbQ(d => d.rpc('checkin_attendance', { p_user_id: currentUser.id }));
+    if (res?.data && Array.isArray(res.data) && res.data.length) isNew = !!res.data[0].is_new;
+    else if (res?.data && res.data.is_new !== undefined) isNew = !!res.data.is_new;
+  } else {
+    const raw = JSON.parse(localStorage.getItem(attLocalKey(currentUser.id)) || '{}');
+    if (!raw[dateStr]) {
+      raw[dateStr] = { status:'hadir', check_in_at:new Date().toISOString(), note:null };
+      localStorage.setItem(attLocalKey(currentUser.id), JSON.stringify(raw));
+      isNew = true;
+    }
+  }
+  invalidateAttCache(currentUser.id, new Date().getFullYear(), new Date().getMonth());
+  if (isNew && !localStorage.getItem(seenKey)) {
+    localStorage.setItem(seenKey, '1');
+    showCheckinAnimation();
+  }
+}
+
+/* ── Animasi elegan, hanya 1x, muncul saat check-in baru ── */
+function showCheckinAnimation() {
+  const ov = document.getElementById('checkin-anim-ov');
+  if (!ov) return;
+  const dEl = document.getElementById('checkin-anim-date');
+  if (dEl) {
+    const locale = currentLang === 'id' ? 'id-ID' : 'en-US';
+    dEl.textContent = new Date().toLocaleDateString(locale, { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  }
+  const sEl = document.getElementById('checkin-anim-streak');
+  if (sEl) sEl.textContent = currentUser?.name ? `${currentUser.name} · ${rn(currentUser.role)}` : '';
+  ov.classList.add('show');
+  setTimeout(() => ov.classList.remove('show'), 2400);
+}
+
+/* ── Daftar user yang tercakup sistem absensi (semua role kecuali moderator) ── */
+function getAttendanceRoster() {
+  const src = (window._allUsers && window._allUsers.length)
+    ? window._allUsers
+    : Object.entries(LOCAL_USERS).map(([id,u]) => ({ user_id:id, full_name:u.name, role:u.role }));
+  const seen = new Set();
+  return src.filter(u => u.role !== 'moderator' && u.role !== 'head_moderator' && !seen.has(u.user_id) && seen.add(u.user_id));
+}
+
+function attMonthLabel(y, m) {
+  const names = currentLang === 'id'
+    ? ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']
+    : ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return `${names[m]} ${y}`;
+}
+
+function buildAttCalendarGrid(containerEl, year, month, records, opts) {
+  opts = opts || {};
+  const firstDow    = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const todayS      = todayStr();
+  const dows = currentLang === 'id' ? ['MIN','SEN','SEL','RAB','KAM','JUM','SAB'] : ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  let html = `<div class="cal-title-bar">
+    <div class="cal-month-name">${attMonthLabel(year, month)}</div>
+    <div class="cal-legend">${Object.entries(ATT_STATUS_META).map(([k,v]) =>
+      `<span class="cal-leg"><span class="cal-leg-dot" style="background:${v.color}"></span>${currentLang==='id'?v.label:v.labelEn}</span>`).join('')}
+    </div>
+  </div>
+  <div class="cal-grid">`;
+  dows.forEach((d,i) => html += `<div class="cal-dow ${i===0?'sun':''}">${d}</div>`);
+  for (let i=0; i<firstDow; i++) html += `<div class="cal-cell empty"></div>`;
+  for (let day=1; day<=daysInMonth; day++) {
+    const dateStr  = `${year}-${attPad(month+1)}-${attPad(day)}`;
+    const rec      = records[dateStr];
+    const isToday  = dateStr === todayS;
+    const isSun    = new Date(year, month, day).getDay() === 0;
+    const isFuture = dateStr > todayS;
+    const meta     = rec ? ATT_STATUS_META[rec.status] : null;
+    const editable = opts.editable && !isFuture;
+    html += `<div class="cal-cell att-cell ${isToday?'today':''} ${isSun?'is-sun':''} ${editable?'att-editable':''}"
+      ${editable ? `onclick="openAttEditModal('${opts.userId}','${dateStr}')"` : ''} title="${editable ? t('attClickEdit') : ''}">
+      <span class="cal-daynum">${day}</span>
+      ${meta
+        ? `<span class="att-pill" style="background:${meta.color}22;color:${meta.color};border-color:${meta.color}55">${currentLang==='id'?meta.label:meta.labelEn}</span>`
+        : (isFuture ? '' : `<span class="att-pill att-pill-empty">—</span>`)}
+    </div>`;
+  }
+  html += `</div>`;
+  containerEl.innerHTML = html;
+}
+
+function attRenderStats(box, records) {
+  if (!box) return;
+  const counts = { hadir:0, wfh:0, izin:0, sakit:0, alpha:0 };
+  Object.values(records).forEach(r => { if (counts[r.status] !== undefined) counts[r.status]++; });
+  box.innerHTML = Object.entries(ATT_STATUS_META).map(([k,v]) => `
+    <div class="stat-card">
+      <div class="stat-num" style="color:${v.color}">${counts[k]}</div>
+      <div class="stat-lbl">${currentLang==='id'?v.label:v.labelEn}</div>
+    </div>`).join('');
+}
+
+async function renderAttSelfCalendar() {
+  const wrap = document.getElementById('att-self-cal');
+  if (!wrap || !currentUser) return;
+  const records = await loadAttendanceMonth(currentUser.id, attCalYear, attCalMonth);
+  buildAttCalendarGrid(wrap, attCalYear, attCalMonth, records, { editable:false });
+  attRenderStats(document.getElementById('att-self-stats'), records);
+}
+
+function populateAttUserPicker() {
+  const sel = document.getElementById('att-user-sel');
+  if (!sel) return;
+  const roster = getAttendanceRoster();
+  if (!attSelectedUser || !roster.find(u => u.user_id === attSelectedUser)) {
+    attSelectedUser = roster.length ? roster[0].user_id : null;
+  }
+  sel.innerHTML = roster.map(u =>
+    `<option value="${u.user_id}" ${u.user_id===attSelectedUser?'selected':''}>${escHtml(u.full_name)} — ${escHtml(rn(u.role))}</option>`
+  ).join('');
+}
+
+async function renderAttModCalendar() {
+  const wrap = document.getElementById('att-mod-cal');
+  if (!wrap || !attSelectedUser) return;
+  const records = await loadAttendanceMonth(attSelectedUser, attCalYear, attCalMonth);
+  buildAttCalendarGrid(wrap, attCalYear, attCalMonth, records, { editable:true, userId:attSelectedUser });
+  attRenderStats(document.getElementById('att-mod-stats'), records);
+}
+
+function attUserChanged(sel) {
+  attSelectedUser = sel.value;
+  invalidateAttCache(attSelectedUser, attCalYear, attCalMonth);
+  renderAttModCalendar();
+}
+
+function attGotoMonth(delta) {
+  attCalMonth += delta;
+  if (attCalMonth < 0)  { attCalMonth = 11; attCalYear--; }
+  if (attCalMonth > 11) { attCalMonth = 0;  attCalYear++; }
+  if (currentUser && can.isMod(currentUser.role)) renderAttModCalendar();
+  else renderAttSelfCalendar();
+}
+
+function renderAttendancePage() {
+  if (!currentUser) return;
+  const mod = can.isMod(currentUser.role);
+  const selfPanel = document.getElementById('att-self-panel');
+  const modPanel  = document.getElementById('att-mod-panel');
+  if (selfPanel) selfPanel.style.display = mod ? 'none' : '';
+  if (modPanel)  modPanel.style.display  = mod ? '' : 'none';
+  const sub = document.getElementById('att-sub-line');
+  if (sub) sub.textContent = mod ? t('attSubMod') : t('attSub');
+  if (mod) { populateAttUserPicker(); renderAttModCalendar(); }
+  else renderAttSelfCalendar();
+}
+
+function openAttEditModal(userId, dateStr) {
+  activeAttEdit = { userId, dateStr };
+  const roster = getAttendanceRoster();
+  const u = roster.find(x => x.user_id === userId);
+  document.getElementById('m-title').textContent = t('attEditTitle');
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg">
+      <label>${t('attUser')}</label>
+      <div class="fi" style="opacity:.7;pointer-events:none">${escHtml(u ? u.full_name : userId)}</div>
+    </div>
+    <div class="fg">
+      <label>${t('attDate')}</label>
+      <div class="fi" style="opacity:.7;pointer-events:none">${dateStr}</div>
+    </div>
+    <div class="fg">
+      <label>${t('attStatus')}</label>
+      <select class="fi" id="att-status-sel">
+        ${Object.entries(ATT_STATUS_META).map(([k,v]) => `<option value="${k}">${currentLang==='id'?v.label:v.labelEn}</option>`).join('')}
+      </select>
+    </div>
+    <div class="fg">
+      <label>${t('attNote')}</label>
+      <textarea class="fi" id="att-note-ta" rows="2" maxlength="200" placeholder="${t('attNotePh')}"></textarea>
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>
+    <button class="btn-sm btn-gold" onclick="submitAttEdit()">${t('save')}</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+  loadAttendanceMonth(userId, attCalYear, attCalMonth).then(records => {
+    const rec = records[dateStr];
+    if (rec) {
+      const selEl = document.getElementById('att-status-sel');
+      const noteEl = document.getElementById('att-note-ta');
+      if (selEl)  selEl.value = rec.status;
+      if (noteEl) noteEl.value = rec.note || '';
+    }
+  });
+}
+
+async function submitAttEdit() {
+  if (!activeAttEdit || !currentUser) return;
+  const status = document.getElementById('att-status-sel').value;
+  const note   = document.getElementById('att-note-ta').value.trim();
+  const { userId, dateStr } = activeAttEdit;
+  if (db) {
+    const res = await dbQ(d => d.rpc('set_attendance_status', {
+      p_moderator_id: currentUser.id, p_user_id: userId, p_date: dateStr, p_status: status, p_note: note || null
+    }));
+    if (!res || res.error) { toast(t('attSaveErr')); return; }
+  } else {
+    const raw = JSON.parse(localStorage.getItem(attLocalKey(userId)) || '{}');
+    raw[dateStr] = { status, note, edited_by: currentUser.id, edited_at: new Date().toISOString() };
+    localStorage.setItem(attLocalKey(userId), JSON.stringify(raw));
+  }
+  invalidateAttCache(userId, attCalYear, attCalMonth);
+  toast(t('attSaved'));
+  pushActivity(`${currentUser.name} mengubah absensi ${userId} (${dateStr}) → ${status}`, 'info');
+  closeModal();
+  renderAttModCalendar();
+}
+
+/* ═══════════════════════════════════════════════════════════
    ㉔ NAVIGATION
    ═══════════════════════════════════════════════════════════ */
 function navTo(page, btn) {
@@ -10547,6 +10918,7 @@ function navTo(page, btn) {
   if (page === 'users')           renderUsers();
   if (page === 'settings')        renderSettings();
   if (page === 'presence')        renderPresencePage();
+  if (page === 'attendance')      renderAttendancePage();
   if (page === 'content_studio')  renderContentStudio();
   if (page === 'live_studio')     renderLiveStudio();
   if (page === 'ad_scheduler')    {
