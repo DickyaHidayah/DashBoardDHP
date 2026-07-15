@@ -122,25 +122,7 @@ body.light .heat-cold {
 body.light .heat-cold .hb-icon { background:rgba(26,86,160,.14); }
 
 /* ══════════════════════════════════════════════════════════
-   DARK MODE REMINDER HINT — muncul tiap 30 menit dekat ikon tema
-   ══════════════════════════════════════════════════════════ */
-.dark-mode-hint{
-  position:fixed;z-index:10000;max-width:230px;
-  background:#0d0d0d;color:#f2f2f2;font-family:'Inter',sans-serif;
-  font-size:11.5px;line-height:1.4;padding:9px 12px;border-radius:10px;
-  box-shadow:0 8px 24px rgba(0,0,0,.28);
-  opacity:0;transform:translateY(-6px) scale(.96);
-  transition:opacity .3s ease,transform .3s ease;
-  pointer-events:none;
-}
-.dark-mode-hint.show{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
-.dark-mode-hint::after{
-  content:'';position:absolute;top:-6px;right:18px;width:10px;height:10px;
-  background:#0d0d0d;transform:rotate(45deg);
-}
-
-/* ══════════════════════════════════════════════════════════
-   ABSENSI (ATTENDANCE) — v6.0
+   ABSENSI (ATTENDANCE) — v7.0
    ══════════════════════════════════════════════════════════ */
 
 /* ── Fullscreen check-in ritual (game-like, muncul 1x/hari) ── */
@@ -206,6 +188,27 @@ body.light .heat-cold .hb-icon { background:rgba(26,86,160,.14); }
 .att-ci-status.done{color:#7abf8e}
 .att-ci-spinner{width:12px;height:12px;border-radius:50%;border:2px solid rgba(201,169,110,.2);border-top-color:var(--gold);animation:attSpin .7s linear infinite}
 @keyframes attSpin{to{transform:rotate(360deg)}}
+
+/* ── Streak badge (gamifikasi) ── */
+.att-ci-streak{
+  display:inline-flex;align-items:center;gap:6px;margin:2px auto 18px;padding:5px 14px;
+  border-radius:20px;font-size:11.5px;font-weight:700;letter-spacing:.02em;
+  background:rgba(232,204,153,.1);border:1px solid rgba(232,204,153,.3);color:#e8cc99;
+  animation:attStreakIn .6s cubic-bezier(.16,1,.3,1) .3s backwards;
+}
+@keyframes attStreakIn{from{opacity:0;transform:translateY(-6px) scale(.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+/* ── Confetti burst saat check-in sukses ── */
+.att-ci-confetti{
+  position:absolute;width:6px;height:6px;border-radius:1px;pointer-events:none;
+  --dx:0px;--dy:0px;--rot:0deg;
+  animation:attConfettiBurst .95s cubic-bezier(.2,.7,.3,1) forwards;
+}
+@keyframes attConfettiBurst{
+  0%{transform:translate(-50%,-50%) rotate(0deg) scale(0);opacity:1}
+  15%{transform:translate(-50%,-50%) rotate(calc(var(--rot) * 0.3)) scale(1);opacity:1}
+  100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy) + 40px)) rotate(var(--rot)) scale(.4);opacity:0}
+}
 
 /* ── Attendance page: calendar day status colors (reuses .cal-cell) ── */
 .cal-cell.att-Hadir{box-shadow:inset 0 0 0 1.5px rgba(122,191,142,.5);background:rgba(122,191,142,.05)}
@@ -383,6 +386,21 @@ body.light .logout-btn:hover .profile-gear-hint {
     backdrop-filter:blur(12px);min-width:44px;min-height:36px}
 .cb:hover{background:rgba(201,169,110,.15);color:var(--gold-hi);border-color:var(--gold)}
 body.light .cb{background:#ffffff;color:#0d0d0d;border:1.5px solid rgba(0,0,0,.2);font-weight:700}
+
+/* ══════ THEME REMINDER BUBBLE (muncul tiap 30 menit) ══════ */
+.theme-hint-bubble{
+  position:fixed;z-index:2000;max-width:210px;
+  background:#0d0d0d;color:#f5f2ea;font-family:'Inter',sans-serif;
+  font-size:11.5px;font-weight:600;line-height:1.4;letter-spacing:.01em;
+  padding:9px 13px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.28);
+  opacity:0;transform:translateY(-6px) scale(.96);pointer-events:none;
+  transition:opacity .35s ease,transform .35s ease;
+}
+.theme-hint-bubble::before{
+  content:'';position:absolute;top:-5px;right:16px;width:9px;height:9px;
+  background:#0d0d0d;transform:rotate(45deg);border-radius:2px;
+}
+.theme-hint-bubble.show{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
 
 /* ═══════════════════════════════════════════════════════
    LIGHT MODE — Dominan Putih Bersih (gaya Claude)
@@ -2605,7 +2623,6 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
 <div class="ctrl-bar" id="ctrl-bar">
   <button class="cb" id="lang-btn" onclick="toggleLang()" title="Toggle language">ID</button>
   <button class="cb" id="mode-btn" onclick="toggleMode()" title="Toggle theme">◑ Dark</button>
-  <button class="cb" id="att-test-reset-btn" onclick="resetAttendanceTesting()" title="Reset pop-up absensi hari ini di browser ini, untuk keperluan testing" style="font-size:10px">⟲ Reset Absensi</button>
 </div>
 
 <!-- ══ LOGIN SCENE ══ -->
@@ -3733,7 +3750,7 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
         <div class="user-grid" id="pres-grid"></div>
       </div>
 
-      <!-- ══ ABSENSI (ATTENDANCE) — v6.0 ══ -->
+      <!-- ══ ABSENSI (ATTENDANCE) — v7.0 ══ -->
       <div class="sp" id="pg-attendance">
         <div class="ph">
           <div class="ph-left">
@@ -5052,54 +5069,70 @@ function toggleLang() {
 /* ═══════════════════════════════════════════════════════════
    ⑨ DARK / LIGHT MODE
    ═══════════════════════════════════════════════════════════ */
-let isDark = false; // ── Default: LIGHT MODE saat pertama kali dibuka ──
-function toggleMode() {
-  isDark = !isDark;
+const THEME_KEY = 'dhp_theme_pref'; // 'light' | 'dark'
+let isDark = false; // Default tampilan: LIGHT MODE
+
+function applyThemeToUI() {
   document.body.classList.toggle('light', !isDark);
   const lbl = isDark ? '◑ Light' : '◑ Dark';
-  document.getElementById('mode-btn').textContent = lbl;
-  document.getElementById('mode-btn-dash').textContent = '◑';
+  const b1 = document.getElementById('mode-btn');
+  const b2 = document.getElementById('mode-btn-dash');
+  if (b1) b1.textContent = lbl;
+  if (b2) b2.textContent = '◑';
   if (window.bgRenderer) bgRenderer.setMode(!isDark);
-  // Kalau user sudah pindah ke dark mode sendiri, hentikan reminder popup
-  if (isDark) stopDarkModeReminder(); else startDarkModeReminder();
 }
 
-/* ── Reminder kecil "mau dark mode? tekan di sini" — muncul tiap 30 menit
-      selagi user masih di light mode, nempel dekat ikon toggle tema. ── */
-let _darkHintIv = null;
-function startDarkModeReminder() {
-  clearInterval(_darkHintIv);
-  if (isDark) return; // sudah dark mode, tidak perlu diingatkan
-  _darkHintIv = setInterval(() => {
-    if (!currentUser || isDark) return;
-    showDarkModeHint();
-  }, 30 * 60 * 1000); // 30 menit
+function initTheme() {
+  let saved = null;
+  try { saved = localStorage.getItem(THEME_KEY); } catch (e) {}
+  isDark = saved === 'dark'; // default (belum pernah pilih) = light
+  applyThemeToUI();
 }
-function stopDarkModeReminder() {
-  clearInterval(_darkHintIv);
-  _darkHintIv = null;
-  document.getElementById('dark-mode-hint')?.remove();
+
+function toggleMode() {
+  isDark = !isDark;
+  applyThemeToUI();
+  try { localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light'); } catch (e) {}
+  hideThemeReminder();
 }
-function showDarkModeHint() {
-  const btn = document.getElementById('mode-btn-dash') || document.getElementById('mode-btn');
-  if (!btn) return;
-  document.getElementById('dark-mode-hint')?.remove();
-  const bubble = document.createElement('div');
-  bubble.id = 'dark-mode-hint';
-  bubble.className = 'dark-mode-hint';
-  bubble.textContent = currentLang === 'id'
-    ? 'Mau mode gelap? Tekan di sini ↗'
-    : 'Want dark mode? Tap here ↗';
-  document.body.appendChild(bubble);
-  const rect = btn.getBoundingClientRect();
-  bubble.style.top  = (rect.bottom + 10) + 'px';
-  bubble.style.left = Math.max(8, rect.right - bubble.offsetWidth) + 'px';
-  requestAnimationFrame(() => bubble.classList.add('show'));
-  clearTimeout(window._darkHintCloseTO);
-  window._darkHintCloseTO = setTimeout(() => {
-    bubble.classList.remove('show');
-    setTimeout(() => bubble.remove(), 350);
-  }, 7000);
+
+/* ── Reminder kecil: ajak coba dark mode, muncul tiap 30 menit ── */
+let _themeReminderIv = null;
+function showThemeReminder() {
+  if (isDark) return; // sudah dark mode, tak perlu diingatkan
+  const targets = [
+    { btn: document.getElementById('mode-btn'),      id: 'theme-hint-login' },
+    { btn: document.getElementById('mode-btn-dash'), id: 'theme-hint-dash'  }
+  ];
+  targets.forEach(({ btn, id }) => {
+    if (!btn || btn.offsetParent === null) return; // tombol tidak terlihat saat ini
+    let hint = document.getElementById(id);
+    if (!hint) {
+      hint = document.createElement('div');
+      hint.id = id;
+      hint.className = 'theme-hint-bubble';
+      hint.textContent = currentLang === 'id'
+        ? 'Mau mode gelap? Tekan di sini ◑'
+        : 'Want dark mode? Tap here ◑';
+      document.body.appendChild(hint);
+    }
+    const r = btn.getBoundingClientRect();
+    hint.style.top  = (r.bottom + 8 + window.scrollY) + 'px';
+    hint.style.left = Math.max(8, r.right - hint.offsetWidth) + 'px';
+    if (hint.offsetWidth === 0) hint.style.left = (r.left) + 'px';
+    hint.classList.add('show');
+    clearTimeout(hint._hideTO);
+    hint._hideTO = setTimeout(() => hint.classList.remove('show'), 6000);
+  });
+}
+function hideThemeReminder() {
+  ['theme-hint-login','theme-hint-dash'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.classList.remove('show');
+  });
+}
+function startThemeReminderLoop() {
+  clearInterval(_themeReminderIv);
+  _themeReminderIv = setInterval(showThemeReminder, 30 * 60 * 1000); // 30 menit
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -5459,7 +5492,6 @@ function loginSuccess(id, role, name) {
     // Diberi jeda kecil supaya muncul setelah dashboard tampil & data termuat.
     setTimeout(() => { try { welcomeNotif(); } catch (e) { console.warn('[DHP] welcomeNotif gagal:', e); } }, 700);
     setTimeout(() => { try { maybeShowAttendanceCheckin(); } catch (e) { console.warn('[DHP] attendance check-in gagal:', e); } }, 1100);
-    startDarkModeReminder();
   }, 500);
 }
 
@@ -5480,7 +5512,6 @@ function handleLogout() {
     pushActivity(`${currentUser.name} signed out`, 'leave');
   }
   currentUser = null;
-  stopDarkModeReminder();
   document.body.classList.remove('is-mod');
   document.body.classList.remove('is-head-mod');
   document.body.className = document.body.className.replace(/\brole-theme-\S+/g, '').trim();
@@ -10836,6 +10867,8 @@ document.addEventListener('keydown', e => {
 
 /* ══ INIT ══ */
 applyTranslations();
+initTheme();
+startThemeReminderLoop();
 
 // ── Brand Identity: load dari Supabase saat halaman pertama dibuka ──
 // Dipanggil di sini (paling bawah) supaya semua fungsi sudah terdefinisi.
@@ -10858,49 +10891,76 @@ applyTranslations();
 })();
 
 /* ═══════════════════════════════════════════════════════════
-   ⑯ ABSENSI (ATTENDANCE) — v6.0
+   ⑯ ABSENSI (ATTENDANCE) — v7.0
    ═══════════════════════════════════════════════════════════ */
 
-/* ── Fullscreen check-in ritual: muncul 1x per hari, SEMUA ROLE
-      KECUALI role 'moderator'. Sovereign/head_moderator TETAP dapat
-      pop-up absensi (per permintaan: hanya "moderator" yang dikecualikan). ── */
+/* ── Fullscreen check-in ritual: muncul 1x per hari, SEMUA role
+      KECUALI moderator, chief-moderator (head_moderator), & guest ──
+
+   PENTING (fix v7.0): status "sudah tampil hari ini" sekarang mengikuti
+   DATABASE (baris attendance milik user utk tanggal hari ini), BUKAN lagi
+   localStorage semata. Sebelumnya, gate memakai localStorage per-browser —
+   ini yang menyebabkan popup kadang "tidak muncul" di sebagian akun saat
+   testing lintas device/browser (localStorage tidak sinkron antar device,
+   jadi status jadi tidak konsisten). Sekarang sumber kebenarannya satu:
+   RPC mark_attendance_today() → is_new. Kalau moderator ingin akun tertentu
+   bisa memicu popup lagi (mis. untuk testing ulang), tinggal hapus catatan
+   absensi HARI INI milik akun tsb dari halaman Absensi (tombol "Hapus") —
+   maka login berikutnya akan otomatis memunculkan popup lagi. */
 let _attCiCache = {};   // { 'YYYY-MM-DD': status } — bulan berjalan, milik currentUser
 let _attCiAutoCloseTO = null;
+let _attCiStreak = 0;   // jumlah hari Hadir/WFH berturut-turut bulan ini (utk badge gamifikasi)
+const _attCiShownThisSession = new Set(); // guard anti-dobel dalam 1 sesi (bukan lintas hari)
 
 async function maybeShowAttendanceCheckin() {
   if (!currentUser) return;
-  if (currentUser.role === 'moderator') return; // HANYA role 'moderator' yang dikecualikan
+  if (can.isMod(currentUser.role)) return;      // moderator & chief-moderator dikecualikan
+  if (currentUser.role === 'guest') return;     // akun tamu tidak perlu absensi
 
-  const todayKey  = ymdKey(new Date());
-  const localFlag = `dhp_att_ci_${currentUser.id}_${todayKey}`;
-  if (localStorage.getItem(localFlag)) return; // sudah tampil hari ini di browser ini
+  // Guard anti-dobel dalam satu sesi login yang sama (mis. loginSuccess terpanggil 2x)
+  if (_attCiShownThisSession.has(currentUser.id)) return;
 
   let isNew = true;
   if (db) {
     const res = await dbQ(d => d.rpc('mark_attendance_today', { p_user_id: currentUser.id }));
     if (res?.data && res.data.length) {
-      isNew = !!res.data[0].is_new;
+      isNew = !!res.data[0].is_new;              // sumber kebenaran: DATABASE
     } else if (res?.error) {
       console.warn('[DHP] mark_attendance_today gagal:', res.error.message);
+      // Fallback ke localStorage HANYA bila RPC benar-benar gagal (mis. offline)
+      const todayKey  = ymdKey(new Date());
+      const localFlag = `dhp_att_ci_${currentUser.id}_${todayKey}`;
+      if (localStorage.getItem(localFlag)) return;
+      localStorage.setItem(localFlag, '1');
     }
+  } else {
+    // Mode lokal tanpa Supabase — tidak ada "sumber kebenaran" server,
+    // pakai localStorage per-hari sebagai gantinya.
+    const todayKey  = ymdKey(new Date());
+    const localFlag = `dhp_att_ci_${currentUser.id}_${todayKey}`;
+    if (localStorage.getItem(localFlag)) return;
+    localStorage.setItem(localFlag, '1');
   }
-  localStorage.setItem(localFlag, '1');
+
+  if (!isNew) return; // sudah absen hari ini (baik self check-in maupun diset moderator) — jangan tampilkan lagi
+
+  _attCiShownThisSession.add(currentUser.id);
   await preloadAttCiCache();
+  computeAttCiStreak();
   openAttendanceCheckin(isNew);
 }
 
-/* ── Helper TESTING: hapus semua flag "sudah absen hari ini" di browser
-      ini supaya pop-up bisa dipicu ulang tanpa menunggu hari berikutnya.
-      Dipanggil dari tombol "⟲ Reset Absensi" di layar login, atau bisa
-      dipanggil manual lewat console: resetAttendanceTesting() ── */
-function resetAttendanceTesting() {
-  const removed = [];
-  Object.keys(localStorage).forEach(k => {
-    if (k.startsWith('dhp_att_ci_')) { localStorage.removeItem(k); removed.push(k); }
-  });
-  const msg = `Reset ${removed.length} flag absensi — sekarang login untuk lihat pop-up lagi`;
-  try { toast(msg); } catch(e) { alert(msg); }
-  console.log('[DHP] Attendance testing flags reset:', removed);
+/* Hitung berapa hari kerja berturut-turut (Hadir/WFH) bulan ini — utk badge streak */
+function computeAttCiStreak() {
+  _attCiStreak = 0;
+  const now = new Date();
+  for (let d = now.getDate(); d >= 1; d--) {
+    const ymd = ymdKey(new Date(now.getFullYear(), now.getMonth(), d));
+    const rec = _attCiCache[ymd];
+    if (d === now.getDate()) continue; // hari ini belum terhitung, dihitung sbg +1 setelah animasi
+    if (rec === 'Hadir' || rec === 'WFH') _attCiStreak++;
+    else break;
+  }
 }
 
 async function preloadAttCiCache() {
@@ -10918,6 +10978,19 @@ function openAttendanceCheckin(animateCheck) {
   const ov = document.getElementById('att-checkin-overlay'); if (!ov) return;
   document.getElementById('att-ci-name').textContent = currentUser?.name || '';
   renderCheckinCalendar();
+
+  // Badge streak gamifikasi
+  const streakEl = document.getElementById('att-ci-streak');
+  if (streakEl) {
+    if (_attCiStreak > 0) {
+      streakEl.style.display = '';
+      streakEl.innerHTML = `🔥 <b>${_attCiStreak + 1}</b> ${currentLang==='id' ? 'hari beruntun' : 'day streak'}`;
+    } else {
+      streakEl.style.display = '';
+      streakEl.innerHTML = currentLang==='id' ? '✦ Awal minggu yang baru' : '✦ A fresh start';
+    }
+  }
+
   ov.classList.add('open');
   requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('show')));
 
@@ -10933,17 +11006,48 @@ function openAttendanceCheckin(animateCheck) {
     const dnow = new Date();
     const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
     statusEl.innerHTML = `<span>✓ Hadir tercatat — ${dnow.getDate()} ${months[dnow.getMonth()]} ${dnow.getFullYear()}</span>`;
+    fireAttConfetti(ov);
   }, animateCheck ? 950 : 500);
 
   clearTimeout(_attCiAutoCloseTO);
-  _attCiAutoCloseTO = setTimeout(() => closeAttendanceCheckin(), 4500);
+  _attCiAutoCloseTO = setTimeout(() => closeAttendanceCheckin(), 5200);
 }
 
 function closeAttendanceCheckin() {
   const ov = document.getElementById('att-checkin-overlay'); if (!ov) return;
   ov.classList.remove('show');
   clearTimeout(_attCiAutoCloseTO);
-  setTimeout(() => ov.classList.remove('open'), 450);
+  setTimeout(() => {
+    ov.classList.remove('open');
+    ov.querySelectorAll('.att-ci-confetti').forEach(el => el.remove());
+  }, 450);
+}
+
+/* ── Semburan confetti kecil & elegan saat check-in sukses (game-like) ── */
+function fireAttConfetti(ov) {
+  const todayCell = ov.querySelector('.att-ci-day.today');
+  if (!todayCell) return;
+  const rect  = todayCell.getBoundingClientRect();
+  const ovRct = ov.getBoundingClientRect();
+  const cx = rect.left - ovRct.left + rect.width / 2;
+  const cy = rect.top  - ovRct.top  + rect.height / 2;
+  const colors = ['#e8cc99', '#7abf8e', '#e8b86e', '#d98ec0', '#7ea8c9'];
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('span');
+    p.className = 'att-ci-confetti';
+    const angle = (Math.PI * 2 * i) / 18 + Math.random() * 0.4;
+    const dist  = 70 + Math.random() * 60;
+    p.style.setProperty('--dx', (Math.cos(angle) * dist).toFixed(1) + 'px');
+    p.style.setProperty('--dy', (Math.sin(angle) * dist).toFixed(1) + 'px');
+    p.style.setProperty('--rot', (Math.random() * 360).toFixed(0) + 'deg');
+    p.style.left = cx + 'px';
+    p.style.top  = cy + 'px';
+    p.style.background = colors[i % colors.length];
+    frag.appendChild(p);
+    setTimeout(() => p.remove(), 1100);
+  }
+  ov.querySelector('.att-ci-inner').appendChild(frag);
 }
 
 function renderCheckinCalendar() {
@@ -10994,7 +11098,7 @@ function renderAttendancePage() {
 
   if (isMod) {
     const sel = document.getElementById('att-user-sel');
-    const entries = Object.entries(LOCAL_USERS).filter(([id, u]) => u.role !== 'moderator');
+    const entries = Object.entries(LOCAL_USERS).filter(([id, u]) => u.role !== 'head_moderator' && u.role !== 'moderator');
     sel.innerHTML = entries.map(([id, u]) => `<option value="${id}" ${id===attTargetId?'selected':''}>${u.name} (@${id})</option>`).join('');
     if (!entries.find(([id]) => id === attTargetId) && entries.length) attTargetId = entries[0][0];
     sel.value = attTargetId;
@@ -11127,6 +11231,7 @@ async function clearAttEdit(ymd) {
   <div class="att-ci-inner">
     <div class="att-ci-badge">✦ Absensi Hari Ini ✦</div>
     <div class="att-ci-name" id="att-ci-name">—</div>
+    <div class="att-ci-streak" id="att-ci-streak" style="display:none">—</div>
     <div class="att-ci-month" id="att-ci-month">—</div>
     <div class="att-ci-dow-row" id="att-ci-dow"></div>
     <div class="att-ci-grid" id="att-ci-grid"></div>
