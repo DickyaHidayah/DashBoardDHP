@@ -122,6 +122,24 @@ body.light .heat-cold {
 body.light .heat-cold .hb-icon { background:rgba(26,86,160,.14); }
 
 /* ══════════════════════════════════════════════════════════
+   DARK MODE REMINDER HINT — muncul tiap 30 menit dekat ikon tema
+   ══════════════════════════════════════════════════════════ */
+.dark-mode-hint{
+  position:fixed;z-index:10000;max-width:230px;
+  background:#0d0d0d;color:#f2f2f2;font-family:'Inter',sans-serif;
+  font-size:11.5px;line-height:1.4;padding:9px 12px;border-radius:10px;
+  box-shadow:0 8px 24px rgba(0,0,0,.28);
+  opacity:0;transform:translateY(-6px) scale(.96);
+  transition:opacity .3s ease,transform .3s ease;
+  pointer-events:none;
+}
+.dark-mode-hint.show{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.dark-mode-hint::after{
+  content:'';position:absolute;top:-6px;right:18px;width:10px;height:10px;
+  background:#0d0d0d;transform:rotate(45deg);
+}
+
+/* ══════════════════════════════════════════════════════════
    ABSENSI (ATTENDANCE) — v6.0
    ══════════════════════════════════════════════════════════ */
 
@@ -188,29 +206,6 @@ body.light .heat-cold .hb-icon { background:rgba(26,86,160,.14); }
 .att-ci-status.done{color:#7abf8e}
 .att-ci-spinner{width:12px;height:12px;border-radius:50%;border:2px solid rgba(201,169,110,.2);border-top-color:var(--gold);animation:attSpin .7s linear infinite}
 @keyframes attSpin{to{transform:rotate(360deg)}}
-
-/* ── Pengingat kecil "coba dark mode" (muncul tiap 30 menit) ── */
-.dm-reminder{
-  position:fixed;z-index:99999;font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;
-  letter-spacing:.01em;background:#171310;color:#f0ece2;padding:8px 13px;border-radius:9px;
-  border:1px solid rgba(201,169,110,.45);box-shadow:0 8px 22px rgba(0,0,0,.28);
-  opacity:0;transform:translateY(6px) scale(.95);pointer-events:none;
-  transition:opacity .35s cubic-bezier(.4,0,.2,1),transform .35s cubic-bezier(.4,0,.2,1);
-  white-space:nowrap;cursor:pointer;
-}
-.dm-reminder.show{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
-.dm-reminder:hover{border-color:var(--gold)}
-
-/* ── Light-mode overrides untuk popup Absensi ── */
-body.light .att-checkin-overlay{
-  background:radial-gradient(ellipse at 50% 40%, rgba(255,252,246,.98), rgba(238,232,220,.995) 75%);
-}
-body.light .att-ci-close{border-color:rgba(120,90,40,.2);background:rgba(0,0,0,.03);color:rgba(30,26,20,.55)}
-body.light .att-ci-name{color:rgba(30,26,20,.6)}
-body.light .att-ci-month{color:#1b1712}
-body.light .att-ci-dow-row div{color:rgba(30,26,20,.4)}
-body.light .att-ci-day{color:rgba(30,26,20,.5);background:rgba(0,0,0,.025)}
-body.light .att-ci-status{color:rgba(30,26,20,.6)}
 
 /* ── Attendance page: calendar day status colors (reuses .cal-cell) ── */
 .cal-cell.att-Hadir{box-shadow:inset 0 0 0 1.5px rgba(122,191,142,.5);background:rgba(122,191,142,.05)}
@@ -2610,6 +2605,7 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
 <div class="ctrl-bar" id="ctrl-bar">
   <button class="cb" id="lang-btn" onclick="toggleLang()" title="Toggle language">ID</button>
   <button class="cb" id="mode-btn" onclick="toggleMode()" title="Toggle theme">◑ Dark</button>
+  <button class="cb" id="att-test-reset-btn" onclick="resetAttendanceTesting()" title="Reset pop-up absensi hari ini di browser ini, untuk keperluan testing" style="font-size:10px">⟲ Reset Absensi</button>
 </div>
 
 <!-- ══ LOGIN SCENE ══ -->
@@ -5056,7 +5052,7 @@ function toggleLang() {
 /* ═══════════════════════════════════════════════════════════
    ⑨ DARK / LIGHT MODE
    ═══════════════════════════════════════════════════════════ */
-let isDark = false; // default tampilan portal: LIGHT MODE
+let isDark = false; // ── Default: LIGHT MODE saat pertama kali dibuka ──
 function toggleMode() {
   isDark = !isDark;
   document.body.classList.toggle('light', !isDark);
@@ -5064,50 +5060,46 @@ function toggleMode() {
   document.getElementById('mode-btn').textContent = lbl;
   document.getElementById('mode-btn-dash').textContent = '◑';
   if (window.bgRenderer) bgRenderer.setMode(!isDark);
-  hideDarkModeReminder();
+  // Kalau user sudah pindah ke dark mode sendiri, hentikan reminder popup
+  if (isDark) stopDarkModeReminder(); else startDarkModeReminder();
 }
 
-/* ── Pengingat "coba dark mode": muncul tiap 30 menit selagi masih light mode ── */
-let _dmReminderIv     = null;
-let _dmReminderHideTO = null;
+/* ── Reminder kecil "mau dark mode? tekan di sini" — muncul tiap 30 menit
+      selagi user masih di light mode, nempel dekat ikon toggle tema. ── */
+let _darkHintIv = null;
 function startDarkModeReminder() {
-  clearInterval(_dmReminderIv);
-  _dmReminderIv = setInterval(showDarkModeReminder, 30 * 60 * 1000);
-}
-function showDarkModeReminder() {
+  clearInterval(_darkHintIv);
   if (isDark) return; // sudah dark mode, tidak perlu diingatkan
-  const dashActive = document.getElementById('dash')?.classList.contains('active');
-  const btn = dashActive ? document.getElementById('mode-btn-dash') : document.getElementById('mode-btn');
-  if (!btn || btn.offsetParent === null) return; // tombol tidak sedang terlihat
-
-  let tip = document.getElementById('dm-reminder');
-  if (!tip) {
-    tip = document.createElement('div');
-    tip.id = 'dm-reminder';
-    tip.className = 'dm-reminder';
-    tip.onclick = () => { toggleMode(); };
-    document.body.appendChild(tip);
-  }
-  tip.textContent = (typeof currentLang !== 'undefined' && currentLang === 'en')
-    ? '🌙 Want dark mode? Click here'
-    : '🌙 Mau dark mode? Klik di sini';
-
-  const r = btn.getBoundingClientRect();
-  tip.style.top  = (r.bottom + 8) + 'px';
-  tip.style.left = Math.max(8, r.right - 10) + 'px';
-  requestAnimationFrame(() => {
-    const rr = tip.getBoundingClientRect();
-    tip.style.left = Math.max(8, r.right - rr.width) + 'px';
-    tip.classList.add('show');
-  });
-
-  clearTimeout(_dmReminderHideTO);
-  _dmReminderHideTO = setTimeout(hideDarkModeReminder, 6000);
+  _darkHintIv = setInterval(() => {
+    if (!currentUser || isDark) return;
+    showDarkModeHint();
+  }, 30 * 60 * 1000); // 30 menit
 }
-function hideDarkModeReminder() {
-  const tip = document.getElementById('dm-reminder');
-  if (tip) tip.classList.remove('show');
-  clearTimeout(_dmReminderHideTO);
+function stopDarkModeReminder() {
+  clearInterval(_darkHintIv);
+  _darkHintIv = null;
+  document.getElementById('dark-mode-hint')?.remove();
+}
+function showDarkModeHint() {
+  const btn = document.getElementById('mode-btn-dash') || document.getElementById('mode-btn');
+  if (!btn) return;
+  document.getElementById('dark-mode-hint')?.remove();
+  const bubble = document.createElement('div');
+  bubble.id = 'dark-mode-hint';
+  bubble.className = 'dark-mode-hint';
+  bubble.textContent = currentLang === 'id'
+    ? 'Mau mode gelap? Tekan di sini ↗'
+    : 'Want dark mode? Tap here ↗';
+  document.body.appendChild(bubble);
+  const rect = btn.getBoundingClientRect();
+  bubble.style.top  = (rect.bottom + 10) + 'px';
+  bubble.style.left = Math.max(8, rect.right - bubble.offsetWidth) + 'px';
+  requestAnimationFrame(() => bubble.classList.add('show'));
+  clearTimeout(window._darkHintCloseTO);
+  window._darkHintCloseTO = setTimeout(() => {
+    bubble.classList.remove('show');
+    setTimeout(() => bubble.remove(), 350);
+  }, 7000);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -5123,7 +5115,7 @@ let bgRenderer = null;
   renderer.setSize(W(), H(), false);
   renderer.setClearColor(0x000000, 0);
   const scene  = new THREE.Scene();
-  scene.fog    = new THREE.Fog(isDark ? 0x0a0906 : 0xf5f0e8, 8, 30);
+  scene.fog    = new THREE.Fog(0x0a0906, 8, 30);
   const camera = new THREE.PerspectiveCamera(55, W()/H(), .1, 100);
   camera.position.set(0, 0, 10);
   scene.add(new THREE.AmbientLight(0xc9a96e, .4));
@@ -5136,7 +5128,7 @@ let bgRenderer = null;
   const mkM = (c, o, w) => new THREE.MeshStandardMaterial({ color:c, transparent:true, opacity:o, wireframe:w, metalness:.65, roughness:.35, emissive:c, emissiveIntensity:.15 });
   const dkP = [0xc9a96e, 0xe8cc99, 0xa06840, 0x8b6348, 0xc97b8a];
   const ltP = [0x6b4218, 0x4a2d10, 0x8b5e2a, 0x5c3d28, 0xa06840];
-  let curP = isDark ? dkP : ltP;
+  let curP = dkP;
   const objs = [];
   const geos = [
     new THREE.IcosahedronGeometry(1, 0), new THREE.OctahedronGeometry(1, 0),
@@ -5212,7 +5204,6 @@ let bgRenderer = null;
   const el = document.getElementById('ls');
   if (el) el.style.display = 'none';
 })();
-startDarkModeReminder();
 
 /* ═══════════════════════════════════════════════════════════
    ⑫ HELPERS
@@ -5467,9 +5458,8 @@ function loginSuccess(id, role, name) {
     // Notif SAMBUTAN saat login — beda isi per role, sesuai alur kerja masing-masing.
     // Diberi jeda kecil supaya muncul setelah dashboard tampil & data termuat.
     setTimeout(() => { try { welcomeNotif(); } catch (e) { console.warn('[DHP] welcomeNotif gagal:', e); } }, 700);
-    setTimeout(() => {
-      Promise.resolve(maybeShowAttendanceCheckin()).catch(e => console.warn('[DHP] attendance check-in gagal:', e));
-    }, 1100);
+    setTimeout(() => { try { maybeShowAttendanceCheckin(); } catch (e) { console.warn('[DHP] attendance check-in gagal:', e); } }, 1100);
+    startDarkModeReminder();
   }, 500);
 }
 
@@ -5490,6 +5480,7 @@ function handleLogout() {
     pushActivity(`${currentUser.name} signed out`, 'leave');
   }
   currentUser = null;
+  stopDarkModeReminder();
   document.body.classList.remove('is-mod');
   document.body.classList.remove('is-head-mod');
   document.body.className = document.body.className.replace(/\brole-theme-\S+/g, '').trim();
@@ -10870,48 +10861,46 @@ applyTranslations();
    ⑯ ABSENSI (ATTENDANCE) — v6.0
    ═══════════════════════════════════════════════════════════ */
 
-/* ── Fullscreen check-in ritual: muncul 1x per hari, semua role
-      KECUALI moderator & chief-moderator (head_moderator) ── */
+/* ── Fullscreen check-in ritual: muncul 1x per hari, SEMUA ROLE
+      KECUALI role 'moderator'. Sovereign/head_moderator TETAP dapat
+      pop-up absensi (per permintaan: hanya "moderator" yang dikecualikan). ── */
 let _attCiCache = {};   // { 'YYYY-MM-DD': status } — bulan berjalan, milik currentUser
 let _attCiAutoCloseTO = null;
 
 async function maybeShowAttendanceCheckin() {
-  try {
-    if (!currentUser) return;
-    if (can.isMod(currentUser.role)) return; // moderator & chief-moderator dikecualikan
+  if (!currentUser) return;
+  if (currentUser.role === 'moderator') return; // HANYA role 'moderator' yang dikecualikan
 
-    const todayKey  = ymdKey(new Date());
-    const localFlag = `dhp_att_ci_${currentUser.id}_${todayKey}`;
-    if (localStorage.getItem(localFlag)) return; // sudah tampil hari ini
+  const todayKey  = ymdKey(new Date());
+  const localFlag = `dhp_att_ci_${currentUser.id}_${todayKey}`;
+  if (localStorage.getItem(localFlag)) return; // sudah tampil hari ini di browser ini
 
-    let isNew = true;
-    try {
-      if (db) {
-        const res = await dbQ(d => d.rpc('mark_attendance_today', { p_user_id: currentUser.id }));
-        if (res?.data && res.data.length) {
-          isNew = !!res.data[0].is_new;
-        } else if (res?.error) {
-          console.warn('[DHP] mark_attendance_today gagal:', res.error.message);
-        }
-      }
-    } catch (e) {
-      console.warn('[DHP] mark_attendance_today exception (popup tetap ditampilkan):', e);
+  let isNew = true;
+  if (db) {
+    const res = await dbQ(d => d.rpc('mark_attendance_today', { p_user_id: currentUser.id }));
+    if (res?.data && res.data.length) {
+      isNew = !!res.data[0].is_new;
+    } else if (res?.error) {
+      console.warn('[DHP] mark_attendance_today gagal:', res.error.message);
     }
-
-    // Tandai sudah tampil hari ini SETELAH kita yakin akan membuka popup —
-    // supaya kalau openAttendanceCheckin gagal karena error tak terduga,
-    // popup masih dicoba lagi di login berikutnya (tidak "hilang selamanya").
-    try {
-      await preloadAttCiCache();
-    } catch (e) {
-      console.warn('[DHP] preloadAttCiCache gagal (lanjut tanpa cache riwayat):', e);
-    }
-
-    localStorage.setItem(localFlag, '1');
-    openAttendanceCheckin(isNew);
-  } catch (e) {
-    console.warn('[DHP] maybeShowAttendanceCheckin gagal total:', e);
   }
+  localStorage.setItem(localFlag, '1');
+  await preloadAttCiCache();
+  openAttendanceCheckin(isNew);
+}
+
+/* ── Helper TESTING: hapus semua flag "sudah absen hari ini" di browser
+      ini supaya pop-up bisa dipicu ulang tanpa menunggu hari berikutnya.
+      Dipanggil dari tombol "⟲ Reset Absensi" di layar login, atau bisa
+      dipanggil manual lewat console: resetAttendanceTesting() ── */
+function resetAttendanceTesting() {
+  const removed = [];
+  Object.keys(localStorage).forEach(k => {
+    if (k.startsWith('dhp_att_ci_')) { localStorage.removeItem(k); removed.push(k); }
+  });
+  const msg = `Reset ${removed.length} flag absensi — sekarang login untuk lihat pop-up lagi`;
+  try { toast(msg); } catch(e) { alert(msg); }
+  console.log('[DHP] Attendance testing flags reset:', removed);
 }
 
 async function preloadAttCiCache() {
@@ -11005,7 +10994,7 @@ function renderAttendancePage() {
 
   if (isMod) {
     const sel = document.getElementById('att-user-sel');
-    const entries = Object.entries(LOCAL_USERS).filter(([id, u]) => u.role !== 'head_moderator' && u.role !== 'moderator');
+    const entries = Object.entries(LOCAL_USERS).filter(([id, u]) => u.role !== 'moderator');
     sel.innerHTML = entries.map(([id, u]) => `<option value="${id}" ${id===attTargetId?'selected':''}>${u.name} (@${id})</option>`).join('');
     if (!entries.find(([id]) => id === attTargetId) && entries.length) attTargetId = entries[0][0];
     sel.value = attTargetId;
