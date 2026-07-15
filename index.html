@@ -1455,6 +1455,23 @@ body.light .ni-time{color:rgba(13,13,13,.45)}
     transition:all .3s;white-space:nowrap;max-width:90vw;text-align:center}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* ── AJAKAN DARK MODE (pill kecil, muncul tiap 30 menit) ── */
+#dark-reminder{
+  position:fixed;bottom:24px;right:20px;z-index:2500;cursor:pointer;
+  display:flex;align-items:center;gap:8px;
+  background:#14120d;border:1px solid rgba(201,169,110,.35);border-radius:24px;
+  padding:10px 16px;font-size:12px;color:#e8e4dc;letter-spacing:.01em;
+  box-shadow:0 8px 24px rgba(0,0,0,.28);
+  opacity:0;pointer-events:none;transform:translateY(14px);
+  transition:opacity .35s ease,transform .35s ease;
+}
+#dark-reminder.show{opacity:1;pointer-events:auto;transform:translateY(0)}
+#dark-reminder:hover{border-color:var(--gold);background:#1b1811}
+#dark-reminder span:first-child{font-size:14px}
+@media (max-width:520px){
+  #dark-reminder{right:12px;bottom:88px;font-size:11.5px;padding:9px 14px}
+}
+
 /* ══════ ELEGANT NOTIFICATION POPUP (top-right, 8s, minimalis) ══════ */
 #np-stack{position:fixed;top:64px;right:16px;z-index:2600;display:flex;flex-direction:column;
     gap:10px;width:300px;max-width:calc(100vw - 24px);pointer-events:none}
@@ -2559,6 +2576,11 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
 <!-- ══ TOAST ══ -->
 <div id="toast"></div>
 
+<!-- ══ AJAKAN DARK MODE (muncul tiap 30 menit bila masih Light) ══ -->
+<div id="dark-reminder" onclick="reminderSwitchToDark()">
+  <span>🌙</span><span>Mau tampilan gelap? Tekan di sini</span>
+</div>
+
 <!-- ══ ELEGANT NOTIFICATION POPUP STACK (top-right, 8s) ══ -->
 <div id="np-stack" aria-live="polite" aria-atomic="false"></div>
 
@@ -2586,7 +2608,7 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
 <!-- ══ CONTROLS (login page only) ══ -->
 <div class="ctrl-bar" id="ctrl-bar">
   <button class="cb" id="lang-btn" onclick="toggleLang()" title="Toggle language">ID</button>
-  <button class="cb" id="mode-btn" onclick="toggleMode()" title="Toggle theme">◑ Light</button>
+  <button class="cb" id="mode-btn" onclick="toggleMode()" title="Toggle theme">◑ Dark</button>
 </div>
 
 <!-- ══ LOGIN SCENE ══ -->
@@ -5033,14 +5055,56 @@ function toggleLang() {
 /* ═══════════════════════════════════════════════════════════
    ⑨ DARK / LIGHT MODE
    ═══════════════════════════════════════════════════════════ */
-let isDark = true;
-function toggleMode() {
-  isDark = !isDark;
+// Default tampilan: LIGHT MODE saat pertama kali dibuka.
+// Pilihan user disimpan di localStorage supaya konsisten selama browser sama dipakai,
+// tapi kalau belum pernah pilih apa-apa, selalu jatuh ke Light.
+let isDark = (localStorage.getItem('dhp_theme') === 'dark');
+function applyMode(showToggleFx) {
   document.body.classList.toggle('light', !isDark);
   const lbl = isDark ? '◑ Light' : '◑ Dark';
-  document.getElementById('mode-btn').textContent = lbl;
-  document.getElementById('mode-btn-dash').textContent = '◑';
-  if (window.bgRenderer) bgRenderer.setMode(!isDark);
+  const mb  = document.getElementById('mode-btn');
+  const mbd = document.getElementById('mode-btn-dash');
+  if (mb)  mb.textContent  = lbl;
+  if (mbd) mbd.textContent = '◑';
+  if (showToggleFx && window.bgRenderer) bgRenderer.setMode(!isDark);
+}
+function toggleMode() {
+  isDark = !isDark;
+  localStorage.setItem('dhp_theme', isDark ? 'dark' : 'light');
+  applyMode(true);
+  if (!isDark) hideDarkModeReminder(); // sudah balik ke light, sembunyikan ajakan
+}
+// Terapkan mode saat load pertama (sebelum login pun sudah Light by default)
+applyMode(false);
+
+/* ── Ajakan dark mode: muncul tiap 30 menit selagi masih Light ── */
+let _darkReminderTO = null;
+const DARK_REMINDER_MS = 30 * 60 * 1000; // 30 menit
+
+function showDarkModeReminder() {
+  if (isDark) return; // sudah dark, gak perlu diajak lagi
+  const el = document.getElementById('dark-reminder'); if (!el) return;
+  el.classList.add('show');
+  clearTimeout(window._darkReminderAutoHide);
+  window._darkReminderAutoHide = setTimeout(() => el.classList.remove('show'), 8000);
+}
+function hideDarkModeReminder() {
+  const el = document.getElementById('dark-reminder'); if (!el) return;
+  el.classList.remove('show');
+  clearTimeout(window._darkReminderAutoHide);
+}
+function reminderSwitchToDark() {
+  if (!isDark) toggleMode();
+  hideDarkModeReminder();
+}
+function startDarkModeReminderLoop() {
+  clearInterval(_darkReminderTO);
+  _darkReminderTO = setInterval(showDarkModeReminder, DARK_REMINDER_MS);
+}
+function stopDarkModeReminderLoop() {
+  clearInterval(_darkReminderTO);
+  _darkReminderTO = null;
+  hideDarkModeReminder();
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -5381,13 +5445,24 @@ function loginSuccess(id, role, name) {
     if (can.isMod(role)) document.body.classList.add('is-mod');
     if (role === 'head_moderator') document.body.classList.add('is-head-mod');
     document.body.classList.add(`role-theme-${role}`);
+
+    // ── PENTING: popup absensi & notif sambutan dijadwalkan SEKARANG,
+    //    independen dari proses render dashboard di bawah. Sebelumnya kalau
+    //    initDashboard() gagal/error untuk role tertentu, semua kode setelahnya
+    //    (termasuk popup absensi) ikut gak jalan — itu sebabnya popup cuma
+    //    muncul di sebagian akun. Sekarang keduanya jalan sendiri, gak peduli
+    //    dashboard-nya sukses atau tidak.
+    setTimeout(() => { try { welcomeNotif(); } catch (e) { console.warn('[DHP] welcomeNotif gagal:', e); } }, 700);
+    setTimeout(() => { try { maybeShowAttendanceCheckin(); } catch (e) { console.warn('[DHP] attendance check-in gagal:', e); } }, 1100);
+    startDarkModeReminderLoop();
+
     // ── Load brand SEBELUM dashboard render ──────────────────────
     // Ini yang fix: device lain dapat brand terbaru saat login
-    await earlyLoadBrand();
-    await initDashboard();
-    initRealtimePresence(id, role, name);
+    try { await earlyLoadBrand(); } catch (e) { console.warn('[DHP] earlyLoadBrand gagal:', e); }
+    try { await initDashboard(); } catch (e) { console.warn('[DHP] initDashboard gagal:', e); }
+    try { initRealtimePresence(id, role, name); } catch (e) { console.warn('[DHP] initRealtimePresence gagal:', e); }
     // ── Start brand polling sebagai fallback realtime ─────────────
-    startBrandPolling();
+    try { startBrandPolling(); } catch (e) { console.warn('[DHP] startBrandPolling gagal:', e); }
     if (role === 'guest') toast(t('guestReadOnly'));
     // Notif/aktivitas login diri sendiri:
     // Kalau Supabase aktif, event 'join' channel yang akan memunculkannya (anti-dobel).
@@ -5395,11 +5470,7 @@ function loginSuccess(id, role, name) {
     if (!db) {
       pushActivity(`${name} (kamu) joined · ${rn(role)}`, 'join');
     }
-    refreshPresenceUI();
-    // Notif SAMBUTAN saat login — beda isi per role, sesuai alur kerja masing-masing.
-    // Diberi jeda kecil supaya muncul setelah dashboard tampil & data termuat.
-    setTimeout(() => { try { welcomeNotif(); } catch (e) { console.warn('[DHP] welcomeNotif gagal:', e); } }, 700);
-    setTimeout(() => { try { maybeShowAttendanceCheckin(); } catch (e) { console.warn('[DHP] attendance check-in gagal:', e); } }, 1100);
+    try { refreshPresenceUI(); } catch (e) { console.warn('[DHP] refreshPresenceUI gagal:', e); }
   }, 500);
 }
 
@@ -5420,6 +5491,7 @@ function handleLogout() {
     pushActivity(`${currentUser.name} signed out`, 'leave');
   }
   currentUser = null;
+  stopDarkModeReminderLoop();
   document.body.classList.remove('is-mod');
   document.body.classList.remove('is-head-mod');
   document.body.className = document.body.className.replace(/\brole-theme-\S+/g, '').trim();
@@ -10806,24 +10878,31 @@ let _attCiCache = {};   // { 'YYYY-MM-DD': status } — bulan berjalan, milik cu
 let _attCiAutoCloseTO = null;
 
 async function maybeShowAttendanceCheckin() {
-  if (!currentUser) return;
-  if (can.isMod(currentUser.role)) return; // moderator & chief-moderator dikecualikan
+  if (!currentUser) { console.debug('[DHP][absensi] batal: belum ada currentUser'); return; }
+  if (can.isMod(currentUser.role)) { console.debug('[DHP][absensi] dilewati: role', currentUser.role, 'adalah moderator/chief-moderator'); return; }
 
   const todayKey  = ymdKey(new Date());
   const localFlag = `dhp_att_ci_${currentUser.id}_${todayKey}`;
-  if (localStorage.getItem(localFlag)) return; // sudah tampil hari ini
+  if (localStorage.getItem(localFlag)) { console.debug('[DHP][absensi] sudah tampil hari ini untuk', currentUser.id); return; }
 
   let isNew = true;
   if (db) {
-    const res = await dbQ(d => d.rpc('mark_attendance_today', { p_user_id: currentUser.id }));
-    if (res?.data && res.data.length) {
-      isNew = !!res.data[0].is_new;
-    } else if (res?.error) {
-      console.warn('[DHP] mark_attendance_today gagal:', res.error.message);
+    try {
+      const res = await dbQ(d => d.rpc('mark_attendance_today', { p_user_id: currentUser.id }));
+      if (res?.data && res.data.length) {
+        isNew = !!res.data[0].is_new;
+      } else if (res?.error) {
+        console.warn('[DHP] mark_attendance_today gagal:', res.error.message);
+      }
+    } catch (e) {
+      console.warn('[DHP] mark_attendance_today exception:', e);
     }
   }
+  // Flag "sudah tampil" ditandai duluan SEBELUM render kalender, supaya kalau
+  // preloadAttCiCache() gagal, popup tetap muncul (cuma kalender bulan berjalan kosong).
   localStorage.setItem(localFlag, '1');
-  await preloadAttCiCache();
+  try { await preloadAttCiCache(); } catch (e) { console.warn('[DHP] preloadAttCiCache gagal:', e); }
+  console.debug('[DHP][absensi] menampilkan popup untuk', currentUser.id, currentUser.role);
   openAttendanceCheckin(isNew);
 }
 
