@@ -237,6 +237,41 @@ body.light .heat-cold .hb-icon { background:rgba(26,86,160,.14); }
 .att-edit-hint{position:absolute;top:4px;right:5px;font-size:9px;color:var(--gold-lo);opacity:0}
 .cal-cell:not(.empty):hover .att-edit-hint{opacity:.7}
 
+/* ══════════════════════════════════════════════════════════
+   FOLLOW UP MILESTONE — perayaan pencapaian (v7.1)
+   ══════════════════════════════════════════════════════════ */
+.fu-milestone-overlay{
+  position:fixed;inset:0;z-index:9998;display:none;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 50% 38%, rgba(24,19,10,.97), rgba(3,2,1,.99) 75%);
+  backdrop-filter:blur(10px);opacity:0;transition:opacity .5s cubic-bezier(.4,0,.2,1);
+}
+.fu-milestone-overlay.open{display:flex}
+.fu-milestone-overlay.show{opacity:1}
+.fu-milestone-close{
+  position:absolute;top:22px;right:24px;width:38px;height:38px;border-radius:50%;
+  border:1px solid rgba(201,169,110,.25);background:rgba(255,255,255,.03);color:rgba(232,228,220,.6);
+  font-size:15px;cursor:pointer;transition:all .25s ease;display:flex;align-items:center;justify-content:center;
+}
+.fu-milestone-close:hover{background:rgba(232,112,112,.14);color:#e87070;border-color:rgba(232,112,112,.4);transform:rotate(90deg)}
+.fu-milestone-inner{
+  position:relative;width:min(480px,90vw);text-align:center;
+  transform:scale(.85) translateY(14px);opacity:0;
+  animation:fuMsIn .75s cubic-bezier(.16,1,.3,1) .1s forwards;
+}
+@keyframes fuMsIn{to{transform:scale(1) translateY(0);opacity:1}}
+.fu-milestone-badge{
+  font-family:'Cormorant Garamond',serif;letter-spacing:.32em;font-size:12px;color:var(--gold);
+  text-transform:uppercase;margin-bottom:16px;opacity:.9;
+}
+.fu-milestone-num{
+  font-family:'Cormorant Garamond',serif;font-weight:600;font-size:96px;line-height:1;
+  color:#e8cc99;text-shadow:0 0 40px rgba(232,204,153,.5);
+  animation:fuMsPulse 1.8s ease-in-out infinite;
+}
+@keyframes fuMsPulse{0%,100%{text-shadow:0 0 40px rgba(232,204,153,.5)}50%{text-shadow:0 0 66px rgba(232,204,153,.85)}}
+.fu-milestone-sub{margin-top:10px;font-size:14px;letter-spacing:.03em;color:rgba(232,228,220,.68);font-family:'Inter',sans-serif}
+.fu-milestone-name{margin-top:26px;font-size:12.5px;color:rgba(232,228,220,.5);font-family:'Inter',sans-serif}
+
 /* CRM channel badge — lock icon for Ads channel */
 .crm-ads-lock {
   display:inline-flex;align-items:center;gap:3px;
@@ -9386,9 +9421,10 @@ async function renderTaskDashboard() {
     fg.style.stroke = doneCount >= target ? 'var(--green)' : 'var(--gold)';
   }
   const numEl = document.getElementById('task-ring-num');
-  if (numEl) numEl.textContent = `${doneCount}/${target}`;
+  if (numEl) numEl.textContent = `${doneCount > FOLLOWUP_MILESTONE_CAP ? FOLLOWUP_MILESTONE_CAP + '+' : doneCount}/${target}`;
 
   const pendingList = mine.filter(c => !followupDoneTodayIds.has(_followupCustKey(c)));
+  maybeRemindPendingFollowup(pendingList.length);
 
   const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
   setTxt('tds-done',    doneCount);
@@ -9469,6 +9505,7 @@ async function markFollowedUp(idx) {
   toast(`✓ ${c.nama || 'Customer'} sudah di-follow up hari ini`);
   renderTaskDashboard();
   if (document.getElementById('pg-crm')?.classList.contains('active')) renderCRM();
+  try { await checkAndCelebrateFollowupMilestone(); } catch(e) { console.warn('[DHP] cek milestone follow up gagal:', e); }
 }
 window.renderTaskDashboard = renderTaskDashboard;
 window.markFollowedUp      = markFollowedUp;
@@ -11245,6 +11282,137 @@ async function clearAttEdit(ymd) {
     </div>
   </div>
 </div>
+
+<!-- ══ FOLLOW UP MILESTONE: PERAYAAN PENCAPAIAN (v7.1) ══ -->
+<div class="fu-milestone-overlay" id="fu-milestone-overlay">
+  <button class="fu-milestone-close" onclick="closeFollowupMilestone()" title="Tutup">✕</button>
+  <div class="fu-milestone-inner">
+    <div class="fu-milestone-badge">✦ Pencapaian Follow Up ✦</div>
+    <div class="fu-milestone-num" id="fu-milestone-num">50</div>
+    <div class="fu-milestone-sub" id="fu-milestone-sub">Follow Up hari ini</div>
+    <div class="fu-milestone-name" id="fu-milestone-name">—</div>
+  </div>
+</div>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   FOLLOW UP MILESTONE — perayaan tiap kelipatan 50 (v7.1)
+   Sumber kebenaran: DATABASE (RPC check_followup_milestone),
+   sama seperti prinsip fix absensi v7.0 — supaya konsisten
+   lintas device & tidak "kadang muncul kadang tidak".
+   ═══════════════════════════════════════════════════════════ */
+let _fuMsAutoCloseTO = null;
+const FOLLOWUP_MILESTONE_CAP = 500; // batas atas tampilan angka
+
+function openFollowupMilestone(milestone, totalToday, name) {
+  const ov = document.getElementById('fu-milestone-overlay'); if (!ov) return;
+  const totalTxt = totalToday > FOLLOWUP_MILESTONE_CAP ? `${FOLLOWUP_MILESTONE_CAP}+` : totalToday;
+  document.getElementById('fu-milestone-num').textContent = milestone;
+  document.getElementById('fu-milestone-sub').textContent = currentLang === 'id'
+    ? `Follow Up tercapai hari ini — total ${totalTxt}/${FOLLOWUP_DAILY_TARGET}`
+    : `follow-ups reached today — total ${totalTxt}/${FOLLOWUP_DAILY_TARGET}`;
+  document.getElementById('fu-milestone-name').textContent = currentLang === 'id'
+    ? `Kerja luar biasa, ${name || ''}! Terus pertahankan ✦`
+    : `Amazing work, ${name || ''}! Keep it up ✦`;
+
+  ov.classList.add('open');
+  requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('show')));
+  fireMilestoneConfetti(ov);
+
+  clearTimeout(_fuMsAutoCloseTO);
+  _fuMsAutoCloseTO = setTimeout(closeFollowupMilestone, 5200);
+}
+
+function closeFollowupMilestone() {
+  const ov = document.getElementById('fu-milestone-overlay'); if (!ov) return;
+  ov.classList.remove('show');
+  clearTimeout(_fuMsAutoCloseTO);
+  setTimeout(() => {
+    ov.classList.remove('open');
+    ov.querySelectorAll('.att-ci-confetti').forEach(el => el.remove());
+  }, 450);
+}
+
+/* Confetti burst — memakai ulang kelas .att-ci-confetti (animasi sudah ada) */
+function fireMilestoneConfetti(ov) {
+  const inner = ov.querySelector('.fu-milestone-inner'); if (!inner) return;
+  const rect  = inner.getBoundingClientRect();
+  const ovRct = ov.getBoundingClientRect();
+  const cx = rect.left - ovRct.left + rect.width / 2;
+  const cy = rect.top  - ovRct.top  + rect.height * 0.35;
+  const colors = ['#e8cc99', '#7abf8e', '#e8b86e', '#d98ec0', '#7ea8c9'];
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('span');
+    p.className = 'att-ci-confetti';
+    const angle = (Math.PI * 2 * i) / 30 + Math.random() * 0.4;
+    const dist  = 90 + Math.random() * 100;
+    p.style.setProperty('--dx', (Math.cos(angle) * dist).toFixed(1) + 'px');
+    p.style.setProperty('--dy', (Math.sin(angle) * dist).toFixed(1) + 'px');
+    p.style.setProperty('--rot', (Math.random() * 360).toFixed(0) + 'deg');
+    p.style.left = cx + 'px';
+    p.style.top  = cy + 'px';
+    p.style.background = colors[i % colors.length];
+    frag.appendChild(p);
+    setTimeout(() => p.remove(), 1300);
+  }
+  inner.appendChild(frag);
+}
+
+/* ── Cek & rayakan milestone follow-up (dipanggil dari markFollowedUp) ──
+   Mode DB: sumber kebenaran server (check_followup_milestone RPC).
+   Mode offline: emulasi lokal per-hari via localStorage. */
+async function checkAndCelebrateFollowupMilestone() {
+  if (!currentUser) return;
+  const tiers = [50,100,150,200,250,300,350,400,450,500];
+
+  if (crmUsesDB()) {
+    const res = await dbQ(d => d.rpc('check_followup_milestone', { p_user_id: currentUser.id }));
+    if (res?.data && res.data.length) {
+      const { total_today, milestone_hit } = res.data[0];
+      if (milestone_hit) {
+        openFollowupMilestone(milestone_hit, total_today, currentUser.name);
+        pushNotif({
+          type: 'done', popup: false,
+          title: currentLang === 'id' ? `🎉 ${milestone_hit} Follow Up Tercapai!` : `🎉 ${milestone_hit} Follow-ups reached!`,
+          msg: currentLang === 'id'
+            ? `${currentUser.name} berhasil follow up ${milestone_hit} customer hari ini.`
+            : `${currentUser.name} reached ${milestone_hit} follow-ups today.`
+        });
+      }
+    }
+    return;
+  }
+
+  // Offline fallback
+  const total = followupDoneTodayIds.size;
+  const dayKey = `dhp_fu_milestones_${currentUser.id}_${new Date().toISOString().slice(0,10)}`;
+  let done = [];
+  try { done = JSON.parse(localStorage.getItem(dayKey) || '[]'); } catch(e) {}
+  const newlyHit = tiers.filter(t => total >= t && !done.includes(t));
+  if (newlyHit.length) {
+    const top = newlyHit[newlyHit.length - 1];
+    done.push(...newlyHit);
+    try { localStorage.setItem(dayKey, JSON.stringify(done)); } catch(e) {}
+    openFollowupMilestone(top, total, currentUser.name);
+  }
+}
+
+/* ── Reminder: masih ada customer yang belum di-follow up ──
+   Muncul 1x per hari per user (via bell notif), bukan popup spam. */
+function maybeRemindPendingFollowup(pendingCount) {
+  if (!currentUser || !pendingCount) return;
+  const key = `dhp_fu_reminder_${currentUser.id}_${new Date().toISOString().slice(0,10)}`;
+  if (localStorage.getItem(key)) return;
+  localStorage.setItem(key, '1');
+  pushNotif({
+    type: 'alert',
+    title: currentLang === 'id' ? 'Masih Ada yang Perlu Di-follow Up' : 'Pending Follow-ups',
+    msg: currentLang === 'id'
+      ? `Masih ada ${pendingCount} customer yang belum di-follow up hari ini.`
+      : `You still have ${pendingCount} customers not yet followed up today.`
+  });
+}
+</script>
 
 </body>
 </html>
