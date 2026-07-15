@@ -2148,6 +2148,23 @@ body.light .closing-fields-label{color:#1f6b38}
 .recap-owner-head .role-dot{width:8px;height:8px;border-radius:50%}
 .ad-status-badge.done{background:rgba(122,191,142,.12);color:var(--green)}
 
+/* Team Task Progress (moderator) */
+.tt-member-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.tt-member-card{background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:12px 13px}
+.tt-member-top{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.tt-member-av{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;flex-shrink:0}
+.tt-member-name{font-size:12.5px;font-weight:700;color:var(--text)}
+.tt-online-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-left:2px}
+.tt-member-role{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:1px}
+.tt-progress-bar{width:100%;height:6px;border-radius:4px;background:var(--border);overflow:hidden;margin-bottom:8px}
+.tt-progress-fill{height:100%;border-radius:4px;transition:width .4s ease}
+.tt-member-stats{display:flex;justify-content:space-between;font-size:10.5px;color:var(--text2);margin-bottom:3px}
+.tt-member-total{font-size:9.5px;color:var(--muted)}
+
+body.light .tt-member-card{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
+body.light .tt-member-name{color:#0d0d0d}
+
 body.light .lead-row{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)} body.light .recap-summary{background:#f7f7f8;border:1.5px solid rgba(0,0,0,.1)}
 body.light .lead-row-name{color:#0d0d0d;font-weight:700}
 body.light .wa-prefix{background:#f0f0f0;color:#0d0d0d;border:1.5px solid rgba(0,0,0,.12);font-weight:700}
@@ -2718,9 +2735,6 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
         <button class="btn-g" onclick="handleGuest()">
           <span data-i18n="continueGuest">◆ &nbsp;Continue as Guest</span>
         </button>
-        <div class="row-2">
-          <span class="new-here-hint">New here? <button class="txt-lnk inline-lnk" onclick="showPanel('panel-register')" data-i18n="createAccount">Create your account</button> — it's quick.</span>
-        </div>
       </div>
 
       <!-- PANEL: FORGOT PASSWORD -->
@@ -2736,56 +2750,6 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
           <span data-i18n="sendLink">Send Recovery Link</span>
         </button>
         <div class="row-2" style="margin-top:16px">
-          <button class="txt-lnk" onclick="showPanel('panel-login')" data-i18n="backSignIn">← Back to Sign In</button>
-        </div>
-      </div>
-
-      <!-- PANEL: REGISTER -->
-      <div class="panel" id="panel-register">
-        <div class="panel-title" data-i18n="createAccount">Create Account</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:13px;color:var(--gold-lo);letter-spacing:.06em;margin-bottom:2px;font-style:italic">Your presence begins with a single step.</div>
-        <div class="panel-sub" data-i18n="requestAccess">Request portal access — a moderator will review your submission</div>
-        <div id="reg-al" class="al"></div>
-        <div class="fg">
-          <label data-i18n="fullName">Full Name</label>
-          <input class="fi" id="rg-name" placeholder="Your full name"/>
-        </div>
-        <div class="fg">
-          <label data-i18n="emailAddr">Email Address</label>
-          <input class="fi" id="rg-email" type="email" placeholder="you@example.com"/>
-        </div>
-        <div class="fg">
-          <label data-i18n="desiredId">ID Pengguna yang Diinginkan</label>
-          <input class="fi" id="rg-uid" placeholder="e.g. jason_dhp"/>
-        </div>
-        <div class="fg">
-          <label data-i18n="password">Password</label>
-          <input class="fi" id="rg-pw" type="password" placeholder="Min. 6 characters" oninput="checkStrength(this.value)"/>
-          <div class="str-wrap">
-            <div class="str-bar" id="sb1"></div>
-            <div class="str-bar" id="sb2"></div>
-            <div class="str-bar" id="sb3"></div>
-            <div class="str-bar" id="sb4"></div>
-            <span class="str-lbl" id="str-lbl">—</span>
-          </div>
-        </div>
-        <div class="fg">
-          <label data-i18n="confirmPw">Confirm Password</label>
-          <input class="fi" id="rg-pw2" type="password" placeholder="Repeat password"/>
-        </div>
-        <div class="fg" style="display:flex;gap:10px;align-items:flex-start">
-          <input type="checkbox" id="rg-agree" style="margin-top:4px;accent-color:var(--gold);flex-shrink:0;width:16px;height:16px;cursor:pointer"/>
-          <label for="rg-agree" style="font-size:11px;color:var(--text2);cursor:pointer;line-height:1.5">
-            <span data-i18n="agreeTerms">Saya setuju dengan</span>
-            <a href="#" style="color:var(--gold-lo);text-decoration:underline">Terms of Service</a>
-            <span data-i18n="and">and</span>
-            <a href="#" style="color:var(--gold-lo);text-decoration:underline">Privacy Policy</a>
-          </label>
-        </div>
-        <button class="btn-p" onclick="handleRegister()">
-          <span data-i18n="submitReg">Submit Registration</span>
-        </button>
-        <div class="row-2" style="margin-top:14px">
           <button class="txt-lnk" onclick="showPanel('panel-login')" data-i18n="backSignIn">← Back to Sign In</button>
         </div>
       </div>
@@ -2869,25 +2833,6 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
         </span>
         <span data-i18n="overview">Ringkasan</span>
       </button>
-      <button class="nav-item" onclick="navTo('customers',this)" id="n-customers">
-        <span class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.4"/>
-            <path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-          </svg>
-        </span>
-        <span data-i18n="customers">Pelanggan</span>
-      </button>
-      <button class="nav-item" onclick="navTo('broadcast',this)" id="n-broadcast">
-        <span class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M2 5h12v7a1 1 0 01-1 1H3a1 1 0 01-1-1V5z" stroke="currentColor" stroke-width="1.4"/>
-            <path d="M2 5l6 5 6-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-          </svg>
-        </span>
-        <span data-i18n="broadcast">Siaran</span>
-      </button>
-
       <!-- Studio (role-specific) -->
       <div class="nav-sec-lbl" id="ns-studio" style="display:none">Studio</div>
       <button class="nav-item" onclick="navTo('content_studio',this)" id="n-content-studio" style="display:none">
@@ -2923,17 +2868,16 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
 
       <!-- Administration (Moderator only) -->
       <div class="nav-sec-lbl" id="ns-admin" style="display:none" data-i18n="administration">Administrasi</div>
-      <button class="nav-item mod-only" onclick="navTo('registrations',this)" id="n-registrations" style="display:none">
+      <button class="nav-item mod-only" onclick="navTo('team_tasks',this)" id="n-team-tasks" style="display:none">
         <span class="nav-icon">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M9 2H4a1 1 0 00-1 1v10a1 1 0 001 1h8a1 1 0 001-1V6L9 2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
-            <path d="M9 2v4h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-            <line x1="5" y1="8" x2="11" y2="8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-            <line x1="5" y1="11" x2="9" y2="11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            <circle cx="5.5" cy="4.5" r="2.3" stroke="currentColor" stroke-width="1.4"/>
+            <circle cx="11" cy="6" r="1.8" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M1.3 13.2c0-2.6 1.9-4 4.2-4s4.2 1.4 4.2 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M10.6 9.6c1.9.1 3.4 1.3 3.4 3.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
           </svg>
         </span>
-        <span data-i18n="registrations">Pendaftaran</span>
-        <span class="nav-badge" id="reg-badge" style="display:none">0</span>
+        <span data-i18n="teamTasks">Progress Tugas Tim</span>
       </button>
       <button class="nav-item mod-only" onclick="navTo('users',this)" id="n-users" style="display:none">
         <span class="nav-icon">
@@ -3126,109 +3070,30 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
         </div>
       </div>
 
-      <!-- ② CUSTOMERS -->
-      <div class="sp" id="pg-customers">
-        <div class="ph">
-          <div class="ph-left">
-            <div class="pt" data-i18n="customerRecords">Data Pelanggan</div>
-            <div class="ps" data-i18n="crmDatabase">Basis Data CRM</div>
-          </div>
-          <div class="ph-acts">
-            <input class="search-box" id="cust-search" placeholder="Cari pelanggan..." oninput="renderCust()"/>
-            <button class="btn-add" id="btn-add-cust" onclick="openCustModal()" data-i18n="addNew">+ Tambah</button>
-          </div>
-        </div>
-        <div class="tbl-wrap">
-          <div class="tbl-scroll">
-            <table>
-              <thead><tr>
-                <th data-i18n="name">Nama</th>
-                <th>Email</th>
-                <th data-i18n="phone">Telepon</th>
-                <th>Status</th>
-                <th data-i18n="action">Aksi</th>
-              </tr></thead>
-              <tbody id="cust-tbl"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- ③ BROADCAST -->
-      <div class="sp" id="pg-broadcast">
-        <div class="ph">
-          <div class="ph-left">
-            <div class="pt" data-i18n="broadcastMsg">Siaran</div>
-            <div class="ps" data-i18n="broadcastSub">Kirim pesan ke semua pelanggan</div>
-          </div>
-        </div>
-        <div class="bc-form">
-          <div class="fg">
-            <label data-i18n="subject">Subjek</label>
-            <input class="fi" id="bc-sub" placeholder="Subjek pesan"/>
-          </div>
-          <div class="fg">
-            <label data-i18n="msgBody">Isi Pesan</label>
-            <textarea class="bc-textarea" id="bc-body" placeholder="Tulis pesan Anda..."></textarea>
-          </div>
-          <div class="bc-actions">
-            <button class="btn-add" onclick="sendBroadcast()" data-i18n="sendBroadcast">Kirim Siaran</button>
-            <button class="btn-g" style="width:auto;padding:9px 18px" onclick="clearBc()" data-i18n="clear">Clear</button>
-          </div>
-        </div>
-        <div style="margin-top:20px">
-          <div class="tbl-wrap">
-            <div class="tbl-head"><div class="tbl-title" data-i18n="sentHistory">Riwayat Terkirim</div></div>
-            <div class="tbl-scroll">
-              <table>
-                <thead><tr>
-                  <th data-i18n="subject">Subjek</th>
-                  <th data-i18n="sentBy">Dikirim Oleh</th>
-                  <th data-i18n="date">Tanggal</th>
-                  <th data-i18n="recipients">Penerima</th>
-                </tr></thead>
-                <tbody id="bc-tbl"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ④ REGISTRATIONS (Moderator only) -->
-      <div class="sp" id="pg-registrations">
+      <!-- ② TEAM TASK PROGRESS (Moderator only) — lihat task semua role/admin & progress masing-masing -->
+      <div class="sp" id="pg-team_tasks">
         <div class="ph">
           <div class="ph-left">
             <div class="pt">
-              <span data-i18n="pendingReg">Pendaftaran</span>
+              <span data-i18n="teamTasks">Progress Tugas Tim</span>
               <span class="mod-badge">♔ Moderator</span>
             </div>
-            <div class="ps" data-i18n="approvalQueue">Tinjau dan kelola permintaan akses</div>
+            <div class="ps" data-i18n="teamTasksSub">Pantau task follow-up harian setiap admin, B2B, dan role lainnya</div>
           </div>
           <div class="ph-acts">
-            <select id="reg-filter" class="fi" style="width:auto;padding:9px 36px 9px 12px;font-size:11px" onchange="renderRegs()">
-              <option value="all" data-i18n="allRequests">Semua Permintaan</option>
-              <option value="pending" data-i18n="pending">Menunggu</option>
-              <option value="approved" data-i18n="approved">Disetujui</option>
-              <option value="rejected" data-i18n="rejected">Ditolak</option>
+            <input class="search-box" id="tt-search" placeholder="Cari nama anggota..." oninput="renderTeamTasks()"/>
+            <select id="tt-role-filter" class="fi" style="width:auto;padding:9px 36px 9px 12px;font-size:11px" onchange="renderTeamTasks()">
+              <option value="all">Semua Role</option>
+              <option value="admin">Admin</option>
+              <option value="b2b_marketing">B2B Marketing</option>
+              <option value="content_creator">Content Creator</option>
+              <option value="host_live">Host Live</option>
+              <option value="moderator">Moderator</option>
             </select>
           </div>
         </div>
-        <div class="tbl-wrap">
-          <div class="tbl-scroll">
-            <table>
-              <thead><tr>
-                <th data-i18n="userId">ID Pengguna</th>
-                <th data-i18n="fullName">Nama</th>
-                <th>Email</th>
-                <th>Status</th>
-                <th>Peran</th>
-                <th data-i18n="date">Tanggal</th>
-                <th data-i18n="action">Aksi</th>
-              </tr></thead>
-              <tbody id="regs-tbl"></tbody>
-            </table>
-          </div>
-        </div>
+        <div class="stats-grid" id="tt-summary"></div>
+        <div id="tt-role-groups"></div>
       </div>
 
       <!-- ⑤ USER MANAGEMENT (Moderator only) -->
@@ -4081,10 +3946,6 @@ function roleFromDb(r) {
   return map[r] || r;
 }
 
-let customers     = [];
-let registrations = [];
-let broadcasts    = [];
-
 /* ═══════════════════════════════════════════════════════════
    ④ PRESENCE — Realtime multi-user tracking
    ═══════════════════════════════════════════════════════════ */
@@ -4216,19 +4077,6 @@ function initRealtimePresence(userId, role, name) {
     window.addEventListener('pagehide', bail);
   }
 
-  // Moderator: subscribe to new registrations in real-time
-  if (can.isMod(role) && db) {
-    db.channel('dhp_regs')
-      .on('postgres_changes', { event:'INSERT', schema:'public', table:'registrations' }, payload => {
-        const r = payload.new;
-        registrations.unshift({ ...r, status:'pending', userId: r.user_id, name: r.full_name,
-          role: roleFromDb(r.requested_role || 'guest'), createdAt: new Date(r.created_at).getTime() });
-        updateRegBadge();
-        renderRegs();
-        pushNotif({ type:'reg', title:t_('npReg'), body:`${r.full_name||r.name} (${r.user_id||r.userId})`, msg:`New registration: ${r.full_name||r.name} (${r.user_id||r.userId})`, regId:r.id });
-      })
-      .subscribe();
-  }
 
   // Semua role: subscribe ke perubahan tabel users — agar ganti nama/password
   // langsung terlihat di sesi lain tanpa reload (realtime profile sync)
@@ -4419,7 +4267,6 @@ function renderNotifPanel() {
       <div class="ni-type ${n.type}">${typeLabel}</div>
       ${headline}
       ${text ? `<div class="ni-msg">${text}</div>` : ''}
-      ${n.regId ? `<div class="ni-acts"><button class="btn-sm btn-approve" style="font-size:8px;padding:4px 10px" onclick="event.stopPropagation();openRegModal(${n.regId});toggleNotifPanel()">Tinjau</button></div>` : ''}
       ${n.taskId ? `<div class="ni-acts"><button class="btn-sm btn-gold" style="font-size:8px;padding:4px 10px" onclick="event.stopPropagation();toggleNotifPanel()">Lihat Task</button></div>` : ''}
       <div class="ni-time">${timeAgo(n.time)}</div>
     </div>`;
@@ -4646,6 +4493,14 @@ const i18n = {
     broadcastsSent:'Broadcasts Sent', allTime:'All time',
     pendingRegistrations:'Pending Registrations', awaitingReview:'Awaiting review',
     active:'active', closedWon:'closed won',
+    // Team Task Progress (moderator)
+    teamTasks:'Team Task Progress', teamTasksSub:'Monitor every admin, B2B, and other role\u2019s daily follow-up task and progress',
+    totalTeamMembers:'Total Team Members', acrossAllRoles:'Across all roles',
+    totalCRMRecords:'Total CRM Records', allOwners:'All owners',
+    teamMembersTracked:'Team Members Tracked', teamFollowupsToday:'Follow-ups Today (Team)',
+    outOfTarget:'out of {n} target', teamPendingToday:'Pending Today (Team)', needsFollowup:'Still need follow-up',
+    noTeamMembers:'No team members found', followedUpToday:'followed up today', remaining:'remaining',
+    totalAssignedCustomers:'total assigned customers',
     // Content Studio
     inDrafts:'In Drafts', piecesEditing:'Pieces currently being written or edited.',
     awaitingReviewSub:'Awaiting Review', awaitingReviewBody:'Sent to moderator for approval before publish.',
@@ -4750,7 +4605,7 @@ const i18n = {
     npTask:'New Task', npAd:'New Ad', npDone:'Task Done', npLead:'New Lead', npReg:'New Registration', npLogin:'Login', npAlert:'Notice', npSystem:'Notification',
     npUnlockReq:'Unlock Request', npUnlocked:'Task Unlocked', npRejected:'Request Rejected', npApproved:'Approved', npPublished:'Ad Published', npAssigned:'Assigned to you',
     welHi:'Welcome', welReady:'Your portal is ready.',
-    welModPending:'{n} registration(s) awaiting review.', welModNoPending:'No pending registrations.',
+    welModPending:'{n} customer follow-up(s) still pending across the team today.', welModNoPending:'Team follow-ups are all caught up today.',
     welModTasks:'{n} active task(s) across the team.', welModNoTasks:'No active tasks right now.',
     welTargetTasks:'You have {n} task(s) to work on.', welTargetNoTasks:'No tasks assigned yet.',
     welContent:'Content Studio is ready.', welLive:'Live Studio is ready.',
@@ -4861,6 +4716,14 @@ const i18n = {
     broadcastsSent:'Siaran Terkirim', allTime:'Sepanjang waktu',
     pendingRegistrations:'Pendaftaran Menunggu', awaitingReview:'Menunggu ditinjau',
     active:'aktif', closedWon:'deal ditutup',
+    // Progress Tugas Tim (moderator)
+    teamTasks:'Progress Tugas Tim', teamTasksSub:'Pantau task follow-up harian setiap admin, B2B, dan role lainnya beserta progress mereka',
+    totalTeamMembers:'Total Anggota Tim', acrossAllRoles:'Seluruh role',
+    totalCRMRecords:'Total Data CRM', allOwners:'Semua pemilik',
+    teamMembersTracked:'Anggota Tim Terpantau', teamFollowupsToday:'Follow Up Hari Ini (Tim)',
+    outOfTarget:'dari target {n}', teamPendingToday:'Belum Follow Up (Tim)', needsFollowup:'Masih perlu di-follow up',
+    noTeamMembers:'Tidak ada anggota tim ditemukan', followedUpToday:'di-follow up hari ini', remaining:'tersisa',
+    totalAssignedCustomers:'total customer yang ditangani',
     // Content Studio
     inDrafts:'Dalam Draf', piecesEditing:'Konten yang sedang ditulis atau diedit.',
     awaitingReviewSub:'Menunggu Peninjauan', awaitingReviewBody:'Dikirim ke moderator untuk persetujuan sebelum dipublikasikan.',
@@ -4965,7 +4828,7 @@ const i18n = {
     npTask:'Task Baru', npAd:'Iklan Baru', npDone:'Task Selesai', npLead:'Lead Baru', npReg:'Pendaftaran Baru', npLogin:'Login', npAlert:'Pemberitahuan', npSystem:'Notifikasi',
     npUnlockReq:'Minta Buka Kunci', npUnlocked:'Task Dibuka', npRejected:'Permintaan Ditolak', npApproved:'Disetujui', npPublished:'Iklan Dipublish', npAssigned:'Ditugaskan ke kamu',
     welHi:'Selamat datang', welReady:'Portal kamu sudah siap.',
-    welModPending:'{n} pendaftaran menunggu ditinjau.', welModNoPending:'Tidak ada pendaftaran tertunda.',
+    welModPending:'{n} follow-up customer tim masih tertunda hari ini.', welModNoPending:'Follow up tim sudah lengkap hari ini.',
     welModTasks:'{n} task aktif di seluruh tim.', welModNoTasks:'Belum ada task aktif saat ini.',
     welTargetTasks:'Kamu punya {n} task untuk dikerjakan.', welTargetNoTasks:'Belum ada task yang ditugaskan.',
     welContent:'Content Studio sudah siap.', welLive:'Live Studio sudah siap.',
@@ -5067,9 +4930,7 @@ function toggleLang() {
     if (document.getElementById('pg-presence').classList.contains('active')) renderPresencePage();
     if (document.getElementById('pg-users').classList.contains('active')) renderUsers();
     if (document.getElementById('pg-overview').classList.contains('active')) { renderStats(); renderActivity(); }
-    if (document.getElementById('pg-customers').classList.contains('active')) renderCust();
-    if (document.getElementById('pg-broadcast').classList.contains('active')) renderBcHistory();
-    if (document.getElementById('pg-registrations').classList.contains('active')) renderRegs();
+    if (document.getElementById('pg-team_tasks').classList.contains('active')) renderTeamTasks();
     if (document.getElementById('pg-settings').classList.contains('active')) renderSettings();
     if (document.getElementById('pg-content_studio') && document.getElementById('pg-content_studio').classList.contains('active')) renderContentStudio();
     if (document.getElementById('pg-live_studio') && document.getElementById('pg-live_studio').classList.contains('active')) renderLiveStudio();
@@ -5081,18 +4942,9 @@ function toggleLang() {
       const all = getPresEntries();
       ppCount.textContent = `${all.length} ${t('memberCount')}`;
     }
-    // Update reg filter options
-    const regFilter = document.getElementById('reg-filter');
-    if (regFilter) {
-      const opts = regFilter.options;
-      const labels = currentLang === 'id'
-        ? ['Semua Permintaan','Menunggu','Disetujui','Ditolak']
-        : ['All Requests','Pending','Approved','Rejected'];
-      for (let i = 0; i < opts.length && i < labels.length; i++) opts[i].text = labels[i];
-    }
-    // Update cust search placeholder
-    const cs = document.getElementById('cust-search');
-    if (cs) cs.placeholder = currentLang === 'id' ? 'Cari pelanggan...' : 'Search customers...';
+    // Update team task search placeholder
+    const tts = document.getElementById('tt-search');
+    if (tts) tts.placeholder = currentLang === 'id' ? 'Cari nama anggota...' : 'Search team member...';
     const us = document.getElementById('user-search');
     if (us) us.placeholder = currentLang === 'id' ? 'Cari pengguna...' : 'Search users...';
     // Update notifications panel title
@@ -5457,34 +5309,6 @@ async function handleForgot() {
   document.getElementById('fo-email').value = '';
 }
 
-async function handleRegister() {
-  hideAlert('reg-al');
-  const name   = document.getElementById('rg-name').value.trim();
-  const email  = document.getElementById('rg-email').value.trim();
-  const uid    = document.getElementById('rg-uid').value.trim();
-  const pw     = document.getElementById('rg-pw').value;
-  const pw2    = document.getElementById('rg-pw2').value;
-  const agreed = document.getElementById('rg-agree').checked;
-  if (!name || !email || !uid || !pw) { showAlert('reg-al', 'error', t('fillRequired')); return; }
-  if (pw !== pw2) { showAlert('reg-al', 'error', t('pwMismatch')); return; }
-  if (!agreed)    { showAlert('reg-al', 'error', t('acceptTerms')); return; }
-  if (LOCAL_USERS[uid]) { showAlert('reg-al', 'error', t('userIdTaken')); return; }
-  const btn = document.querySelector('#panel-register .btn-p');
-  btn.classList.add('loading'); await delay(1100); btn.classList.remove('loading');
-  const newReg = { id:Date.now(), userId:uid, name, email, pass:pw, role:'guest', status:'pending', createdAt:Date.now() };
-  registrations.unshift(newReg);
-  await dbQ(d => d.from('registrations').insert({ user_id:uid, full_name:name, email, password_hash:pw, status:'pending', requested_role:'guest' }));
-  showAlert('reg-al', 'success', t('regSubmitted'));
-  pushActivity(`New registration: ${name}`, 'reg');
-  ['rg-name','rg-email','rg-uid','rg-pw','rg-pw2'].forEach(i => document.getElementById(i).value = '');
-  document.getElementById('rg-agree').checked = false; checkStrength('');
-  // Seed pending notification for any logged-in moderator
-  if (currentUser && can.isMod(currentUser.role)) {
-    updateRegBadge();
-    pushNotif({ type:'reg', title:t_('npReg'), body:`${name} (${uid})`, msg:`New registration: ${name} (${uid})`, regId:newReg.id });
-  }
-}
-
 function handleGuest() {
   const claim = claimGuest();
   if (!claim) { showAlert('login-al', 'error', t('guestFull')); return; }
@@ -5611,11 +5435,9 @@ async function initDashboard() {
   // ─── Default nav visibility ───
   const navShow = (id, on) => { const el = document.getElementById(id); if (el) el.style.display = on ? '' : 'none'; };
 
-  // Core nav (Overview / Customers / Broadcast) — HANYA moderator.
+  // Core nav (Overview) — HANYA moderator.
   // Admin & B2B fokus ke dashboard kerja mereka sendiri (Ads Schedule / Task).
   navShow('n-overview',   isMod);
-  navShow('n-customers',  isMod);
-  navShow('n-broadcast',  isMod);
 
   // Studio section
   const showStudio = isContent || isLive;
@@ -5626,7 +5448,7 @@ async function initDashboard() {
 
   // Administration (Moderator+)
   navShow('ns-admin',         isMod);
-  navShow('n-registrations',  isMod);
+  navShow('n-team-tasks',     isMod);
   navShow('n-users',          isMod);
   // Settings — Sovereign only (otherwise moderator can rename their own role)
   navShow('n-settings',       isHead);
@@ -5649,11 +5471,7 @@ async function initDashboard() {
   navShow('n-task-dashboard', showTaskDash);
 
   // Bell tampil untuk semua user — notif login/join terlihat oleh siapa pun.
-  // (Notif registrasi dengan tombol Review tetap hanya muncul untuk moderator,
-  //  karena hanya moderator yang subscribe ke channel registrasi.)
   document.getElementById('notif-bell').style.display   = '';
-  const addCustBtn = document.getElementById('btn-add-cust');
-  if (addCustBtn) addCustBtn.style.display = can.editorUp(r) ? '' : 'none';
 
   // ─── Topbar greeting ───
   const g = getGreeting();
@@ -5693,7 +5511,7 @@ async function initDashboard() {
     catch (e) { console.warn('[DHP] CRM init gagal:', e); }
   }
 
-  try { renderStats(); renderActivity(); renderCust(); renderBcHistory(); }
+  try { renderStats(); renderActivity(); }
   catch (e) { console.warn('[DHP] render awal gagal:', e); }
   updateClock();
   window._clockIv = setInterval(updateClock, 1000);
@@ -5710,14 +5528,7 @@ async function initDashboard() {
   if (isContent) renderContentStudio();
   if (isLive)    renderLiveStudio();
   if (isAdmin || isB2B) { try { await renderTaskDashboard(); } catch(e) { console.warn('[DHP] renderTaskDashboard awal gagal:', e); } }
-
-  // Moderator pending notifs
-  if (isMod) {
-    updateRegBadge();
-    registrations.filter(reg => reg.status === 'pending').forEach(reg => {
-      pushNotif({ type:'reg', title:t_('npReg'), body:`${reg.name||reg.full_name}`, msg:`Pending registration: ${reg.name||reg.full_name}`, regId:reg.id });
-    });
-  }
+  if (isMod) { try { await renderTeamTasks(); } catch(e) { console.warn('[DHP] renderTeamTasks awal gagal:', e); } }
 
   // Sovereign Moderator special toast
   if (isHead) {
@@ -5762,30 +5573,6 @@ async function initDashboard() {
 
 /* Load semua data dari Supabase — tidak ada dummy, kosong jika DB belum dikonfigurasi */
 async function loadDataFromDB(isMod) {
-  // Customers
-  const cRes = await dbQ(d => d.from('customers').select('*').order('created_at', { ascending:false }));
-  if (cRes?.data) {
-    customers = cRes.data.map(c => ({
-      id:     c.id,
-      name:   c.full_name,
-      email:  c.email,
-      phone:  c.phone || '',
-      status: c.status
-    }));
-  }
-
-  // Broadcasts
-  const bRes = await dbQ(d => d.from('broadcasts').select('*').order('created_at', { ascending:false }));
-  if (bRes?.data) {
-    broadcasts = bRes.data.map(b => ({
-      id:         b.id,
-      subject:    b.subject,
-      by:         b.sent_by,
-      date:       b.created_at?.slice(0,10) || '',
-      recipients: b.recipients
-    }));
-  }
-
   // Users — sync dari DB ke LOCAL_USERS supaya renderUsers & login selalu up-to-date
   const uRes = await dbQ(d => d.from('users').select('*').eq('is_active', true));
   if (uRes?.data) {
@@ -5809,23 +5596,6 @@ async function loadDataFromDB(isMod) {
     });
   }
 
-  // Registrations (moderator saja)
-  if (isMod) {
-    const rRes = await dbQ(d => d.from('registrations').select('*').order('created_at', { ascending:false }));
-    if (rRes?.data) {
-      registrations = rRes.data.map(reg => ({
-        id:        reg.id,
-        userId:    reg.user_id,
-        name:      reg.full_name,
-        email:     reg.email,
-        pass:      reg.password_hash,
-        role:      roleFromDb(reg.requested_role || 'guest'),
-        status:    reg.status,
-        createdAt: new Date(reg.created_at).getTime()
-      }));
-    }
-  }
-
   // Activity feed
   const aRes = await dbQ(d => d.from('activity_feed').select('*').order('created_at', { ascending:false }).limit(30));
   if (aRes?.data) {
@@ -5843,21 +5613,20 @@ async function loadDataFromDB(isMod) {
    ═══════════════════════════════════════════════════════════ */
 function renderStats() {
   const on = Object.values(presenceMap).filter(u => u.online).length;
-  const pending = registrations.filter(r => r.status === 'pending').length;
-  const active = customers.filter(c => c.status === 'active').length;
   const onBadge = document.getElementById('online-badge'); if (onBadge) onBadge.textContent = on;
   const rc = document.getElementById('rt-count'); if (rc) rc.textContent = `${on} online`;
   const g = document.getElementById('stats-grid'); if (!g) return;
   if (!currentUser) return;
   const r = currentUser.role;
   const isMod = can.isMod(r);
+  const teamCount = Object.values(LOCAL_USERS).filter(u => u.role !== 'guest').length;
 
   // Default cards (admin / mod / sovereign)
   let cards = `
     <div class="stat-card">
-      <div class="stat-num">${customers.length}</div>
-      <div class="stat-lbl">${t('totalCustomers')}</div>
-      <div class="stat-sub">${active} ${t('active')}</div>
+      <div class="stat-num">${teamCount}</div>
+      <div class="stat-lbl">${t('totalTeamMembers')}</div>
+      <div class="stat-sub">${t('acrossAllRoles')}</div>
       <div class="stat-trend">◉</div>
     </div>
     <div class="stat-card">
@@ -5865,20 +5634,14 @@ function renderStats() {
       <div class="stat-lbl">${t('onlineNow')}</div>
       <div class="stat-sub">${t('realtimePresence')}</div>
       <div class="stat-trend" style="color:var(--green)">⊙</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num">${broadcasts.length}</div>
-      <div class="stat-lbl">${t('broadcastsSent')}</div>
-      <div class="stat-sub">${t('allTime')}</div>
-      <div class="stat-trend">◎</div>
     </div>`;
 
   if (isMod) {
-    cards += `<div class="stat-card" style="border-color:${pending>0?'rgba(232,184,110,.3)':'var(--border)'}">
-      <div class="stat-num" style="color:${pending>0?'var(--amber)':'var(--gold-hi)'}">${pending}</div>
-      <div class="stat-lbl">${t('pendingRegistrations')}</div>
-      <div class="stat-sub">${t('awaitingReview')}</div>
-      <div class="stat-trend" style="color:var(--amber)">◈</div>
+    cards += `<div class="stat-card">
+      <div class="stat-num">${crmData.length}</div>
+      <div class="stat-lbl">${t('totalCRMRecords')}</div>
+      <div class="stat-sub">${t('allOwners')}</div>
+      <div class="stat-trend">◎</div>
     </div>`;
   }
   g.innerHTML = cards;
@@ -6127,181 +5890,142 @@ function rehearseLive() {
   pushActivity(`${currentUser.name} started a rehearsal`, 'info');
 }
 
-/* B2B Pipeline dihapus di v4.1 — diganti sistem Ads (Schedule/Customers/Task) */
-
 /* ═══════════════════════════════════════════════════════════
-   ⑱ CUSTOMERS
+   ⑱ TEAM TASK PROGRESS (Moderator only)
+   ─ Menampilkan task follow-up harian setiap anggota tim
+     (Admin, B2B Marketing, Content Creator, Host Live, dst)
+     beserta progress masing-masing terhadap target harian —
+     sehingga moderator bisa melihat task semua role sekaligus
+     progress tiap orang, bukan hanya milik dirinya sendiri.
    ═══════════════════════════════════════════════════════════ */
-let editCustId = null;
-function renderCust() {
-  const q = (document.getElementById('cust-search')?.value || '').toLowerCase();
-  const r = currentUser.role;
-  const list = customers.filter(c => !q || c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q));
-  const tbody = document.getElementById('cust-tbl'); if (!tbody) return;
-  if (!list.length) { tbody.innerHTML = `<tr><td colspan="5" class="tbl-empty">${t('noCustomers')}</td></tr>`; return; }
-  tbody.innerHTML = list.map(c => `
-    <tr>
-      <td style="font-weight:600;color:var(--text)">${c.name}</td>
-      <td>${c.email}</td>
-      <td>${c.phone}</td>
-      <td><span class="badge b-${c.status}">${c.status}</span></td>
-      <td>
-        ${can.editorUp(r)
-          ? `<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn-sm btn-edit" onclick="openCustModal(${c.id})">Edit</button><button class="btn-sm btn-del" onclick="deleteCust(${c.id})">Hapus</button></div>`
-          : `<span style="color:var(--muted);font-size:10px">${t('viewOnly')}</span>`}
-      </td>
-    </tr>`).join('');
-}
-function openCustModal(id) {
-  editCustId = id || null;
-  const c = id ? customers.find(x => x.id === id) : null;
-  document.getElementById('m-title').textContent = c ? t('editCustomer') : t('addCustomer');
-  document.getElementById('m-body').innerHTML = `
-    <div class="fg"><label>${t('name')}</label><input class="fi" id="cm-name" value="${c?.name||''}"/></div>
-    <div class="fg"><label>Email</label><input class="fi" id="cm-email" type="email" value="${c?.email||''}"/></div>
-    <div class="fg"><label>${t('phone')}</label><input class="fi" id="cm-phone" value="${c?.phone||''}"/></div>
-    <div class="fg"><label>Status</label>
-      <select class="fi" id="cm-status">
-        <option value="active" ${c?.status==='active'?'selected':''}>Active</option>
-        <option value="inactive" ${c?.status==='inactive'?'selected':''}>Inactive</option>
-      </select>
-    </div>`;
-  document.getElementById('m-foot').innerHTML = `
-    <button class="btn-sm btn-gold" onclick="saveCust()">${t('save')}</button>
-    <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>`;
-  document.getElementById('modal-ov').classList.add('open');
-}
-async function saveCust() {
-  const name = document.getElementById('cm-name').value.trim();
-  const email = document.getElementById('cm-email').value.trim();
-  const phone = document.getElementById('cm-phone').value.trim();
-  const status = document.getElementById('cm-status').value;
-  if (!name || !email) { toast(t('fillNameEmail')); return; }
-  if (editCustId) {
-    const c = customers.find(x => x.id === editCustId);
-    Object.assign(c, { name, email, phone, status });
-    await dbQ(d => d.from('customers').update({ full_name:name, email, phone, status }).eq('id', editCustId));
-    toast(t('customerUpdated')); pushActivity(`Customer updated: ${name}`, 'info');
+let teamTaskData = []; // [{id,name,role,total,done,pending,target,pct,online}]
+
+async function loadTeamTaskData() {
+  if (!can.isMod(currentUser?.role)) return [];
+  const target = FOLLOWUP_DAILY_TARGET;
+  const roster = Object.entries(LOCAL_USERS)
+    .filter(([id, u]) => u.role && u.role !== 'guest' && u.role !== 'head_moderator')
+    .map(([id, u]) => ({ id, name: u.name, role: u.role }));
+
+  let byOwnerTotal = {};     // total customer CRM per owner_id
+  let byUserDoneToday = {};  // jumlah customer unik yang sudah di-follow up hari ini per user_id
+
+  if (crmUsesDB()) {
+    try {
+      const cRes = await dbQ(d => d.from('crm_customers').select('id, owner_id'));
+      (cRes?.data || []).forEach(row => {
+        const oid = row.owner_id || '';
+        byOwnerTotal[oid] = (byOwnerTotal[oid] || 0) + 1;
+      });
+    } catch(e) { console.warn('[DHP] loadTeamTaskData crm gagal:', e); }
+    try {
+      const fRes = await dbQ(d => d.from('followup_logs').select('user_id, customer_id').gte('followed_up_at', _todayStartISO()));
+      const seen = {};
+      (fRes?.data || []).forEach(row => {
+        const key = `${row.user_id}::${row.customer_id}`;
+        if (seen[key]) return;
+        seen[key] = true;
+        byUserDoneToday[row.user_id] = (byUserDoneToday[row.user_id] || 0) + 1;
+      });
+    } catch(e) { console.warn('[DHP] loadTeamTaskData followup gagal:', e); }
   } else {
-    const newC = { id:Date.now(), name, email, phone, status };
-    customers.push(newC);
-    await dbQ(d => d.from('customers').insert({ full_name:name, email, phone, status }));
-    toast(t('customerAdded')); pushActivity(`Customer added: ${name}`, 'info');
+    // Fallback offline: hanya data lokal yang tersedia
+    try {
+      const all = JSON.parse(localStorage.getItem(CRM_LS_KEY) || '[]');
+      (Array.isArray(all) ? all : []).forEach(c => {
+        const oid = c.owner_id || '';
+        byOwnerTotal[oid] = (byOwnerTotal[oid] || 0) + 1;
+      });
+    } catch(e) {}
+    if (currentUser) {
+      try {
+        const arr = JSON.parse(localStorage.getItem(_followupTodayKey()) || '[]');
+        byUserDoneToday[currentUser.id] = new Set(arr).size;
+      } catch(e) {}
+    }
   }
-  closeModal(); renderCust(); renderStats();
-}
-async function deleteCust(id) {
-  const ok = await uiConfirm({ title:t('deleteTitle'), message:t('deleteConfirm'), icon:'danger', tone:'danger', okText:t('cfmDelete'), cancelText:t('cfmCancel') });
-  if (!ok) return;
-  const c = customers.find(x => x.id === id);
-  customers = customers.filter(x => x.id !== id);
-  await dbQ(d => d.from('customers').delete().eq('id', id));
-  toast(t('customerDeleted')); pushActivity(`Customer deleted: ${c?.name}`, 'info');
-  renderCust(); renderStats();
+
+  teamTaskData = roster.map(u => {
+    const total   = byOwnerTotal[u.id] || 0;
+    const done    = byUserDoneToday[u.id] || 0;
+    const pending = Math.max(0, total - done);
+    const pct     = target ? Math.min(100, Math.round((done / target) * 100)) : 0;
+    return { id: u.id, name: u.name, role: u.role, total, done, pending, target, pct, online: !!(presenceMap[u.id]?.online) };
+  });
+  return teamTaskData;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   ⑲ BROADCAST
-   ═══════════════════════════════════════════════════════════ */
-function renderBcHistory() {
-  const tbody = document.getElementById('bc-tbl'); if (!tbody) return;
-  if (!broadcasts.length) { tbody.innerHTML = `<tr><td colspan="4" class="tbl-empty">${t('noBroadcasts')}</td></tr>`; return; }
-  tbody.innerHTML = broadcasts.map(b => `
-    <tr>
-      <td style="font-weight:600">${b.subject}</td>
-      <td>${b.by}</td>
-      <td>${b.date}</td>
-      <td>${b.recipients}</td>
-    </tr>`).join('');
-}
-async function sendBroadcast() {
-  if (!can.canBroadcast(currentUser.role)) { toast(t('broadcastRequiresRole')); return; }
-  const sub = document.getElementById('bc-sub').value.trim();
-  const body = document.getElementById('bc-body').value.trim();
-  if (!sub || !body) { toast(t('fillBroadcast')); return; }
-  const newB = { id:Date.now(), subject:sub, by:currentUser.id, date:new Date().toISOString().slice(0,10), recipients:customers.length };
-  broadcasts.unshift(newB);
-  await dbQ(d => d.from('broadcasts').insert({ subject:sub, sent_by:currentUser.id, body, recipients:customers.length }));
-  renderBcHistory(); clearBc(); renderStats();
-  toast(t('broadcastSent').replace('{n}', customers.length));
-  pushActivity(`Broadcast sent: "${sub}"`, 'info');
-}
-function clearBc() { document.getElementById('bc-sub').value = ''; document.getElementById('bc-body').value = ''; }
+async function renderTeamTasks() {
+  const data = await loadTeamTaskData();
+  const q = (document.getElementById('tt-search')?.value || '').toLowerCase().trim();
+  const roleFilter = document.getElementById('tt-role-filter')?.value || 'all';
+  const list = data.filter(u => (roleFilter === 'all' || u.role === roleFilter) && (!q || u.name.toLowerCase().includes(q)));
 
-/* ═══════════════════════════════════════════════════════════
-   ⑳ REGISTRATIONS (Moderator only — full access)
-   ═══════════════════════════════════════════════════════════ */
-function updateRegBadge() {
-  const n = registrations.filter(r => r.status === 'pending').length;
-  const badge = document.getElementById('reg-badge');
-  if (badge) { badge.textContent = n; badge.style.display = n > 0 ? '' : 'none'; }
-  renderStats();
-}
-function renderRegs() {
-  const filter = document.getElementById('reg-filter')?.value || 'all';
-  const list = filter === 'all' ? registrations : registrations.filter(r => r.status === filter);
-  const tbody = document.getElementById('regs-tbl'); if (!tbody) return;
-  if (!list.length) { tbody.innerHTML = `<tr><td colspan="7" class="tbl-empty">No registrations found</td></tr>`; return; }
-  tbody.innerHTML = list.map(r => `
-    <tr>
-      <td style="font-size:11px;font-family:monospace;color:var(--gold-lo)">${r.userId||r.user_id||''}</td>
-      <td style="font-weight:600;color:var(--text)">${r.name||r.full_name||''}</td>
-      <td style="font-size:11px">${r.email}</td>
-      <td><span class="badge b-${r.status}">${r.status}</span></td>
-      <td><span class="badge b-${r.role||'guest'}">${rn(r.role||'guest')}</span></td>
-      <td style="font-size:10px;color:var(--muted)">${timeAgo(r.createdAt)}</td>
-      <td>
-        ${r.status === 'pending'
-          ? `<button class="btn-sm btn-approve" onclick="openRegModal(${r.id})">Review</button>`
-          : `<span style="color:var(--muted);font-size:10px">—</span>`}
-      </td>
-    </tr>`).join('');
-}
-function openRegModal(id) {
-  const r = registrations.find(x => x.id === id); if (!r) return;
-  const name = r.name || r.full_name, uid = r.userId || r.user_id;
-  document.getElementById('m-title').textContent = 'Review Registration';
-  document.getElementById('m-body').innerHTML = `
-    <div class="reg-review-card">
-      <div class="rrc-row"><span class="rrc-key">Name</span><span class="rrc-val highlight">${name}</span></div>
-      <div class="rrc-row"><span class="rrc-key">User ID</span><span class="rrc-val" style="font-family:monospace;color:var(--gold-lo)">${uid}</span></div>
-      <div class="rrc-row"><span class="rrc-key">Email</span><span class="rrc-val">${r.email}</span></div>
-      <div class="rrc-row"><span class="rrc-key">Submitted</span><span class="rrc-val">${timeAgo(r.createdAt)}</span></div>
-    </div>
-    <div class="fg">
-      <label>Assign Role</label>
-      <select class="fi" id="reg-role-sel">
-        ${ROLE_KEYS.filter(k => k !== 'head_moderator' && k !== 'guest').map(k => `<option value="${k}" ${(r.role&&r.role!=='guest'?r.role:'admin')===k?'selected':''}>${rn(k)}</option>`).join('')}
-      </select>
-    </div>
-    <div style="font-size:11px;color:var(--text2);line-height:1.6">Menyetujui akan membuat akun dan memberikan akses portal dengan peran yang dipilih.</div>`;
-  document.getElementById('m-foot').innerHTML = `
-    <button class="btn-sm btn-approve" onclick="approveReg(${r.id})">✓ Setujui</button>
-    <button class="btn-sm btn-reject"  onclick="rejectReg(${r.id})">✕ Tolak</button>
-    <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>`;
-  document.getElementById('modal-ov').classList.add('open');
-}
-async function approveReg(id) {
-  const r = registrations.find(x => x.id === id); if (!r) return;
-  const role = document.getElementById('reg-role-sel')?.value || 'admin';
-  r.status = 'approved'; r.role = role;
-  const uid = r.userId || r.user_id, name = r.name || r.full_name;
-  LOCAL_USERS[uid] = { pass:r.pass||'changeme', role, name, email:r.email };
-  presenceMap[uid] = { id:uid, role, name, online:false, loginAt:0, lastSeen:0 };
-  await dbQ(d => d.rpc('approve_registration', { p_reg_id:id, p_reviewed_by:currentUser.id, p_role:roleToDb(role) }));
-  closeModal(); updateRegBadge(); renderRegs();
-  toast(t('regApproved'));
-  pushActivity(`${name} approved as ${rn(role)}`, 'info');
-  pushNotif({ type:'done', title:t_('npApproved'), body:`${name} → ${rn(role)}`, msg:`${name} approved → ${rn(role)}` });
-}
-async function rejectReg(id) {
-  const r = registrations.find(x => x.id === id); if (!r) return;
-  r.status = 'rejected';
-  const name = r.name || r.full_name;
-  await dbQ(d => d.rpc('reject_registration', { p_reg_id:id, p_reviewed_by:currentUser.id, p_reason:'Declined by moderator' }));
-  closeModal(); updateRegBadge(); renderRegs();
-  toast(t('regRejected'));
-  pushActivity(`${name} registration rejected`, 'leave');
+  // ── Ringkasan keseluruhan tim ──
+  const totalMembers   = data.length;
+  const totalDoneToday = data.reduce((s, u) => s + u.done, 0);
+  const totalTarget    = data.reduce((s, u) => s + u.target, 0);
+  const totalPending   = data.reduce((s, u) => s + u.pending, 0);
+  const summaryEl = document.getElementById('tt-summary');
+  if (summaryEl) {
+    summaryEl.innerHTML = `
+      <div class="stat-card">
+        <div class="stat-num">${totalMembers}</div>
+        <div class="stat-lbl">${t('teamMembersTracked')}</div>
+        <div class="stat-sub">${t('acrossAllRoles')}</div>
+        <div class="stat-trend">◉</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color:var(--green)">${totalDoneToday}</div>
+        <div class="stat-lbl">${t('teamFollowupsToday')}</div>
+        <div class="stat-sub">${t('outOfTarget').replace('{n}', totalTarget)}</div>
+        <div class="stat-trend" style="color:var(--green)">⊙</div>
+      </div>
+      <div class="stat-card" style="border-color:${totalPending>0?'rgba(232,184,110,.3)':'var(--border)'}">
+        <div class="stat-num" style="color:${totalPending>0?'var(--amber)':'var(--gold-hi)'}">${totalPending}</div>
+        <div class="stat-lbl">${t('teamPendingToday')}</div>
+        <div class="stat-sub">${t('needsFollowup')}</div>
+        <div class="stat-trend" style="color:var(--amber)">◈</div>
+      </div>`;
+  }
+
+  // ── Kelompokkan per role ──
+  const groups = {};
+  list.forEach(u => { (groups[u.role] = groups[u.role] || []).push(u); });
+  const roleOrder = ['moderator', 'admin', 'b2b_marketing', 'content_creator', 'host_live'];
+  const wrap = document.getElementById('tt-role-groups');
+  if (!wrap) return;
+  if (!list.length) { wrap.innerHTML = `<div class="tbl-empty">${t('noTeamMembers')}</div>`; return; }
+
+  wrap.innerHTML = roleOrder.filter(rk => groups[rk] && groups[rk].length).map(rk => {
+    const members = groups[rk].slice().sort((a, b) => b.done - a.done);
+    const clr = ROLE_COLORS[rk] || '#888';
+    return `<div class="recap-owner" style="margin-bottom:22px">
+      <div class="recap-owner-head"><span class="role-dot" style="background:${clr}"></span>${rn(rk)} <span style="color:var(--muted)">· ${members.length} orang</span></div>
+      <div class="tt-member-grid">
+        ${members.map(u => {
+          const barPct = u.pct > 0 ? Math.max(4, Math.min(100, u.pct)) : 0;
+          const barColor = u.done >= u.target ? 'var(--green)' : u.pct >= 50 ? 'var(--gold)' : 'var(--amber)';
+          const initials = (u.name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+          return `<div class="tt-member-card">
+            <div class="tt-member-top">
+              <div class="tt-member-av" style="background:${clr}22;color:${clr}">${initials}</div>
+              <div>
+                <div class="tt-member-name">${escHtml(u.name)}${u.online ? ' <span class="tt-online-dot" title="Online"></span>' : ''}</div>
+                <div class="tt-member-role">${rn(u.role)}</div>
+              </div>
+            </div>
+            <div class="tt-progress-bar"><div class="tt-progress-fill" style="width:${barPct}%;background:${barColor}"></div></div>
+            <div class="tt-member-stats">
+              <span>${u.done}/${u.target} ${t('followedUpToday')}</span>
+              <span style="color:${u.pending > 0 ? 'var(--amber)' : 'var(--green)'}">${u.pending} ${t('remaining')}</span>
+            </div>
+            <div class="tt-member-total">${u.total} ${t('totalAssignedCustomers')}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -7342,9 +7066,9 @@ function welcomeNotif() {
   let body, type;
 
   if (can.isMod(r)) {
-    // Moderator / Sovereign → ringkasan kerja: pendaftaran tertunda + task aktif tim
-    const pend = (typeof registrations !== 'undefined')
-      ? registrations.filter(x => x.status === 'pending').length : 0;
+    // Moderator / Sovereign → ringkasan kerja: follow-up tertunda tim + task aktif tim
+    const pend = (typeof teamTaskData !== 'undefined')
+      ? teamTaskData.reduce((s, u) => s + (u.pending || 0), 0) : 0;
     const tasks = (typeof adTasks !== 'undefined') ? adTasks.length : 0;
     if (pend > 0) { body = fill('welModPending', pend); type = 'alert'; }
     else if (tasks > 0) { body = fill('welModTasks', tasks); type = 'task'; }
@@ -10797,8 +10521,8 @@ async function submitUnlockRequest() {
    ═══════════════════════════════════════════════════════════ */
 function navTo(page, btn) {
   const r = currentUser.role;
-  // Overview / Customers / Broadcast — moderator only (admin & b2b tidak punya halaman ini)
-  if (['overview','customers','broadcast'].includes(page) && !can.isMod(r)) {
+  // Overview — moderator only (admin & b2b tidak punya halaman ini)
+  if (['overview'].includes(page) && !can.isMod(r)) {
     // arahkan diam-diam ke dashboard kerja mereka, bukan tampilkan toast error
     const home = can.isContent(r) ? 'content_studio' : can.isHostLive(r) ? 'live_studio' : (can.isB2B(r) || r === 'admin') ? 'task_dashboard' : 'ad_scheduler';
     const homeBtn = document.getElementById(
@@ -10808,7 +10532,7 @@ function navTo(page, btn) {
     return navTo(home, homeBtn);
   }
   // Moderator-only pages
-  if (['registrations','users'].includes(page) && !can.isMod(r)) { toast('Moderator access required'); return; }
+  if (['team_tasks','users'].includes(page) && !can.isMod(r)) { toast('Moderator access required'); return; }
   // Manage (Ads) pages: moderator + admin/b2b (target)
   if (['ad_scheduler','ad_customers','ad_task'].includes(page) && !can.canSeeAds(r)) { toast(t('adAccessReq')); return; }
   // Manage CRM page: moderator + admin/b2b
@@ -10825,9 +10549,7 @@ function navTo(page, btn) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if (btn) btn.classList.add('active');
   if (page === 'overview')        { renderStats(); renderActivity(); }
-  if (page === 'customers')       renderCust();
-  if (page === 'broadcast')       renderBcHistory();
-  if (page === 'registrations')   renderRegs();
+  if (page === 'team_tasks')      renderTeamTasks();
   if (page === 'users')           renderUsers();
   if (page === 'settings')        renderSettings();
   if (page === 'presence')        renderPresencePage();
