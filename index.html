@@ -3078,7 +3078,7 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
               <span data-i18n="teamTasks">Progress Tugas Tim</span>
               <span class="mod-badge">♔ Moderator</span>
             </div>
-            <div class="ps" data-i18n="teamTasksSub">Pantau task follow-up harian setiap admin, B2B, dan role lainnya</div>
+            <div class="ps" data-i18n="teamTasksSub">Pantau task follow-up harian setiap Admin dan B2B Marketing beserta progress mereka</div>
           </div>
           <div class="ph-acts">
             <input class="search-box" id="tt-search" placeholder="Cari nama anggota..." oninput="renderTeamTasks()"/>
@@ -3086,9 +3086,6 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
               <option value="all">Semua Role</option>
               <option value="admin">Admin</option>
               <option value="b2b_marketing">B2B Marketing</option>
-              <option value="content_creator">Content Creator</option>
-              <option value="host_live">Host Live</option>
-              <option value="moderator">Moderator</option>
             </select>
           </div>
         </div>
@@ -4494,7 +4491,7 @@ const i18n = {
     pendingRegistrations:'Pending Registrations', awaitingReview:'Awaiting review',
     active:'active', closedWon:'closed won',
     // Team Task Progress (moderator)
-    teamTasks:'Team Task Progress', teamTasksSub:'Monitor every admin, B2B, and other role\u2019s daily follow-up task and progress',
+    teamTasks:'Team Task Progress', teamTasksSub:'Monitor every Admin and B2B Marketing member\u2019s daily follow-up task and progress',
     totalTeamMembers:'Total Team Members', acrossAllRoles:'Across all roles',
     totalCRMRecords:'Total CRM Records', allOwners:'All owners',
     teamMembersTracked:'Team Members Tracked', teamFollowupsToday:'Follow-ups Today (Team)',
@@ -4717,7 +4714,7 @@ const i18n = {
     pendingRegistrations:'Pendaftaran Menunggu', awaitingReview:'Menunggu ditinjau',
     active:'aktif', closedWon:'deal ditutup',
     // Progress Tugas Tim (moderator)
-    teamTasks:'Progress Tugas Tim', teamTasksSub:'Pantau task follow-up harian setiap admin, B2B, dan role lainnya beserta progress mereka',
+    teamTasks:'Progress Tugas Tim', teamTasksSub:'Pantau task follow-up harian setiap Admin dan B2B Marketing beserta progress mereka',
     totalTeamMembers:'Total Anggota Tim', acrossAllRoles:'Seluruh role',
     totalCRMRecords:'Total Data CRM', allOwners:'Semua pemilik',
     teamMembersTracked:'Anggota Tim Terpantau', teamFollowupsToday:'Follow Up Hari Ini (Tim)',
@@ -5904,7 +5901,7 @@ async function loadTeamTaskData() {
   if (!can.isMod(currentUser?.role)) return [];
   const target = FOLLOWUP_DAILY_TARGET;
   const roster = Object.entries(LOCAL_USERS)
-    .filter(([id, u]) => u.role && u.role !== 'guest' && u.role !== 'head_moderator')
+    .filter(([id, u]) => u.role === 'admin' || u.role === 'b2b_marketing')
     .map(([id, u]) => ({ id, name: u.name, role: u.role }));
 
   let byOwnerTotal = {};     // total customer CRM per owner_id
@@ -5992,7 +5989,7 @@ async function renderTeamTasks() {
   // ── Kelompokkan per role ──
   const groups = {};
   list.forEach(u => { (groups[u.role] = groups[u.role] || []).push(u); });
-  const roleOrder = ['moderator', 'admin', 'b2b_marketing', 'content_creator', 'host_live'];
+  const roleOrder = ['admin', 'b2b_marketing'];
   const wrap = document.getElementById('tt-role-groups');
   if (!wrap) return;
   if (!list.length) { wrap.innerHTML = `<div class="tbl-empty">${t('noTeamMembers')}</div>`; return; }
