@@ -5473,6 +5473,13 @@ function loginSuccess(id, role, name) {
     if (can.isMod(role)) document.body.classList.add('is-mod');
     if (role === 'head_moderator') document.body.classList.add('is-head-mod');
     document.body.classList.add(`role-theme-${role}`);
+
+    // ── Popup absensi ditampilkan SEGERA, tidak menunggu brand/dashboard
+    //    selesai dimuat (yang mana bisa memakan waktu tergantung jaringan).
+    //    Overlay full-screen z-index tinggi jadi aman ditampilkan duluan,
+    //    dashboard di baliknya tetap lanjut memuat data seperti biasa.
+    try { maybeShowAttendanceCheckin(); } catch (e) { console.warn('[DHP] attendance check-in gagal:', e); }
+
     // ── Load brand SEBELUM dashboard render ──────────────────────
     // Ini yang fix: device lain dapat brand terbaru saat login
     await earlyLoadBrand();
@@ -5489,9 +5496,7 @@ function loginSuccess(id, role, name) {
     }
     refreshPresenceUI();
     // Notif SAMBUTAN saat login — beda isi per role, sesuai alur kerja masing-masing.
-    // Diberi jeda kecil supaya muncul setelah dashboard tampil & data termuat.
     setTimeout(() => { try { welcomeNotif(); } catch (e) { console.warn('[DHP] welcomeNotif gagal:', e); } }, 700);
-    setTimeout(() => { try { maybeShowAttendanceCheckin(); } catch (e) { console.warn('[DHP] attendance check-in gagal:', e); } }, 1100);
   }, 500);
 }
 
