@@ -2169,6 +2169,55 @@ body.light .lead-row{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)} body.
 body.light .lead-row-name{color:#0d0d0d;font-weight:700}
 body.light .wa-prefix{background:#f0f0f0;color:#0d0d0d;border:1.5px solid rgba(0,0,0,.12);font-weight:700}
 
+/* ════════════ My Tasks — moderator personal job notes ════════════ */
+.mt-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.mt-filter-tabs{display:flex;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:4px}
+.mt-filter-tab{border:none;background:transparent;color:var(--muted);font-size:10.5px;font-weight:700;letter-spacing:.04em;
+  padding:7px 12px;border-radius:6px;cursor:pointer;transition:all var(--trans);white-space:nowrap}
+.mt-filter-tab:hover{color:var(--text)}
+.mt-filter-tab.active{background:var(--gold);color:#0a0906}
+body.light .mt-filter-tabs{background:#f0f0f0;border-color:rgba(0,0,0,.1)}
+
+.mt-list{display:flex;flex-direction:column;gap:10px}
+.mt-card{position:relative;display:flex;gap:12px;align-items:flex-start;background:var(--bg3);border:1px solid var(--border);
+  border-radius:11px;padding:13px 14px;transition:all var(--trans)}
+.mt-card:hover{border-color:var(--border-hi)}
+body.light .mt-card{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
+.mt-card.mt-done{opacity:.55}
+.mt-card.mt-overdue{border-color:rgba(224,90,90,.4);background:rgba(224,90,90,.05)}
+.mt-card.mt-soon{border-color:rgba(232,184,110,.4)}
+
+.mt-check{flex-shrink:0;width:24px;height:24px;border-radius:50%;border:2px solid var(--border-hi);background:transparent;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--trans);margin-top:1px;padding:0}
+.mt-check:hover{border-color:var(--gold)}
+.mt-check svg{opacity:0;transform:scale(.5);transition:all .2s}
+.mt-card.mt-done .mt-check{background:var(--green);border-color:var(--green)}
+.mt-card.mt-done .mt-check svg{opacity:1;transform:scale(1)}
+
+.mt-body{flex:1;min-width:0}
+.mt-title-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mt-title{font-size:13px;font-weight:700;color:var(--text)}
+.mt-card.mt-done .mt-title{text-decoration:line-through;color:var(--muted)}
+.mt-note{font-size:11px;color:var(--text2);margin-top:4px;line-height:1.5;white-space:pre-wrap}
+.mt-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.mt-deadline{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:700;letter-spacing:.04em;
+  padding:3px 8px;border-radius:5px;background:rgba(201,169,110,.1);color:var(--gold);border:1px solid rgba(201,169,110,.25)}
+.mt-card.mt-overdue .mt-deadline{background:rgba(224,90,90,.14);color:var(--red);border-color:rgba(224,90,90,.3)}
+.mt-card.mt-soon .mt-deadline{background:rgba(232,184,110,.14);color:var(--amber);border-color:rgba(232,184,110,.3)}
+.mt-prio{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  padding:3px 8px;border-radius:5px}
+.mt-prio.low{background:rgba(126,168,201,.12);color:var(--blue)}
+.mt-prio.normal{background:rgba(201,169,110,.12);color:var(--gold)}
+.mt-prio.high{background:rgba(232,184,110,.14);color:var(--amber)}
+.mt-prio.urgent{background:rgba(224,90,90,.14);color:var(--red)}
+.mt-acts{display:flex;gap:4px;flex-shrink:0;opacity:0;transition:opacity var(--trans)}
+.mt-card:hover .mt-acts{opacity:1}
+.mt-act-btn{width:26px;height:26px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);
+  color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--trans)}
+.mt-act-btn:hover{color:var(--text);border-color:var(--border-hi)}
+.mt-act-btn.mt-del:hover{color:var(--red);border-color:rgba(224,90,90,.35)}
+.mt-empty{text-align:center;padding:44px 20px;color:var(--muted);font-size:12px;font-style:italic}
+
 /* ════════════ v4.1 — Ads Customers · Ads Task · Unlock form ════════════ */
 /* Ads Customers — stats strip */
 .adcust-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
@@ -2868,6 +2917,16 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
 
       <!-- Administration (Moderator only) -->
       <div class="nav-sec-lbl" id="ns-admin" style="display:none" data-i18n="administration">Administrasi</div>
+      <button class="nav-item mod-only" onclick="navTo('mod_tasks',this)" id="n-mod-tasks" style="display:none">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M4.7 8.2l2 2 4.6-4.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span data-i18n="myTasks">Tugas Saya</span>
+        <span class="nav-badge" id="mt-pending-badge" style="display:none">0</span>
+      </button>
       <button class="nav-item mod-only" onclick="navTo('team_tasks',this)" id="n-team-tasks" style="display:none">
         <span class="nav-icon">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -3068,6 +3127,32 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
           </div>
           <div id="activity-feed" style="max-height:260px;overflow-y:auto"></div>
         </div>
+      </div>
+
+      <!-- ①b MY TASKS (Moderator only) — catatan pekerjaan pribadi moderator, deadline & notifikasi -->
+      <div class="sp" id="pg-mod_tasks">
+        <div class="ph">
+          <div class="ph-left">
+            <div class="pt">
+              <span data-i18n="myTasks">Tugas Saya</span>
+              <span class="mod-badge">♔ Moderator</span>
+            </div>
+            <div class="ps" data-i18n="myTasksSub">Catat pekerjaan yang harus kamu kerjakan, atur deadline & waktu, dapat notifikasi saat mendekati tenggat</div>
+          </div>
+          <div class="ph-acts">
+            <button class="btn-add" onclick="openModTaskModal()">+ <span data-i18n="myTasksNew">Tugas Baru</span></button>
+          </div>
+        </div>
+        <div class="stats-grid" id="mt-summary"></div>
+        <div class="mt-toolbar">
+          <div class="mt-filter-tabs" id="mt-filter-tabs">
+            <button class="mt-filter-tab active" data-f="active" onclick="setModTaskFilter('active')" data-i18n="myTasksActive">Berjalan</button>
+            <button class="mt-filter-tab" data-f="done" onclick="setModTaskFilter('done')" data-i18n="myTasksDoneTab">Selesai</button>
+            <button class="mt-filter-tab" data-f="all" onclick="setModTaskFilter('all')" data-i18n="myTasksAll">Semua</button>
+          </div>
+          <input class="search-box" id="mt-search" placeholder="Cari tugas..." oninput="renderModTasks()" style="max-width:220px"/>
+        </div>
+        <div class="mt-list" id="mt-list"></div>
       </div>
 
       <!-- ② TEAM TASK PROGRESS (Moderator only) — lihat task semua role/admin & progress masing-masing -->
@@ -4498,6 +4583,20 @@ const i18n = {
     outOfTarget:'out of {n} target', teamPendingToday:'Pending Today (Team)', needsFollowup:'Still need follow-up',
     noTeamMembers:'No team members found', followedUpToday:'followed up today', remaining:'remaining',
     totalAssignedCustomers:'total assigned customers',
+    // My Tasks (moderator personal job notes)
+    myTasks:'My Tasks', myTasksSub:'Note down the jobs you need to do, set a deadline & time, and get notified as it approaches',
+    myTasksNew:'New Task', myTasksActive:'Active', myTasksDoneTab:'Done', myTasksAll:'All',
+    myTasksTotal:'Total Tasks', myTasksPending:'Pending', myTasksOverdue:'Overdue',
+    myTasksEmpty:'No tasks here yet — add your first job note.',
+    myTasksMarkDone:'Mark as done', myTasksOverdueLbl:'Overdue',
+    myTasksNewTitle:'New Task', myTasksEditTitle:'Edit Task',
+    myTasksFieldTitle:'Task', myTasksFieldTitlePh:'e.g. Prepare the Shopee Ads report',
+    myTasksFieldNote:'Notes', myTasksFieldNotePh:'Additional details (optional)',
+    myTasksFieldDate:'Deadline Date', myTasksFieldTime:'Time', myTasksFieldPriority:'Priority',
+    myTasksFillTitle:'Please fill in the task name', myTasksAdded:'Task added', myTasksUpdated:'Task updated', myTasksDeleted:'Task deleted',
+    myTasksDeleteTitle:'Delete Task', myTasksDeleteMsg:'This task note will be permanently deleted.',
+    myTasksReminderTitle:'Deadline in 1 hour', myTasksOverdueTitle:'Task overdue',
+    mtPrioLow:'Low', mtPrioNormal:'Normal', mtPrioHigh:'High', mtPrioUrgent:'Urgent',
     // Content Studio
     inDrafts:'In Drafts', piecesEditing:'Pieces currently being written or edited.',
     awaitingReviewSub:'Awaiting Review', awaitingReviewBody:'Sent to moderator for approval before publish.',
@@ -4721,6 +4820,20 @@ const i18n = {
     outOfTarget:'dari target {n}', teamPendingToday:'Belum Follow Up (Tim)', needsFollowup:'Masih perlu di-follow up',
     noTeamMembers:'Tidak ada anggota tim ditemukan', followedUpToday:'di-follow up hari ini', remaining:'tersisa',
     totalAssignedCustomers:'total customer yang ditangani',
+    // Tugas Saya (catatan pekerjaan pribadi moderator)
+    myTasks:'Tugas Saya', myTasksSub:'Catat pekerjaan yang harus kamu kerjakan, atur deadline & waktu, dapat notifikasi saat mendekati tenggat',
+    myTasksNew:'Tugas Baru', myTasksActive:'Berjalan', myTasksDoneTab:'Selesai', myTasksAll:'Semua',
+    myTasksTotal:'Total Tugas', myTasksPending:'Belum Selesai', myTasksOverdue:'Terlambat',
+    myTasksEmpty:'Belum ada tugas — catat pekerjaan pertamamu di sini.',
+    myTasksMarkDone:'Tandai selesai', myTasksOverdueLbl:'Terlambat',
+    myTasksNewTitle:'Tugas Baru', myTasksEditTitle:'Edit Tugas',
+    myTasksFieldTitle:'Tugas', myTasksFieldTitlePh:'cth. Siapkan laporan Shopee Ads',
+    myTasksFieldNote:'Catatan', myTasksFieldNotePh:'Detail tambahan (opsional)',
+    myTasksFieldDate:'Tanggal Deadline', myTasksFieldTime:'Jam', myTasksFieldPriority:'Prioritas',
+    myTasksFillTitle:'Isi dulu nama tugasnya', myTasksAdded:'Tugas ditambahkan', myTasksUpdated:'Tugas diperbarui', myTasksDeleted:'Tugas dihapus',
+    myTasksDeleteTitle:'Hapus Tugas', myTasksDeleteMsg:'Catatan tugas ini akan dihapus permanen.',
+    myTasksReminderTitle:'Deadline 1 jam lagi', myTasksOverdueTitle:'Tugas terlambat',
+    mtPrioLow:'Rendah', mtPrioNormal:'Normal', mtPrioHigh:'Tinggi', mtPrioUrgent:'Mendesak',
     // Content Studio
     inDrafts:'Dalam Draf', piecesEditing:'Konten yang sedang ditulis atau diedit.',
     awaitingReviewSub:'Menunggu Peninjauan', awaitingReviewBody:'Dikirim ke moderator untuk persetujuan sebelum dipublikasikan.',
@@ -5445,6 +5558,7 @@ async function initDashboard() {
 
   // Administration (Moderator+)
   navShow('ns-admin',         isMod);
+  navShow('n-mod-tasks',      isMod);
   navShow('n-team-tasks',     isMod);
   navShow('n-users',          isMod);
   // Settings — Sovereign only (otherwise moderator can rename their own role)
@@ -5526,6 +5640,10 @@ async function initDashboard() {
   if (isLive)    renderLiveStudio();
   if (isAdmin || isB2B) { try { await renderTaskDashboard(); } catch(e) { console.warn('[DHP] renderTaskDashboard awal gagal:', e); } }
   if (isMod) { try { await renderTeamTasks(); } catch(e) { console.warn('[DHP] renderTeamTasks awal gagal:', e); } }
+  if (isMod) {
+    try { await loadModTasks(); renderModTasks(); } catch(e) { console.warn('[DHP] loadModTasks awal gagal:', e); }
+    if (!window._mtDeadlineIv) window._mtDeadlineIv = setInterval(checkModTaskDeadlines, 60000);
+  }
 
   // Sovereign Moderator special toast
   if (isHead) {
@@ -6026,7 +6144,231 @@ async function renderTeamTasks() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ㉑ USER MANAGEMENT (Moderator only — full access)
+   ㉑ MY TASKS (Moderator only) — catatan pekerjaan pribadi,
+   deadline + waktu, notifikasi mendekati tenggat, & centang selesai
+   ═══════════════════════════════════════════════════════════ */
+let modTasks = [];
+let modTaskFilter = 'active'; // active | done | all
+
+function mtLocalKey() { return `dhp_mod_tasks_${currentUser?.id||'guest'}`; }
+function mtLoadLocal() { try { return JSON.parse(localStorage.getItem(mtLocalKey())) || []; } catch(_) { return []; } }
+function mtSaveLocal(list) { try { localStorage.setItem(mtLocalKey(), JSON.stringify(list)); } catch(_) {} }
+
+async function loadModTasks() {
+  if (db) {
+    const res = await dbQ(d => d.from('mod_tasks').select('*').eq('moderator_id', currentUser.id));
+    if (res?.data) { modTasks = res.data; return modTasks; }
+  }
+  modTasks = mtLoadLocal();
+  return modTasks;
+}
+
+function mtDeadlineOf(task) {
+  if (!task.deadline_date) return null;
+  const time = task.deadline_time || '23:59';
+  const d = new Date(`${task.deadline_date}T${time}`);
+  return isNaN(d) ? null : d;
+}
+
+function mtFmtDeadline(task) {
+  const d = mtDeadlineOf(task);
+  if (!d) return '';
+  const locale = currentLang === 'id' ? 'id-ID' : 'en-US';
+  const dateStr = d.toLocaleDateString(locale, { day:'2-digit', month:'short' });
+  const timeStr = task.deadline_time ? d.toLocaleTimeString(locale, { hour:'2-digit', minute:'2-digit' }) : '';
+  return timeStr ? `${dateStr} · ${timeStr}` : dateStr;
+}
+
+function setModTaskFilter(f) {
+  modTaskFilter = f;
+  document.querySelectorAll('#mt-filter-tabs .mt-filter-tab').forEach(b => b.classList.toggle('active', b.dataset.f === f));
+  renderModTasks();
+}
+
+function renderModTasks() {
+  const q = (document.getElementById('mt-search')?.value || '').toLowerCase().trim();
+  const now = Date.now();
+  let list = modTasks.slice();
+
+  const total = list.length;
+  const doneCount = list.filter(x => x.status === 'done').length;
+  const overdueCount = list.filter(x => x.status !== 'done' && mtDeadlineOf(x) && mtDeadlineOf(x).getTime() < now).length;
+  const pendingCount = total - doneCount;
+  const sEl = document.getElementById('mt-summary');
+  if (sEl) {
+    sEl.innerHTML = `
+      <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-lbl">${t('myTasksTotal')}</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--amber)">${pendingCount}</div><div class="stat-lbl">${t('myTasksPending')}</div></div>
+      <div class="stat-card" style="border-color:${overdueCount>0?'rgba(224,90,90,.35)':'var(--border)'}">
+        <div class="stat-num" style="color:${overdueCount>0?'var(--red)':'var(--gold-hi)'}">${overdueCount}</div>
+        <div class="stat-lbl">${t('myTasksOverdue')}</div>
+      </div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--green)">${doneCount}</div><div class="stat-lbl">${t('myTasksDoneTab')}</div></div>`;
+  }
+
+  const badge = document.getElementById('mt-pending-badge');
+  if (badge) { badge.textContent = pendingCount; badge.style.display = pendingCount > 0 ? '' : 'none'; }
+
+  if (modTaskFilter === 'active') list = list.filter(x => x.status !== 'done');
+  else if (modTaskFilter === 'done') list = list.filter(x => x.status === 'done');
+  if (q) list = list.filter(x => (x.title||'').toLowerCase().includes(q) || (x.note||'').toLowerCase().includes(q));
+
+  list.sort((a, b) => {
+    if ((a.status==='done') !== (b.status==='done')) return a.status==='done' ? 1 : -1;
+    const da = mtDeadlineOf(a), db_ = mtDeadlineOf(b);
+    if (da && db_) return da - db_;
+    if (da) return -1;
+    if (db_) return 1;
+    return new Date(b.created_at||0) - new Date(a.created_at||0);
+  });
+
+  const wrap = document.getElementById('mt-list'); if (!wrap) return;
+  if (!list.length) { wrap.innerHTML = `<div class="mt-empty">${t('myTasksEmpty')}</div>`; return; }
+
+  wrap.innerHTML = list.map(task => {
+    const d = mtDeadlineOf(task);
+    const isDone = task.status === 'done';
+    const isOverdue = !isDone && d && d.getTime() < now;
+    const isSoon = !isDone && !isOverdue && d && (d.getTime() - now) < 3600000;
+    const cls = ['mt-card', isDone?'mt-done':'', isOverdue?'mt-overdue':'', isSoon?'mt-soon':''].filter(Boolean).join(' ');
+    const prio = task.priority || 'normal';
+    const prioLbl = { low:t('mtPrioLow'), normal:t('mtPrioNormal'), high:t('mtPrioHigh'), urgent:t('mtPrioUrgent') }[prio] || prio;
+    return `<div class="${cls}">
+      <button class="mt-check" onclick="toggleModTaskDone('${task.id}')" title="${t('myTasksMarkDone')}">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l2.6 2.6L10 3" stroke="#0a0906" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="mt-body">
+        <div class="mt-title-row">
+          <span class="mt-title">${escHtml(task.title)}</span>
+          <span class="mt-prio ${prio}">${prioLbl}</span>
+        </div>
+        ${task.note ? `<div class="mt-note">${escHtml(task.note)}</div>` : ''}
+        <div class="mt-meta">
+          ${d ? `<span class="mt-deadline">⏰ ${isOverdue ? t('myTasksOverdueLbl')+' · ' : ''}${mtFmtDeadline(task)}</span>` : ''}
+        </div>
+      </div>
+      <div class="mt-acts">
+        <button class="mt-act-btn" onclick="openModTaskModal('${task.id}')" title="${currentLang==='id'?'Ubah':'Edit'}">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M11 2l3 3-8 8H3v-3l8-8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="mt-act-btn mt-del" onclick="deleteModTask('${task.id}')" title="${t('cfmDelete')}">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4.5h10M6.5 4.5V3a1 1 0 011-1h1a1 1 0 011 1v1.5M4.5 4.5l.6 8.4a1 1 0 001 .9h3.8a1 1 0 001-.9l.6-8.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openModTaskModal(id) {
+  const editing = !!id;
+  const task = editing ? (modTasks.find(x => String(x.id) === String(id)) || {}) : {};
+  document.getElementById('m-title').textContent = editing ? t('myTasksEditTitle') : t('myTasksNewTitle');
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg"><label>${t('myTasksFieldTitle')} *</label><input class="fi" id="mt-f-title" value="${escHtml(task.title||'')}" placeholder="${t('myTasksFieldTitlePh')}"/></div>
+    <div class="fg"><label>${t('myTasksFieldNote')}</label><textarea class="fi" id="mt-f-note" rows="3" placeholder="${t('myTasksFieldNotePh')}">${escHtml(task.note||'')}</textarea></div>
+    <div style="display:flex;gap:10px">
+      <div class="fg" style="flex:1"><label>${t('myTasksFieldDate')}</label><input class="fi" id="mt-f-date" type="date" value="${task.deadline_date||''}"/></div>
+      <div class="fg" style="flex:1"><label>${t('myTasksFieldTime')}</label><input class="fi" id="mt-f-time" type="time" value="${task.deadline_time||''}"/></div>
+    </div>
+    <div class="fg"><label>${t('myTasksFieldPriority')}</label>
+      <select class="fi" id="mt-f-priority">
+        <option value="low" ${task.priority==='low'?'selected':''}>${t('mtPrioLow')}</option>
+        <option value="normal" ${(!task.priority||task.priority==='normal')?'selected':''}>${t('mtPrioNormal')}</option>
+        <option value="high" ${task.priority==='high'?'selected':''}>${t('mtPrioHigh')}</option>
+        <option value="urgent" ${task.priority==='urgent'?'selected':''}>${t('mtPrioUrgent')}</option>
+      </select>
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>
+    <button class="btn-sm btn-gold" onclick="saveModTask(${editing?`'${task.id}'`:'null'})">${t('saveChanges')||'Save'}</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+
+async function saveModTask(id) {
+  const title = document.getElementById('mt-f-title').value.trim();
+  if (!title) { toast(t('myTasksFillTitle')); return; }
+  const rec = {
+    title,
+    note: document.getElementById('mt-f-note').value.trim(),
+    deadline_date: document.getElementById('mt-f-date').value || null,
+    deadline_time: document.getElementById('mt-f-time').value || null,
+    priority: document.getElementById('mt-f-priority').value,
+  };
+  const editing = !!id;
+
+  if (db) {
+    if (editing) {
+      await dbQ(d => d.from('mod_tasks').update({ ...rec, notified_1h:false, notified_overdue:false }).eq('id', id));
+    } else {
+      await dbQ(d => d.from('mod_tasks').insert({ ...rec, moderator_id: currentUser.id, status:'pending' }));
+    }
+    await loadModTasks();
+  } else {
+    if (editing) {
+      const idx = modTasks.findIndex(x => String(x.id) === String(id));
+      if (idx >= 0) Object.assign(modTasks[idx], rec, { notified_1h:false, notified_overdue:false });
+    } else {
+      modTasks.unshift({ id:'local_'+Date.now(), moderator_id:currentUser.id, status:'pending', created_at:new Date().toISOString(), ...rec });
+    }
+    mtSaveLocal(modTasks);
+  }
+  closeModal();
+  renderModTasks();
+  toast(editing ? t('myTasksUpdated') : t('myTasksAdded'));
+}
+
+async function toggleModTaskDone(id) {
+  const task = modTasks.find(x => String(x.id) === String(id));
+  if (!task) return;
+  const newStatus = task.status === 'done' ? 'pending' : 'done';
+  task.status = newStatus;
+  task.done_at = newStatus === 'done' ? new Date().toISOString() : null;
+  if (db && !String(id).startsWith('local_')) {
+    await dbQ(d => d.from('mod_tasks').update({ status:newStatus, done_at:task.done_at }).eq('id', id));
+  } else {
+    mtSaveLocal(modTasks);
+  }
+  renderModTasks();
+}
+
+async function deleteModTask(id) {
+  const ok = await uiConfirm({ title:t('myTasksDeleteTitle'), message:t('myTasksDeleteMsg'), icon:'danger', tone:'danger', okText:t('cfmDelete'), cancelText:t('cfmCancel') });
+  if (!ok) return;
+  modTasks = modTasks.filter(x => String(x.id) !== String(id));
+  if (db && !String(id).startsWith('local_')) {
+    await dbQ(d => d.from('mod_tasks').delete().eq('id', id));
+  } else {
+    mtSaveLocal(modTasks);
+  }
+  renderModTasks();
+  toast(t('myTasksDeleted'));
+}
+
+/* Cek deadline setiap menit — kirim notifikasi H-1 jam & saat lewat tenggat */
+async function checkModTaskDeadlines() {
+  if (!currentUser || !can.isMod(currentUser.role) || !modTasks.length) return;
+  const now = Date.now();
+  let changed = false;
+  for (const task of modTasks) {
+    if (task.status === 'done') continue;
+    const d = mtDeadlineOf(task);
+    if (!d) continue;
+    const diff = d.getTime() - now;
+    if (diff <= 3600000 && diff > 0 && !task.notified_1h) {
+      task.notified_1h = true; changed = true;
+      pushNotif({ type:'alert', title:t('myTasksReminderTitle'), body:`${task.title} — ${mtFmtDeadline(task)}` });
+      if (db && !String(task.id).startsWith('local_')) dbQ(d2 => d2.from('mod_tasks').update({ notified_1h:true }).eq('id', task.id));
+    } else if (diff <= 0 && !task.notified_overdue) {
+      task.notified_overdue = true; changed = true;
+      pushNotif({ type:'alert', title:t('myTasksOverdueTitle'), body:`${task.title} — ${mtFmtDeadline(task)}` });
+      if (db && !String(task.id).startsWith('local_')) dbQ(d2 => d2.from('mod_tasks').update({ notified_overdue:true }).eq('id', task.id));
+    }
+  }
+  if (changed) { if (!db) mtSaveLocal(modTasks); renderModTasks(); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ㉒ USER MANAGEMENT (Moderator only — full access)
    ═══════════════════════════════════════════════════════════ */
 function renderUsers() {
   const q = (document.getElementById('user-search')?.value || '').toLowerCase();
@@ -10529,7 +10871,7 @@ function navTo(page, btn) {
     return navTo(home, homeBtn);
   }
   // Moderator-only pages
-  if (['team_tasks','users'].includes(page) && !can.isMod(r)) { toast('Moderator access required'); return; }
+  if (['team_tasks','users','mod_tasks'].includes(page) && !can.isMod(r)) { toast('Moderator access required'); return; }
   // Manage (Ads) pages: moderator + admin/b2b (target)
   if (['ad_scheduler','ad_customers','ad_task'].includes(page) && !can.canSeeAds(r)) { toast(t('adAccessReq')); return; }
   // Manage CRM page: moderator + admin/b2b
@@ -10546,6 +10888,7 @@ function navTo(page, btn) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if (btn) btn.classList.add('active');
   if (page === 'overview')        { renderStats(); renderActivity(); }
+  if (page === 'mod_tasks')       renderModTasks();
   if (page === 'team_tasks')      renderTeamTasks();
   if (page === 'users')           renderUsers();
   if (page === 'settings')        renderSettings();
