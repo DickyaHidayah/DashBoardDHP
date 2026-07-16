@@ -237,6 +237,41 @@ body.light .heat-cold .hb-icon { background:rgba(26,86,160,.14); }
 .att-edit-hint{position:absolute;top:4px;right:5px;font-size:9px;color:var(--gold-lo);opacity:0}
 .cal-cell:not(.empty):hover .att-edit-hint{opacity:.7}
 
+/* ══════════════════════════════════════════════════════════
+   FOLLOW UP MILESTONE — perayaan pencapaian (v7.1)
+   ══════════════════════════════════════════════════════════ */
+.fu-milestone-overlay{
+  position:fixed;inset:0;z-index:9998;display:none;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 50% 38%, rgba(24,19,10,.97), rgba(3,2,1,.99) 75%);
+  backdrop-filter:blur(10px);opacity:0;transition:opacity .5s cubic-bezier(.4,0,.2,1);
+}
+.fu-milestone-overlay.open{display:flex}
+.fu-milestone-overlay.show{opacity:1}
+.fu-milestone-close{
+  position:absolute;top:22px;right:24px;width:38px;height:38px;border-radius:50%;
+  border:1px solid rgba(201,169,110,.25);background:rgba(255,255,255,.03);color:rgba(232,228,220,.6);
+  font-size:15px;cursor:pointer;transition:all .25s ease;display:flex;align-items:center;justify-content:center;
+}
+.fu-milestone-close:hover{background:rgba(232,112,112,.14);color:#e87070;border-color:rgba(232,112,112,.4);transform:rotate(90deg)}
+.fu-milestone-inner{
+  position:relative;width:min(480px,90vw);text-align:center;
+  transform:scale(.85) translateY(14px);opacity:0;
+  animation:fuMsIn .75s cubic-bezier(.16,1,.3,1) .1s forwards;
+}
+@keyframes fuMsIn{to{transform:scale(1) translateY(0);opacity:1}}
+.fu-milestone-badge{
+  font-family:'Cormorant Garamond',serif;letter-spacing:.32em;font-size:12px;color:var(--gold);
+  text-transform:uppercase;margin-bottom:16px;opacity:.9;
+}
+.fu-milestone-num{
+  font-family:'Cormorant Garamond',serif;font-weight:600;font-size:96px;line-height:1;
+  color:#e8cc99;text-shadow:0 0 40px rgba(232,204,153,.5);
+  animation:fuMsPulse 1.8s ease-in-out infinite;
+}
+@keyframes fuMsPulse{0%,100%{text-shadow:0 0 40px rgba(232,204,153,.5)}50%{text-shadow:0 0 66px rgba(232,204,153,.85)}}
+.fu-milestone-sub{margin-top:10px;font-size:14px;letter-spacing:.03em;color:rgba(232,228,220,.68);font-family:'Inter',sans-serif}
+.fu-milestone-name{margin-top:26px;font-size:12.5px;color:rgba(232,228,220,.5);font-family:'Inter',sans-serif}
+
 /* CRM channel badge — lock icon for Ads channel */
 .crm-ads-lock {
   display:inline-flex;align-items:center;gap:3px;
@@ -2134,9 +2169,9 @@ body.light .lead-row{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)} body.
 body.light .lead-row-name{color:#0d0d0d;font-weight:700}
 body.light .wa-prefix{background:#f0f0f0;color:#0d0d0d;border:1.5px solid rgba(0,0,0,.12);font-weight:700}
 
-/* ════════════ My Tasks — personal job notes (semua role) ════════════ */
+/* ════════════ My Tasks — moderator personal job notes ════════════ */
 .mt-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
-.mt-filter-tabs{display:flex;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:4px;flex-wrap:wrap}
+.mt-filter-tabs{display:flex;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:4px}
 .mt-filter-tab{border:none;background:transparent;color:var(--muted);font-size:10.5px;font-weight:700;letter-spacing:.04em;
   padding:7px 12px;border-radius:6px;cursor:pointer;transition:all var(--trans);white-space:nowrap}
 .mt-filter-tab:hover{color:var(--text)}
@@ -2149,18 +2184,13 @@ body.light .mt-filter-tabs{background:#f0f0f0;border-color:rgba(0,0,0,.1)}
 .mt-card:hover{border-color:var(--border-hi)}
 body.light .mt-card{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
 .mt-card.mt-done{opacity:.55}
-.mt-card.mt-inprogress{border-color:rgba(126,168,201,.4)}
 .mt-card.mt-overdue{border-color:rgba(224,90,90,.4);background:rgba(224,90,90,.05)}
 .mt-card.mt-soon{border-color:rgba(232,184,110,.4)}
 
-/* Status dot — klik untuk maju ke tahap berikutnya (belum → progress → selesai) */
 .mt-check{flex-shrink:0;width:24px;height:24px;border-radius:50%;border:2px solid var(--border-hi);background:transparent;
   cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--trans);margin-top:1px;padding:0}
 .mt-check:hover{border-color:var(--gold)}
 .mt-check svg{opacity:0;transform:scale(.5);transition:all .2s}
-.mt-card.mt-inprogress .mt-check{border-color:var(--blue);background:rgba(126,168,201,.14)}
-.mt-card.mt-inprogress .mt-check .mt-dot{opacity:1;transform:scale(1)}
-.mt-check .mt-dot{width:8px;height:8px;border-radius:50%;background:var(--blue);opacity:0;transform:scale(.5);transition:all .2s}
 .mt-card.mt-done .mt-check{background:var(--green);border-color:var(--green)}
 .mt-card.mt-done .mt-check svg{opacity:1;transform:scale(1)}
 
@@ -2180,11 +2210,6 @@ body.light .mt-card{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
 .mt-prio.normal{background:rgba(201,169,110,.12);color:var(--gold)}
 .mt-prio.high{background:rgba(232,184,110,.14);color:var(--amber)}
 .mt-prio.urgent{background:rgba(224,90,90,.14);color:var(--red)}
-.mt-status-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-  padding:3px 8px;border-radius:5px;white-space:nowrap}
-.mt-status-badge.st-not_started{background:rgba(232,228,220,.06);color:var(--muted);border:1px solid var(--border)}
-.mt-status-badge.st-in_progress{background:rgba(126,168,201,.14);color:var(--blue);border:1px solid rgba(126,168,201,.3)}
-.mt-status-badge.st-done{background:rgba(122,191,142,.14);color:var(--green);border:1px solid rgba(122,191,142,.3)}
 .mt-acts{display:flex;gap:4px;flex-shrink:0;opacity:0;transition:opacity var(--trans)}
 .mt-card:hover .mt-acts{opacity:1}
 .mt-act-btn{width:26px;height:26px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);
@@ -2192,10 +2217,40 @@ body.light .mt-card{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
 .mt-act-btn:hover{color:var(--text);border-color:var(--border-hi)}
 .mt-act-btn.mt-del:hover{color:var(--red);border-color:rgba(224,90,90,.35)}
 .mt-empty{text-align:center;padding:44px 20px;color:var(--muted);font-size:12px;font-style:italic}
-.btn-danger-outline{border:1px solid rgba(224,90,90,.35);background:rgba(224,90,90,.06);color:var(--red);
-  border-radius:8px;padding:8px 13px;font-size:11px;font-weight:700;cursor:pointer;transition:all var(--trans);white-space:nowrap;
-  display:inline-flex;align-items:center;gap:5px}
-.btn-danger-outline:hover{background:rgba(224,90,90,.14);border-color:rgba(224,90,90,.5)}
+
+/* Tugas Utama — task bawaan role, auto-tracked (terpisah dari task custom) */
+.mt-main-section{margin-bottom:20px}
+.mt-main-card{background:linear-gradient(135deg,rgba(201,169,110,.08),rgba(201,169,110,.02));border:1px solid rgba(201,169,110,.25);
+  border-radius:13px;padding:16px 18px}
+.mt-main-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.mt-main-tag{font-size:8.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#0a0906;
+  background:var(--gold);padding:3px 9px;border-radius:5px}
+.mt-main-title{font-size:13px;font-weight:700;color:var(--text)}
+.mt-main-body{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.mt-main-ring{position:relative;width:72px;height:72px;flex-shrink:0}
+.mt-main-ring-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:var(--text)}
+.mt-main-stats{display:flex;gap:22px}
+.mt-main-stats div{display:flex;flex-direction:column;gap:2px}
+.mt-main-stats b{font-size:17px;font-weight:800;color:var(--text)}
+.mt-main-stats span{font-size:9.5px;color:var(--muted);letter-spacing:.03em}
+.mt-main-simple{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.mt-main-simple-text{flex:1;min-width:160px;font-size:12px;color:var(--text2);line-height:1.5}
+
+/* Section head — pemisah antara Tugas Utama & Tugas Pribadi/Custom */
+.mt-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.mt-section-title{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+/* Status select per-card (Belum Mulai / Sedang Dikerjakan / Selesai) */
+.mt-status-select{appearance:none;-webkit-appearance:none;border-radius:6px;padding:4px 22px 4px 9px;font-size:9.5px;font-weight:700;
+  letter-spacing:.03em;cursor:pointer;border:1px solid var(--border);background-color:var(--surface2);color:var(--text2);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cpath d='M1 2.5L4 5.5L7 2.5' stroke='%23888' stroke-width='1.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 7px center}
+.mt-status-select.mt-status-notstarted{background-color:rgba(148,148,148,.1);color:var(--muted);border-color:rgba(148,148,148,.25)}
+.mt-status-select.mt-status-inprogress{background-color:rgba(126,168,201,.12);color:var(--blue);border-color:rgba(126,168,201,.3)}
+.mt-status-select.mt-status-done{background-color:rgba(90,181,120,.12);color:var(--green);border-color:rgba(90,181,120,.3)}
+.mt-card.mt-inprogress{border-color:rgba(126,168,201,.3)}
+.mt-card.mt-done .mt-title{text-decoration:line-through;color:var(--muted)}
 
 /* ════════════ v4.1 — Ads Customers · Ads Task · Unlock form ════════════ */
 /* Ads Customers — stats strip */
@@ -2356,7 +2411,40 @@ body.light .crm-foot-note{color:rgba(13,13,13,.42)}
   .crm-stat{min-width:calc(50% - 5px)}
 }
 
-
+/* ══════ TASK DASHBOARD HARIAN — Follow Up Customer (Admin & B2B) ══════ */
+.task-dash-top{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:20px}
+.task-ring-card{position:relative;width:150px;height:150px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.task-ring-svg{width:140px;height:140px;transform:rotate(-90deg)}
+.task-ring-bg{fill:none;stroke:var(--border);stroke-width:10}
+.task-ring-fg{fill:none;stroke:var(--gold);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .6s cubic-bezier(.4,0,.2,1),stroke .3s}
+.task-ring-mid{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.task-ring-num{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;color:var(--text);line-height:1}
+.task-ring-lbl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:4px;line-height:1.3}
+.task-dash-stats{flex:1;min-width:260px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.tds-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:3px;justify-content:center}
+.tds-num{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;line-height:1}
+.tds-lbl{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);line-height:1.3}
+.task-list-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;max-height:56vh;overflow:auto}
+.task-list-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;font-size:12px;font-weight:600;color:var(--gold);letter-spacing:.04em;flex-wrap:wrap}
+.task-followup-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;transition:border-color var(--trans)}
+.task-followup-row:hover{border-color:var(--border-hi)}
+.task-followup-name{font-size:13px;font-weight:600;color:var(--text)}
+.task-followup-meta{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text2);margin-top:3px;flex-wrap:wrap}
+.task-followup-btn{white-space:nowrap;flex-shrink:0}
+.task-empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px}
+.crm-followup-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;white-space:nowrap}
+body.light .task-ring-mid .task-ring-num{color:#0d0d0d}
+body.light .tds-card{background:#f7f7f8;border:1.5px solid rgba(0,0,0,.1)}
+body.light .tds-num{color:#0d0d0d}
+body.light .task-list-wrap{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
+body.light .task-followup-row{border-color:rgba(0,0,0,.1)}
+body.light .task-followup-name{color:#0d0d0d}
+@media(max-width:600px){
+  .task-dash-top{flex-direction:column;align-items:center}
+  .task-dash-stats{grid-template-columns:1fr 1fr;width:100%}
+  .task-followup-row{flex-direction:column;align-items:stretch}
+  .task-followup-btn{width:100%}
+}
 
 /* ══ MY PROFILE MODAL ══ */
 #profile-modal-ov.open{display:flex!important}
@@ -2802,19 +2890,6 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
     </div>
 
     <div class="sb-nav" id="sb-nav">
-      <!-- Tugas Saya — tersedia untuk SEMUA role (bukan hanya moderator) -->
-      <div class="nav-sec-lbl" data-i18n="myTasks">Tugas Saya</div>
-      <button class="nav-item" onclick="navTo('mod_tasks',this)" id="n-mod-tasks">
-        <span class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/>
-            <path d="M4.7 8.2l2 2 4.6-4.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </span>
-        <span data-i18n="myTasks">Tugas Saya</span>
-        <span class="nav-badge" id="mt-pending-badge" style="display:none">0</span>
-      </button>
-
       <!-- General -->
       <div class="nav-sec-lbl" data-i18n="navigation">Navigation</div>
       <button class="nav-item active" onclick="navTo('overview',this)" id="n-overview">
@@ -2827,6 +2902,16 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
           </svg>
         </span>
         <span data-i18n="overview">Ringkasan</span>
+      </button>
+      <button class="nav-item" onclick="navTo('mod_tasks',this)" id="n-mod-tasks">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M4.7 8.2l2 2 4.6-4.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span data-i18n="myTasks">Tugas Saya</span>
+        <span class="nav-badge" id="mt-pending-badge" style="display:none">0</span>
       </button>
       <!-- Studio (role-specific) -->
       <div class="nav-sec-lbl" id="ns-studio" style="display:none">Studio</div>
@@ -3074,22 +3159,27 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
             </div>
             <div class="ps" data-i18n="myTasksSub">Catat pekerjaan yang harus kamu kerjakan, atur deadline & waktu, dapat notifikasi saat mendekati tenggat</div>
           </div>
+        </div>
+
+        <!-- (A) TUGAS UTAMA — task bawaan sesuai role, auto-tracked, bukan dibuat manual -->
+        <div class="mt-main-section" id="mt-main-section"></div>
+
+        <!-- (B) TUGAS PRIBADI / CUSTOM — dibuat manual oleh user sendiri -->
+        <div class="mt-section-head">
+          <div class="mt-section-title" data-i18n="myTasksCustomTitle">Tugas Pribadi &amp; Catatan Kerja</div>
           <div class="ph-acts">
-            <button class="btn-danger-outline" onclick="openClearModTasksModal()" title="Hapus semua tugas atau histori">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5 4l.5 9h5L11 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <span data-i18n="myTasksClear">Hapus Semua/Histori</span>
-            </button>
+            <button class="btn-g btn-sm" onclick="clearModTaskHistory()" data-i18n="myTasksClearHistory">Hapus Riwayat</button>
+            <button class="btn-g btn-sm" onclick="clearAllModTasks()" data-i18n="myTasksClearAll">Hapus Semua</button>
             <button class="btn-add" onclick="openModTaskModal()">+ <span data-i18n="myTasksNew">Tugas Baru</span></button>
           </div>
         </div>
         <div class="stats-grid" id="mt-summary"></div>
         <div class="mt-toolbar">
           <div class="mt-filter-tabs" id="mt-filter-tabs">
-            <button class="mt-filter-tab active" data-f="active" onclick="setModTaskFilter('active')" data-i18n="myTasksActive">Berjalan</button>
-            <button class="mt-filter-tab" data-f="not_started" onclick="setModTaskFilter('not_started')" data-i18n="myTasksNotStarted">Belum Dikerjakan</button>
-            <button class="mt-filter-tab" data-f="in_progress" onclick="setModTaskFilter('in_progress')" data-i18n="myTasksInProgress">Sedang Dikerjakan</button>
+            <button class="mt-filter-tab active" data-f="all" onclick="setModTaskFilter('all')" data-i18n="myTasksAll">Semua</button>
+            <button class="mt-filter-tab" data-f="not_started" onclick="setModTaskFilter('not_started')" data-i18n="myTasksNotStarted">Belum Mulai</button>
+            <button class="mt-filter-tab" data-f="in_progress" onclick="setModTaskFilter('in_progress')" data-i18n="myTasksInProgress">Berjalan</button>
             <button class="mt-filter-tab" data-f="done" onclick="setModTaskFilter('done')" data-i18n="myTasksDoneTab">Selesai</button>
-            <button class="mt-filter-tab" data-f="all" onclick="setModTaskFilter('all')" data-i18n="myTasksAll">Semua</button>
           </div>
           <input class="search-box" id="mt-search" placeholder="Cari tugas..." oninput="renderModTasks()" style="max-width:220px"/>
         </div>
@@ -3112,9 +3202,6 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
               <option value="all">Semua Role</option>
               <option value="admin">Admin</option>
               <option value="b2b_marketing">B2B Marketing</option>
-              <option value="content_creator">Content Creator</option>
-              <option value="host_live">Host Live</option>
-              <option value="moderator">Moderator</option>
             </select>
           </div>
         </div>
@@ -3594,6 +3681,10 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
                 </th>
                 <th data-i18n="crmColFavProduct">Produk</th>
                 <th>Diinput Oleh</th>
+                <th style="white-space:nowrap">
+                  Follow Up
+                  <div style="font-size:8px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;margin-top:1px">Terakhir dihubungi</div>
+                </th>
                 <th data-i18n="action">Aksi</th>
               </tr>
             </thead>
@@ -4480,14 +4571,20 @@ const i18n = {
     myTasksDeleteTitle:'Delete Task', myTasksDeleteMsg:'This task note will be permanently deleted.',
     myTasksReminderTitle:'Deadline in 1 hour', myTasksOverdueTitle:'Task overdue',
     mtPrioLow:'Low', mtPrioNormal:'Normal', mtPrioHigh:'High', mtPrioUrgent:'Urgent',
-    myTasksNotStarted:'Not Started', myTasksInProgress:'In Progress',
-    myTasksClear:'Clear All/History', myTasksClearTitle:'Clear Tasks',
-    myTasksClearMsg:'Choose what you want to remove. This cannot be undone.',
-    myTasksClearAllOpt:'Delete ALL my tasks', myTasksClearDoneOpt:'Delete finished task history only',
-    myTasksClearNone:'You have no tasks to clear.', myTasksClearedAll:'All tasks deleted',
-    myTasksClearedDone:'Finished task history cleared',
-    mtStatusNotStarted:'Not started', mtStatusInProgress:'In progress', mtStatusDone:'Done',
-    mtAdvance:'Click to move to the next stage',
+    myTasksCustomTitle:'Personal Tasks & Work Notes', myTasksNotStarted:'Not Started', myTasksInProgress:'In Progress',
+    myTasksFieldStatus:'Status',
+    myTasksClearHistory:'Clear History', myTasksClearAll:'Delete All',
+    myTasksNoHistory:'No finished tasks to clear yet', myTasksNothingToClear:'No tasks to delete yet',
+    myTasksClearHistoryTitle:'Clear History', myTasksClearHistoryMsg:'All finished tasks will be permanently deleted.',
+    myTasksClearAllTitle:'Delete All Tasks', myTasksClearAllMsg:'All your personal tasks will be permanently deleted. This cannot be undone.',
+    myTasksHistoryCleared:'History cleared', myTasksAllCleared:'All tasks deleted',
+    myTasksMainTag:'Main Task', myTasksFollowupMain:'Daily Customer Follow-up',
+    myTasksFollowupRemaining:'remaining today', myTasksFollowupTotal:'total customers', myTasksOpenCRM:'Open Customer Database',
+    myTasksMainModerator:'As moderator, your main job is overseeing the whole team daily task progress.',
+    myTasksOpenTeamTasks:'Open Team Task Progress',
+    myTasksMainContent:'Your main task is producing and publishing content in Content Studio today.',
+    myTasksMainLive:'Your main task is running the scheduled live sessions in Live Studio today.',
+    myTasksOpenStudio:'Open Studio',
     // Content Studio
     inDrafts:'In Drafts', piecesEditing:'Pieces currently being written or edited.',
     awaitingReviewSub:'Awaiting Review', awaitingReviewBody:'Sent to moderator for approval before publish.',
@@ -4725,14 +4822,20 @@ const i18n = {
     myTasksDeleteTitle:'Hapus Tugas', myTasksDeleteMsg:'Catatan tugas ini akan dihapus permanen.',
     myTasksReminderTitle:'Deadline 1 jam lagi', myTasksOverdueTitle:'Tugas terlambat',
     mtPrioLow:'Rendah', mtPrioNormal:'Normal', mtPrioHigh:'Tinggi', mtPrioUrgent:'Mendesak',
-    myTasksNotStarted:'Belum Dikerjakan', myTasksInProgress:'Sedang Dikerjakan',
-    myTasksClear:'Hapus Semua/Histori', myTasksClearTitle:'Hapus Tugas',
-    myTasksClearMsg:'Pilih apa yang ingin dihapus. Tindakan ini tidak bisa dibatalkan.',
-    myTasksClearAllOpt:'Hapus SEMUA tugas saya', myTasksClearDoneOpt:'Hapus histori tugas yang sudah selesai saja',
-    myTasksClearNone:'Belum ada tugas untuk dihapus.', myTasksClearedAll:'Semua tugas telah dihapus',
-    myTasksClearedDone:'Histori tugas selesai telah dihapus',
-    mtStatusNotStarted:'Belum dikerjakan', mtStatusInProgress:'Sedang dikerjakan', mtStatusDone:'Selesai',
-    mtAdvance:'Klik untuk lanjut ke tahap berikutnya',
+    myTasksCustomTitle:'Tugas Pribadi & Catatan Kerja', myTasksNotStarted:'Belum Mulai', myTasksInProgress:'Sedang Dikerjakan',
+    myTasksFieldStatus:'Status',
+    myTasksClearHistory:'Hapus Riwayat', myTasksClearAll:'Hapus Semua',
+    myTasksNoHistory:'Belum ada tugas selesai yang bisa dihapus', myTasksNothingToClear:'Belum ada tugas untuk dihapus',
+    myTasksClearHistoryTitle:'Hapus Riwayat', myTasksClearHistoryMsg:'Semua tugas yang sudah selesai akan dihapus permanen.',
+    myTasksClearAllTitle:'Hapus Semua Tugas', myTasksClearAllMsg:'Semua tugas pribadimu akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.',
+    myTasksHistoryCleared:'Riwayat dihapus', myTasksAllCleared:'Semua tugas dihapus',
+    myTasksMainTag:'Tugas Utama', myTasksFollowupMain:'Follow Up Customer Harian',
+    myTasksFollowupRemaining:'sisa hari ini', myTasksFollowupTotal:'total customer', myTasksOpenCRM:'Buka Database Customer',
+    myTasksMainModerator:'Sebagai moderator, tugas utamamu adalah memantau progress kerja seluruh tim setiap hari.',
+    myTasksOpenTeamTasks:'Buka Progress Tugas Tim',
+    myTasksMainContent:'Tugas utamamu adalah membuat & publish konten hari ini di Studio Konten.',
+    myTasksMainLive:'Tugas utamamu adalah menjalankan jadwal live hari ini di Studio Live.',
+    myTasksOpenStudio:'Buka Studio',
     // Content Studio
     inDrafts:'Dalam Draf', piecesEditing:'Konten yang sedang ditulis atau diedit.',
     awaitingReviewSub:'Menunggu Peninjauan', awaitingReviewBody:'Dikirim ke moderator untuk persetujuan sebelum dipublikasikan.',
@@ -5454,6 +5557,7 @@ async function initDashboard() {
   navShow('n-content-studio', isContent);
   navShow('n-live-studio',    isLive);
   navShow('n-pipeline',       false);   // B2B Pipeline dihapus — diganti sistem Ads
+  navShow('n-mod-tasks',      true);    // Tugas Saya — tersedia untuk semua role
 
   // Administration (Moderator+)
   navShow('ns-admin',         isMod);
@@ -5532,9 +5636,10 @@ async function initDashboard() {
   if (isContent) renderContentStudio();
   if (isLive)    renderLiveStudio();
   if (isMod) { try { await renderTeamTasks(); } catch(e) { console.warn('[DHP] renderTeamTasks awal gagal:', e); } }
-  // My Tasks kini tersedia untuk SEMUA role, bukan hanya moderator
-  try { await loadModTasks(); renderModTasks(); } catch(e) { console.warn('[DHP] loadModTasks awal gagal:', e); }
-  if (!window._mtDeadlineIv) window._mtDeadlineIv = setInterval(checkModTaskDeadlines, 60000);
+  try {
+    await loadModTasks(); renderModTasks(); renderMtMainSection();
+    if (!window._mtDeadlineIv) window._mtDeadlineIv = setInterval(checkModTaskDeadlines, 60000);
+  } catch(e) { console.warn('[DHP] loadModTasks awal gagal:', e); }
 
   // Sovereign Moderator special toast
   if (isHead) {
@@ -5898,60 +6003,66 @@ function rehearseLive() {
 
 /* ═══════════════════════════════════════════════════════════
    ⑱ TEAM TASK PROGRESS (Moderator only)
-   ─ Menampilkan progress "Tugas Saya" (mod_tasks) milik SETIAP
-     anggota tim, lintas semua role (My Tasks kini tersedia untuk
-     semua role, bukan hanya moderator) — belum dikerjakan /
-     sedang dikerjakan / selesai, plus yang sudah lewat tenggat.
+   ─ Menampilkan task follow-up harian setiap anggota tim
+     (Admin, B2B Marketing, Content Creator, Host Live, dst)
+     beserta progress masing-masing terhadap target harian —
+     sehingga moderator bisa melihat task semua role sekaligus
+     progress tiap orang, bukan hanya milik dirinya sendiri.
    ═══════════════════════════════════════════════════════════ */
-let teamTaskData = []; // [{id,name,role,total,notStarted,inProgress,done,overdue,pct,online}]
+let teamTaskData = []; // [{id,name,role,total,done,pending,target,pct,online}]
 
 async function loadTeamTaskData() {
   if (!can.isMod(currentUser?.role)) return [];
-  const roster = Object.entries(LOCAL_USERS).map(([id, u]) => ({ id, name: u.name, role: u.role }));
+  const target = FOLLOWUP_DAILY_TARGET;
+  const roster = Object.entries(LOCAL_USERS)
+    .filter(([id, u]) => u.role === 'admin' || u.role === 'b2b_marketing')
+    .map(([id, u]) => ({ id, name: u.name, role: u.role }));
 
-  let byUser = {}; // id -> {total,notStarted,inProgress,done,overdue}
-  const mk = () => ({ total:0, notStarted:0, inProgress:0, done:0, overdue:0 });
-  const now = Date.now();
+  let byOwnerTotal = {};     // total customer CRM per owner_id
+  let byUserDoneToday = {};  // jumlah customer unik yang sudah di-follow up hari ini per user_id
 
-  if (db) {
+  if (crmUsesDB()) {
     try {
-      const res = await dbQ(d => d.from('mod_tasks').select('moderator_id, status, deadline_date, deadline_time'));
-      (res?.data || []).forEach(row => {
-        const bucket = (byUser[row.moderator_id] = byUser[row.moderator_id] || mk());
-        bucket.total++;
-        if (row.status === 'done') bucket.done++;
-        else if (row.status === 'in_progress') bucket.inProgress++;
-        else bucket.notStarted++;
-        if (row.status !== 'done' && row.deadline_date) {
-          const dl = new Date(`${row.deadline_date}T${row.deadline_time || '23:59'}`);
-          if (!isNaN(dl.getTime()) && dl.getTime() < now) bucket.overdue++;
-        }
+      const cRes = await dbQ(d => d.from('crm_customers').select('id, owner_id'));
+      (cRes?.data || []).forEach(row => {
+        const oid = row.owner_id || '';
+        byOwnerTotal[oid] = (byOwnerTotal[oid] || 0) + 1;
       });
-    } catch(e) { console.warn('[DHP] loadTeamTaskData mod_tasks gagal:', e); }
-  } else if (currentUser) {
-    // Fallback offline: hanya data milik user yang sedang login yang tersedia secara lokal
+    } catch(e) { console.warn('[DHP] loadTeamTaskData crm gagal:', e); }
     try {
-      const arr = JSON.parse(localStorage.getItem(`dhp_mod_tasks_${currentUser.id}`) || '[]');
-      const bucket = (byUser[currentUser.id] = byUser[currentUser.id] || mk());
-      arr.forEach(row => {
-        bucket.total++;
-        if (row.status === 'done') bucket.done++;
-        else if (row.status === 'in_progress') bucket.inProgress++;
-        else bucket.notStarted++;
-        if (row.status !== 'done' && row.deadline_date) {
-          const dl = new Date(`${row.deadline_date}T${row.deadline_time || '23:59'}`);
-          if (!isNaN(dl.getTime()) && dl.getTime() < now) bucket.overdue++;
-        }
+      const fRes = await dbQ(d => d.from('followup_logs').select('user_id, customer_id').gte('followed_up_at', _todayStartISO()));
+      const seen = {};
+      (fRes?.data || []).forEach(row => {
+        const key = `${row.user_id}::${row.customer_id}`;
+        if (seen[key]) return;
+        seen[key] = true;
+        byUserDoneToday[row.user_id] = (byUserDoneToday[row.user_id] || 0) + 1;
+      });
+    } catch(e) { console.warn('[DHP] loadTeamTaskData followup gagal:', e); }
+  } else {
+    // Fallback offline: hanya data lokal yang tersedia
+    try {
+      const all = JSON.parse(localStorage.getItem(CRM_LS_KEY) || '[]');
+      (Array.isArray(all) ? all : []).forEach(c => {
+        const oid = c.owner_id || '';
+        byOwnerTotal[oid] = (byOwnerTotal[oid] || 0) + 1;
       });
     } catch(e) {}
+    if (currentUser) {
+      try {
+        const arr = JSON.parse(localStorage.getItem(_followupTodayKey()) || '[]');
+        byUserDoneToday[currentUser.id] = new Set(arr).size;
+      } catch(e) {}
+    }
   }
 
   teamTaskData = roster.map(u => {
-    const b = byUser[u.id] || mk();
-    const pct = b.total ? Math.round((b.done / b.total) * 100) : 0;
-    return { id:u.id, name:u.name, role:u.role, total:b.total, notStarted:b.notStarted,
-      inProgress:b.inProgress, done:b.done, overdue:b.overdue, pct, online: !!(presenceMap[u.id]?.online) };
-  }).filter(u => u.total > 0); // hanya tampilkan yang punya minimal 1 tugas
+    const total   = byOwnerTotal[u.id] || 0;
+    const done    = byUserDoneToday[u.id] || 0;
+    const pending = Math.max(0, total - done);
+    const pct     = target ? Math.min(100, Math.round((done / target) * 100)) : 0;
+    return { id: u.id, name: u.name, role: u.role, total, done, pending, target, pct, online: !!(presenceMap[u.id]?.online) };
+  });
   return teamTaskData;
 }
 
@@ -5962,10 +6073,10 @@ async function renderTeamTasks() {
   const list = data.filter(u => (roleFilter === 'all' || u.role === roleFilter) && (!q || u.name.toLowerCase().includes(q)));
 
   // ── Ringkasan keseluruhan tim ──
-  const totalMembers = data.length;
-  const totalDone     = data.reduce((s, u) => s + u.done, 0);
-  const totalTasks    = data.reduce((s, u) => s + u.total, 0);
-  const totalOverdue  = data.reduce((s, u) => s + u.overdue, 0);
+  const totalMembers   = data.length;
+  const totalDoneToday = data.reduce((s, u) => s + u.done, 0);
+  const totalTarget    = data.reduce((s, u) => s + u.target, 0);
+  const totalPending   = data.reduce((s, u) => s + u.pending, 0);
   const summaryEl = document.getElementById('tt-summary');
   if (summaryEl) {
     summaryEl.innerHTML = `
@@ -5976,36 +6087,36 @@ async function renderTeamTasks() {
         <div class="stat-trend">◉</div>
       </div>
       <div class="stat-card">
-        <div class="stat-num" style="color:var(--green)">${totalDone}</div>
-        <div class="stat-lbl" data-i18n="myTasksDoneTab">Selesai</div>
-        <div class="stat-sub">${currentLang==='id' ? `dari ${totalTasks} total tugas` : `out of ${totalTasks} total tasks`}</div>
+        <div class="stat-num" style="color:var(--green)">${totalDoneToday}</div>
+        <div class="stat-lbl">${t('teamFollowupsToday')}</div>
+        <div class="stat-sub">${t('outOfTarget').replace('{n}', totalTarget)}</div>
         <div class="stat-trend" style="color:var(--green)">⊙</div>
       </div>
-      <div class="stat-card" style="border-color:${totalOverdue>0?'rgba(224,90,90,.35)':'var(--border)'}">
-        <div class="stat-num" style="color:${totalOverdue>0?'var(--red)':'var(--gold-hi)'}">${totalOverdue}</div>
-        <div class="stat-lbl" data-i18n="myTasksOverdue">Terlambat</div>
-        <div class="stat-sub">${currentLang==='id' ? 'tugas lewat tenggat' : 'tasks past deadline'}</div>
-        <div class="stat-trend" style="color:var(--red)">◈</div>
+      <div class="stat-card" style="border-color:${totalPending>0?'rgba(232,184,110,.3)':'var(--border)'}">
+        <div class="stat-num" style="color:${totalPending>0?'var(--amber)':'var(--gold-hi)'}">${totalPending}</div>
+        <div class="stat-lbl">${t('teamPendingToday')}</div>
+        <div class="stat-sub">${t('needsFollowup')}</div>
+        <div class="stat-trend" style="color:var(--amber)">◈</div>
       </div>`;
   }
 
   // ── Kelompokkan per role ──
   const groups = {};
   list.forEach(u => { (groups[u.role] = groups[u.role] || []).push(u); });
-  const roleOrder = Object.keys(groups).sort();
+  const roleOrder = ['admin', 'b2b_marketing'];
   const wrap = document.getElementById('tt-role-groups');
   if (!wrap) return;
   if (!list.length) { wrap.innerHTML = `<div class="tbl-empty">${t('noTeamMembers')}</div>`; return; }
 
   wrap.innerHTML = roleOrder.filter(rk => groups[rk] && groups[rk].length).map(rk => {
-    const members = groups[rk].slice().sort((a, b) => b.pct - a.pct);
+    const members = groups[rk].slice().sort((a, b) => b.done - a.done);
     const clr = ROLE_COLORS[rk] || '#888';
     return `<div class="recap-owner" style="margin-bottom:22px">
       <div class="recap-owner-head"><span class="role-dot" style="background:${clr}"></span>${rn(rk)} <span style="color:var(--muted)">· ${members.length} orang</span></div>
       <div class="tt-member-grid">
         ${members.map(u => {
           const barPct = u.pct > 0 ? Math.max(4, Math.min(100, u.pct)) : 0;
-          const barColor = u.pct >= 100 ? 'var(--green)' : u.pct >= 50 ? 'var(--gold)' : 'var(--amber)';
+          const barColor = u.done >= u.target ? 'var(--green)' : u.pct >= 50 ? 'var(--gold)' : 'var(--amber)';
           const initials = (u.name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
           return `<div class="tt-member-card">
             <div class="tt-member-top">
@@ -6017,10 +6128,10 @@ async function renderTeamTasks() {
             </div>
             <div class="tt-progress-bar"><div class="tt-progress-fill" style="width:${barPct}%;background:${barColor}"></div></div>
             <div class="tt-member-stats">
-              <span>${u.done}/${u.total} ${currentLang==='id' ? 'selesai' : 'done'}</span>
-              <span style="color:${u.overdue > 0 ? 'var(--red)' : 'var(--green)'}">${u.overdue > 0 ? (u.overdue + (currentLang==='id'?' terlambat':' overdue')) : (currentLang==='id'?'tepat waktu':'on track')}</span>
+              <span>${u.done}/${u.target} ${t('followedUpToday')}</span>
+              <span style="color:${u.pending > 0 ? 'var(--amber)' : 'var(--green)'}">${u.pending} ${t('remaining')}</span>
             </div>
-            <div class="tt-member-total">${u.notStarted} ${currentLang==='id'?'belum dikerjakan':'not started'} · ${u.inProgress} ${currentLang==='id'?'sedang dikerjakan':'in progress'}</div>
+            <div class="tt-member-total">${u.total} ${t('totalAssignedCustomers')}</div>
           </div>`;
         }).join('')}
       </div>
@@ -6029,11 +6140,18 @@ async function renderTeamTasks() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ㉑ MY TASKS (Moderator only) — catatan pekerjaan pribadi,
-   deadline + waktu, notifikasi mendekati tenggat, & centang selesai
+   ㉑ MY TASKS (Semua Role) — dipisah jadi 2 bagian:
+   (A) TUGAS UTAMA  — task bawaan sesuai role (mis. target follow up
+       50 customer/hari untuk Admin & B2B), auto-tracked, read-only,
+       BUKAN dibuat manual oleh user.
+   (B) TUGAS PRIBADI/CUSTOM — catatan kerja yang dibuat sendiri oleh
+       user (judul, deadline+waktu, prioritas), dengan alur status
+       Belum Mulai → Sedang Dikerjakan → Selesai, notifikasi mendekati
+       tenggat, dan opsi hapus semua / hapus riwayat.
    ═══════════════════════════════════════════════════════════ */
 let modTasks = [];
-let modTaskFilter = 'active'; // active | done | all
+let modTaskFilter = 'all'; // all | not_started | in_progress | done
+const MT_STATUSES = ['not_started','in_progress','done'];
 
 function mtLocalKey() { return `dhp_mod_tasks_${currentUser?.id||'guest'}`; }
 function mtLoadLocal() { try { return JSON.parse(localStorage.getItem(mtLocalKey())) || []; } catch(_) { return []; } }
@@ -6064,35 +6182,95 @@ function mtFmtDeadline(task) {
   return timeStr ? `${dateStr} · ${timeStr}` : dateStr;
 }
 
+function mtStatusInfo(status) {
+  const st = MT_STATUSES.includes(status) ? status : 'not_started';
+  return {
+    not_started: { key:'not_started', lbl:t('myTasksNotStarted'), cls:'notstarted' },
+    in_progress: { key:'in_progress', lbl:t('myTasksInProgress'), cls:'inprogress' },
+    done:        { key:'done',        lbl:t('myTasksDoneTab'),    cls:'done' },
+  }[st];
+}
+
 function setModTaskFilter(f) {
   modTaskFilter = f;
   document.querySelectorAll('#mt-filter-tabs .mt-filter-tab').forEach(b => b.classList.toggle('active', b.dataset.f === f));
   renderModTasks();
 }
 
-// Urutan alur status: belum dikerjakan → sedang dikerjakan → selesai.
-// Mengklik status akan maju ke tahap berikutnya; dari "selesai" akan
-// kembali ke "belum dikerjakan" (buka lagi tugas yang keliru ditandai selesai).
-const MT_STATUS_ORDER = ['not_started', 'in_progress', 'done'];
-function mtNextStatus(cur) {
-  const i = MT_STATUS_ORDER.indexOf(cur);
-  return MT_STATUS_ORDER[(i + 1) % MT_STATUS_ORDER.length];
-}
-function mtStatusLabel(s) {
-  return s === 'done' ? t('mtStatusDone') : s === 'in_progress' ? t('mtStatusInProgress') : t('mtStatusNotStarted');
+/* ── (A) TUGAS UTAMA — task bawaan sesuai role, auto-tracked ── */
+async function renderMtMainSection() {
+  const el = document.getElementById('mt-main-section');
+  if (!el || !currentUser) return;
+  const r = currentUser.role;
+
+  if (can.isB2B(r) || r === 'admin') {
+    if (crmUsesDB()) { try { await loadCRM(); } catch(e){} }
+    try { await loadFollowupLogsToday(); } catch(e){}
+    const mine = crmData.slice();
+    const doneCount = mine.filter(c => followupDoneTodayIds.has(_followupCustKey(c))).length;
+    const target = FOLLOWUP_DAILY_TARGET;
+    const pct = target ? Math.min(100, Math.round((doneCount/target)*100)) : 0;
+    const pendingCount = Math.max(0, mine.length - doneCount);
+    const circ = 2 * Math.PI * 34;
+    el.innerHTML = `
+      <div class="mt-main-card">
+        <div class="mt-main-head">
+          <span class="mt-main-tag">${t('myTasksMainTag')}</span>
+          <span class="mt-main-title">${t('myTasksFollowupMain')}</span>
+        </div>
+        <div class="mt-main-body">
+          <div class="mt-main-ring">
+            <svg viewBox="0 0 80 80" width="72" height="72">
+              <circle cx="40" cy="40" r="34" stroke="var(--border)" stroke-width="7" fill="none"/>
+              <circle cx="40" cy="40" r="34" stroke="${doneCount>=target?'var(--green)':'var(--gold)'}" stroke-width="7" fill="none"
+                stroke-dasharray="${circ}" stroke-dashoffset="${circ*(1-pct/100)}" stroke-linecap="round" transform="rotate(-90 40 40)"/>
+            </svg>
+            <div class="mt-main-ring-num">${doneCount}/${target}</div>
+          </div>
+          <div class="mt-main-stats">
+            <div><b style="color:var(--amber)">${pendingCount}</b><span>${t('myTasksFollowupRemaining')}</span></div>
+            <div><b>${mine.length}</b><span>${t('myTasksFollowupTotal')}</span></div>
+          </div>
+          <button class="btn-g btn-sm" onclick="navTo('crm', document.getElementById('n-crm'))">${t('myTasksOpenCRM')}</button>
+        </div>
+      </div>`;
+  } else if (can.isMod(r)) {
+    el.innerHTML = `
+      <div class="mt-main-card mt-main-simple">
+        <span class="mt-main-tag">${t('myTasksMainTag')}</span>
+        <div class="mt-main-simple-text">${t('myTasksMainModerator')}</div>
+        <button class="btn-g btn-sm" onclick="navTo('team_tasks', document.getElementById('n-team-tasks'))">${t('myTasksOpenTeamTasks')}</button>
+      </div>`;
+  } else if (can.isContent(r)) {
+    el.innerHTML = `
+      <div class="mt-main-card mt-main-simple">
+        <span class="mt-main-tag">${t('myTasksMainTag')}</span>
+        <div class="mt-main-simple-text">${t('myTasksMainContent')}</div>
+        <button class="btn-g btn-sm" onclick="navTo('content_studio', document.getElementById('n-content-studio'))">${t('myTasksOpenStudio')}</button>
+      </div>`;
+  } else if (can.isHostLive(r)) {
+    el.innerHTML = `
+      <div class="mt-main-card mt-main-simple">
+        <span class="mt-main-tag">${t('myTasksMainTag')}</span>
+        <div class="mt-main-simple-text">${t('myTasksMainLive')}</div>
+        <button class="btn-g btn-sm" onclick="navTo('live_studio', document.getElementById('n-live-studio'))">${t('myTasksOpenStudio')}</button>
+      </div>`;
+  } else {
+    el.innerHTML = '';
+  }
 }
 
+/* ── (B) TUGAS PRIBADI/CUSTOM — dibuat manual oleh user ── */
 function renderModTasks() {
   const q = (document.getElementById('mt-search')?.value || '').toLowerCase().trim();
   const now = Date.now();
   let list = modTasks.slice();
 
   const total = list.length;
-  const notStartedCount = list.filter(x => (x.status || 'not_started') === 'not_started').length;
+  const notStartedCount = list.filter(x => (x.status||'not_started') === 'not_started').length;
   const inProgressCount = list.filter(x => x.status === 'in_progress').length;
   const doneCount = list.filter(x => x.status === 'done').length;
   const overdueCount = list.filter(x => x.status !== 'done' && mtDeadlineOf(x) && mtDeadlineOf(x).getTime() < now).length;
-  const pendingCount = total - doneCount;
   const sEl = document.getElementById('mt-summary');
   if (sEl) {
     sEl.innerHTML = `
@@ -6107,16 +6285,15 @@ function renderModTasks() {
   }
 
   const badge = document.getElementById('mt-pending-badge');
-  if (badge) { badge.textContent = pendingCount; badge.style.display = pendingCount > 0 ? '' : 'none'; }
+  if (badge) { const pend = notStartedCount + inProgressCount; badge.textContent = pend; badge.style.display = pend > 0 ? '' : 'none'; }
 
-  if (modTaskFilter === 'active') list = list.filter(x => x.status !== 'done');
-  else if (modTaskFilter === 'not_started') list = list.filter(x => (x.status || 'not_started') === 'not_started');
-  else if (modTaskFilter === 'in_progress') list = list.filter(x => x.status === 'in_progress');
-  else if (modTaskFilter === 'done') list = list.filter(x => x.status === 'done');
+  if (modTaskFilter !== 'all') list = list.filter(x => (x.status||'not_started') === modTaskFilter);
   if (q) list = list.filter(x => (x.title||'').toLowerCase().includes(q) || (x.note||'').toLowerCase().includes(q));
 
+  const rank = s => s === 'done' ? 2 : 1;
   list.sort((a, b) => {
-    if ((a.status==='done') !== (b.status==='done')) return a.status==='done' ? 1 : -1;
+    const ra = rank(a.status||'not_started'), rb = rank(b.status||'not_started');
+    if (ra !== rb) return ra - rb;
     const da = mtDeadlineOf(a), db_ = mtDeadlineOf(b);
     if (da && db_) return da - db_;
     if (da) return -1;
@@ -6128,30 +6305,28 @@ function renderModTasks() {
   if (!list.length) { wrap.innerHTML = `<div class="mt-empty">${t('myTasksEmpty')}</div>`; return; }
 
   wrap.innerHTML = list.map(task => {
-    const status = task.status || 'not_started';
     const d = mtDeadlineOf(task);
-    const isDone = status === 'done';
-    const isInProgress = status === 'in_progress';
+    const st = task.status || 'not_started';
+    const isDone = st === 'done';
     const isOverdue = !isDone && d && d.getTime() < now;
     const isSoon = !isDone && !isOverdue && d && (d.getTime() - now) < 3600000;
-    const cls = ['mt-card', isDone?'mt-done':'', isInProgress?'mt-inprogress':'', isOverdue?'mt-overdue':'', isSoon?'mt-soon':''].filter(Boolean).join(' ');
+    const sInfo = mtStatusInfo(st);
+    const cls = ['mt-card', `mt-${sInfo.cls}`, isOverdue?'mt-overdue':'', isSoon?'mt-soon':''].filter(Boolean).join(' ');
     const prio = task.priority || 'normal';
     const prioLbl = { low:t('mtPrioLow'), normal:t('mtPrioNormal'), high:t('mtPrioHigh'), urgent:t('mtPrioUrgent') }[prio] || prio;
-    const checkIcon = isDone
-      ? `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l2.6 2.6L10 3" stroke="#0a0906" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
-      : `<span class="mt-dot"></span>`;
     return `<div class="${cls}">
-      <button class="mt-check" onclick="cycleModTaskStatus('${task.id}')" title="${mtStatusLabel(status)} — ${t('mtAdvance')}">
-        ${checkIcon}
-      </button>
       <div class="mt-body">
         <div class="mt-title-row">
           <span class="mt-title">${escHtml(task.title)}</span>
-          <span class="mt-status-badge st-${status}" style="cursor:pointer" onclick="cycleModTaskStatus('${task.id}')" title="${t('mtAdvance')}">${mtStatusLabel(status)}</span>
           <span class="mt-prio ${prio}">${prioLbl}</span>
         </div>
         ${task.note ? `<div class="mt-note">${escHtml(task.note)}</div>` : ''}
         <div class="mt-meta">
+          <select class="mt-status-select mt-status-${sInfo.cls}" onchange="setModTaskStatus('${task.id}', this.value)">
+            <option value="not_started" ${st==='not_started'?'selected':''}>${t('myTasksNotStarted')}</option>
+            <option value="in_progress" ${st==='in_progress'?'selected':''}>${t('myTasksInProgress')}</option>
+            <option value="done" ${st==='done'?'selected':''}>${t('myTasksDoneTab')}</option>
+          </select>
           ${d ? `<span class="mt-deadline">⏰ ${isOverdue ? t('myTasksOverdueLbl')+' · ' : ''}${mtFmtDeadline(task)}</span>` : ''}
         </div>
       </div>
@@ -6178,13 +6353,22 @@ function openModTaskModal(id) {
       <div class="fg" style="flex:1"><label>${t('myTasksFieldDate')}</label><input class="fi" id="mt-f-date" type="date" value="${task.deadline_date||''}"/></div>
       <div class="fg" style="flex:1"><label>${t('myTasksFieldTime')}</label><input class="fi" id="mt-f-time" type="time" value="${task.deadline_time||''}"/></div>
     </div>
-    <div class="fg"><label>${t('myTasksFieldPriority')}</label>
-      <select class="fi" id="mt-f-priority">
-        <option value="low" ${task.priority==='low'?'selected':''}>${t('mtPrioLow')}</option>
-        <option value="normal" ${(!task.priority||task.priority==='normal')?'selected':''}>${t('mtPrioNormal')}</option>
-        <option value="high" ${task.priority==='high'?'selected':''}>${t('mtPrioHigh')}</option>
-        <option value="urgent" ${task.priority==='urgent'?'selected':''}>${t('mtPrioUrgent')}</option>
-      </select>
+    <div style="display:flex;gap:10px">
+      <div class="fg" style="flex:1"><label>${t('myTasksFieldPriority')}</label>
+        <select class="fi" id="mt-f-priority">
+          <option value="low" ${task.priority==='low'?'selected':''}>${t('mtPrioLow')}</option>
+          <option value="normal" ${(!task.priority||task.priority==='normal')?'selected':''}>${t('mtPrioNormal')}</option>
+          <option value="high" ${task.priority==='high'?'selected':''}>${t('mtPrioHigh')}</option>
+          <option value="urgent" ${task.priority==='urgent'?'selected':''}>${t('mtPrioUrgent')}</option>
+        </select>
+      </div>
+      <div class="fg" style="flex:1"><label>${t('myTasksFieldStatus')}</label>
+        <select class="fi" id="mt-f-status">
+          <option value="not_started" ${(!task.status||task.status==='not_started')?'selected':''}>${t('myTasksNotStarted')}</option>
+          <option value="in_progress" ${task.status==='in_progress'?'selected':''}>${t('myTasksInProgress')}</option>
+          <option value="done" ${task.status==='done'?'selected':''}>${t('myTasksDoneTab')}</option>
+        </select>
+      </div>
     </div>`;
   document.getElementById('m-foot').innerHTML = `
     <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>
@@ -6195,12 +6379,15 @@ function openModTaskModal(id) {
 async function saveModTask(id) {
   const title = document.getElementById('mt-f-title').value.trim();
   if (!title) { toast(t('myTasksFillTitle')); return; }
+  const status = document.getElementById('mt-f-status').value;
   const rec = {
     title,
     note: document.getElementById('mt-f-note').value.trim(),
     deadline_date: document.getElementById('mt-f-date').value || null,
     deadline_time: document.getElementById('mt-f-time').value || null,
     priority: document.getElementById('mt-f-priority').value,
+    status,
+    done_at: status === 'done' ? new Date().toISOString() : null,
   };
   const editing = !!id;
 
@@ -6208,7 +6395,7 @@ async function saveModTask(id) {
     if (editing) {
       await dbQ(d => d.from('mod_tasks').update({ ...rec, notified_1h:false, notified_overdue:false }).eq('id', id));
     } else {
-      await dbQ(d => d.from('mod_tasks').insert({ ...rec, moderator_id: currentUser.id, status:'not_started' }));
+      await dbQ(d => d.from('mod_tasks').insert({ ...rec, moderator_id: currentUser.id }));
     }
     await loadModTasks();
   } else {
@@ -6216,7 +6403,7 @@ async function saveModTask(id) {
       const idx = modTasks.findIndex(x => String(x.id) === String(id));
       if (idx >= 0) Object.assign(modTasks[idx], rec, { notified_1h:false, notified_overdue:false });
     } else {
-      modTasks.unshift({ id:'local_'+Date.now(), moderator_id:currentUser.id, status:'not_started', created_at:new Date().toISOString(), ...rec });
+      modTasks.unshift({ id:'local_'+Date.now(), moderator_id:currentUser.id, created_at:new Date().toISOString(), ...rec });
     }
     mtSaveLocal(modTasks);
   }
@@ -6225,20 +6412,13 @@ async function saveModTask(id) {
   toast(editing ? t('myTasksUpdated') : t('myTasksAdded'));
 }
 
-// Alur progress: belum dikerjakan → sedang dikerjakan → selesai → (klik lagi) → belum dikerjakan.
-// Dipanggil saat moderator/role manapun mengklik lingkaran status atau badge status di kartu tugas.
-async function cycleModTaskStatus(id) {
+async function setModTaskStatus(id, status) {
   const task = modTasks.find(x => String(x.id) === String(id));
   if (!task) return;
-  const cur = task.status || 'not_started';
-  const next = mtNextStatus(cur);
-  const nowIso = new Date().toISOString();
-  task.status = next;
-  task.done_at    = next === 'done' ? nowIso : null;
-  task.started_at = next === 'in_progress' ? nowIso : (next === 'not_started' ? null : task.started_at);
-  const patch = { status: next, done_at: task.done_at, started_at: task.started_at };
+  task.status = status;
+  task.done_at = status === 'done' ? new Date().toISOString() : null;
   if (db && !String(id).startsWith('local_')) {
-    await dbQ(d => d.from('mod_tasks').update(patch).eq('id', id));
+    await dbQ(d => d.from('mod_tasks').update({ status, done_at:task.done_at }).eq('id', id));
   } else {
     mtSaveLocal(modTasks);
   }
@@ -6258,53 +6438,41 @@ async function deleteModTask(id) {
   toast(t('myTasksDeleted'));
 }
 
-/* ── Hapus Semua / Histori Tugas ──────────────────────────────
-   Modal sederhana dengan 2 pilihan:
-   1) Hapus SEMUA tugas milik user yang sedang login.
-   2) Hapus HANYA histori tugas yang sudah "Selesai".
-   Tersedia untuk semua role, masing-masing hanya menghapus
-   tugas miliknya sendiri (difilter lewat moderator_id). ── */
-function openClearModTasksModal() {
-  if (!modTasks.length) { toast(t('myTasksClearNone')); return; }
-  document.getElementById('m-title').textContent = t('myTasksClearTitle');
-  document.getElementById('m-body').innerHTML = `
-    <div style="font-size:12.5px;color:var(--text2);margin-bottom:16px;line-height:1.6">${t('myTasksClearMsg')}</div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <button class="btn-danger-outline" style="width:100%;justify-content:center;padding:12px" onclick="confirmClearModTasks('done')">
-        ${t('myTasksClearDoneOpt')}
-      </button>
-      <button class="btn-danger-outline" style="width:100%;justify-content:center;padding:12px" onclick="confirmClearModTasks('all')">
-        ${t('myTasksClearAllOpt')}
-      </button>
-    </div>`;
-  document.getElementById('m-foot').innerHTML = `<button class="btn-sm btn-cancel" onclick="closeModal()">${t('cfmCancel')}</button>`;
-  document.getElementById('modal-ov').classList.add('open');
-}
-
-async function confirmClearModTasks(scope) {
-  const ok = await uiConfirm({
-    title: t('myTasksClearTitle'),
-    message: scope === 'all' ? t('myTasksClearAllOpt') : t('myTasksClearDoneOpt'),
-    icon: 'danger', tone: 'danger', okText: t('cfmDelete'), cancelText: t('cfmCancel')
-  });
+/* Hapus hanya riwayat (task berstatus Selesai) */
+async function clearModTaskHistory() {
+  const doneTasks = modTasks.filter(x => x.status === 'done');
+  if (!doneTasks.length) { toast(t('myTasksNoHistory')); return; }
+  const ok = await uiConfirm({ title:t('myTasksClearHistoryTitle'), message:t('myTasksClearHistoryMsg'), icon:'danger', tone:'danger', okText:t('cfmDelete'), cancelText:t('cfmCancel') });
   if (!ok) return;
-
-  if (db && currentUser) {
-    try {
-      let q = db.from('mod_tasks').delete().eq('moderator_id', currentUser.id);
-      if (scope === 'done') q = q.eq('status', 'done');
-      await dbQ(() => q);
-    } catch (e) { console.warn('[DHP] confirmClearModTasks gagal:', e); }
+  modTasks = modTasks.filter(x => x.status !== 'done');
+  if (db) {
+    const dbIds = doneTasks.filter(x => !String(x.id).startsWith('local_')).map(x => x.id);
+    if (dbIds.length) await dbQ(d => d.from('mod_tasks').delete().in('id', dbIds));
+  } else {
+    mtSaveLocal(modTasks);
   }
-  modTasks = scope === 'all' ? [] : modTasks.filter(x => x.status !== 'done');
-  if (!db) mtSaveLocal(modTasks);
-  closeModal();
   renderModTasks();
-  toast(scope === 'all' ? t('myTasksClearedAll') : t('myTasksClearedDone'));
-  pushActivity(`${currentUser.name} ${scope==='all' ? 'menghapus semua tugas pribadi' : 'membersihkan histori tugas selesai'}`, 'info');
+  toast(t('myTasksHistoryCleared'));
 }
 
-/* Cek deadline setiap menit — kirim notifikasi H-1 jam & saat lewat tenggat */
+/* Hapus SEMUA tugas pribadi (tidak menyentuh Tugas Utama yang auto-tracked) */
+async function clearAllModTasks() {
+  if (!modTasks.length) { toast(t('myTasksNothingToClear')); return; }
+  const ok = await uiConfirm({ title:t('myTasksClearAllTitle'), message:t('myTasksClearAllMsg'), icon:'danger', tone:'danger', okText:t('cfmDelete'), cancelText:t('cfmCancel') });
+  if (!ok) return;
+  const allTasks = modTasks;
+  modTasks = [];
+  if (db) {
+    const dbIds = allTasks.filter(x => !String(x.id).startsWith('local_')).map(x => x.id);
+    if (dbIds.length) await dbQ(d => d.from('mod_tasks').delete().in('id', dbIds).eq('moderator_id', currentUser.id));
+  } else {
+    mtSaveLocal(modTasks);
+  }
+  renderModTasks();
+  toast(t('myTasksAllCleared'));
+}
+
+/* Cek deadline setiap menit — kirim notifikasi H-1 jam & saat lewat tenggat (semua role) */
 async function checkModTaskDeadlines() {
   if (!currentUser || !modTasks.length) return;
   const now = Date.now();
@@ -6326,6 +6494,7 @@ async function checkModTaskDeadlines() {
   }
   if (changed) { if (!db) mtSaveLocal(modTasks); renderModTasks(); }
 }
+
 
 /* ═══════════════════════════════════════════════════════════
    ㉒ USER MANAGEMENT (Moderator only — full access)
@@ -9373,6 +9542,86 @@ function initCRMRealtime() {
   } catch(e) { console.warn('[CRM] realtime gagal:', e); }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   ⑪-b DASHBOARD TASK HARIAN — Follow Up Customer (Admin & B2B)
+   ─ Target: minimal 50 customer di-follow up per hari, per user
+   ─ Sumber data  : tabel `crm_customers` (sudah difilter per-owner
+                     oleh loadCRM() untuk role non-moderator)
+   ─ Log follow up: tabel `followup_logs` (customer_id, user_id,
+                     followed_up_at) — 1 baris tiap kali tombol
+                     "Follow Up" ditekan. Progress harian dihitung
+                     dari jumlah customer UNIK yang sudah di-log
+                     hari ini oleh user yang sedang login.
+   ═══════════════════════════════════════════════════════════ */
+const FOLLOWUP_DAILY_TARGET = 50;
+let followupDoneTodayIds = new Set();     // set of crm_customers._uuid (atau id_customer di mode offline)
+
+function _followupTodayKey() {
+  const ymd = new Date().toISOString().slice(0,10);
+  return `dhp_followup_${(currentUser && currentUser.id) || 'x'}_${ymd}`;
+}
+function _todayStartISO() {
+  const d = new Date(); d.setHours(0,0,0,0);
+  return d.toISOString();
+}
+// Berapa hari sejak customer terakhir di-follow up. null = belum pernah sama sekali.
+function daysSinceFollowup(c) {
+  if (!c || !c.last_followup_at) return null;
+  const then = new Date(c.last_followup_at);
+  if (isNaN(then.getTime())) return null;
+  return Math.max(0, Math.floor((Date.now() - then.getTime()) / 86400000));
+}
+function _followupCustKey(c) { return c._uuid || c.id_customer || ''; }
+
+async function loadFollowupLogsToday() {
+  followupDoneTodayIds = new Set();
+  if (crmUsesDB() && currentUser) {
+    try {
+      const res = await dbQ(d => d.from('followup_logs')
+        .select('customer_id')
+        .eq('user_id', currentUser.id)
+        .gte('followed_up_at', _todayStartISO()));
+      if (res && res.data) res.data.forEach(row => followupDoneTodayIds.add(row.customer_id));
+      return;
+    } catch(e) { console.warn('[DHP] loadFollowupLogsToday gagal:', e); }
+  }
+  // Fallback offline (localStorage) — per user per tanggal
+  try {
+    const arr = JSON.parse(localStorage.getItem(_followupTodayKey()) || '[]');
+    arr.forEach(id => followupDoneTodayIds.add(id));
+  } catch(e) {}
+}
+
+async function markFollowedUp(idx) {
+  const c = crmData[idx];
+  if (!c || !currentUser) return;
+  const now = new Date().toISOString();
+  const key = _followupCustKey(c);
+
+  if (crmUsesDB() && c._uuid) {
+    try {
+      await dbQ(d => d.from('followup_logs').insert({ customer_id: c._uuid, user_id: currentUser.id, followed_up_at: now }));
+      await dbQ(d => d.from('crm_customers').update({ last_followup_at: now, last_followup_by: currentUser.id }).eq('id', c._uuid));
+    } catch(e) { console.warn('[DHP] markFollowedUp gagal:', e); }
+  } else {
+    // Mode offline — simpan progress harian di localStorage
+    try {
+      const k = _followupTodayKey();
+      const arr = JSON.parse(localStorage.getItem(k) || '[]');
+      if (!arr.includes(key)) { arr.push(key); localStorage.setItem(k, JSON.stringify(arr)); }
+    } catch(e) {}
+  }
+
+  c.last_followup_at = now;
+  c.last_followup_by  = currentUser.id;
+  followupDoneTodayIds.add(key);
+  saveCRM();
+  toast(`✓ ${c.nama || 'Customer'} sudah di-follow up hari ini`);
+  if (document.getElementById('pg-crm')?.classList.contains('active')) renderCRM();
+  try { await checkAndCelebrateFollowupMilestone(); } catch(e) { console.warn('[DHP] cek milestone follow up gagal:', e); }
+}
+window.markFollowedUp      = markFollowedUp;
+
 // ── Helper format & parsing ──
 function crmParseMoney(v) {
   if (v == null || v === '') return 0;
@@ -9545,6 +9794,8 @@ async function renderCRM() {
   // supaya admin lain melihat data yang sama. Mode offline: muat dari LS sekali.
   if (crmUsesDB()) { await loadCRM(); }
   else if (!crmData.length) { await loadCRM(); }
+  // Status follow up hari ini — dipakai untuk badge kolom "Follow Up"
+  try { await loadFollowupLogsToday(); } catch(e) {}
   const body = document.getElementById('crm-body');
   const statsEl = document.getElementById('crm-stats');
   const footEl = document.getElementById('crm-foot-note');
@@ -9647,7 +9898,7 @@ async function renderCRM() {
   if (footEl) footEl.textContent = crmData.length ? `${rows.length} / ${crmData.length} · ${t('crmFootNote')}` : '';
 
   if (!rows.length) {
-    body.innerHTML = `<tr><td colspan="13" class="tbl-empty">${crmData.length ? t('noCustomers') : t('crmEmpty')}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="14" class="tbl-empty">${crmData.length ? t('noCustomers') : t('crmEmpty')}</td></tr>`;
     return;
   }
 
@@ -9697,10 +9948,20 @@ async function renderCRM() {
       <td>${crmHeatBadge(c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status)))}</td>
       <td><span class="crm-fav">${escHtml(c.produk_fav||'—')}</span></td>
       <td>${inputByCell}</td>
+      <td>${(function(){
+        const days = daysSinceFollowup(c);
+        const doneToday = followupDoneTodayIds.has(_followupCustKey(c));
+        const color = doneToday ? 'var(--green)' : days === null ? 'var(--red)' : days >= 3 ? 'var(--red)' : days >= 1 ? 'var(--amber)' : 'var(--green)';
+        const label = doneToday ? '✓ Hari ini' : days === null ? 'Belum pernah' : `${days} hari lalu`;
+        return `<span class="crm-followup-badge" style="color:${color}">● ${label}</span>`;
+      })()}</td>
       <td>
         <div class="crm-row-acts">
           <button class="crm-ico-btn" onclick="openCRMModal(${idx})" title="Edit">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5l2 2L6 12l-2.5.5L4 10l7.5-7.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="crm-ico-btn" onclick="markFollowedUp(${idx})" title="Tandai sudah di-follow up hari ini">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3 3 7-7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
           <button class="crm-ico-btn del" onclick="deleteCRM(${idx})" title="Hapus">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5 4l.5 9h5L11 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -10657,7 +10918,7 @@ function navTo(page, btn) {
       home === 'live_studio'     ? 'n-live-studio'    : 'n-ad-scheduler');
     return navTo(home, homeBtn);
   }
-  // Moderator-only pages (My Tasks kini tersedia untuk SEMUA role, jadi tidak dibatasi di sini lagi)
+  // Moderator-only pages
   if (['team_tasks','users'].includes(page) && !can.isMod(r)) { toast('Moderator access required'); return; }
   // Manage (Ads) pages: moderator + admin/b2b (target)
   if (['ad_scheduler','ad_customers','ad_task'].includes(page) && !can.canSeeAds(r)) { toast(t('adAccessReq')); return; }
@@ -10673,7 +10934,7 @@ function navTo(page, btn) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if (btn) btn.classList.add('active');
   if (page === 'overview')        { renderStats(); renderActivity(); }
-  if (page === 'mod_tasks')       renderModTasks();
+  if (page === 'mod_tasks')       { renderModTasks(); renderMtMainSection(); }
   if (page === 'team_tasks')      renderTeamTasks();
   if (page === 'users')           renderUsers();
   if (page === 'settings')        renderSettings();
@@ -11128,6 +11389,137 @@ async function clearAttEdit(ymd) {
     </div>
   </div>
 </div>
+
+<!-- ══ FOLLOW UP MILESTONE: PERAYAAN PENCAPAIAN (v7.1) ══ -->
+<div class="fu-milestone-overlay" id="fu-milestone-overlay">
+  <button class="fu-milestone-close" onclick="closeFollowupMilestone()" title="Tutup">✕</button>
+  <div class="fu-milestone-inner">
+    <div class="fu-milestone-badge">✦ Pencapaian Follow Up ✦</div>
+    <div class="fu-milestone-num" id="fu-milestone-num">50</div>
+    <div class="fu-milestone-sub" id="fu-milestone-sub">Follow Up hari ini</div>
+    <div class="fu-milestone-name" id="fu-milestone-name">—</div>
+  </div>
+</div>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   FOLLOW UP MILESTONE — perayaan tiap kelipatan 50 (v7.1)
+   Sumber kebenaran: DATABASE (RPC check_followup_milestone),
+   sama seperti prinsip fix absensi v7.0 — supaya konsisten
+   lintas device & tidak "kadang muncul kadang tidak".
+   ═══════════════════════════════════════════════════════════ */
+let _fuMsAutoCloseTO = null;
+const FOLLOWUP_MILESTONE_CAP = 500; // batas atas tampilan angka
+
+function openFollowupMilestone(milestone, totalToday, name) {
+  const ov = document.getElementById('fu-milestone-overlay'); if (!ov) return;
+  const totalTxt = totalToday > FOLLOWUP_MILESTONE_CAP ? `${FOLLOWUP_MILESTONE_CAP}+` : totalToday;
+  document.getElementById('fu-milestone-num').textContent = milestone;
+  document.getElementById('fu-milestone-sub').textContent = currentLang === 'id'
+    ? `Follow Up tercapai hari ini — total ${totalTxt}/${FOLLOWUP_DAILY_TARGET}`
+    : `follow-ups reached today — total ${totalTxt}/${FOLLOWUP_DAILY_TARGET}`;
+  document.getElementById('fu-milestone-name').textContent = currentLang === 'id'
+    ? `Kerja luar biasa, ${name || ''}! Terus pertahankan ✦`
+    : `Amazing work, ${name || ''}! Keep it up ✦`;
+
+  ov.classList.add('open');
+  requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('show')));
+  fireMilestoneConfetti(ov);
+
+  clearTimeout(_fuMsAutoCloseTO);
+  _fuMsAutoCloseTO = setTimeout(closeFollowupMilestone, 5200);
+}
+
+function closeFollowupMilestone() {
+  const ov = document.getElementById('fu-milestone-overlay'); if (!ov) return;
+  ov.classList.remove('show');
+  clearTimeout(_fuMsAutoCloseTO);
+  setTimeout(() => {
+    ov.classList.remove('open');
+    ov.querySelectorAll('.att-ci-confetti').forEach(el => el.remove());
+  }, 450);
+}
+
+/* Confetti burst — memakai ulang kelas .att-ci-confetti (animasi sudah ada) */
+function fireMilestoneConfetti(ov) {
+  const inner = ov.querySelector('.fu-milestone-inner'); if (!inner) return;
+  const rect  = inner.getBoundingClientRect();
+  const ovRct = ov.getBoundingClientRect();
+  const cx = rect.left - ovRct.left + rect.width / 2;
+  const cy = rect.top  - ovRct.top  + rect.height * 0.35;
+  const colors = ['#e8cc99', '#7abf8e', '#e8b86e', '#d98ec0', '#7ea8c9'];
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('span');
+    p.className = 'att-ci-confetti';
+    const angle = (Math.PI * 2 * i) / 30 + Math.random() * 0.4;
+    const dist  = 90 + Math.random() * 100;
+    p.style.setProperty('--dx', (Math.cos(angle) * dist).toFixed(1) + 'px');
+    p.style.setProperty('--dy', (Math.sin(angle) * dist).toFixed(1) + 'px');
+    p.style.setProperty('--rot', (Math.random() * 360).toFixed(0) + 'deg');
+    p.style.left = cx + 'px';
+    p.style.top  = cy + 'px';
+    p.style.background = colors[i % colors.length];
+    frag.appendChild(p);
+    setTimeout(() => p.remove(), 1300);
+  }
+  inner.appendChild(frag);
+}
+
+/* ── Cek & rayakan milestone follow-up (dipanggil dari markFollowedUp) ──
+   Mode DB: sumber kebenaran server (check_followup_milestone RPC).
+   Mode offline: emulasi lokal per-hari via localStorage. */
+async function checkAndCelebrateFollowupMilestone() {
+  if (!currentUser) return;
+  const tiers = [50,100,150,200,250,300,350,400,450,500];
+
+  if (crmUsesDB()) {
+    const res = await dbQ(d => d.rpc('check_followup_milestone', { p_user_id: currentUser.id }));
+    if (res?.data && res.data.length) {
+      const { total_today, milestone_hit } = res.data[0];
+      if (milestone_hit) {
+        openFollowupMilestone(milestone_hit, total_today, currentUser.name);
+        pushNotif({
+          type: 'done', popup: false,
+          title: currentLang === 'id' ? `🎉 ${milestone_hit} Follow Up Tercapai!` : `🎉 ${milestone_hit} Follow-ups reached!`,
+          msg: currentLang === 'id'
+            ? `${currentUser.name} berhasil follow up ${milestone_hit} customer hari ini.`
+            : `${currentUser.name} reached ${milestone_hit} follow-ups today.`
+        });
+      }
+    }
+    return;
+  }
+
+  // Offline fallback
+  const total = followupDoneTodayIds.size;
+  const dayKey = `dhp_fu_milestones_${currentUser.id}_${new Date().toISOString().slice(0,10)}`;
+  let done = [];
+  try { done = JSON.parse(localStorage.getItem(dayKey) || '[]'); } catch(e) {}
+  const newlyHit = tiers.filter(t => total >= t && !done.includes(t));
+  if (newlyHit.length) {
+    const top = newlyHit[newlyHit.length - 1];
+    done.push(...newlyHit);
+    try { localStorage.setItem(dayKey, JSON.stringify(done)); } catch(e) {}
+    openFollowupMilestone(top, total, currentUser.name);
+  }
+}
+
+/* ── Reminder: masih ada customer yang belum di-follow up ──
+   Muncul 1x per hari per user (via bell notif), bukan popup spam. */
+function maybeRemindPendingFollowup(pendingCount) {
+  if (!currentUser || !pendingCount) return;
+  const key = `dhp_fu_reminder_${currentUser.id}_${new Date().toISOString().slice(0,10)}`;
+  if (localStorage.getItem(key)) return;
+  localStorage.setItem(key, '1');
+  pushNotif({
+    type: 'alert',
+    title: currentLang === 'id' ? 'Masih Ada yang Perlu Di-follow Up' : 'Pending Follow-ups',
+    msg: currentLang === 'id'
+      ? `Masih ada ${pendingCount} customer yang belum di-follow up hari ini.`
+      : `You still have ${pendingCount} customers not yet followed up today.`
+  });
+}
+</script>
 
 </body>
 </html>
