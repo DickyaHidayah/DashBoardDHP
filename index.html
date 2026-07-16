@@ -3674,8 +3674,12 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
         <div class="tbl-wrap" style="margin-top:6px">
           <div class="tbl-head">
             <div class="tbl-title" id="ls-day-title">Sesi Live</div>
-            <button class="btn-sm btn-gold" id="ls-add-btn" style="display:none" onclick="openLsSessionModal(null)">+ Tambah Sesi</button>
+            <div style="display:flex;gap:8px">
+              <button class="btn-sm btn-gold" id="ls-add-btn" style="display:none" onclick="openLsSessionModal(null)">+ Tambah Sesi</button>
+              <button class="btn-sm btn-del" id="ls-clear-btn" style="display:none" onclick="clearLsDay()">✕ Hapus Semua</button>
+            </div>
           </div>
+
           <div class="tbl-scroll">
             <table>
               <thead><tr>
@@ -6126,6 +6130,7 @@ function renderLiveSchedulePanel() {
   document.getElementById('ls-mod-badge').style.display = isMod ? '' : 'none';
   document.getElementById('ls-mod-tools').style.display = isMod ? '' : 'none';
   document.getElementById('ls-add-btn').style.display   = isMod ? '' : 'none';
+  document.getElementById('ls-clear-btn').style.display = isMod ? '' : 'none';
   document.getElementById('ls-day-act-col').style.display = isMod ? '' : 'none';
   document.getElementById('ls-page-sub').textContent = isMod
     ? 'Atur hari libur & jadwal sesi live untuk tim Host Live'
@@ -6470,6 +6475,19 @@ async function saveLsSession(sessionId) {
   const status     = document.getElementById('ls-ed-status').value;
   const note       = document.getElementById('ls-ed-note').value.trim();
   if (!time_start || !time_end) { toast('Isi jam mulai & selesai'); return; }
+  if (time_end <= time_start) { toast('Jam selesai harus setelah jam mulai'); return; }
+
+  // ── Cek bentrok di sisi client dulu (UX cepat) — validasi final tetap di server (RPC) ──
+  const overlaps = (aS, aE, bS, bE) => aS < bE && bS < aE;
+  const clash = (lsMonthCache[lsSelectedDate] || []).find(s =>
+    s.session_no !== session_no &&
+    s.status !== 'cancelled' &&
+    overlaps(time_start, time_end, (s.time_start||'').slice(0,5), (s.time_end||'').slice(0,5))
+  );
+  if (clash) {
+    toast(`Bentrok dengan Sesi ${clash.session_no} (${(clash.time_start||'').slice(0,5)}–${(clash.time_end||'').slice(0,5)}). Ubah jam atau atur sesi itu dulu.`);
+    return;
+  }
 
   const res = await dbQ(d => d.rpc('moderator_upsert_live_schedule', {
     p_moderator_id: currentUser.id, p_host_user: lsTargetId, p_schedule_date: lsSelectedDate,
@@ -6491,6 +6509,29 @@ async function deleteLsSession(sessionId) {
   if (res?.error) { toast('Gagal menghapus: ' + res.error.message); return; }
   await loadLsMonth();
   toast('Sesi live dihapus');
+}
+
+/* ── Moderator: hapus SEMUA sesi live 1 host pada tanggal yg sedang dibuka
+   (biar kalau sudah kadung numpuk/dobel bisa dibersihkan sekali klik) ── */
+async function clearLsDay() {
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  if (!can.isMod(currentUser?.role)) return;
+  const existing = (lsMonthCache[lsSelectedDate] || []);
+  if (!existing.length) { toast('Tidak ada sesi untuk dihapus tanggal ini'); return; }
+  const hostName = LOCAL_USERS[lsTargetId]?.name || lsTargetId || '—';
+  const dObj = new Date(lsSelectedDate + 'T00:00:00');
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const label = `${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
+  const ok = confirm(`Hapus SEMUA ${existing.length} sesi live ${hostName} pada ${label}? Tindakan ini tidak bisa dibatalkan.`);
+  if (!ok) return;
+
+  const res = await dbQ(d => d.rpc('moderator_clear_live_schedule_day', {
+    p_moderator_id: currentUser.id, p_host_user: lsTargetId, p_schedule_date: lsSelectedDate
+  }));
+  if (res?.error) { toast('Gagal menghapus semua sesi: ' + res.error.message); return; }
+  await loadLsMonth();
+  toast(`${existing.length} sesi live ${hostName} tanggal ${label} sudah dibersihkan`);
+  pushActivity(`Semua sesi live ${lsTargetId} tanggal ${lsSelectedDate} dibersihkan moderator`, 'info');
 }
 
 async function loadUpcomingLiveSchedule() {
