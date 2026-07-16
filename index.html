@@ -3632,6 +3632,8 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
           </div>
         </div>
 
+        <div id="ls-pending-banner" style="display:none"></div>
+
         <div class="ads-toolbar">
           <div class="ads-month-nav">
             <button class="ads-nav-btn" onclick="lsMonthNav(-1)" aria-label="Prev">‹</button>
@@ -3667,6 +3669,7 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
                 <th data-i18n="platformCol">Platform</th>
                 <th data-i18n="showCol">Show</th>
                 <th data-i18n="statusCol">Status</th>
+                <th>Laporan Sesi</th>
                 <th id="ls-day-act-col" style="display:none">Aksi</th>
               </tr></thead>
               <tbody id="ls-day-tbl"></tbody>
@@ -6123,6 +6126,31 @@ function renderLiveSchedulePanel() {
 
   loadLsMonth();
   loadUpcomingLiveSchedule();
+  if (isMod) loadLsPendingBanner(); else {
+    const b = document.getElementById('ls-pending-banner'); if (b) b.style.display = 'none';
+  }
+}
+
+/* ── Moderator: banner sesi yang jam-nya sudah lewat tapi belum ada laporan (semua host) ── */
+async function loadLsPendingBanner() {
+  const el = document.getElementById('ls-pending-banner');
+  if (!el || !db) return;
+  const res = await dbQ(d => d.from('v_live_sessions_pending').select('*').limit(50));
+  const rows = res?.data || [];
+  if (!rows.length) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  el.innerHTML = `
+    <div class="tbl-wrap" style="margin:10px 0;border:1px solid rgba(232,112,112,.35);background:rgba(232,112,112,.06)">
+      <div class="tbl-head"><div class="tbl-title" style="color:#e87070">⚠ ${rows.length} sesi belum diisi laporan</div></div>
+      <div style="padding:0 14px 12px;font-size:13px;color:var(--text2)">
+        ${rows.slice(0,8).map(r => {
+          const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+          const d = new Date(r.schedule_date + 'T00:00:00');
+          return `${r.host_name} — Sesi ${r.session_no}, ${d.getDate()} ${months[d.getMonth()]} (${(r.time_start||'').slice(0,5)}–${(r.time_end||'').slice(0,5)})`;
+        }).join('<br>')}
+        ${rows.length > 8 ? `<br>+${rows.length-8} sesi lainnya…` : ''}
+      </div>
+    </div>`;
 }
 
 function hostLiveIds() {
@@ -6213,11 +6241,12 @@ function renderLsDayTable() {
   const sessions = (lsMonthCache[lsSelectedDate] || []).slice().sort((a,b) => a.session_no - b.session_no);
 
   if (isLibur) {
-    tbody.innerHTML = `<tr><td colspan="${isMod?6:5}" class="tbl-empty">✦ Libur — tidak ada sesi live tanggal ini</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${isMod?7:6}" class="tbl-empty">✦ Libur — tidak ada sesi live tanggal ini</td></tr>`;
     return;
   }
 
   const statusClass = { scheduled:'b-admin', rehearsal:'b-moderator', completed:'b-guest', cancelled:'b-host_live' };
+  const canFillHost = (s) => currentUser && currentUser.id === s.host_user_id;
   tbody.innerHTML = sessions.length ? sessions.map(s => `
     <tr>
       <td style="font-weight:600;color:var(--text)">Sesi ${s.session_no}</td>
@@ -6225,11 +6254,110 @@ function renderLsDayTable() {
       <td>${escHtml(s.platform || '—')}</td>
       <td>${escHtml(s.show_title || '—')}</td>
       <td><span class="badge ${statusClass[s.status]||'b-guest'}">${s.status}</span></td>
+      <td>${lsReportCell(s, isMod, canFillHost(s))}</td>
       ${isMod ? `<td>
         <button class="btn-sm btn-edit" onclick='openLsSessionModal(${JSON.stringify(s.id)})'>✎</button>
         <button class="btn-sm btn-del" onclick="deleteLsSession('${s.id}')">✕</button>
       </td>` : ''}
-    </tr>`).join('') : `<tr><td colspan="${isMod?6:5}" class="tbl-empty">Belum ada sesi live dijadwalkan tanggal ini</td></tr>`;
+    </tr>`).join('') : `<tr><td colspan="${isMod?7:6}" class="tbl-empty">Belum ada sesi live dijadwalkan tanggal ini</td></tr>`;
+}
+
+/* ── Laporan Sesi Live (v9.0): produk terjual / GMV / penonton per sesi ──
+   Sesi dianggap "menunggu laporan" begitu tanggal+jam selesainya SUDAH
+   LEWAT dan belum ada products_sold — dihitung langsung dari jam lokal,
+   tidak perlu status enum baru. Per SESI, jadi sesi 1 selesai duluan bisa
+   langsung diisi tanpa menunggu sesi 2 di hari yang sama. */
+function lsSessionEnded(s) {
+  if (!s.schedule_date || !s.time_end) return false;
+  const end = new Date(`${s.schedule_date}T${(s.time_end||'00:00').slice(0,5)}:00`);
+  return end.getTime() <= Date.now();
+}
+
+function lsReportCell(s, isMod, canFillHost) {
+  if (s.status === 'cancelled') return `<span style="color:var(--text2)">—</span>`;
+  if (s.products_sold != null) {
+    const editBtn = (canFillHost || isMod)
+      ? `<button class="btn-sm btn-edit" onclick='openLsReportModal(${JSON.stringify(s.id)})' title="Ubah laporan">✎</button>` : '';
+    return `
+      <div style="font-size:12.5px;line-height:1.5">
+        <div>🛒 ${s.products_sold.toLocaleString('id-ID')} produk</div>
+        <div>💰 ${crmFmtRupiah(s.gmv_amount||0)}</div>
+        <div>👁️ ${(s.viewers_count||0).toLocaleString('id-ID')} penonton ${editBtn}</div>
+      </div>`;
+  }
+  if (lsSessionEnded(s)) {
+    if (canFillHost || isMod) {
+      return `<button class="btn-sm btn-gold" onclick='openLsReportModal(${JSON.stringify(s.id)})'>Isi Laporan</button>`;
+    }
+    return `<span class="badge b-host_live">Menunggu Laporan</span>`;
+  }
+  return `<span style="color:var(--text2)">Belum waktunya</span>`;
+}
+
+/* ── Modal: Host isi / Moderator koreksi laporan 1 sesi live ── */
+function openLsReportModal(sessionId) {
+  const all = Object.values(lsMonthCache).flat();
+  const s = all.find(x => x.id === sessionId);
+  if (!s) { toast('Sesi tidak ditemukan'); return; }
+  const isMod = can.isMod(currentUser?.role);
+  if (currentUser.id !== s.host_user_id && !isMod) { toast('Hanya host sesi ini atau moderator yang boleh mengisi'); return; }
+
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const dObj = new Date(s.schedule_date + 'T00:00:00');
+  document.getElementById('m-title').textContent =
+    `Laporan Sesi ${s.session_no} — ${LOCAL_USERS[s.host_user_id]?.name||s.host_user_id} · ${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
+
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg"><label>Total Produk Terjual</label>
+      <input class="fi" id="lsr-products" type="number" min="0" step="1" value="${s.products_sold ?? ''}" placeholder="mis. 42"/>
+    </div>
+    <div class="fg"><label>Total GMV (Rp)</label>
+      <input class="fi" id="lsr-gmv" type="text" inputmode="numeric"
+        value="${s.gmv_amount ? Number(s.gmv_amount).toLocaleString('id-ID') : ''}"
+        oninput="formatNominalPlain(this)" placeholder="mis. 3.500.000"/>
+    </div>
+    <div class="fg"><label>Total Penonton</label>
+      <input class="fi" id="lsr-viewers" type="number" min="0" step="1" value="${s.viewers_count ?? ''}" placeholder="mis. 850"/>
+    </div>
+    <div class="fg"><label>Catatan (opsional)</label>
+      <input class="fi" id="lsr-note" value="${escHtml(s.note||'')}" placeholder="mis. banyak repeat order"/>
+    </div>`;
+
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-gold" onclick="saveLsReport('${sessionId}')">${t('save')||'Simpan'}</button>
+    <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')||'Batal'}</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+
+/* Format input angka polos (tanpa mengubah field hidden lain) — dipakai khusus input GMV laporan sesi */
+function formatNominalPlain(el) {
+  const raw = el.value.replace(/[^0-9]/g, '');
+  const num = parseInt(raw, 10) || 0;
+  el.value = raw ? num.toLocaleString('id-ID') : '';
+}
+
+async function saveLsReport(sessionId) {
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  const products = parseInt(document.getElementById('lsr-products').value, 10);
+  const gmv      = crmParseInt(document.getElementById('lsr-gmv').value);
+  const viewers  = parseInt(document.getElementById('lsr-viewers').value, 10);
+  const note     = document.getElementById('lsr-note').value.trim();
+
+  if (isNaN(products) || products < 0) { toast('Isi total produk terjual dengan benar'); return; }
+  if (isNaN(gmv) || gmv < 0)           { toast('Isi total GMV dengan benar'); return; }
+  if (isNaN(viewers) || viewers < 0)  { toast('Isi total penonton dengan benar'); return; }
+
+  const res = await dbQ(d => d.rpc('host_submit_live_report', {
+    p_actor_id: currentUser.id, p_session_id: sessionId,
+    p_products_sold: products, p_gmv_amount: gmv, p_viewers_count: viewers,
+    p_note: note || null
+  }));
+  if (res?.error) { toast('Gagal menyimpan laporan: ' + res.error.message); return; }
+  closeModal();
+  await loadLsMonth();
+  await loadSalesTarget();
+  toast('Laporan sesi live tersimpan');
+  pushActivity(`Laporan sesi live ${sessionId} tersimpan — ${products} produk, ${crmFmtRupiah(gmv)}, ${viewers} penonton`, 'info');
 }
 
 /* ── Moderator: tambah/edit 1 sesi live (modal generik #modal-ov) ── */
