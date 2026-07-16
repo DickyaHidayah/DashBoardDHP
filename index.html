@@ -216,6 +216,8 @@ body.light .heat-cold .hb-icon { background:rgba(26,86,160,.14); }
 .cal-cell.att-Izin{box-shadow:inset 0 0 0 1.5px rgba(232,184,110,.5);background:rgba(232,184,110,.05)}
 .cal-cell.att-Sakit{box-shadow:inset 0 0 0 1.5px rgba(217,142,192,.5);background:rgba(217,142,192,.05)}
 .cal-cell.att-Alpha{box-shadow:inset 0 0 0 1.5px rgba(232,112,112,.5);background:rgba(232,112,112,.05)}
+.cal-cell.att-Libur{box-shadow:inset 0 0 0 1.5px rgba(155,139,212,.5);background:rgba(155,139,212,.06)}
+.cal-cell.ls-selected{box-shadow:inset 0 0 0 2px var(--gold)!important}
 .att-day-tag{
   margin-top:4px;font-size:9px;font-weight:700;letter-spacing:.04em;padding:1px 6px;border-radius:20px;
   display:inline-block;line-height:1.5;
@@ -225,6 +227,7 @@ body.light .heat-cold .hb-icon { background:rgba(26,86,160,.14); }
 .att-day-tag.att-Izin{background:rgba(232,184,110,.16);color:#e8b86e}
 .att-day-tag.att-Sakit{background:rgba(217,142,192,.16);color:#d98ec0}
 .att-day-tag.att-Alpha{background:rgba(232,112,112,.16);color:#e87070}
+.att-day-tag.att-Libur{background:rgba(155,139,212,.16);color:#9b8bd4}
 .att-legend{display:flex;flex-wrap:wrap;gap:14px;padding:14px 4px 4px;font-size:11px;color:var(--text2)}
 .att-legend span{display:inline-flex;align-items:center;gap:6px}
 .att-legend .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
@@ -233,6 +236,7 @@ body.light .heat-cold .hb-icon { background:rgba(26,86,160,.14); }
 .att-legend .dot.Izin{background:#e8b86e}
 .att-legend .dot.Sakit{background:#d98ec0}
 .att-legend .dot.Alpha{background:#e87070}
+.att-legend .dot.Libur{background:#9b8bd4}
 .att-user-sel{min-width:190px}
 .att-edit-hint{position:absolute;top:4px;right:5px;font-size:9px;color:var(--gold-lo);opacity:0}
 .cal-cell:not(.empty):hover .att-edit-hint{opacity:.7}
@@ -3512,7 +3516,64 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
           </div>
         </div>
         <div class="studio-grid" id="live-studio-cards"></div>
+
+        <!-- ══ JADWAL LIVE (v8.0) — kalender per bulan + tabel per tanggal ══ -->
+        <div class="ph" style="margin-top:22px">
+          <div class="ph-left">
+            <div class="pt">
+              Jadwal Live
+              <span class="mod-badge" id="ls-mod-badge" style="display:none">♔ Kelola</span>
+            </div>
+            <div class="ps" id="ls-page-sub">Libur dan jadwal sesi live kamu bulan ini</div>
+          </div>
+          <div class="ph-acts" id="ls-mod-tools" style="display:none">
+            <select class="fi ls-user-sel" id="ls-user-sel" onchange="lsSwitchUser(this.value)"></select>
+          </div>
+        </div>
+
+        <div class="ads-toolbar">
+          <div class="ads-month-nav">
+            <button class="ads-nav-btn" onclick="lsMonthNav(-1)" aria-label="Prev">‹</button>
+            <button class="ads-nav-btn" onclick="lsMonthNav(1)" aria-label="Next">›</button>
+          </div>
+          <button class="btn-gold btn-sm ads-today-btn" onclick="lsGoToday()">Bulan Ini</button>
+        </div>
+
+        <div class="cal-wrap">
+          <div class="cal-title-bar">
+            <div class="cal-month-name" id="ls-cal-month-name">—</div>
+          </div>
+          <div class="cal-grid" id="ls-dow-row"></div>
+          <div class="cal-grid" id="ls-cal-grid"></div>
+        </div>
+
+        <div class="att-legend">
+          <span><i class="dot Hadir"></i> Ada sesi</span>
+          <span><i class="dot Libur"></i> Libur</span>
+          <span style="color:var(--text2)">Klik tanggal untuk lihat detail sesi</span>
+        </div>
+
         <div class="tbl-wrap" style="margin-top:6px">
+          <div class="tbl-head">
+            <div class="tbl-title" id="ls-day-title">Sesi Live</div>
+            <button class="btn-sm btn-gold" id="ls-add-btn" style="display:none" onclick="openLsSessionModal(null)">+ Tambah Sesi</button>
+          </div>
+          <div class="tbl-scroll">
+            <table>
+              <thead><tr>
+                <th>Sesi</th>
+                <th>Jam</th>
+                <th data-i18n="platformCol">Platform</th>
+                <th data-i18n="showCol">Show</th>
+                <th data-i18n="statusCol">Status</th>
+                <th id="ls-day-act-col" style="display:none">Aksi</th>
+              </tr></thead>
+              <tbody id="ls-day-tbl"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="tbl-wrap" style="margin-top:14px">
           <div class="tbl-head"><div class="tbl-title" data-i18n="upcomingLiveSchedule">Upcoming Live Schedule</div></div>
           <div class="tbl-scroll">
             <table>
@@ -3745,6 +3806,7 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
           <span><i class="dot Izin"></i> Izin</span>
           <span><i class="dot Sakit"></i> Sakit</span>
           <span><i class="dot Alpha"></i> Alpha</span>
+          <span><i class="dot Libur"></i> Libur</span>
         </div>
       </div>
 
@@ -5432,6 +5494,11 @@ function loginSuccess(id, role, name) {
   if (!presenceMap[id]) presenceMap[id] = { id, role, name, online:false, loginAt:0, lastSeen:0 };
   Object.assign(presenceMap[id], { online:true, loginAt:Date.now(), lastSeen:Date.now(), role, name });
   dbQ(d => d.rpc('update_user_presence', { p_user_id:id, p_event:'login' }));
+  // ── Fix delay/kadang-tidak-muncul popup absensi (v8.0):
+  //    Ditembak SEGERA di sini (bukan di dalam setTimeout 500ms di bawah),
+  //    supaya round-trip RPC-nya jalan BARENGAN dengan animasi transisi
+  //    scene → dashboard, bukan menambah delay setelah dashboard tampil.
+  try { maybeShowAttendanceCheckin(); } catch (e) { console.warn('[DHP] attendance check-in gagal:', e); }
   const sc = document.getElementById('scene');
   sc.style.opacity = '0';
   setTimeout(async () => {
@@ -5445,11 +5512,7 @@ function loginSuccess(id, role, name) {
     if (role === 'head_moderator') document.body.classList.add('is-head-mod');
     document.body.classList.add(`role-theme-${role}`);
 
-    // ── Popup absensi ditampilkan SEGERA, tidak menunggu brand/dashboard
-    //    selesai dimuat (yang mana bisa memakan waktu tergantung jaringan).
-    //    Overlay full-screen z-index tinggi jadi aman ditampilkan duluan,
-    //    dashboard di baliknya tetap lanjut memuat data seperti biasa.
-    try { maybeShowAttendanceCheckin(); } catch (e) { console.warn('[DHP] attendance check-in gagal:', e); }
+    // (popup absensi sudah ditembak lebih awal di awal loginSuccess() — v8.0)
 
     // ── Load brand SEBELUM dashboard render ──────────────────────
     // Ini yang fix: device lain dapat brand terbaru saat login
@@ -5473,6 +5536,10 @@ function loginSuccess(id, role, name) {
 
 function handleLogout() {
   if (currentUser) {
+    // Fix v8.0: lepas guard anti-dobel popup absensi, supaya kalau akun
+    // ini login lagi di tab yang sama (mis. ganti-ganti akun saat testing),
+    // popup absensinya tetap bisa tampil normal, bukan ke-skip permanen.
+    _attCiShownThisSession.delete(currentUser.id);
     if (presenceMap[currentUser.id]) Object.assign(presenceMap[currentUser.id], { online:false, lastSeen:Date.now() });
     if (currentUser.role === 'guest') releaseGuest(currentUser.id);
     if (presChannel) { presChannel.untrack(); presChannel.unsubscribe(); presChannel = null; }
@@ -5552,10 +5619,10 @@ async function initDashboard() {
   navShow('n-overview',   isMod);
 
   // Studio section
-  const showStudio = isContent || isLive;
+  const showStudio = isContent || isLive || isMod;
   navShow('ns-studio',        showStudio);
   navShow('n-content-studio', isContent);
-  navShow('n-live-studio',    isLive);
+  navShow('n-live-studio',    isLive || isMod);
   navShow('n-pipeline',       false);   // B2B Pipeline dihapus — diganti sistem Ads
   navShow('n-mod-tasks',      true);    // Tugas Saya — tersedia untuk semua role
 
@@ -5901,28 +5968,19 @@ function deleteDraft(id) {
 /* ═══════════════════════════════════════════════════════════
    ⑰-c LIVE STUDIO  (Host Live dashboard)
    ═══════════════════════════════════════════════════════════ */
-let liveSchedule = JSON.parse(localStorage.getItem('dhp_live') || '[]');
-if (!liveSchedule.length) {
-  liveSchedule = [
-    { id:1, show:'Sunday Live Selling',     host:'Nina',  platform:'TikTok Live',  when:'Sun 20:00', status:'upcoming' },
-    { id:2, show:'Friday Flash Sale',       host:'Sekar', platform:'Shopee Live',  when:'Fri 19:00', status:'upcoming' },
-    { id:3, show:'Midweek Product Reveal',  host:'Nina',  platform:'Instagram Live',when:'Wed 18:30', status:'rehearsal' }
-  ];
-}
 let liveOnAir = false;
 function renderLiveStudio() {
   const cards = document.getElementById('live-studio-cards');
-  const tbody = document.getElementById('live-schedule-tbl');
   const statusBadge = document.getElementById('live-status-badge');
-  if (!cards || !tbody) return;
+  if (!cards) return;
 
   if (statusBadge) {
     statusBadge.textContent = liveOnAir ? t('onAir') : t('offAir');
     statusBadge.style.opacity = liveOnAir ? '1' : '.55';
   }
 
-  const upcoming = liveSchedule.filter(s => s.status === 'upcoming').length;
-  const rehearsals = liveSchedule.filter(s => s.status === 'rehearsal').length;
+  const upcoming = _lsUpcomingCache.filter(s => s.status === 'scheduled').length;
+  const rehearsals = _lsUpcomingCache.filter(s => s.status === 'rehearsal').length;
 
   cards.innerHTML = `
     <div class="studio-card" style="border-color:${liveOnAir?'rgba(232,112,112,.4)':'var(--border)'}">
@@ -5980,21 +6038,270 @@ function renderLiveStudio() {
       <div class="studio-card-body">${t('viewersBody')}</div>
     </div>`;
 
-  const statusClass = { upcoming:'b-admin', rehearsal:'b-moderator', completed:'b-guest' };
-  tbody.innerHTML = liveSchedule.length ? liveSchedule.map(s => `
-    <tr>
-      <td style="font-weight:600;color:var(--text)">${s.show}</td>
-      <td>${s.host}</td>
-      <td>${s.platform}</td>
-      <td>${s.when}</td>
-      <td><span class="badge ${statusClass[s.status]||'b-guest'}">${s.status}</span></td>
-    </tr>`).join('') : `<tr><td colspan="5" class="tbl-empty">${t('noShowsScheduled')}</td></tr>`;
+  renderUpcomingLiveTable();
+  renderLiveSchedulePanel();
 }
 function toggleLive() {
   liveOnAir = !liveOnAir;
   pushActivity(`${currentUser.name} ${liveOnAir ? 'started a live stream' : 'ended the live stream'}`, liveOnAir ? 'join' : 'leave');
   toast(liveOnAir ? t('youAreLive') : t('streamEnded'));
   renderLiveStudio();
+}
+function renderUpcomingLiveTable() {
+  const tbody = document.getElementById('live-schedule-tbl');
+  if (!tbody) return;
+  const statusClass = { scheduled:'b-admin', rehearsal:'b-moderator', completed:'b-guest', cancelled:'b-host_live' };
+  const dows = currentLang === 'id' ? DOW_ID : DOW_EN;
+  tbody.innerHTML = _lsUpcomingCache.length ? _lsUpcomingCache.map(s => {
+    const dObj = new Date(s.schedule_date + 'T00:00:00');
+    const when = `${dows[dObj.getDay()]}, ${dObj.getDate()}/${dObj.getMonth()+1} · ${(s.time_start||'').slice(0,5)}–${(s.time_end||'').slice(0,5)}`;
+    return `<tr>
+      <td style="font-weight:600;color:var(--text)">${escHtml(s.show_title || '—')}</td>
+      <td>${escHtml(LOCAL_USERS[s.host_user_id]?.name || s.host_user_id)}</td>
+      <td>${escHtml(s.platform || '—')}</td>
+      <td>${when}</td>
+      <td><span class="badge ${statusClass[s.status]||'b-guest'}">${s.status}</span></td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="5" class="tbl-empty">${t('noShowsScheduled')}</td></tr>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ⑰-d JADWAL LIVE  (v8.0) — kalender per bulan + tabel per tanggal
+   Diisi HANYA oleh moderator/chief-moderator; Host Live cuma lihat.
+   ═══════════════════════════════════════════════════════════ */
+let lsCursor       = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+let lsTargetId     = null;                 // akun host live yang sedang dilihat/dikelola
+let lsSelectedDate = ymdKey(new Date());   // tanggal yang sedang dibuka di tabel bawah kalender
+let lsMonthCache   = {};                   // { 'YYYY-MM-DD': [session,...] } — bulan berjalan milik lsTargetId
+let lsAttCache     = {};                   // { 'YYYY-MM-DD': status } — utk overlay Libur (dari tabel attendance)
+let _lsUpcomingCache = [];                 // dipakai bersama tabel "Upcoming Live Schedule"
+
+function renderLiveSchedulePanel() {
+  if (!currentUser) return;
+  const isMod = can.isMod(currentUser.role);
+  if (!lsTargetId) lsTargetId = can.isHostLive(currentUser.role) ? currentUser.id : hostLiveIds()[0];
+
+  document.getElementById('ls-mod-badge').style.display = isMod ? '' : 'none';
+  document.getElementById('ls-mod-tools').style.display = isMod ? '' : 'none';
+  document.getElementById('ls-add-btn').style.display   = isMod ? '' : 'none';
+  document.getElementById('ls-day-act-col').style.display = isMod ? '' : 'none';
+  document.getElementById('ls-page-sub').textContent = isMod
+    ? 'Atur hari libur & jadwal sesi live untuk tim Host Live'
+    : 'Libur dan jadwal sesi live kamu bulan ini — diisi oleh moderator';
+
+  if (isMod) {
+    const sel = document.getElementById('ls-user-sel');
+    const ids = hostLiveIds();
+    sel.innerHTML = ids.map(id => `<option value="${id}" ${id===lsTargetId?'selected':''}>${LOCAL_USERS[id]?.name||id} (@${id})</option>`).join('');
+    if (!ids.includes(lsTargetId) && ids.length) lsTargetId = ids[0];
+    sel.value = lsTargetId;
+  }
+
+  loadLsMonth();
+  loadUpcomingLiveSchedule();
+}
+
+function hostLiveIds() {
+  return Object.entries(LOCAL_USERS).filter(([id,u]) => u.role === 'host_live').map(([id]) => id);
+}
+
+function lsSwitchUser(uid) { lsTargetId = uid; loadLsMonth(); }
+function lsMonthNav(dir) { lsCursor.setMonth(lsCursor.getMonth() + dir); loadLsMonth(); }
+function lsGoToday() {
+  lsCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  lsSelectedDate = ymdKey(new Date());
+  loadLsMonth();
+}
+
+async function loadLsMonth() {
+  lsMonthCache = {}; lsAttCache = {};
+  if (!lsTargetId) { renderLsCalendar(); renderLsDayTable(); return; }
+  const y = lsCursor.getFullYear(), m = lsCursor.getMonth();
+  const first = ymdKey(new Date(y, m, 1));
+  const last  = ymdKey(new Date(y, m + 1, 0));
+
+  if (db) {
+    const [schedRes, attRes] = await Promise.all([
+      dbQ(d => d.from('live_schedule').select('*')
+        .eq('host_user_id', lsTargetId).gte('schedule_date', first).lte('schedule_date', last)
+        .order('session_no', { ascending: true })),
+      dbQ(d => d.from('attendance').select('att_date,status')
+        .eq('user_id', lsTargetId).gte('att_date', first).lte('att_date', last))
+    ]);
+    if (schedRes?.data) schedRes.data.forEach(s => {
+      (lsMonthCache[s.schedule_date] = lsMonthCache[s.schedule_date] || []).push(s);
+    });
+    if (attRes?.data) attRes.data.forEach(r => { lsAttCache[r.att_date] = r.status; });
+  }
+
+  renderLsCalendar();
+  renderLsDayTable();
+}
+
+function renderLsCalendar() {
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const dows   = currentLang === 'id' ? DOW_ID   : DOW_EN;
+  const y = lsCursor.getFullYear(), m = lsCursor.getMonth();
+  document.getElementById('ls-cal-month-name').textContent = `${months[m]} ${y}`;
+  document.getElementById('ls-dow-row').innerHTML = dows.map((d,i) => `<div class="cal-dow ${i===0?'sun':''}">${d}</div>`).join('');
+
+  const firstDow    = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const todayKey    = ymdKey(new Date());
+
+  let cells = '';
+  for (let i = 0; i < firstDow; i++) cells += `<div class="cal-cell empty"></div>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ymd = ymdKey(new Date(y, m, d));
+    const isToday    = ymd === todayKey;
+    const isSelected = ymd === lsSelectedDate;
+    const isLibur    = lsAttCache[ymd] === 'Libur';
+    const sessions   = lsMonthCache[ymd] || [];
+    const cls = ['cal-cell'];
+    if (isToday) cls.push('today');
+    if (isSelected) cls.push('ls-selected');
+    if (isLibur) cls.push('att-Libur');
+    else if (sessions.length) cls.push('att-Hadir');
+    cells += `
+      <div class="${cls.join(' ')}" onclick="lsSelectDate('${ymd}')" style="cursor:pointer">
+        <div class="cal-daynum">${d}</div>
+        ${isLibur ? `<div class="att-day-tag att-Libur">Libur</div>`
+                  : sessions.length ? `<div class="att-day-tag att-Hadir">${sessions.length} sesi</div>` : ''}
+      </div>`;
+  }
+  document.getElementById('ls-cal-grid').innerHTML = cells;
+}
+
+function lsSelectDate(ymd) { lsSelectedDate = ymd; renderLsCalendar(); renderLsDayTable(); }
+
+function renderLsDayTable() {
+  const tbody = document.getElementById('ls-day-tbl');
+  const titleEl = document.getElementById('ls-day-title');
+  if (!tbody || !titleEl) return;
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const dObj = new Date(lsSelectedDate + 'T00:00:00');
+  const hostName = LOCAL_USERS[lsTargetId]?.name || lsTargetId || '—';
+  titleEl.textContent = `Sesi ${hostName} — ${days[dObj.getDay()]}, ${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
+
+  const isMod = can.isMod(currentUser?.role);
+  const isLibur = lsAttCache[lsSelectedDate] === 'Libur';
+  const sessions = (lsMonthCache[lsSelectedDate] || []).slice().sort((a,b) => a.session_no - b.session_no);
+
+  if (isLibur) {
+    tbody.innerHTML = `<tr><td colspan="${isMod?6:5}" class="tbl-empty">✦ Libur — tidak ada sesi live tanggal ini</td></tr>`;
+    return;
+  }
+
+  const statusClass = { scheduled:'b-admin', rehearsal:'b-moderator', completed:'b-guest', cancelled:'b-host_live' };
+  tbody.innerHTML = sessions.length ? sessions.map(s => `
+    <tr>
+      <td style="font-weight:600;color:var(--text)">Sesi ${s.session_no}</td>
+      <td>${(s.time_start||'').slice(0,5)}–${(s.time_end||'').slice(0,5)}</td>
+      <td>${escHtml(s.platform || '—')}</td>
+      <td>${escHtml(s.show_title || '—')}</td>
+      <td><span class="badge ${statusClass[s.status]||'b-guest'}">${s.status}</span></td>
+      ${isMod ? `<td>
+        <button class="btn-sm btn-edit" onclick='openLsSessionModal(${JSON.stringify(s.id)})'>✎</button>
+        <button class="btn-sm btn-del" onclick="deleteLsSession('${s.id}')">✕</button>
+      </td>` : ''}
+    </tr>`).join('') : `<tr><td colspan="${isMod?6:5}" class="tbl-empty">Belum ada sesi live dijadwalkan tanggal ini</td></tr>`;
+}
+
+/* ── Moderator: tambah/edit 1 sesi live (modal generik #modal-ov) ── */
+function openLsSessionModal(sessionId) {
+  if (!can.isMod(currentUser?.role)) return;
+  const rec = sessionId ? (lsMonthCache[lsSelectedDate]||[]).find(s => s.id === sessionId) : null;
+  const existingCount = (lsMonthCache[lsSelectedDate]||[]).length;
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const dObj = new Date(lsSelectedDate + 'T00:00:00');
+
+  document.getElementById('m-title').textContent =
+    `${rec ? 'Edit' : 'Tambah'} Sesi Live — ${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
+
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg"><label>Nomor Sesi</label>
+      <input class="fi" id="ls-ed-session" type="number" min="1" value="${rec ? rec.session_no : existingCount + 1}"/>
+    </div>
+    <div class="fg" style="display:flex;gap:8px">
+      <div style="flex:1"><label>Jam Mulai</label>
+        <input class="fi" id="ls-ed-start" type="time" value="${rec ? (rec.time_start||'').slice(0,5) : ''}"/>
+      </div>
+      <div style="flex:1"><label>Jam Selesai</label>
+        <input class="fi" id="ls-ed-end" type="time" value="${rec ? (rec.time_end||'').slice(0,5) : ''}"/>
+      </div>
+    </div>
+    <div class="fg"><label>Platform</label>
+      <select class="fi" id="ls-ed-platform">
+        ${['TikTok Live','Shopee Live','Instagram Live','YouTube Live','Lainnya'].map(p =>
+          `<option value="${p}" ${rec?.platform===p?'selected':''}>${p}</option>`).join('')}
+      </select>
+    </div>
+    <div class="fg"><label>Judul Show (opsional)</label>
+      <input class="fi" id="ls-ed-title" value="${escHtml(rec?.show_title||'')}" placeholder="mis. Flash Sale Jumat"/>
+    </div>
+    <div class="fg"><label>Status</label>
+      <select class="fi" id="ls-ed-status">
+        ${['scheduled','rehearsal','completed','cancelled'].map(s =>
+          `<option value="${s}" ${rec?.status===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+    </div>
+    <div class="fg"><label>Catatan (opsional)</label>
+      <input class="fi" id="ls-ed-note" value="${escHtml(rec?.note||'')}"/>
+    </div>`;
+
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-gold" onclick="saveLsSession(${rec ? JSON.stringify(rec.id) : 'null'})">${t('save')||'Simpan'}</button>
+    <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')||'Batal'}</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+
+async function saveLsSession(sessionId) {
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  const session_no = parseInt(document.getElementById('ls-ed-session').value, 10) || 1;
+  const time_start = document.getElementById('ls-ed-start').value;
+  const time_end   = document.getElementById('ls-ed-end').value;
+  const platform   = document.getElementById('ls-ed-platform').value;
+  const show_title = document.getElementById('ls-ed-title').value.trim();
+  const status     = document.getElementById('ls-ed-status').value;
+  const note       = document.getElementById('ls-ed-note').value.trim();
+  if (!time_start || !time_end) { toast('Isi jam mulai & selesai'); return; }
+
+  const res = await dbQ(d => d.rpc('moderator_upsert_live_schedule', {
+    p_moderator_id: currentUser.id, p_host_user: lsTargetId, p_schedule_date: lsSelectedDate,
+    p_session_no: session_no, p_time_start: time_start, p_time_end: time_end,
+    p_platform: platform, p_show_title: show_title || null, p_status: status, p_note: note || null
+  }));
+  if (res?.error) { toast('Gagal menyimpan: ' + res.error.message); return; }
+  closeModal();
+  await loadLsMonth();
+  toast(`Sesi live ${LOCAL_USERS[lsTargetId]?.name||lsTargetId} disimpan`);
+  pushActivity(`Jadwal live ${lsTargetId} sesi ${session_no} (${lsSelectedDate}) diperbarui`, 'info');
+}
+
+async function deleteLsSession(sessionId) {
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  const res = await dbQ(d => d.rpc('moderator_delete_live_schedule', {
+    p_moderator_id: currentUser.id, p_session_id: sessionId
+  }));
+  if (res?.error) { toast('Gagal menghapus: ' + res.error.message); return; }
+  await loadLsMonth();
+  toast('Sesi live dihapus');
+}
+
+async function loadUpcomingLiveSchedule() {
+  _lsUpcomingCache = [];
+  if (db) {
+    const todayKey = ymdKey(new Date());
+    const isMod = can.isMod(currentUser?.role);
+    let q = db.from('live_schedule').select('*')
+      .gte('schedule_date', todayKey).eq('status', 'scheduled')
+      .order('schedule_date', { ascending: true }).order('time_start', { ascending: true }).limit(30);
+    if (!isMod) q = q.eq('host_user_id', currentUser.id);
+    const res = await dbQ(() => q);
+    if (res?.data) _lsUpcomingCache = res.data;
+  }
+  renderUpcomingLiveTable();
 }
 function rehearseLive() {
   toast(t('rehearsalMode'));
@@ -11070,6 +11377,10 @@ async function maybeShowAttendanceCheckin() {
   if (_attCiShownThisSession.has(currentUser.id)) return;
 
   let isNew = true;
+  // Fix v8.0 (delay): RPC absen + preload cache bulan berjalan ditembak
+  // BARENGAN (Promise.all), bukan menunggu satu-satu — popup jadi tampil
+  // jauh lebih cepat, terutama saat koneksi agak lambat.
+  const preloadPromise = preloadAttCiCache();
   if (db) {
     const res = await dbQ(d => d.rpc('mark_attendance_today', { p_user_id: currentUser.id }));
     if (res?.data && res.data.length) {
@@ -11079,7 +11390,7 @@ async function maybeShowAttendanceCheckin() {
       // Fallback ke localStorage HANYA bila RPC benar-benar gagal (mis. offline)
       const todayKey  = ymdKey(new Date());
       const localFlag = `dhp_att_ci_${currentUser.id}_${todayKey}`;
-      if (localStorage.getItem(localFlag)) return;
+      if (localStorage.getItem(localFlag)) { await preloadPromise; return; }
       localStorage.setItem(localFlag, '1');
     }
   } else {
@@ -11087,14 +11398,14 @@ async function maybeShowAttendanceCheckin() {
     // pakai localStorage per-hari sebagai gantinya.
     const todayKey  = ymdKey(new Date());
     const localFlag = `dhp_att_ci_${currentUser.id}_${todayKey}`;
-    if (localStorage.getItem(localFlag)) return;
+    if (localStorage.getItem(localFlag)) { await preloadPromise; return; }
     localStorage.setItem(localFlag, '1');
   }
+  await preloadPromise;
 
   if (!isNew) return; // sudah absen hari ini (baik self check-in maupun diset moderator) — jangan tampilkan lagi
 
   _attCiShownThisSession.add(currentUser.id);
-  await preloadAttCiCache();
   computeAttCiStreak();
   openAttendanceCheckin(isNew);
 }
@@ -11229,7 +11540,7 @@ function renderCheckinCalendar() {
 }
 
 /* ── Halaman "Absensi" (riwayat + kelola moderator) ── */
-const ATT_STATUS_LABEL = { Hadir:'Hadir', Izin:'Izin', WFH:'WFH', Sakit:'Sakit', Alpha:'Alpha' };
+const ATT_STATUS_LABEL = { Hadir:'Hadir', Izin:'Izin', WFH:'WFH', Sakit:'Sakit', Alpha:'Alpha', Libur:'Libur' };
 let attCursor    = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 let attTargetId  = null;   // user yang sedang dilihat/di-kelola di halaman Absensi
 let attDataCache = {};     // { 'YYYY-MM-DD': {status, note} } untuk attTargetId + attCursor
@@ -11314,7 +11625,8 @@ function renderAttStats() {
     <div class="stat-card"><div class="stat-num" style="color:#7ea8c9">${count('WFH')}</div><div class="stat-lbl">WFH</div></div>
     <div class="stat-card"><div class="stat-num" style="color:#e8b86e">${count('Izin')}</div><div class="stat-lbl">Izin</div></div>
     <div class="stat-card"><div class="stat-num" style="color:#d98ec0">${count('Sakit')}</div><div class="stat-lbl">Sakit</div></div>
-    <div class="stat-card"><div class="stat-num" style="color:#e87070">${count('Alpha')}</div><div class="stat-lbl">Alpha</div></div>`;
+    <div class="stat-card"><div class="stat-num" style="color:#e87070">${count('Alpha')}</div><div class="stat-lbl">Alpha</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#9b8bd4">${count('Libur')}</div><div class="stat-lbl">Libur</div></div>`;
 }
 
 /* ── Moderator: edit absensi 1 hari (modal generik #modal-ov) ── */
