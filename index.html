@@ -299,6 +299,66 @@ body.light .heat-cold .hb-icon { background:rgba(26,86,160,.14); }
 .st-remark.st-remark-over{color:#7abf8e;font-weight:600}
 .st-actions{margin-top:14px}
 
+/* ══════════════════════════════════════════════════════════
+   HOST SWITCH (v10) — satu kontrol terpadu Studio Live utk moderator:
+   pilih 1 host (fokus) ATAU "Bandingkan" (gabungan/komparasi)
+   ══════════════════════════════════════════════════════════ */
+.hs-switch-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;margin-bottom:16px}
+.hs-switch-lbl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);white-space:nowrap}
+.hs-switch{display:inline-flex;align-items:center;gap:3px;background:var(--bg3);border:1px solid var(--border);
+  border-radius:999px;padding:3px}
+.hs-switch-btn{appearance:none;border:none;background:transparent;color:var(--text2);font-family:inherit;
+  font-size:12.5px;font-weight:600;letter-spacing:.01em;padding:7px 16px;border-radius:999px;cursor:pointer;
+  transition:all var(--trans);white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.hs-switch-btn:hover{color:var(--text)}
+.hs-switch-btn.active{background:linear-gradient(135deg,var(--gold-dk),var(--gold));color:#fff}
+body.light .hs-switch-btn.active{color:#fff}
+.hs-switch-btn.hs-compare-btn{color:var(--gold)}
+.hs-switch-btn.hs-compare-btn.active{background:linear-gradient(135deg,#3a3630,#4a453c);color:var(--gold-hi)}
+body.light .hs-switch-btn.hs-compare-btn.active{background:linear-gradient(135deg,#2a2a2a,#1a1a1a);color:#f0d9a8}
+
+/* ── Compare view ── */
+#hs-compare-view{display:none}
+.hs-compare-head{margin-bottom:16px}
+.hs-compare-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--text);letter-spacing:.01em}
+.hs-compare-sub{font-size:12.5px;color:var(--text2);margin-top:2px}
+.hs-compare-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:18px}
+.hs-compare-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;
+  transition:all var(--trans);position:relative}
+.hs-compare-card:hover{border-color:var(--border-hi)}
+.hs-compare-card.hs-leader::before{content:'✦ Terdepan';position:absolute;top:14px;right:16px;font-size:9px;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.hs-cc-name{font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--text);font-weight:600}
+.hs-cc-pct{font-size:11px;color:var(--text2);margin-top:1px}
+.hs-cc-bar-track{width:100%;height:8px;border-radius:5px;background:var(--bg3);margin:14px 0 10px;overflow:hidden;position:relative}
+.hs-cc-bar-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--gold-lo),var(--gold));transition:width 1s cubic-bezier(.16,1,.3,1)}
+.hs-cc-bar-fill.hs-over{background:linear-gradient(90deg,#4a9463,#7abf8e)}
+.hs-cc-amounts{display:flex;align-items:baseline;justify-content:space-between;font-size:12px;color:var(--text2)}
+.hs-cc-amounts b{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--gold-hi);font-weight:600}
+.hs-cc-stats{display:flex;gap:14px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.hs-cc-stat{flex:1;text-align:center}
+.hs-cc-stat-num{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--text)}
+.hs-cc-stat-lbl{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.hs-cc-stat.hs-warn .hs-cc-stat-num{color:var(--red)}
+
+.hs-chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px 24px;margin-bottom:18px}
+.hs-chart-title{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);margin-bottom:16px}
+.hs-chart-row{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.hs-chart-row:last-child{margin-bottom:0}
+.hs-chart-name{width:76px;flex-shrink:0;font-size:13px;font-weight:600;color:var(--text);text-align:right}
+.hs-chart-track{flex:1;position:relative;height:22px;background:var(--bg3);border-radius:5px;overflow:visible}
+.hs-chart-fill{position:absolute;left:0;top:0;height:100%;border-radius:5px;
+  background:linear-gradient(90deg,var(--gold-lo),var(--gold));transition:width 1s cubic-bezier(.16,1,.3,1)}
+.hs-chart-fill.hs-over{background:linear-gradient(90deg,#4a9463,#7abf8e)}
+.hs-chart-target-mark{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--text2)}
+.hs-chart-target-mark::after{content:'Target';position:absolute;top:-16px;left:50%;transform:translateX(-50%);
+  font-size:8px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.hs-chart-val{width:118px;flex-shrink:0;font-size:12px;color:var(--text2);text-align:left}
+.hs-chart-val b{color:var(--gold-hi);font-family:'Cormorant Garamond',serif;font-size:14.5px;font-weight:600}
+
+.hs-compare-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+
 /* ── Laporan Sesi Live (v9) — chip elegan gaya emas, pengganti ikon emoji ── */
 .lsr-report{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:2px 0}
 .lsr-stat{display:inline-flex;align-items:center;gap:6px;color:var(--gold)}
@@ -3585,6 +3645,16 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
           </div>
           <div class="ph-acts"></div>
         </div>
+
+        <!-- ══ HOST SWITCH (v10) — kontrol terpadu: pilih 1 host ATAU Bandingkan ══ -->
+        <div class="hs-switch-bar" id="hs-switch-bar" style="display:none">
+          <div class="hs-switch-lbl">Tampilkan</div>
+          <div class="hs-switch" id="hs-switch"></div>
+        </div>
+
+        <!-- ══ SINGLE-HOST VIEW — fokus ke 1 host live saja ══ -->
+        <div id="hs-single-view">
+
         <!-- ══ TARGET PENJUALAN LIVE (v8.1) — target per host + progress elegan ══ -->
         <div class="ph" style="margin-top:4px">
           <div class="ph-left">
@@ -3595,7 +3665,6 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
             <div class="ps" id="st-page-sub">Progress pencapaian target penjualan bulan ini</div>
           </div>
           <div class="ph-acts" id="st-mod-tools" style="display:none">
-            <select class="fi st-user-sel" id="st-user-sel" onchange="stSwitchUser(this.value)"></select>
             <button class="btn-sm btn-gold" onclick="openStTargetModal()">Atur Target</button>
           </div>
         </div>
@@ -3642,9 +3711,7 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
             </div>
             <div class="ps" id="ls-page-sub">Libur dan jadwal sesi live kamu bulan ini</div>
           </div>
-          <div class="ph-acts" id="ls-mod-tools" style="display:none">
-            <select class="fi ls-user-sel" id="ls-user-sel" onchange="lsSwitchUser(this.value)"></select>
-          </div>
+          <div class="ph-acts" id="ls-mod-tools" style="display:none"></div>
         </div>
 
         <div id="ls-pending-banner" style="display:none"></div>
@@ -3711,6 +3778,12 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
             </table>
           </div>
         </div>
+
+        </div><!-- /#hs-single-view -->
+
+        <!-- ══ COMPARE VIEW (v10) — bandingkan semua host live sekaligus ══ -->
+        <div id="hs-compare-view"></div>
+
       </div>
 
       <!-- ⑨ B2B PIPELINE (B2B Marketing) -->
@@ -6088,10 +6161,64 @@ function deleteDraft(id) {
 /* ═══════════════════════════════════════════════════════════
    ⑰-c LIVE STUDIO  (Host Live dashboard)
    ═══════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════
+   HOST SWITCH (v10) — kontrol terpadu Studio Live utk moderator.
+   Ganti 2 dropdown terpisah (Target & Jadwal) jadi 1 kontrol:
+   pilih salah satu host (fokus, tidak terpecah) ATAU "Bandingkan"
+   (gabungan — semua host dibandingkan sekaligus + diagram).
+   ═══════════════════════════════════════════════════════════ */
+let hsMode = 'single';   // 'single' | 'compare'
+
 function renderLiveStudio() {
   if (!currentUser) return;
-  renderSalesTargetPanel();
-  renderLiveSchedulePanel();
+  const isMod = can.isMod(currentUser.role);
+  const bar = document.getElementById('hs-switch-bar');
+
+  if (isMod) {
+    bar.style.display = '';
+    const ids = hostLiveIds();
+    let activeId = stTargetId || lsTargetId;
+    if (!activeId || !ids.includes(activeId)) activeId = ids[0];
+    stTargetId = activeId; lsTargetId = activeId;
+    renderHsSwitch(ids, hsMode === 'single' ? activeId : null);
+  } else {
+    bar.style.display = 'none';
+    hsMode = 'single';
+  }
+
+  applyHsViewMode();
+}
+
+function renderHsSwitch(ids, activeSingleId) {
+  const wrap = document.getElementById('hs-switch');
+  const btns = ids.map(id => {
+    const name = LOCAL_USERS[id]?.name || id;
+    const active = hsMode === 'single' && activeSingleId === id;
+    return `<button class="hs-switch-btn${active?' active':''}" onclick="hsSwitchTo('single','${id}')">${escHtml(name)}</button>`;
+  }).join('');
+  const compareActive = hsMode === 'compare';
+  wrap.innerHTML = btns + `<button class="hs-switch-btn hs-compare-btn${compareActive?' active':''}" onclick="hsSwitchTo('compare',null)">⇄ Bandingkan</button>`;
+}
+
+function hsSwitchTo(mode, uid) {
+  hsMode = mode;
+  if (mode === 'single' && uid) { stTargetId = uid; lsTargetId = uid; }
+  renderLiveStudio();
+}
+
+function applyHsViewMode() {
+  const singleEl  = document.getElementById('hs-single-view');
+  const compareEl = document.getElementById('hs-compare-view');
+  if (hsMode === 'compare') {
+    singleEl.style.display  = 'none';
+    compareEl.style.display = '';
+    loadHsCompareData();
+  } else {
+    singleEl.style.display  = '';
+    compareEl.style.display = 'none';
+    renderSalesTargetPanel();
+    renderLiveSchedulePanel();
+  }
 }
 function renderUpcomingLiveTable() {
   const tbody = document.getElementById('live-schedule-tbl');
@@ -6137,11 +6264,8 @@ function renderLiveSchedulePanel() {
     : 'Libur dan jadwal sesi live kamu bulan ini — diisi oleh moderator';
 
   if (isMod) {
-    const sel = document.getElementById('ls-user-sel');
     const ids = hostLiveIds();
-    sel.innerHTML = ids.map(id => `<option value="${id}" ${id===lsTargetId?'selected':''}>${LOCAL_USERS[id]?.name||id} (@${id})</option>`).join('');
     if (!ids.includes(lsTargetId) && ids.length) lsTargetId = ids[0];
-    sel.value = lsTargetId;
   }
 
   loadLsMonth();
@@ -6175,6 +6299,125 @@ async function loadLsPendingBanner() {
 
 function hostLiveIds() {
   return Object.entries(LOCAL_USERS).filter(([id,u]) => u.role === 'host_live').map(([id]) => id);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HOST SWITCH — COMPARE VIEW (v10)
+   "Bandingkan" — semua Host Live ditampilkan sekaligus & dibandingkan:
+   target vs pencapaian (diagram batang), jumlah sesi, libur, dan
+   laporan yang belum diisi. Elegan, minimalis, satu layar penuh.
+   ═══════════════════════════════════════════════════════════ */
+async function loadHsCompareData() {
+  const wrap = document.getElementById('hs-compare-view');
+  const ids = hostLiveIds();
+  if (!wrap) return;
+  if (!ids.length) { wrap.innerHTML = `<div class="tbl-wrap"><div class="tbl-empty" style="padding:28px">Belum ada Host Live terdaftar.</div></div>`; return; }
+
+  const ym = ymPeriodKey(new Date());
+  const y = new Date().getFullYear(), m = new Date().getMonth();
+  const first = ymdKey(new Date(y, m, 1));
+  const last  = ymdKey(new Date(y, m + 1, 0));
+
+  const rows = await Promise.all(ids.map(async id => {
+    let target = 0, achieved = 0, sessionsCount = 0, libur = 0, pending = 0;
+    if (db) {
+      const [tgtRes, logRes, schedRes, attRes, pendRes] = await Promise.all([
+        dbQ(d => d.from('host_sales_target').select('target_amount').eq('host_user_id', id).eq('period_ym', ym).maybeSingle()),
+        dbQ(d => d.from('host_sales_log').select('amount').eq('host_user_id', id).gte('log_date', ym + '-01')),
+        dbQ(d => d.from('live_schedule').select('id').eq('host_user_id', id).gte('schedule_date', first).lte('schedule_date', last)),
+        dbQ(d => d.from('attendance').select('att_date,status').eq('user_id', id).gte('att_date', first).lte('att_date', last)),
+        dbQ(d => d.from('v_live_sessions_pending').select('id').eq('host_user_id', id))
+      ]);
+      target        = Number(tgtRes?.data?.target_amount) || 0;
+      achieved       = (logRes?.data || []).reduce((s,r) => s + Number(r.amount || 0), 0);
+      sessionsCount  = (schedRes?.data || []).length;
+      libur          = (attRes?.data || []).filter(r => r.status === 'Libur').length;
+      pending        = (pendRes?.data || []).length;
+    }
+    return { id, name: LOCAL_USERS[id]?.name || id, target, achieved, sessionsCount, libur, pending };
+  }));
+
+  renderHsCompare(rows);
+}
+
+function renderHsCompare(rows) {
+  const wrap = document.getElementById('hs-compare-view');
+  if (!wrap) return;
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const now = new Date();
+
+  const pctOf = r => r.target > 0 ? r.achieved / r.target : (r.achieved > 0 ? 1 : 0);
+  const bestPct = rows.length ? Math.max(...rows.map(pctOf)) : 0;
+  const maxScale = Math.max(1, ...rows.map(r => Math.max(r.target, r.achieved)));
+
+  const cards = rows.map(r => {
+    const pct = r.target > 0 ? Math.min(r.achieved / r.target, 1) : 0;
+    const over = r.target > 0 && r.achieved >= r.target;
+    const isLeader = rows.length > 1 && bestPct > 0 && pctOf(r) === bestPct;
+    return `
+    <div class="hs-compare-card${isLeader ? ' hs-leader' : ''}">
+      <div class="hs-cc-name">${escHtml(r.name)}</div>
+      <div class="hs-cc-pct">${r.target > 0 ? Math.round(pctOf(r) * 100) + '% dari target' : 'Belum ada target diatur'}</div>
+      <div class="hs-cc-bar-track"><div class="hs-cc-bar-fill${over ? ' hs-over' : ''}" style="width:${Math.round(pct*100)}%"></div></div>
+      <div class="hs-cc-amounts"><span><b>${crmFmtRupiah(r.achieved)}</b></span><span>dari ${crmFmtRupiah(r.target)}</span></div>
+      <div class="hs-cc-stats">
+        <div class="hs-cc-stat"><div class="hs-cc-stat-num">${r.sessionsCount}</div><div class="hs-cc-stat-lbl">Sesi Bulan Ini</div></div>
+        <div class="hs-cc-stat"><div class="hs-cc-stat-num">${r.libur}</div><div class="hs-cc-stat-lbl">Libur</div></div>
+        <div class="hs-cc-stat${r.pending ? ' hs-warn' : ''}"><div class="hs-cc-stat-num">${r.pending}</div><div class="hs-cc-stat-lbl">Blm Lapor</div></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const chartRows = rows.map(r => {
+    const widthPct  = Math.round((r.achieved / maxScale) * 100);
+    const targetPct = r.target > 0 ? Math.min(Math.round((r.target / maxScale) * 100), 100) : null;
+    const over = r.target > 0 && r.achieved >= r.target;
+    return `
+    <div class="hs-chart-row">
+      <div class="hs-chart-name">${escHtml(r.name)}</div>
+      <div class="hs-chart-track">
+        <div class="hs-chart-fill${over ? ' hs-over' : ''}" style="width:${widthPct}%"></div>
+        ${targetPct !== null ? `<div class="hs-chart-target-mark" style="left:${targetPct}%"></div>` : ''}
+      </div>
+      <div class="hs-chart-val"><b>${crmFmtRupiah(r.achieved)}</b></div>
+    </div>`;
+  }).join('');
+
+  const tableRows = rows.map(r => `
+    <tr>
+      <td style="font-weight:600;color:var(--text)">${escHtml(r.name)}</td>
+      <td>${crmFmtRupiah(r.achieved)}</td>
+      <td>${crmFmtRupiah(r.target)}</td>
+      <td>${r.target > 0 ? Math.round(pctOf(r) * 100) + '%' : '—'}</td>
+      <td>${r.sessionsCount}</td>
+      <td>${r.libur}</td>
+      <td>${r.pending ? `<span style="color:var(--red);font-weight:600">${r.pending}</span>` : '0'}</td>
+    </tr>`).join('');
+
+  wrap.innerHTML = `
+    <div class="hs-compare-head">
+      <div class="hs-compare-title">Perbandingan Host Live</div>
+      <div class="hs-compare-sub">${months[now.getMonth()]} ${now.getFullYear()} — seluruh host dibandingkan sekaligus</div>
+    </div>
+
+    <div class="hs-compare-grid">${cards}</div>
+
+    <div class="hs-chart-wrap">
+      <div class="hs-chart-title">Pencapaian Penjualan vs Target</div>
+      ${chartRows}
+    </div>
+
+    <div class="tbl-wrap">
+      <div class="tbl-head"><div class="tbl-title">Ringkasan Perbandingan</div></div>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr>
+            <th>Host</th><th>Tercapai</th><th>Target</th><th>%</th><th>Sesi</th><th>Libur</th><th>Blm Lapor</th>
+          </tr></thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </div>
+    </div>`;
 }
 
 function lsSwitchUser(uid) { lsTargetId = uid; loadLsMonth(); }
@@ -12125,17 +12368,12 @@ function renderSalesTargetPanel() {
     : 'Progress pencapaian target penjualanmu bulan ini';
 
   if (isMod) {
-    const sel = document.getElementById('st-user-sel');
     const ids = stHostLiveIds();
-    sel.innerHTML = ids.map(id => `<option value="${id}" ${id===stTargetId?'selected':''}>${LOCAL_USERS[id]?.name||id} (@${id})</option>`).join('');
     if (!ids.includes(stTargetId) && ids.length) stTargetId = ids[0];
-    sel.value = stTargetId;
   }
 
   loadSalesTarget();
 }
-
-function stSwitchUser(uid) { stTargetId = uid; loadSalesTarget(); }
 
 async function loadSalesTarget() {
   stTarget = 0; stAchieved = 0; stLogCache = []; stPendingSessions = [];
