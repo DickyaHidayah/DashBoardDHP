@@ -12060,6 +12060,7 @@ let stTarget     = 0;
 let stAchieved   = 0;
 let stLogCache   = [];
 let stPendingSessions = [];           // sesi live milik host ini yg jam-nya lewat & belum dilaporkan (v9)
+let stTodaySessions   = [];           // seluruh sesi live host hari ini (utk deteksi "sesi lain belum selesai")
 const _stAchieveShown = new Set();    // guard anti-dobel dalam 1 sesi (bukan lintas hari/bulan)
 
 function ymPeriodKey(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
@@ -12097,10 +12098,10 @@ function renderSalesTargetPanel() {
 function stSwitchUser(uid) { stTargetId = uid; loadSalesTarget(); }
 
 async function loadSalesTarget() {
-  stTarget = 0; stAchieved = 0; stLogCache = []; stPendingSessions = [];
+  stTarget = 0; stAchieved = 0; stLogCache = []; stPendingSessions = []; stTodaySessions = [];
   const isHost = can.isHostLive(currentUser?.role);
   if (db && stTargetId) {
-    const [tgtRes, logRes, pendRes] = await Promise.all([
+    const [tgtRes, logRes, pendRes, todayRes] = await Promise.all([
       dbQ(d => d.from('host_sales_target').select('target_amount')
         .eq('host_user_id', stTargetId).eq('period_ym', stPeriodYm).maybeSingle()),
       dbQ(d => d.from('host_sales_log').select('*')
@@ -12109,11 +12110,15 @@ async function loadSalesTarget() {
         .order('log_date', { ascending: false })),
       isHost ? dbQ(d => d.from('v_live_sessions_pending').select('*')
         .eq('host_user_id', currentUser.id)
-        .order('schedule_date', { ascending: true }).order('time_end', { ascending: true })) : Promise.resolve(null)
+        .order('schedule_date', { ascending: true }).order('time_end', { ascending: true })) : Promise.resolve(null),
+      isHost ? dbQ(d => d.from('live_schedule').select('*')
+        .eq('host_user_id', currentUser.id).eq('schedule_date', ymdKey(new Date()))
+        .neq('status', 'cancelled').order('session_no', { ascending: true })) : Promise.resolve(null)
     ]);
     if (tgtRes?.data) stTarget = Number(tgtRes.data.target_amount) || 0;
     if (logRes?.data) { stLogCache = logRes.data; stAchieved = logRes.data.reduce((s,r) => s + Number(r.amount||0), 0); }
     if (pendRes?.data) stPendingSessions = pendRes.data;
+    if (todayRes?.data) stTodaySessions = todayRes.data;
   }
   renderSalesTargetCard();
   renderSalesLogTable();
@@ -12122,12 +12127,22 @@ async function loadSalesTarget() {
 
 /* ── Host: tombol aksi cepat — gantikan "+ Tambah Penjualan" manual.
    Sekarang penjualan HANYA masuk lewat laporan sesi live (host_submit_live_report),
-   jadi tombol ini langsung mengarah ke sesi yang paling perlu dilaporkan. ── */
+   jadi tombol ini langsung mengarah ke sesi yang paling perlu dilaporkan.
+   Kalau hari ini masih ada sesi lain yang belum berakhir jamnya, tampilkan
+   juga catatan halus "tunggu sesi ke-N selesai" supaya host tidak bingung
+   kenapa sesi itu belum bisa dilaporkan. ── */
 function renderStHostActions() {
   const wrap = document.getElementById('st-host-actions');
   if (!wrap) return;
   if (!can.isHostLive(currentUser?.role)) { wrap.style.display = 'none'; return; }
   wrap.style.display = '';
+
+  const upcomingToday = stTodaySessions.filter(s => s.products_sold == null && !lsSessionEnded(s));
+  const waitNote = upcomingToday.length
+    ? `<div class="lsr-pill" style="margin-top:8px">⏳ ${upcomingToday.map(s =>
+        `Sesi ${s.session_no} masih berlangsung — bisa dilaporkan setelah pukul ${(s.time_end||'').slice(0,5)}`
+      ).join(' · ')}</div>`
+    : '';
 
   if (stPendingSessions.length) {
     const next = stPendingSessions[0];
@@ -12138,7 +12153,12 @@ function renderStHostActions() {
         <span class="shp-title">Isi Laporan Sesi</span>
         <span class="shp-sub">Sesi ${next.session_no} · ${d.getDate()} ${months[d.getMonth()]} · ${(next.time_start||'').slice(0,5)}–${(next.time_end||'').slice(0,5)}</span>
       </button>
-      ${stPendingSessions.length > 1 ? `<div class="lsr-pill lsr-pill-wait" style="margin-top:8px">+${stPendingSessions.length - 1} sesi lain menunggu laporan</div>` : ''}`;
+      ${stPendingSessions.length > 1 ? `<div class="lsr-pill lsr-pill-wait" style="margin-top:8px">+${stPendingSessions.length - 1} sesi lain menunggu laporan</div>` : ''}
+      ${waitNote}`;
+  } else if (upcomingToday.length) {
+    wrap.innerHTML = `
+      <div class="lsr-pill lsr-pill-done" style="margin-bottom:0">✓ Sesi yang sudah selesai hari ini sudah dilaporkan</div>
+      ${waitNote}`;
   } else {
     wrap.innerHTML = `<div class="lsr-pill lsr-pill-done">✓ Semua sesi live sudah dilaporkan</div>`;
   }
