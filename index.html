@@ -299,6 +299,23 @@ body.light .heat-cold .hb-icon { background:rgba(26,86,160,.14); }
 .st-remark.st-remark-over{color:#7abf8e;font-weight:600}
 .st-actions{margin-top:14px}
 
+/* ── Laporan Sesi Live (v9) — chip elegan gaya emas, pengganti ikon emoji ── */
+.lsr-report{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:2px 0}
+.lsr-stat{display:inline-flex;align-items:center;gap:6px;color:var(--gold)}
+.lsr-stat svg{flex:none;opacity:.9}
+.lsr-stat b{font-family:'Cormorant Garamond',serif;font-size:15.5px;font-weight:600;color:var(--gold-hi);letter-spacing:.01em;white-space:nowrap}
+.lsr-divider{width:1px;height:13px;background:rgba(201,169,110,.28)}
+.lsr-edit-btn{border:none;background:transparent;color:var(--gold-lo);cursor:pointer;font-size:12px;padding:0 2px;opacity:.6;transition:opacity .15s ease,color .15s ease;line-height:1}
+.lsr-edit-btn:hover{opacity:1;color:var(--gold-hi)}
+.lsr-pill{display:inline-flex;align-items:center;gap:6px;font-family:'Cormorant Garamond',serif;font-size:12.5px;letter-spacing:.06em;color:var(--gold-lo);border:1px solid rgba(201,169,110,.32);border-radius:20px;padding:3px 11px;background:rgba(201,169,110,.04)}
+.lsr-pill.lsr-pill-done{color:#7abf8e;border-color:rgba(122,191,142,.35)}
+.lsr-pill.lsr-pill-wait{color:var(--gold-hi);border-color:rgba(201,169,110,.45);animation:lsrPulse 2.2s ease-in-out infinite}
+@keyframes lsrPulse{0%,100%{box-shadow:0 0 0 0 rgba(201,169,110,.18)}50%{box-shadow:0 0 0 4px rgba(201,169,110,.05)}}
+.st-host-pending-btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:linear-gradient(135deg,rgba(201,169,110,.14),rgba(201,169,110,.05));border:1px solid rgba(201,169,110,.4);border-radius:10px;padding:10px 16px;cursor:pointer;transition:border-color .2s ease,transform .15s ease}
+.st-host-pending-btn:hover{border-color:var(--gold);transform:translateY(-1px)}
+.st-host-pending-btn .shp-title{font-family:'Cormorant Garamond',serif;letter-spacing:.28em;font-size:10.5px;text-transform:uppercase;color:var(--gold)}
+.st-host-pending-btn .shp-sub{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--text)}
+
 /* Perayaan target tercapai — dipisah dari overlay follow-up milestone
    supaya tidak bentrok kalau kebetulan sama-sama terjadi */
 .st-achieve-overlay{
@@ -3600,9 +3617,7 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
               <div class="st-of-target">dari target <span id="st-target">Rp 0</span></div>
             </div>
             <div class="st-remark" id="st-remark">Belum ada target diatur bulan ini.</div>
-            <div class="st-actions" id="st-host-actions" style="display:none">
-              <button class="btn-sm btn-gold" onclick="openStAddSaleModal()">+ Tambah Penjualan</button>
-            </div>
+            <div class="st-actions" id="st-host-actions" style="display:none"></div>
           </div>
         </div>
 
@@ -6262,6 +6277,11 @@ function renderLsDayTable() {
     </tr>`).join('') : `<tr><td colspan="${isMod?7:6}" class="tbl-empty">Belum ada sesi live dijadwalkan tanggal ini</td></tr>`;
 }
 
+/* Ikon garis tipis (gold, currentColor) — dipakai di chip Laporan Sesi Live, gaya "exclusive" tanpa emoji */
+const LSR_ICON_PRODUCT = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.15" stroke-linejoin="round" stroke-linecap="round"><path d="M4.5 5.2 8 2.8l3.5 2.4"/><path d="M2.7 5.6 8 8.4l5.3-2.8M8 8.4v5.8"/><path d="M2.7 5.6v5.4L8 14.2l5.3-3.2V5.6"/></svg>`;
+const LSR_ICON_GMV     = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round"><path d="M4.8 6 8 2.3l3.2 3.7L8 14 4.8 6z"/><path d="M4.8 6h6.4M5.9 2.9 8 6l2.1-3.1M6.6 6 8 14l1.4-8"/></svg>`;
+const LSR_ICON_VIEWERS = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.15" stroke-linejoin="round" stroke-linecap="round"><path d="M1.3 8S3.9 3.6 8 3.6 14.7 8 14.7 8 12.1 12.4 8 12.4 1.3 8 1.3 8z"/><circle cx="8" cy="8" r="1.9"/></svg>`;
+
 /* ── Laporan Sesi Live (v9.0): produk terjual / GMV / penonton per sesi ──
    Sesi dianggap "menunggu laporan" begitu tanggal+jam selesainya SUDAH
    LEWAT dan belum ada products_sold — dihitung langsung dari jam lokal,
@@ -6277,28 +6297,45 @@ function lsReportCell(s, isMod, canFillHost) {
   if (s.status === 'cancelled') return `<span style="color:var(--text2)">—</span>`;
   if (s.products_sold != null) {
     const editBtn = (canFillHost || isMod)
-      ? `<button class="btn-sm btn-edit" onclick='openLsReportModal(${JSON.stringify(s.id)})' title="Ubah laporan">✎</button>` : '';
+      ? `<button class="lsr-edit-btn" onclick='openLsReportModal(${JSON.stringify(s.id)})' title="Ubah laporan">✎</button>` : '';
     return `
-      <div style="font-size:12.5px;line-height:1.5">
-        <div>🛒 ${s.products_sold.toLocaleString('id-ID')} produk</div>
-        <div>💰 ${crmFmtRupiah(s.gmv_amount||0)}</div>
-        <div>👁️ ${(s.viewers_count||0).toLocaleString('id-ID')} penonton ${editBtn}</div>
+      <div class="lsr-report">
+        <span class="lsr-stat" title="Produk terjual">${LSR_ICON_PRODUCT}<b>${s.products_sold.toLocaleString('id-ID')}</b></span>
+        <span class="lsr-divider"></span>
+        <span class="lsr-stat" title="Total GMV">${LSR_ICON_GMV}<b>${crmFmtRupiah(s.gmv_amount||0)}</b></span>
+        <span class="lsr-divider"></span>
+        <span class="lsr-stat" title="Total penonton">${LSR_ICON_VIEWERS}<b>${(s.viewers_count||0).toLocaleString('id-ID')}</b></span>
+        ${editBtn}
       </div>`;
   }
   if (lsSessionEnded(s)) {
     if (canFillHost || isMod) {
       return `<button class="btn-sm btn-gold" onclick='openLsReportModal(${JSON.stringify(s.id)})'>Isi Laporan</button>`;
     }
-    return `<span class="badge b-host_live">Menunggu Laporan</span>`;
+    return `<span class="lsr-pill lsr-pill-wait">◆ Menunggu Laporan</span>`;
   }
-  return `<span style="color:var(--text2)">Belum waktunya</span>`;
+  return `<span class="lsr-pill">Belum Waktunya</span>`;
 }
 
-/* ── Modal: Host isi / Moderator koreksi laporan 1 sesi live ── */
+/* ── Modal: Host isi / Moderator koreksi laporan 1 sesi live ──
+   Dipakai dari 2 tempat: tabel Jadwal Live (openLsReportModal, cari dari
+   lsMonthCache) dan tombol cepat di panel Target Penjualan Live
+   (stOpenPendingReport, cari dari stPendingSessions) — keduanya bermuara
+   ke renderReportModal(s) supaya isi & perilaku modal selalu konsisten. */
 function openLsReportModal(sessionId) {
   const all = Object.values(lsMonthCache).flat();
   const s = all.find(x => x.id === sessionId);
   if (!s) { toast('Sesi tidak ditemukan'); return; }
+  renderReportModal(s);
+}
+
+function stOpenPendingReport(sessionId) {
+  const s = stPendingSessions.find(x => x.id === sessionId);
+  if (!s) { toast('Sesi tidak ditemukan'); return; }
+  renderReportModal(s);
+}
+
+function renderReportModal(s) {
   const isMod = can.isMod(currentUser?.role);
   if (currentUser.id !== s.host_user_id && !isMod) { toast('Hanya host sesi ini atau moderator yang boleh mengisi'); return; }
 
@@ -6324,7 +6361,7 @@ function openLsReportModal(sessionId) {
     </div>`;
 
   document.getElementById('m-foot').innerHTML = `
-    <button class="btn-sm btn-gold" onclick="saveLsReport('${sessionId}')">${t('save')||'Simpan'}</button>
+    <button class="btn-sm btn-gold" onclick="saveLsReport('${s.id}')">${t('save')||'Simpan'}</button>
     <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')||'Batal'}</button>`;
   document.getElementById('modal-ov').classList.add('open');
 }
@@ -6356,8 +6393,23 @@ async function saveLsReport(sessionId) {
   closeModal();
   await loadLsMonth();
   await loadSalesTarget();
+  if (can.isMod(currentUser?.role)) await loadLsPendingBanner();
   toast('Laporan sesi live tersimpan');
   pushActivity(`Laporan sesi live ${sessionId} tersimpan — ${products} produk, ${crmFmtRupiah(gmv)}, ${viewers} penonton`, 'info');
+
+  // Perayaan target tercapai (khusus laporan sesi milik host sendiri, 1x per bulan)
+  if (currentUser.id === stTargetId && stTarget > 0 && stAchieved >= stTarget) {
+    const achKey = `${currentUser.id}-${stPeriodYm}`;
+    if (!_stAchieveShown.has(achKey)) {
+      _stAchieveShown.add(achKey);
+      openStAchieve(stTarget, stAchieved, currentUser.name);
+      pushNotif({
+        type: 'done', popup: false,
+        title: `🎉 Target Penjualan Tercapai!`,
+        msg: `${currentUser.name} berhasil mencapai target penjualan live bulan ini (${crmFmtRupiah(stTarget)}).`
+      });
+    }
+  }
 }
 
 /* ── Moderator: tambah/edit 1 sesi live (modal generik #modal-ov) ── */
@@ -12007,6 +12059,7 @@ let stPeriodYm   = ymPeriodKey(new Date());
 let stTarget     = 0;
 let stAchieved   = 0;
 let stLogCache   = [];
+let stPendingSessions = [];           // sesi live milik host ini yg jam-nya lewat & belum dilaporkan (v9)
 const _stAchieveShown = new Set();    // guard anti-dobel dalam 1 sesi (bukan lintas hari/bulan)
 
 function ymPeriodKey(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
@@ -12044,21 +12097,51 @@ function renderSalesTargetPanel() {
 function stSwitchUser(uid) { stTargetId = uid; loadSalesTarget(); }
 
 async function loadSalesTarget() {
-  stTarget = 0; stAchieved = 0; stLogCache = [];
+  stTarget = 0; stAchieved = 0; stLogCache = []; stPendingSessions = [];
+  const isHost = can.isHostLive(currentUser?.role);
   if (db && stTargetId) {
-    const [tgtRes, logRes] = await Promise.all([
+    const [tgtRes, logRes, pendRes] = await Promise.all([
       dbQ(d => d.from('host_sales_target').select('target_amount')
         .eq('host_user_id', stTargetId).eq('period_ym', stPeriodYm).maybeSingle()),
       dbQ(d => d.from('host_sales_log').select('*')
         .eq('host_user_id', stTargetId)
         .gte('log_date', stPeriodYm + '-01')
-        .order('log_date', { ascending: false }))
+        .order('log_date', { ascending: false })),
+      isHost ? dbQ(d => d.from('v_live_sessions_pending').select('*')
+        .eq('host_user_id', currentUser.id)
+        .order('schedule_date', { ascending: true }).order('time_end', { ascending: true })) : Promise.resolve(null)
     ]);
     if (tgtRes?.data) stTarget = Number(tgtRes.data.target_amount) || 0;
     if (logRes?.data) { stLogCache = logRes.data; stAchieved = logRes.data.reduce((s,r) => s + Number(r.amount||0), 0); }
+    if (pendRes?.data) stPendingSessions = pendRes.data;
   }
   renderSalesTargetCard();
   renderSalesLogTable();
+  renderStHostActions();
+}
+
+/* ── Host: tombol aksi cepat — gantikan "+ Tambah Penjualan" manual.
+   Sekarang penjualan HANYA masuk lewat laporan sesi live (host_submit_live_report),
+   jadi tombol ini langsung mengarah ke sesi yang paling perlu dilaporkan. ── */
+function renderStHostActions() {
+  const wrap = document.getElementById('st-host-actions');
+  if (!wrap) return;
+  if (!can.isHostLive(currentUser?.role)) { wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+
+  if (stPendingSessions.length) {
+    const next = stPendingSessions[0];
+    const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+    const d = new Date(next.schedule_date + 'T00:00:00');
+    wrap.innerHTML = `
+      <button class="st-host-pending-btn" onclick='stOpenPendingReport(${JSON.stringify(next.id)})'>
+        <span class="shp-title">Isi Laporan Sesi</span>
+        <span class="shp-sub">Sesi ${next.session_no} · ${d.getDate()} ${months[d.getMonth()]} · ${(next.time_start||'').slice(0,5)}–${(next.time_end||'').slice(0,5)}</span>
+      </button>
+      ${stPendingSessions.length > 1 ? `<div class="lsr-pill lsr-pill-wait" style="margin-top:8px">+${stPendingSessions.length - 1} sesi lain menunggu laporan</div>` : ''}`;
+  } else {
+    wrap.innerHTML = `<div class="lsr-pill lsr-pill-done">✓ Semua sesi live sudah dilaporkan</div>`;
+  }
 }
 
 function renderSalesTargetCard() {
@@ -12137,51 +12220,10 @@ async function saveStTarget() {
   pushActivity(`Target penjualan ${stTargetId} (${stPeriodYm}) diatur ${crmFmtRupiah(amount)}`, 'info');
 }
 
-/* ── Host Live: tambah pencapaian penjualan ── */
-function openStAddSaleModal() {
-  document.getElementById('m-title').textContent = 'Tambah Penjualan';
-  document.getElementById('m-body').innerHTML = `
-    <div class="fg"><label>Tanggal</label>
-      <input class="fi" id="st-ed-date" type="date" value="${ymdKey(new Date())}"/>
-    </div>
-    <div class="fg"><label>Jumlah (Rp)</label>
-      <input class="fi" id="st-ed-amount" type="number" min="0" step="10000" placeholder="mis. 1500000"/>
-    </div>
-    <div class="fg"><label>Catatan (opsional)</label>
-      <input class="fi" id="st-ed-note" placeholder="mis. hasil live sesi malam"/>
-    </div>`;
-  document.getElementById('m-foot').innerHTML = `
-    <button class="btn-sm btn-gold" onclick="saveStSale()">${t('save')||'Simpan'}</button>
-    <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')||'Batal'}</button>`;
-  document.getElementById('modal-ov').classList.add('open');
-}
-
-async function saveStSale() {
-  if (!db) { toast('Supabase tidak aktif'); return; }
-  const log_date = document.getElementById('st-ed-date').value;
-  const amount   = crmParseInt(document.getElementById('st-ed-amount').value);
-  const note     = document.getElementById('st-ed-note').value.trim();
-  if (!log_date || amount <= 0) { toast('Isi tanggal & jumlah dengan benar'); return; }
-
-  const res = await dbQ(d => d.rpc('add_host_sales', {
-    p_user_id: currentUser.id, p_host_user: stTargetId || currentUser.id,
-    p_log_date: log_date, p_amount: amount, p_note: note || null
-  }));
-  if (res?.error) { toast('Gagal menyimpan: ' + res.error.message); return; }
-  closeModal();
-  await loadSalesTarget();
-  toast(`Penjualan ${crmFmtRupiah(amount)} tercatat`);
-
-  if (res?.data && res.data.length && res.data[0].achieved_first_time) {
-    const row = res.data[0];
-    openStAchieve(row.target_amount, row.total_achieved, currentUser.name);
-    pushNotif({
-      type: 'done', popup: false,
-      title: `🎉 Target Penjualan Tercapai!`,
-      msg: `${currentUser.name} berhasil mencapai target penjualan live bulan ini (${crmFmtRupiah(row.target_amount)}).`
-    });
-  }
-}
+/* Catatan: input penjualan manual (openStAddSaleModal/add_host_sales) sudah
+   digantikan sepenuhnya oleh Laporan Sesi Live (host_submit_live_report).
+   Host tidak lagi menambah nominal secara manual — nominal GMV selalu
+   berasal dari laporan sesi yang sudah lewat jam live-nya. */
 
 async function deleteStSale(logId) {
   if (!can.isMod(currentUser?.role) || !db) return;
