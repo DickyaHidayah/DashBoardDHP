@@ -371,6 +371,87 @@ body.light .hs-switch-btn.hs-compare-btn.active{background:linear-gradient(135de
 .lsr-pill.lsr-pill-done{color:#7abf8e;border-color:rgba(122,191,142,.35)}
 .lsr-pill.lsr-pill-wait{color:var(--gold-hi);border-color:rgba(201,169,110,.45);animation:lsrPulse 2.2s ease-in-out infinite}
 @keyframes lsrPulse{0%,100%{box-shadow:0 0 0 0 rgba(201,169,110,.18)}50%{box-shadow:0 0 0 4px rgba(201,169,110,.05)}}
+
+/* ══════════════════════════════════════════════════════════
+   LAPORAN SESI — status ACC (v11): pending / approved / rejected
+   ══════════════════════════════════════════════════════════ */
+.lsr-pill.lsr-pill-pending{color:#e8b86e;border-color:rgba(232,184,110,.45);animation:lsrPulse 2.2s ease-in-out infinite}
+.lsr-pill.lsr-pill-rejected{color:#e87070;border-color:rgba(232,112,112,.4)}
+.lsr-pill.lsr-pill-locked{color:var(--text2);border-color:var(--border)}
+.lsr-reject-note{font-size:11px;color:#e87070;margin-top:4px;font-style:italic}
+
+/* ── Panel "Menunggu ACC" & "Izin Telat Lapor" (moderator) ── */
+.approval-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding:10px 0;border-bottom:1px solid var(--border)}
+.approval-row:last-child{border-bottom:none}
+.approval-row-info{font-size:12.5px;color:var(--text2);line-height:1.6}
+.approval-row-info b{color:var(--text);font-weight:600}
+.approval-row-acts{display:flex;gap:8px;flex-shrink:0}
+.btn-approve{background:rgba(122,191,142,.12);border:1px solid rgba(122,191,142,.4);color:#7abf8e}
+.btn-approve:hover{background:rgba(122,191,142,.22)}
+.btn-reject{background:rgba(232,112,112,.1);border:1px solid rgba(232,112,112,.35);color:#e87070}
+.btn-reject:hover{background:rgba(232,112,112,.2)}
+
+/* ══════════════════════════════════════════════════════════
+   DASHBOARD KINERJA HOST (v11) — kartu stat + diagram batang
+   ══════════════════════════════════════════════════════════ */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.dash-stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;
+  transition:border-color var(--trans)}
+.dash-stat-card:hover{border-color:var(--border-hi)}
+.dash-stat-num{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:var(--gold-hi);letter-spacing:.01em}
+.dash-stat-lbl{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.dash-stat-sub{font-size:10.5px;color:var(--text2);margin-top:3px}
+.dash-stat-card.dash-warn .dash-stat-num{color:#e87070}
+
+.dash-chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;margin-bottom:18px}
+.dash-chart-title{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);margin-bottom:16px}
+.dash-chart-bars{display:flex;align-items:flex-end;gap:3px;height:120px}
+.dash-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative;cursor:default}
+.dash-bar{width:100%;max-width:14px;border-radius:3px 3px 0 0;background:linear-gradient(180deg,var(--gold),var(--gold-lo));
+  transition:height .6s cubic-bezier(.16,1,.3,1);min-height:2px}
+.dash-bar.dash-bar-libur{background:linear-gradient(180deg,#6a7ba8,#4a5a80)}
+.dash-bar-col:hover .dash-bar{filter:brightness(1.2)}
+.dash-bar-col::after{content:attr(data-tip);position:absolute;bottom:100%;left:50%;transform:translateX(-50%) translateY(-6px);
+  background:var(--bg2);border:1px solid var(--border-hi);color:var(--text);font-size:10px;padding:4px 8px;border-radius:6px;
+  white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s ease;z-index:5}
+.dash-bar-col:hover::after{opacity:1}
+.dash-chart-legend{display:flex;gap:16px;margin-top:12px;font-size:10px;color:var(--text2)}
+.dash-chart-legend span{display:inline-flex;align-items:center;gap:5px}
+.dash-chart-legend i{width:9px;height:9px;border-radius:2px;display:inline-block}
+
+/* ── Overlay generik (reminder jadwal hari ini & motivasi laporan) ──
+   Pola sama seperti .st-achieve-overlay, dipakai ulang utk konsistensi. */
+.simple-overlay{
+  position:fixed;inset:0;z-index:9997;display:none;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 50% 38%, rgba(24,19,10,.96), rgba(3,2,1,.98) 75%);
+  backdrop-filter:blur(9px);opacity:0;transition:opacity .4s cubic-bezier(.4,0,.2,1);padding:20px;
+}
+.simple-overlay.open{display:flex}
+.simple-overlay.show{opacity:1}
+.simple-overlay-close{
+  position:absolute;top:20px;right:22px;width:36px;height:36px;border-radius:50%;
+  border:1px solid rgba(201,169,110,.25);background:rgba(255,255,255,.03);color:rgba(232,228,220,.6);
+  font-size:14px;cursor:pointer;transition:all .25s ease;display:flex;align-items:center;justify-content:center;
+}
+.simple-overlay-close:hover{background:rgba(232,112,112,.14);color:#e87070;border-color:rgba(232,112,112,.4);transform:rotate(90deg)}
+.simple-overlay-inner{position:relative;width:min(460px,92vw);text-align:center;
+  transform:scale(.88) translateY(12px);opacity:0;animation:fuMsIn .65s cubic-bezier(.16,1,.3,1) .08s forwards}
+.simple-overlay-badge{font-family:'Cormorant Garamond',serif;letter-spacing:.3em;font-size:11px;color:var(--gold);
+  text-transform:uppercase;margin-bottom:14px;opacity:.9}
+.simple-overlay-msg{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:26px;line-height:1.4;color:#e8cc99}
+.simple-overlay-sub{margin-top:14px;font-size:13px;letter-spacing:.02em;color:rgba(232,228,220,.62);font-family:'Inter',sans-serif}
+
+/* ── Ringkasan jadwal live hari ini (reminder popup) ── */
+.tr-session{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:rgba(201,169,110,.06);border:1px solid rgba(201,169,110,.18);border-radius:10px;
+  padding:10px 14px;margin-top:10px;text-align:left}
+.tr-session-time{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--gold-hi)}
+.tr-session-meta{font-size:11px;color:rgba(232,228,220,.55)}
+.tr-session-dur{font-size:11px;color:var(--gold);white-space:nowrap}
+.tr-total{margin-top:16px;font-size:13px;color:rgba(232,228,220,.7)}
+.tr-total b{color:#e8cc99;font-family:'Cormorant Garamond',serif;font-size:17px}
+
 .st-host-pending-btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:linear-gradient(135deg,rgba(201,169,110,.14),rgba(201,169,110,.05));border:1px solid rgba(201,169,110,.4);border-radius:10px;padding:10px 16px;cursor:pointer;transition:border-color .2s ease,transform .15s ease}
 .st-host-pending-btn:hover{border-color:var(--gold);transform:translateY(-1px)}
 .st-host-pending-btn .shp-title{font-family:'Cormorant Garamond',serif;letter-spacing:.28em;font-size:10.5px;text-transform:uppercase;color:var(--gold)}
@@ -3702,6 +3783,23 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
           </div>
         </div>
 
+        <!-- ══ DASHBOARD KINERJA (v11) — jam kerja, libur, penjualan, target + diagram harian ══ -->
+        <div class="ph" style="margin-top:22px">
+          <div class="ph-left">
+            <div class="pt">Dashboard Kinerja</div>
+            <div class="ps" id="dash-page-sub">Ringkasan performa bulan ini</div>
+          </div>
+        </div>
+        <div class="dash-grid" id="dash-stat-grid"></div>
+        <div class="dash-chart-wrap">
+          <div class="dash-chart-title">Jam Kerja per Hari — Bulan Ini</div>
+          <div class="dash-chart-bars" id="dash-chart-bars"></div>
+          <div class="dash-chart-legend">
+            <span><i style="background:var(--gold)"></i> Ada sesi live</span>
+            <span><i style="background:#4a5a80"></i> Libur</span>
+          </div>
+        </div>
+
         <!-- ══ JADWAL LIVE (v8.0) — kalender per bulan + tabel per tanggal ══ -->
         <div class="ph" style="margin-top:22px">
           <div class="ph-left">
@@ -3715,6 +3813,8 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
         </div>
 
         <div id="ls-pending-banner" style="display:none"></div>
+        <div id="ls-approval-banner" style="display:none"></div>
+        <div id="ls-permission-banner" style="display:none"></div>
 
         <div class="ads-toolbar">
           <div class="ads-month-nav">
@@ -6270,8 +6370,16 @@ function renderLiveSchedulePanel() {
 
   loadLsMonth();
   loadUpcomingLiveSchedule();
-  if (isMod) loadLsPendingBanner(); else {
+  loadHostDashboard();
+  if (isMod) {
+    loadLsPendingBanner();
+    loadLsApprovalBanner();
+    loadLsPermissionBanner();
+  } else {
     const b = document.getElementById('ls-pending-banner'); if (b) b.style.display = 'none';
+    const a = document.getElementById('ls-approval-banner'); if (a) a.style.display = 'none';
+    const p = document.getElementById('ls-permission-banner'); if (p) p.style.display = 'none';
+    if (can.isHostLive(currentUser.role) && currentUser.id === lsTargetId) maybeShowTodayReminder();
   }
 }
 
@@ -6301,6 +6409,144 @@ function hostLiveIds() {
   return Object.entries(LOCAL_USERS).filter(([id,u]) => u.role === 'host_live').map(([id]) => id);
 }
 
+/* ── Moderator: laporan yang menunggu ACC (v11) ── */
+async function loadLsApprovalBanner() {
+  const el = document.getElementById('ls-approval-banner');
+  if (!el || !db) return;
+  const res = await dbQ(d => d.from('v_live_reports_pending_approval').select('*').limit(50));
+  const rows = res?.data || [];
+  if (!rows.length) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  el.innerHTML = `
+    <div class="tbl-wrap" style="margin:10px 0;border:1px solid rgba(232,184,110,.35);background:rgba(232,184,110,.05)">
+      <div class="tbl-head"><div class="tbl-title" style="color:#e8b86e">◆ ${rows.length} laporan menunggu ACC</div></div>
+      <div style="padding:2px 14px 14px">
+        ${rows.map(r => {
+          const d = new Date(r.schedule_date + 'T00:00:00');
+          return `<div class="approval-row">
+            <div class="approval-row-info">
+              <b>${escHtml(r.host_name)}</b> — Sesi ${r.session_no}, ${d.getDate()} ${months[d.getMonth()]}
+              (${(r.time_start||'').slice(0,5)}–${(r.time_end||'').slice(0,5)})${r.report_is_late ? ' <span style="color:#e87070">· telat</span>' : ''}<br>
+              ${(r.products_sold||0).toLocaleString('id-ID')} produk · ${crmFmtRupiah(r.gmv_amount||0)} · ${(r.viewers_count||0).toLocaleString('id-ID')} penonton
+            </div>
+            <div class="approval-row-acts">
+              <button class="btn-sm btn-approve" onclick="approveLsReport('${r.id}')">✓ ACC</button>
+              <button class="btn-sm btn-reject" onclick="rejectLsReportPrompt('${r.id}')">✕ Tolak</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+async function approveLsReport(sessionId) {
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  const res = await dbQ(d => d.rpc('moderator_approve_live_report', { p_moderator_id: currentUser.id, p_session_id: sessionId, p_note: null }));
+  if (res?.error) { toast('Gagal ACC laporan: ' + res.error.message); return; }
+  toast('Laporan disetujui');
+  pushActivity(`Laporan sesi ${sessionId} disetujui`, 'info');
+  await Promise.all([loadLsMonth(), loadLsApprovalBanner(), loadSalesTarget(), loadHostDashboard()]);
+  const row = res?.data?.[0];
+  if (row && row.achieved_first_time) {
+    // biarkan host yang lihat perayaan target saat dia buka halaman sendiri
+  }
+}
+
+function rejectLsReportPrompt(sessionId) {
+  document.getElementById('m-title').textContent = 'Tolak Laporan Sesi';
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg"><label>Alasan Penolakan</label>
+      <textarea class="fi" id="lsr-reject-reason" rows="3" placeholder="mis. Angka GMV tidak sesuai screenshot"></textarea>
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-reject" onclick="submitRejectLsReport('${sessionId}')">Tolak Laporan</button>
+    <button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+
+async function submitRejectLsReport(sessionId) {
+  const reason = (document.getElementById('lsr-reject-reason').value || '').trim();
+  if (!reason) { toast('Alasan penolakan wajib diisi'); return; }
+  const res = await dbQ(d => d.rpc('moderator_reject_live_report', { p_moderator_id: currentUser.id, p_session_id: sessionId, p_reason: reason }));
+  if (res?.error) { toast('Gagal menolak laporan: ' + res.error.message); return; }
+  closeModal();
+  toast('Laporan ditolak, host perlu isi ulang');
+  pushActivity(`Laporan sesi ${sessionId} ditolak: ${reason}`, 'alert');
+  await Promise.all([loadLsMonth(), loadLsApprovalBanner(), loadSalesTarget(), loadHostDashboard()]);
+}
+
+/* ── Moderator: izin telat lapor yang menunggu keputusan (v11) ── */
+async function loadLsPermissionBanner() {
+  const el = document.getElementById('ls-permission-banner');
+  if (!el || !db) return;
+  const res = await dbQ(d => d.from('v_report_permissions_pending').select('*').limit(50));
+  const rows = res?.data || [];
+  if (!rows.length) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  el.innerHTML = `
+    <div class="tbl-wrap" style="margin:10px 0;border:1px solid rgba(201,169,110,.35);background:rgba(201,169,110,.05)">
+      <div class="tbl-head"><div class="tbl-title" style="color:var(--gold)">◈ ${rows.length} pengajuan izin telat lapor</div></div>
+      <div style="padding:2px 14px 14px">
+        ${rows.map(r => {
+          const d = new Date(r.schedule_date + 'T00:00:00');
+          return `<div class="approval-row">
+            <div class="approval-row-info">
+              <b>${escHtml(r.host_name)}</b> — Sesi ${r.session_no}, ${d.getDate()} ${months[d.getMonth()]}
+              (${(r.time_start||'').slice(0,5)}–${(r.time_end||'').slice(0,5)})<br>
+              "${escHtml(r.reason)}"
+            </div>
+            <div class="approval-row-acts">
+              <button class="btn-sm btn-approve" onclick="decideLsPermission('${r.id}', true)">✓ Izinkan</button>
+              <button class="btn-sm btn-reject" onclick="decideLsPermission('${r.id}', false)">✕ Tolak</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+async function decideLsPermission(requestId, approve) {
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  const res = await dbQ(d => d.rpc('moderator_decide_report_permission', {
+    p_moderator_id: currentUser.id, p_request_id: requestId, p_approve: approve, p_note: null
+  }));
+  if (res?.error) { toast('Gagal memproses izin: ' + res.error.message); return; }
+  toast(approve ? 'Izin diberikan' : 'Izin ditolak');
+  pushActivity(`Izin telat lapor ${requestId} ${approve ? 'disetujui' : 'ditolak'}`, 'info');
+  await Promise.all([loadLsMonth(), loadLsPermissionBanner()]);
+}
+
+/* ── Host: ajukan izin telat lapor utk 1 sesi yang sudah lewat batas (v11) ── */
+function openLateRequestModal(sessionId) {
+  document.getElementById('m-title').textContent = 'Ajukan Izin Telat Lapor';
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg" style="font-size:12.5px;color:var(--text2);margin-bottom:10px">
+      Batas isi laporan (23:59 tanggal sesi) sudah lewat. Jelaskan alasannya — moderator akan meninjau permintaanmu.
+    </div>
+    <div class="fg"><label>Alasan</label>
+      <textarea class="fi" id="lsr-late-reason" rows="3" placeholder="mis. Sinyal mati semalam, baru bisa input pagi ini"></textarea>
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-gold" onclick="submitLateRequest('${sessionId}')">Ajukan Izin</button>
+    <button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+
+async function submitLateRequest(sessionId) {
+  const reason = (document.getElementById('lsr-late-reason').value || '').trim();
+  if (!reason) { toast('Alasan izin wajib diisi'); return; }
+  const res = await dbQ(d => d.rpc('host_request_report_permission', {
+    p_host_id: currentUser.id, p_session_id: sessionId, p_reason: reason
+  }));
+  if (res?.error) { toast('Gagal mengajukan izin: ' + res.error.message); return; }
+  closeModal();
+  toast('Izin diajukan, menunggu keputusan moderator');
+  pushActivity(`${currentUser.id} mengajukan izin telat lapor sesi ${sessionId}`, 'alert');
+  await loadLsMonth();
+}
+
 /* ═══════════════════════════════════════════════════════════
    HOST SWITCH — COMPARE VIEW (v10)
    "Bandingkan" — semua Host Live ditampilkan sekaligus & dibandingkan:
@@ -6314,27 +6560,23 @@ async function loadHsCompareData() {
   if (!ids.length) { wrap.innerHTML = `<div class="tbl-wrap"><div class="tbl-empty" style="padding:28px">Belum ada Host Live terdaftar.</div></div>`; return; }
 
   const ym = ymPeriodKey(new Date());
-  const y = new Date().getFullYear(), m = new Date().getMonth();
-  const first = ymdKey(new Date(y, m, 1));
-  const last  = ymdKey(new Date(y, m + 1, 0));
 
   const rows = await Promise.all(ids.map(async id => {
-    let target = 0, achieved = 0, sessionsCount = 0, libur = 0, pending = 0;
+    let target = 0, achieved = 0, sessionsCount = 0, libur = 0, pending = 0, totalHours = 0;
     if (db) {
-      const [tgtRes, logRes, schedRes, attRes, pendRes] = await Promise.all([
-        dbQ(d => d.from('host_sales_target').select('target_amount').eq('host_user_id', id).eq('period_ym', ym).maybeSingle()),
-        dbQ(d => d.from('host_sales_log').select('amount').eq('host_user_id', id).gte('log_date', ym + '-01')),
-        dbQ(d => d.from('live_schedule').select('id').eq('host_user_id', id).gte('schedule_date', first).lte('schedule_date', last)),
-        dbQ(d => d.from('attendance').select('att_date,status').eq('user_id', id).gte('att_date', first).lte('att_date', last)),
+      const [statRes, pendRes] = await Promise.all([
+        dbQ(d => d.rpc('host_dashboard_stats', { p_host_id: id, p_period_ym: ym })),
         dbQ(d => d.from('v_live_sessions_pending').select('id').eq('host_user_id', id))
       ]);
-      target        = Number(tgtRes?.data?.target_amount) || 0;
-      achieved       = (logRes?.data || []).reduce((s,r) => s + Number(r.amount || 0), 0);
-      sessionsCount  = (schedRes?.data || []).length;
-      libur          = (attRes?.data || []).filter(r => r.status === 'Libur').length;
+      const st = statRes?.data?.[0];
+      target        = Number(st?.target_amount) || 0;
+      achieved       = Number(st?.total_sales) || 0;
+      sessionsCount  = Number(st?.total_sessions) || 0;
+      libur          = Number(st?.total_libur) || 0;
+      totalHours     = Number(st?.total_hours) || 0;
       pending        = (pendRes?.data || []).length;
     }
-    return { id, name: LOCAL_USERS[id]?.name || id, target, achieved, sessionsCount, libur, pending };
+    return { id, name: LOCAL_USERS[id]?.name || id, target, achieved, sessionsCount, libur, pending, totalHours };
   }));
 
   renderHsCompare(rows);
@@ -6361,6 +6603,7 @@ function renderHsCompare(rows) {
       <div class="hs-cc-bar-track"><div class="hs-cc-bar-fill${over ? ' hs-over' : ''}" style="width:${Math.round(pct*100)}%"></div></div>
       <div class="hs-cc-amounts"><span><b>${crmFmtRupiah(r.achieved)}</b></span><span>dari ${crmFmtRupiah(r.target)}</span></div>
       <div class="hs-cc-stats">
+        <div class="hs-cc-stat"><div class="hs-cc-stat-num">${r.totalHours.toFixed(1)}j</div><div class="hs-cc-stat-lbl">Jam Kerja</div></div>
         <div class="hs-cc-stat"><div class="hs-cc-stat-num">${r.sessionsCount}</div><div class="hs-cc-stat-lbl">Sesi Bulan Ini</div></div>
         <div class="hs-cc-stat"><div class="hs-cc-stat-num">${r.libur}</div><div class="hs-cc-stat-lbl">Libur</div></div>
         <div class="hs-cc-stat${r.pending ? ' hs-warn' : ''}"><div class="hs-cc-stat-num">${r.pending}</div><div class="hs-cc-stat-lbl">Blm Lapor</div></div>
@@ -6389,6 +6632,7 @@ function renderHsCompare(rows) {
       <td>${crmFmtRupiah(r.achieved)}</td>
       <td>${crmFmtRupiah(r.target)}</td>
       <td>${r.target > 0 ? Math.round(pctOf(r) * 100) + '%' : '—'}</td>
+      <td>${r.totalHours.toFixed(1)} jam</td>
       <td>${r.sessionsCount}</td>
       <td>${r.libur}</td>
       <td>${r.pending ? `<span style="color:var(--red);font-weight:600">${r.pending}</span>` : '0'}</td>
@@ -6412,7 +6656,7 @@ function renderHsCompare(rows) {
       <div class="tbl-scroll">
         <table>
           <thead><tr>
-            <th>Host</th><th>Tercapai</th><th>Target</th><th>%</th><th>Sesi</th><th>Libur</th><th>Blm Lapor</th>
+            <th>Host</th><th>Tercapai</th><th>Target</th><th>%</th><th>Jam Kerja</th><th>Sesi</th><th>Libur</th><th>Blm Lapor</th>
           </tr></thead>
           <tbody>${tableRows}</tbody>
         </table>
@@ -6447,6 +6691,16 @@ async function loadLsMonth() {
       (lsMonthCache[s.schedule_date] = lsMonthCache[s.schedule_date] || []).push(s);
     });
     if (attRes?.data) attRes.data.forEach(r => { lsAttCache[r.att_date] = r.status; });
+
+    // Tandai status pengajuan izin telat lapor (v11) — dipakai lsReportCell
+    const sessionIds = (schedRes?.data || []).filter(s => s.products_sold == null).map(s => s.id);
+    if (sessionIds.length) {
+      const permRes = await dbQ(d => d.from('host_report_permissions').select('session_id,status')
+        .in('session_id', sessionIds).order('requested_at', { ascending: false }));
+      const permByFinal = {};
+      (permRes?.data || []).forEach(p => { if (!(p.session_id in permByFinal)) permByFinal[p.session_id] = p.status; });
+      Object.values(lsMonthCache).flat().forEach(s => { if (permByFinal[s.id]) s._pendingPermission = permByFinal[s.id]; });
+    }
   }
 
   renderLsCalendar();
@@ -6541,11 +6795,23 @@ function lsSessionEnded(s) {
   return end.getTime() <= Date.now();
 }
 
+function lsReportDeadlinePassed(s) {
+  const todayKey = ymdKey(new Date());
+  return s.schedule_date < todayKey;   // lewat tanggal sesi (23:59 WIB tanggal itu)
+}
+
 function lsReportCell(s, isMod, canFillHost) {
   if (s.status === 'cancelled') return `<span style="color:var(--text2)">—</span>`;
+
   if (s.products_sold != null) {
     const editBtn = (canFillHost || isMod)
       ? `<button class="lsr-edit-btn" onclick='openLsReportModal(${JSON.stringify(s.id)})' title="Ubah laporan">✎</button>` : '';
+    const statusPill =
+      s.report_status === 'approved'  ? `<span class="lsr-pill lsr-pill-done">✓ Disetujui</span>` :
+      s.report_status === 'rejected'  ? `<span class="lsr-pill lsr-pill-rejected">✕ Ditolak</span>` :
+                                          `<span class="lsr-pill lsr-pill-pending">◈ Menunggu ACC</span>`;
+    const rejectNote = s.report_status === 'rejected' && s.report_reject_note
+      ? `<div class="lsr-reject-note">Alasan: ${escHtml(s.report_reject_note)}</div>` : '';
     return `
       <div class="lsr-report">
         <span class="lsr-stat" title="Produk terjual">${LSR_ICON_PRODUCT}<b>${s.products_sold.toLocaleString('id-ID')}</b></span>
@@ -6553,10 +6819,22 @@ function lsReportCell(s, isMod, canFillHost) {
         <span class="lsr-stat" title="Total GMV">${LSR_ICON_GMV}<b>${crmFmtRupiah(s.gmv_amount||0)}</b></span>
         <span class="lsr-divider"></span>
         <span class="lsr-stat" title="Total penonton">${LSR_ICON_VIEWERS}<b>${(s.viewers_count||0).toLocaleString('id-ID')}</b></span>
+        ${statusPill}
         ${editBtn}
-      </div>`;
+      </div>${rejectNote}`;
   }
+
   if (lsSessionEnded(s)) {
+    const late = lsReportDeadlinePassed(s);
+    if (late && canFillHost && !isMod) {
+      if (s._pendingPermission === 'pending') {
+        return `<span class="lsr-pill lsr-pill-locked">⏳ Menunggu Izin Moderator</span>`;
+      }
+      if (s._pendingPermission === 'approved') {
+        return `<button class="btn-sm btn-gold" onclick='openLsReportModal(${JSON.stringify(s.id)})'>Isi Laporan (Izin Disetujui)</button>`;
+      }
+      return `<button class="btn-sm btn-cancel" onclick='openLateRequestModal(${JSON.stringify(s.id)})'>🔒 Ajukan Izin Telat Lapor</button>`;
+    }
     if (canFillHost || isMod) {
       return `<button class="btn-sm btn-gold" onclick='openLsReportModal(${JSON.stringify(s.id)})'>Isi Laporan</button>`;
     }
@@ -6583,9 +6861,11 @@ function stOpenPendingReport(sessionId) {
   renderReportModal(s);
 }
 
+let _lsReportHostId = null;
 function renderReportModal(s) {
   const isMod = can.isMod(currentUser?.role);
   if (currentUser.id !== s.host_user_id && !isMod) { toast('Hanya host sesi ini atau moderator yang boleh mengisi'); return; }
+  _lsReportHostId = s.host_user_id;
 
   const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
   const dObj = new Date(s.schedule_date + 'T00:00:00');
@@ -6637,27 +6917,191 @@ async function saveLsReport(sessionId) {
     p_products_sold: products, p_gmv_amount: gmv, p_viewers_count: viewers,
     p_note: note || null
   }));
-  if (res?.error) { toast('Gagal menyimpan laporan: ' + res.error.message); return; }
+  if (res?.error) {
+    if (String(res.error.message||'').includes('LATE_LOCKED')) {
+      closeModal();
+      openLateRequestModal(sessionId);
+      return;
+    }
+    toast('Gagal menyimpan laporan: ' + res.error.message);
+    return;
+  }
   closeModal();
   await loadLsMonth();
   await loadSalesTarget();
-  if (can.isMod(currentUser?.role)) await loadLsPendingBanner();
-  toast('Laporan sesi live tersimpan');
-  pushActivity(`Laporan sesi live ${sessionId} tersimpan — ${products} produk, ${crmFmtRupiah(gmv)}, ${viewers} penonton`, 'info');
+  await loadHostDashboard();
+  if (can.isMod(currentUser?.role)) { await loadLsApprovalBanner(); await loadLsPendingBanner(); }
+  pushActivity(`Laporan sesi live ${sessionId} disimpan — ${products} produk, ${crmFmtRupiah(gmv)}, ${viewers} penonton — menunggu ACC moderator`, 'info');
 
-  // Perayaan target tercapai (khusus laporan sesi milik host sendiri, 1x per bulan)
-  if (currentUser.id === stTargetId && stTarget > 0 && stAchieved >= stTarget) {
-    const achKey = `${currentUser.id}-${stPeriodYm}`;
-    if (!_stAchieveShown.has(achKey)) {
-      _stAchieveShown.add(achKey);
-      openStAchieve(stTarget, stAchieved, currentUser.name);
-      pushNotif({
-        type: 'done', popup: false,
-        title: `🎉 Target Penjualan Tercapai!`,
-        msg: `${currentUser.name} berhasil mencapai target penjualan live bulan ini (${crmFmtRupiah(stTarget)}).`
-      });
-    }
+  // Popup semangat/motivasi (v11) — beda pesan tergantung laporan 0 atau ada isinya.
+  // Hanya untuk host mengisi laporannya sendiri (bukan moderator mengoreksi punya orang lain).
+  if (currentUser.id === _lsReportHostId) {
+    const isZero = (products === 0 && gmv === 0 && viewers === 0);
+    openMotivPopup(isZero ? 'zero' : 'filled');
+  } else {
+    toast('Laporan tersimpan, menunggu ACC moderator');
   }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   POPUP MOTIVASI SETELAH LAPORAN DISIMPAN (v11)
+   Elegan, minimalis, 1 layar penuh — auto-close, kata-kata acak.
+   'zero'   → laporan 0 semua (semangat, tanpa menghakimi)
+   'filled' → laporan ada isinya (apresiasi/semangat)
+   ═══════════════════════════════════════════════════════════ */
+const MV_QUOTES_ZERO = [
+  'Sesi kali ini belum membuahkan hasil — tidak apa. Setiap live adalah latihan menuju yang lebih baik.',
+  'Angka nol hari ini bukan akhir cerita. Evaluasi kecil, sesi berikutnya bisa jauh lebih baik.',
+  'Tenang, ini bagian dari proses. Yang penting kamu tetap konsisten hadir dan mencoba.',
+  'Belum ada penjualan bukan berarti belum ada usaha. Terus asah cara membawakan sesi live-mu.',
+  'Satu sesi sepi bukan penentu. Semangat lagi untuk sesi berikutnya, kamu pasti bisa!',
+  'Coba evaluasi konten & waktu live-mu. Sesi berikutnya adalah kesempatan baru.',
+  'Setiap host pernah mengalami sesi sepi. Yang membedakan adalah yang terus mencoba.',
+];
+const MV_QUOTES_FILLED = [
+  'Kerja bagus! Setiap laporan yang kamu isi adalah bukti kerja kerasmu di depan kamera.',
+  'Mantap! Hasil kerja kerasmu hari ini sudah tercatat rapi. Pertahankan momentumnya.',
+  'Luar biasa — konsistensi seperti inilah yang membawa hasil. Terus semangat!',
+  'Terima kasih sudah melaporkan tepat waktu. Semoga sesi berikutnya makin ciamik!',
+  'Kerja keras hari ini terbayar. Lanjutkan energi positifnya di sesi berikutnya!',
+  'Setiap produk yang terjual adalah hasil usahamu di depan layar. Keren!',
+  'Progress kecil tiap hari akan membawa hasil besar. Kamu di jalur yang tepat!',
+];
+let _mvAutoCloseTO = null;
+function openMotivPopup(kind) {
+  const ov = document.getElementById('mv-overlay'); if (!ov) return;
+  const pool = kind === 'zero' ? MV_QUOTES_ZERO : MV_QUOTES_FILLED;
+  const quote = pool[Math.floor(Math.random() * pool.length)];
+  document.getElementById('mv-badge').textContent = kind === 'zero' ? '✦ Tetap Semangat ✦' : '✦ Laporan Tersimpan ✦';
+  document.getElementById('mv-msg').textContent = quote;
+  document.getElementById('mv-sub').textContent = 'Laporanmu tersimpan dan sedang menunggu ACC moderator.';
+  ov.classList.add('open');
+  requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('show')));
+  clearTimeout(_mvAutoCloseTO);
+  _mvAutoCloseTO = setTimeout(closeMotivPopup, 4800);
+}
+function closeMotivPopup() {
+  const ov = document.getElementById('mv-overlay'); if (!ov) return;
+  ov.classList.remove('show');
+  clearTimeout(_mvAutoCloseTO);
+  setTimeout(() => ov.classList.remove('open'), 400);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   POPUP JADWAL LIVE HARI INI (v11)
+   Muncul 1x per hari saat Host Live membuka Studio Live, HANYA
+   kalau ada sesi live terjadwal hari itu. Menampilkan jam per
+   sesi & total jam live hari ini.
+   ═══════════════════════════════════════════════════════════ */
+async function maybeShowTodayReminder() {
+  if (!currentUser || !db) return;
+  const key = `dhp_ls_reminder_${currentUser.id}_${ymdKey(new Date())}`;
+  if (localStorage.getItem(key)) return;
+
+  const todayKey = ymdKey(new Date());
+  const res = await dbQ(d => d.from('live_schedule').select('*')
+    .eq('host_user_id', currentUser.id).eq('schedule_date', todayKey)
+    .neq('status', 'cancelled').order('session_no', { ascending: true }));
+  const sessions = res?.data || [];
+  if (!sessions.length) return;
+
+  localStorage.setItem(key, '1');
+
+  const durHours = (s) => {
+    const [sh,sm] = (s.time_start||'00:00').split(':').map(Number);
+    const [eh,em] = (s.time_end||'00:00').split(':').map(Number);
+    return Math.max(0, ((eh*60+em) - (sh*60+sm)) / 60);
+  };
+  const totalHours = sessions.reduce((sum,s) => sum + durHours(s), 0);
+
+  document.getElementById('tr-msg').textContent =
+    sessions.length > 1 ? `Kamu ada ${sessions.length} sesi live hari ini` : 'Kamu ada 1 sesi live hari ini';
+  document.getElementById('tr-sessions').innerHTML = sessions.map(s => `
+    <div class="tr-session">
+      <div>
+        <div class="tr-session-time">${(s.time_start||'').slice(0,5)}–${(s.time_end||'').slice(0,5)}</div>
+        <div class="tr-session-meta">Sesi ${s.session_no}${s.platform ? ' · ' + escHtml(s.platform) : ''}${s.show_title ? ' · ' + escHtml(s.show_title) : ''}</div>
+      </div>
+      <div class="tr-session-dur">${durHours(s).toFixed(1)} jam</div>
+    </div>`).join('');
+  document.getElementById('tr-total').innerHTML = `Total jam live hari ini: <b>${totalHours.toFixed(1)} jam</b> dari ${sessions.length} sesi`;
+
+  const ov = document.getElementById('tr-overlay');
+  ov.classList.add('open');
+  requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('show')));
+}
+function closeTodayReminder() {
+  const ov = document.getElementById('tr-overlay'); if (!ov) return;
+  ov.classList.remove('show');
+  setTimeout(() => ov.classList.remove('open'), 400);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DASHBOARD KINERJA HOST (v11)
+   Dipakai di Studio Live (single-host view): kartu stat + diagram
+   batang jam kerja per hari, bulan berjalan. Host melihat datanya
+   sendiri; moderator melihat host yang sedang dipilih (lsTargetId).
+   Panel "Bandingkan" (hs-compare-view) memakai sumber data yang sama
+   (host_dashboard_stats) supaya angkanya selalu konsisten.
+   ═══════════════════════════════════════════════════════════ */
+async function loadHostDashboard() {
+  const grid = document.getElementById('dash-stat-grid');
+  const bars = document.getElementById('dash-chart-bars');
+  if (!grid || !bars || !currentUser) return;
+  const hostId = lsTargetId || (can.isHostLive(currentUser.role) ? currentUser.id : null);
+  if (!hostId) { grid.innerHTML = ''; bars.innerHTML = ''; return; }
+  const ym = ymPeriodKey(new Date());
+
+  document.getElementById('dash-page-sub').textContent =
+    `Performa ${LOCAL_USERS[hostId]?.name || hostId} bulan ini`;
+
+  let stats = null, daily = [];
+  if (db) {
+    const [statRes, dailyRes] = await Promise.all([
+      dbQ(d => d.rpc('host_dashboard_stats', { p_host_id: hostId, p_period_ym: ym })),
+      dbQ(d => d.rpc('host_dashboard_daily', { p_host_id: hostId, p_period_ym: ym }))
+    ]);
+    stats = statRes?.data?.[0] || null;
+    daily = dailyRes?.data || [];
+  }
+  renderHostDashboard(stats, daily);
+}
+
+function renderHostDashboard(stats, daily) {
+  const grid = document.getElementById('dash-stat-grid');
+  const bars = document.getElementById('dash-chart-bars');
+  if (!grid || !bars) return;
+
+  const s = stats || { total_hours:0, total_sessions:0, approved_sessions:0, pending_sessions:0,
+                        total_libur:0, total_sales:0, target_amount:0, avg_hours_session:0, late_reports:0 };
+
+  const cards = [
+    { num: `${Number(s.total_hours||0).toFixed(1)} j`, lbl: 'Total Jam Kerja' },
+    { num: s.total_sessions||0, lbl: 'Total Sesi Live' },
+    { num: s.total_libur||0, lbl: 'Total Libur' },
+    { num: crmFmtRupiah(s.total_sales||0), lbl: 'Total Penjualan' },
+    { num: crmFmtRupiah(s.target_amount||0), lbl: 'Target Bulan Ini' },
+    { num: s.pending_sessions||0, lbl: 'Menunggu ACC', warn: (s.pending_sessions||0) > 0 },
+  ];
+  grid.innerHTML = cards.map(c => `
+    <div class="dash-stat-card${c.warn ? ' dash-warn' : ''}">
+      <div class="dash-stat-num">${c.num}</div>
+      <div class="dash-stat-lbl">${c.lbl}</div>
+    </div>`).join('');
+
+  const maxHours = Math.max(1, ...daily.map(d => Number(d.hours||0)));
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  bars.innerHTML = daily.map(d => {
+    const dObj = new Date(d.day_date + 'T00:00:00');
+    const h = Number(d.hours||0);
+    const heightPct = h > 0 ? Math.max(4, Math.round((h / maxHours) * 100)) : (d.is_libur ? 8 : 2);
+    const tip = d.is_libur ? `${dObj.getDate()} ${months[dObj.getMonth()]} · Libur`
+              : h > 0 ? `${dObj.getDate()} ${months[dObj.getMonth()]} · ${h.toFixed(1)} jam (${d.sessions} sesi)`
+              : `${dObj.getDate()} ${months[dObj.getMonth()]} · tidak ada sesi`;
+    return `<div class="dash-bar-col" data-tip="${tip}">
+      <div class="dash-bar${d.is_libur ? ' dash-bar-libur' : ''}" style="height:${heightPct}%"></div>
+    </div>`;
+  }).join('');
 }
 
 /* ── Moderator: tambah/edit 1 sesi live (modal generik #modal-ov) ── */
@@ -12316,6 +12760,27 @@ function maybeRemindPendingFollowup(pendingCount) {
 }
 </script>
 
+<!-- ══ JADWAL LIVE HARI INI: REMINDER POPUP (v11) — muncul saat Host buka Studio Live ══ -->
+<div class="simple-overlay" id="tr-overlay">
+  <button class="simple-overlay-close" onclick="closeTodayReminder()" title="Tutup">✕</button>
+  <div class="simple-overlay-inner">
+    <div class="simple-overlay-badge">✦ Jadwal Live Hari Ini ✦</div>
+    <div class="simple-overlay-msg" id="tr-msg">Kamu ada live hari ini</div>
+    <div id="tr-sessions"></div>
+    <div class="tr-total" id="tr-total"></div>
+  </div>
+</div>
+
+<!-- ══ LAPORAN SESI: POPUP MOTIVASI (v11) — muncul stlh laporan disimpan ══ -->
+<div class="simple-overlay" id="mv-overlay">
+  <button class="simple-overlay-close" onclick="closeMotivPopup()" title="Tutup">✕</button>
+  <div class="simple-overlay-inner">
+    <div class="simple-overlay-badge" id="mv-badge">✦ Laporan Tersimpan ✦</div>
+    <div class="simple-overlay-msg" id="mv-msg">—</div>
+    <div class="simple-overlay-sub" id="mv-sub"></div>
+  </div>
+</div>
+
 <!-- ══ TARGET PENJUALAN LIVE: PERAYAAN TERCAPAI (v8.1) ══ -->
 <div class="st-achieve-overlay" id="st-achieve-overlay">
   <button class="st-achieve-close" onclick="closeStAchieve()" title="Tutup">✕</button>
@@ -12397,6 +12862,21 @@ async function loadSalesTarget() {
   renderSalesTargetCard();
   renderSalesLogTable();
   renderStHostActions();
+
+  // Perayaan target tercapai (v11: dicek di sini krn GMV baru masuk host_sales_log
+  // setelah laporan sesi di-ACC moderator, bukan lagi langsung saat host submit)
+  if (currentUser.id === stTargetId && stTarget > 0 && stAchieved >= stTarget) {
+    const achKey = `${currentUser.id}-${stPeriodYm}`;
+    if (!_stAchieveShown.has(achKey)) {
+      _stAchieveShown.add(achKey);
+      openStAchieve(stTarget, stAchieved, currentUser.name);
+      pushNotif({
+        type: 'done', popup: false,
+        title: `🎉 Target Penjualan Tercapai!`,
+        msg: `${currentUser.name} berhasil mencapai target penjualan live bulan ini (${crmFmtRupiah(stTarget)}).`
+      });
+    }
+  }
 }
 
 /* ── Host: tombol aksi cepat — gantikan "+ Tambah Penjualan" manual.
