@@ -842,7 +842,7 @@ body.light .np-pop-x{ color:rgba(13,13,13,.5); }
 body.light .np-pop-x:hover{ background:#f0f0f0; color:#0d0d0d; }
 
 /* ── Toast ── */
-body.light #toast{ background:#0d0d0d; color:#ffffff; border:none; box-shadow:0 4px 20px rgba(0,0,0,.2); }
+body.light #toast{ background:#141414; color:#ffffff; box-shadow:0 10px 30px rgba(0,0,0,.3); }
 
 /* ── Presence FAB & Panel ── */
 body.light .fab-btn{ background:#0d0d0d; border:none; color:#ffffff; box-shadow:0 2px 12px rgba(0,0,0,.15); }
@@ -1773,10 +1773,17 @@ body.light .ni-time{color:rgba(13,13,13,.45)}
 
 /* ── TOAST ── */
 #toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
-    background:var(--surface);border:1px solid var(--border-hi);border-radius:20px;padding:10px 20px;
-    font-size:12px;color:var(--text);z-index:2000;opacity:0;pointer-events:none;
-    transition:all .3s;white-space:nowrap;max-width:90vw;text-align:center}
+    display:flex;align-items:flex-start;gap:9px;
+    background:#141414;border:1px solid rgba(232,184,110,.4);border-left:3px solid #e8b86e;border-radius:14px;
+    padding:13px 18px;box-shadow:0 10px 30px rgba(0,0,0,.35);
+    font-size:13.5px;font-weight:600;letter-spacing:.1px;line-height:1.45;color:#ffffff;
+    z-index:2000;opacity:0;pointer-events:none;
+    transition:all .3s cubic-bezier(.4,0,.2,1);white-space:normal;width:max-content;max-width:min(420px,90vw);text-align:left}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.err{border-color:rgba(232,112,112,.45);border-left-color:#e87070}
+#toast .t-ic{flex-shrink:0;font-size:14px;line-height:1.45}
+#toast.err .t-ic{color:#e87070}
+#toast:not(.err) .t-ic{color:#e8b86e}
 
 /* ══════ ELEGANT NOTIFICATION POPUP (top-right, 8s, minimalis) ══════ */
 #np-stack{position:fixed;top:64px;right:16px;z-index:2600;display:flex;flex-direction:column;
@@ -2972,6 +2979,61 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
   font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
   border:1px solid transparent;
 }
+/* ══════ ONBOARDING TUTORIAL — game-style step-by-step guide ══════ */
+#tut-overlay{position:fixed;inset:0;z-index:9000;display:none;pointer-events:none}
+#tut-overlay.show{display:block}
+#tut-dim{position:fixed;inset:0;background:rgba(6,6,8,.72);backdrop-filter:blur(1.5px);
+  pointer-events:auto;opacity:0;transition:opacity .35s ease}
+#tut-overlay.show #tut-dim{opacity:1}
+#tut-spot{position:fixed;border-radius:14px;pointer-events:none;
+  box-shadow:0 0 0 6000px rgba(6,6,8,.72),0 0 0 3px #e8b86e,0 0 26px 4px rgba(232,184,110,.55);
+  transition:top .38s cubic-bezier(.34,1.56,.64,1),left .38s cubic-bezier(.34,1.56,.64,1),
+             width .38s cubic-bezier(.34,1.56,.64,1),height .38s cubic-bezier(.34,1.56,.64,1),opacity .25s;
+  z-index:9001;animation:tutPulse 1.6s ease-in-out infinite}
+@keyframes tutPulse{
+  0%,100%{box-shadow:0 0 0 6000px rgba(6,6,8,.72),0 0 0 3px #e8b86e,0 0 26px 4px rgba(232,184,110,.55)}
+  50%{box-shadow:0 0 0 6000px rgba(6,6,8,.72),0 0 0 5px #e8b86e,0 0 40px 10px rgba(232,184,110,.75)}
+}
+#tut-card{position:fixed;z-index:9002;width:296px;max-width:88vw;background:linear-gradient(165deg,#181818,#101010);
+  border:1px solid rgba(232,184,110,.4);border-radius:16px;padding:18px 20px 16px;
+  box-shadow:0 20px 50px rgba(0,0,0,.5);pointer-events:auto;
+  opacity:0;transform:translateY(10px) scale(.96);transition:opacity .3s ease,transform .3s cubic-bezier(.34,1.56,.64,1)}
+#tut-card.in{opacity:1;transform:translateY(0) scale(1)}
+#tut-step-badge{display:inline-flex;align-items:center;gap:6px;font-family:'Playfair Display',serif;
+  font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#e8b86e;font-weight:600;margin-bottom:8px}
+#tut-step-badge .tut-dot-track{display:inline-flex;gap:3px}
+#tut-step-badge .tut-dot{width:5px;height:5px;border-radius:50%;background:rgba(232,184,110,.28);transition:all .25s}
+#tut-step-badge .tut-dot.on{background:#e8b86e;width:14px;border-radius:3px}
+#tut-title{font-size:15.5px;font-weight:700;color:#fff;margin-bottom:6px;line-height:1.3}
+#tut-desc{font-size:12.5px;color:#b8b8b8;line-height:1.55;margin-bottom:16px}
+.tut-foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tut-skip{background:none;border:none;color:#888;font-size:12px;cursor:pointer;padding:6px 4px;transition:color .15s}
+.tut-skip:hover{color:#e87070}
+.tut-nav-btns{display:flex;gap:8px}
+.tut-btn{border-radius:9px;padding:8px 16px;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .15s;border:1px solid transparent}
+.tut-btn-prev{background:transparent;border-color:rgba(255,255,255,.15);color:#ccc}
+.tut-btn-prev:hover{border-color:rgba(255,255,255,.3)}
+.tut-btn-next{background:linear-gradient(135deg,#e8b86e,#c99a4e);color:#141414;box-shadow:0 4px 14px rgba(232,184,110,.3)}
+.tut-btn-next:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(232,184,110,.45)}
+.tut-btn-next:active{transform:translateY(0)}
+#tut-arrow{position:fixed;z-index:9002;width:14px;height:14px;background:#141414;
+  border:1px solid rgba(232,184,110,.4);transform:rotate(45deg);pointer-events:none;
+  opacity:0;transition:opacity .2s}
+#tut-arrow.in{opacity:1}
+#tut-finish-burst{position:fixed;inset:0;z-index:9003;pointer-events:none;display:none}
+.tut-spark{position:absolute;width:6px;height:6px;border-radius:50%;background:#e8b86e;
+  animation:tutSpark .9s ease-out forwards}
+@keyframes tutSpark{
+  0%{transform:translate(0,0) scale(1);opacity:1}
+  100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}
+}
+#tut-replay-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;
+  border-radius:9px;border:1px solid var(--border-hi);background:var(--surface);color:var(--gold-lo);
+  cursor:pointer;transition:all .15s}
+#tut-replay-btn:hover{border-color:var(--gold);background:rgba(232,184,110,.08)}
+@media (max-width:640px){
+  #tut-card{width:270px}
+}
 </style>
 </head>
 <body class="light">
@@ -2980,7 +3042,27 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
 <div id="mod-indicator"></div>
 
 <!-- ══ TOAST ══ -->
-<div id="toast"></div>
+<div id="toast"><span class="t-ic" id="toast-ic">✓</span><span id="toast-msg"></span></div>
+
+<!-- ══════ ONBOARDING TUTORIAL OVERLAY ══════ -->
+<div id="tut-overlay">
+  <div id="tut-dim" onclick="tutSkip()"></div>
+  <div id="tut-spot"></div>
+  <div id="tut-arrow"></div>
+  <div id="tut-card">
+    <div id="tut-step-badge"><span id="tut-step-num">1/8</span><span class="tut-dot-track" id="tut-dot-track"></span></div>
+    <div id="tut-title"></div>
+    <div id="tut-desc"></div>
+    <div class="tut-foot">
+      <button class="tut-skip" onclick="tutSkip()">Lewati Tutorial</button>
+      <div class="tut-nav-btns">
+        <button class="tut-btn tut-btn-prev" id="tut-prev-btn" onclick="tutPrev()">← Kembali</button>
+        <button class="tut-btn tut-btn-next" id="tut-next-btn" onclick="tutNext()">Lanjut →</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="tut-finish-burst"></div>
 
 <!-- ══ ELEGANT NOTIFICATION POPUP STACK (top-right, 8s) ══ -->
 <div id="np-stack" aria-live="polite" aria-atomic="false"></div>
@@ -3292,31 +3374,6 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
         <span class="nav-badge" id="crm-badge" style="display:none">0</span>
       </button>
 
-      <!-- System -->
-      <div class="nav-sec-lbl" data-i18n="system">Sistem</div>
-      <button class="nav-item" onclick="navTo('presence',this)" id="n-presence">
-        <span class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="8" r="2" fill="currentColor" opacity=".8"/>
-            <circle cx="8" cy="8" r="5" stroke="currentColor" stroke-width="1.2" opacity=".5"/>
-            <circle cx="8" cy="8" r="7.5" stroke="currentColor" stroke-width=".8" opacity=".25"/>
-          </svg>
-        </span>
-        <span data-i18n="presencePage">Kehadiran</span>
-        <span class="nav-badge green" id="online-badge">0</span>
-      </button>
-      <button class="nav-item" onclick="navTo('attendance',this)" id="n-attendance">
-        <span class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <rect x="2" y="2.5" width="12" height="11" rx="1.6" stroke="currentColor" stroke-width="1.4"/>
-            <line x1="2" y1="6" x2="14" y2="6" stroke="currentColor" stroke-width="1.4"/>
-            <line x1="5" y1="1.2" x2="5" y2="3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-            <line x1="11" y1="1.2" x2="11" y2="3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-            <path d="M5.3 9.6l1.5 1.5L10.7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </span>
-        <span>Absensi</span>
-      </button>
     </div>
 
     <div class="sb-foot">
@@ -3368,6 +3425,8 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
         </div>
       </div>
       <div class="topbar-right">
+        <!-- Replay onboarding tutorial -->
+        <button class="tb-btn" id="tut-replay-btn" onclick="startTutorial(true)" title="Tampilkan tutorial lagi">✦</button>
         <!-- Theme / Lang (inside dash) -->
         <button class="tb-btn" onclick="toggleMode()" id="mode-btn-dash" title="Toggle theme">◑</button>
         <button class="tb-btn" onclick="toggleLang()" id="lang-btn-dash" title="Toggle language" style="font-size:10px;font-weight:700;letter-spacing:.1em">ID</button>
@@ -4379,7 +4438,7 @@ const LOCAL_USERS = {
   // ─── CONTENT CREATOR ───
   erika:  { pass:'333',      role:'content_creator', name:'Erika',   email:'erika@dhp.id' },
   // ─── HOST LIVE ───
-  nina:   { pass:'890',      role:'host_live',       name:'Nina',    email:'nina@dhp.id' },
+  hana:   { pass:'780',      role:'host_live',       name:'Hana',    email:'hana@dhp.id' },
   sekar:  { pass:'098',      role:'host_live',       name:'Sekar',   email:'sekar@dhp.id' },
   // ─── B2B MARKETING ───
   galih:  { pass:'888',      role:'b2b_marketing',   name:'Galih',   email:'galih@dhp.id' },
@@ -5680,7 +5739,20 @@ const showAlert = (id, type, msg) => { const el = document.getElementById(id); i
 const hideAlert = (id) => { const el = document.getElementById(id); if (el) el.className = 'al'; };
 const delay  = ms => new Promise(r => setTimeout(r, ms));
 function shake(el) { el.style.animation = 'none'; el.offsetHeight; el.style.animation = 'shake .5s ease'; }
-function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3200); }
+let _toastTimer = null;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  const msgEl = document.getElementById('toast-msg');
+  const icEl = document.getElementById('toast-ic');
+  const isErr = /^(gagal|error|alasan|isi |jam selesai|nomor|hanya |sesi ini|angka|username|password|salah)/i.test(String(msg).trim());
+  msgEl.textContent = msg;
+  icEl.textContent = isErr ? '✕' : '✓';
+  t.classList.toggle('err', isErr);
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  const dur = Math.min(7000, Math.max(3200, String(msg).length * 70));
+  _toastTimer = setTimeout(() => t.classList.remove('show'), dur);
+}
 
 /* ═══════════════════════════════════════════════════════════
    ✦ ELEGANT CONFIRM / ALERT DIALOG (pengganti window.confirm/alert)
@@ -5855,7 +5927,8 @@ function loginSuccess(id, role, name) {
   //    Ditembak SEGERA di sini (bukan di dalam setTimeout 500ms di bawah),
   //    supaya round-trip RPC-nya jalan BARENGAN dengan animasi transisi
   //    scene → dashboard, bukan menambah delay setelah dashboard tampil.
-  try { maybeShowAttendanceCheckin(); } catch (e) { console.warn('[DHP] attendance check-in gagal:', e); }
+  // Presensi/Absensi dihapus dari seluruh role — popup check-in dinonaktifkan
+  // try { maybeShowAttendanceCheckin(); } catch (e) { console.warn('[DHP] attendance check-in gagal:', e); }
   const sc = document.getElementById('scene');
   sc.style.opacity = '0';
   setTimeout(async () => {
@@ -5888,6 +5961,7 @@ function loginSuccess(id, role, name) {
     refreshPresenceUI();
     // Notif SAMBUTAN saat login — beda isi per role, sesuai alur kerja masing-masing.
     setTimeout(() => { try { welcomeNotif(); } catch (e) { console.warn('[DHP] welcomeNotif gagal:', e); } }, 700);
+    setTimeout(() => { try { startTutorial(false); } catch (e) { console.warn('[DHP] tutorial gagal:', e); } }, 1400);
   }, 500);
 }
 
@@ -6492,16 +6566,25 @@ async function loadLsApprovalBanner() {
     </div>`;
 }
 
+const _lsInFlight = new Set();
 async function approveLsReport(sessionId) {
   if (!db) { toast('Supabase tidak aktif'); return; }
-  const res = await dbQ(d => d.rpc('moderator_approve_live_report', { p_moderator_id: currentUser.id, p_session_id: sessionId, p_note: null }));
-  if (res?.error) { toast('Gagal ACC laporan: ' + res.error.message); return; }
-  toast('Laporan disetujui');
-  pushActivity(`Laporan sesi ${sessionId} disetujui`, 'info');
-  await Promise.all([loadLsMonth(), loadLsApprovalBanner(), loadSalesTarget(), loadHostDashboard()]);
-  const row = res?.data?.[0];
-  if (row && row.achieved_first_time) {
-    // biarkan host yang lihat perayaan target saat dia buka halaman sendiri
+  if (_lsInFlight.has(sessionId)) return;
+  _lsInFlight.add(sessionId);
+  const btn = event?.target; if (btn) { btn.disabled = true; btn.style.opacity = '.5'; }
+  try {
+    const res = await dbQ(d => d.rpc('moderator_approve_live_report', { p_moderator_id: currentUser.id, p_session_id: sessionId, p_note: null }));
+    if (res?.error) { toast('Gagal ACC laporan: ' + res.error.message); return; }
+    toast('Laporan disetujui');
+    pushActivity(`Laporan sesi ${sessionId} disetujui`, 'info');
+    await Promise.all([loadLsMonth(), loadLsApprovalBanner(), loadSalesTarget(), loadHostDashboard()]);
+    const row = res?.data?.[0];
+    if (row && row.achieved_first_time) {
+      // biarkan host yang lihat perayaan target saat dia buka halaman sendiri
+    }
+  } finally {
+    _lsInFlight.delete(sessionId);
+    if (btn) { btn.disabled = false; btn.style.opacity = ''; }
   }
 }
 
@@ -6518,14 +6601,20 @@ function rejectLsReportPrompt(sessionId) {
 }
 
 async function submitRejectLsReport(sessionId) {
+  if (_lsInFlight.has(sessionId)) return;
   const reason = (document.getElementById('lsr-reject-reason').value || '').trim();
   if (!reason) { toast('Alasan penolakan wajib diisi'); return; }
-  const res = await dbQ(d => d.rpc('moderator_reject_live_report', { p_moderator_id: currentUser.id, p_session_id: sessionId, p_reason: reason }));
-  if (res?.error) { toast('Gagal menolak laporan: ' + res.error.message); return; }
-  closeModal();
-  toast('Laporan ditolak, host perlu isi ulang');
-  pushActivity(`Laporan sesi ${sessionId} ditolak: ${reason}`, 'alert');
-  await Promise.all([loadLsMonth(), loadLsApprovalBanner(), loadSalesTarget(), loadHostDashboard()]);
+  _lsInFlight.add(sessionId);
+  try {
+    const res = await dbQ(d => d.rpc('moderator_reject_live_report', { p_moderator_id: currentUser.id, p_session_id: sessionId, p_reason: reason }));
+    if (res?.error) { toast('Gagal menolak laporan: ' + res.error.message); return; }
+    closeModal();
+    toast('Laporan ditolak, host perlu isi ulang');
+    pushActivity(`Laporan sesi ${sessionId} ditolak: ${reason}`, 'alert');
+    await Promise.all([loadLsMonth(), loadLsApprovalBanner(), loadSalesTarget(), loadHostDashboard()]);
+  } finally {
+    _lsInFlight.delete(sessionId);
+  }
 }
 
 /* ── Moderator: izin telat lapor yang menunggu keputusan (v11) ── */
@@ -7149,7 +7238,8 @@ async function loadHostDashboard() {
   const grid = document.getElementById('dash-stat-grid');
   const bars = document.getElementById('dash-chart-bars');
   if (!grid || !bars || !currentUser) return;
-  const hostId = lsTargetId || (can.isHostLive(currentUser.role) ? currentUser.id : null);
+  // Host Live hanya boleh melihat dashboard miliknya sendiri — abaikan lsTargetId apapun.
+  const hostId = can.isHostLive(currentUser.role) ? currentUser.id : (lsTargetId || null);
   if (!hostId) { grid.innerHTML = ''; bars.innerHTML = ''; return; }
   const ym = ymPeriodKey(new Date());
 
@@ -13149,6 +13239,137 @@ function fireStAchieveConfetti(ov) {
   }
   inner.appendChild(frag);
 }
+
+/* ══════ ONBOARDING TUTORIAL ENGINE — game-style step-by-step guide ══════ */
+const TUT_STEPS_DEFS = [
+  { id:'n-overview',       title:'Ringkasan',              desc:'Halaman utama kamu — statistik dan aktivitas terbaru portal langsung terlihat di sini.' },
+  { id:'n-mod-tasks',      title:'Tugas Saya',             desc:'Semua tugas yang ditugaskan ke kamu ada di sini. Tandai selesai begitu sudah kamu kerjakan.' },
+  { id:'n-content-studio', title:'Studio Konten',          desc:'Kelola ide, draft, dan progress konten kamu dari halaman ini.' },
+  { id:'n-live-studio',    title:'Studio Live',            desc:'Lihat jadwal live kamu, isi laporan sesi, dan pantau dashboard performa milikmu sendiri di sini.' },
+  { id:'n-live-dashboard', title:'Live Dashboard',         desc:'Bandingkan performa seluruh Host Live dalam satu tampilan — khusus moderator.' },
+  { id:'n-pipeline',       title:'Pipeline B2B',           desc:'Pantau alur pipeline B2B dari tahap awal sampai closing di sini.' },
+  { id:'n-team-tasks',     title:'Progress Tugas Tim',     desc:'Pantau progress tugas seluruh anggota tim dari satu tempat.' },
+  { id:'n-users',          title:'Manajemen Pengguna',     desc:'Atur akun, peran, dan akses tiap anggota tim di sini.' },
+  { id:'n-settings',       title:'Pengaturan',             desc:'Atur identitas brand dan konfigurasi portal — khusus Sovereign Moderator.' },
+  { id:'n-ad-scheduler',   title:'Jadwal Iklan',           desc:'Susun dan kelola jadwal campaign iklan kamu di sini.' },
+  { id:'n-ad-customers',   title:'Pelanggan Iklan',        desc:'Database leads dan pelanggan hasil iklan, lengkap dengan status follow-up.' },
+  { id:'n-ad-task',        title:'Task Iklan',             desc:'Daftar tugas terkait iklan yang perlu kamu kerjakan.' },
+  { id:'n-crm',            title:'Database Customer',      desc:'Semua data customer tersimpan rapi di sini, siap untuk kamu follow-up.' },
+  { id:'notif-bell',       title:'Notifikasi',             desc:'Update penting — dari ACC laporan sampai aktivitas tim — selalu muncul di sini.' },
+  { id:'mode-btn-dash',    title:'Ganti Tema',             desc:'Suka tampilan terang atau gelap? Tinggal klik ini kapan saja.' },
+  { id:'btn-my-profile',   title:'Profil Saya',            desc:'Ubah info akun dan lihat pengaturan pribadimu di sini. Selamat berkarya! ✦' },
+];
+let tutSteps = [];
+let tutIdx = 0;
+
+function tutIsMobile() { return window.innerWidth <= 768; }
+function tutInSidebar(el) { return !!el.closest('#sidebar, .sb'); }
+
+function getTutorialSteps() {
+  return TUT_STEPS_DEFS.filter(d => {
+    const el = document.getElementById(d.id);
+    if (!el) return false;
+    return getComputedStyle(el).display !== 'none';
+  });
+}
+
+function startTutorial(force) {
+  if (!currentUser) return;
+  const key = 'dhp_tut_seen_' + currentUser.id;
+  if (!force && localStorage.getItem(key)) return;
+  tutSteps = getTutorialSteps();
+  if (!tutSteps.length) return;
+  tutIdx = 0;
+  document.getElementById('tut-overlay').classList.add('show');
+  renderTutStep();
+}
+
+function renderTutStep() {
+  const step = tutSteps[tutIdx];
+  if (!step) { tutFinish(); return; }
+  const el = document.getElementById(step.id);
+  if (!el) { tutNext(); return; }
+
+  const inSidebar = tutInSidebar(el);
+  if (tutIsMobile()) { if (inSidebar) navOpen(); else navClose(); }
+
+  setTimeout(() => {
+    const r = el.getBoundingClientRect();
+    const pad = 8;
+    const spot = document.getElementById('tut-spot');
+    spot.style.top = (r.top - pad) + 'px';
+    spot.style.left = (r.left - pad) + 'px';
+    spot.style.width = (r.width + pad * 2) + 'px';
+    spot.style.height = (r.height + pad * 2) + 'px';
+
+    const card = document.getElementById('tut-card');
+    card.classList.remove('in');
+    const cw = 296, ch = card.offsetHeight || 160;
+    let top, left;
+    const spaceRight = window.innerWidth - r.right;
+    if (spaceRight > cw + 40) { left = r.right + 20; top = Math.min(Math.max(r.top - 10, 12), window.innerHeight - ch - 12); }
+    else if (r.left > cw + 40) { left = r.left - cw - 20; top = Math.min(Math.max(r.top - 10, 12), window.innerHeight - ch - 12); }
+    else if (r.top > ch + 40) { top = r.top - ch - 20; left = Math.min(Math.max(r.left, 12), window.innerWidth - cw - 12); }
+    else { top = Math.min(r.bottom + 20, window.innerHeight - ch - 12); left = Math.min(Math.max(r.left, 12), window.innerWidth - cw - 12); }
+    card.style.top = top + 'px'; card.style.left = left + 'px';
+    requestAnimationFrame(() => card.classList.add('in'));
+
+    document.getElementById('tut-title').textContent = step.title;
+    document.getElementById('tut-desc').textContent = step.desc;
+    document.getElementById('tut-step-num').textContent = `${tutIdx + 1}/${tutSteps.length}`;
+    document.getElementById('tut-dot-track').innerHTML =
+      tutSteps.map((_, i) => `<span class="tut-dot${i === tutIdx ? ' on' : ''}"></span>`).join('');
+    document.getElementById('tut-prev-btn').style.visibility = tutIdx === 0 ? 'hidden' : 'visible';
+    document.getElementById('tut-next-btn').textContent = tutIdx === tutSteps.length - 1 ? 'Selesai ✦' : 'Lanjut →';
+
+    el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }, tutIsMobile() ? 260 : 30);
+}
+
+function tutNext() { if (tutIdx >= tutSteps.length - 1) { tutFinish(); return; } tutIdx++; renderTutStep(); }
+function tutPrev() { if (tutIdx <= 0) return; tutIdx--; renderTutStep(); }
+function tutSkip() { tutCloseOverlay(); }
+function tutFinish() { tutCloseOverlay(); tutBurst(); }
+
+function tutCloseOverlay() {
+  document.getElementById('tut-overlay').classList.remove('show');
+  document.getElementById('tut-card').classList.remove('in');
+  if (tutIsMobile()) navClose();
+  if (currentUser) localStorage.setItem('dhp_tut_seen_' + currentUser.id, '1');
+}
+
+function tutBurst() {
+  const wrap = document.getElementById('tut-finish-burst');
+  wrap.style.display = 'block';
+  const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+  const colors = ['#e8b86e', '#fff', '#e8cc99', '#c99a4e'];
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < 26; i++) {
+    const s = document.createElement('span');
+    s.className = 'tut-spark';
+    const angle = Math.random() * Math.PI * 2, dist = 80 + Math.random() * 160;
+    s.style.setProperty('--tx', (Math.cos(angle) * dist).toFixed(1) + 'px');
+    s.style.setProperty('--ty', (Math.sin(angle) * dist).toFixed(1) + 'px');
+    s.style.left = cx + 'px'; s.style.top = cy + 'px'; s.style.background = colors[i % colors.length];
+    frag.appendChild(s);
+    setTimeout(() => s.remove(), 950);
+  }
+  wrap.appendChild(frag);
+  setTimeout(() => { wrap.style.display = 'none'; }, 1000);
+  toast('Tutorial selesai — selamat berkarya!');
+}
+
+document.addEventListener('keydown', (e) => {
+  const ov = document.getElementById('tut-overlay');
+  if (!ov || !ov.classList.contains('show')) return;
+  if (e.key === 'Escape') tutSkip();
+  else if (e.key === 'Enter' || e.key === 'ArrowRight') tutNext();
+  else if (e.key === 'ArrowLeft') tutPrev();
+});
+window.addEventListener('resize', () => {
+  const ov = document.getElementById('tut-overlay');
+  if (ov && ov.classList.contains('show')) renderTutStep();
+});
 </script>
 
 </body>
