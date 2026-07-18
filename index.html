@@ -2983,7 +2983,8 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
 #tut-overlay{position:fixed;inset:0;z-index:9000;display:none;pointer-events:none}
 #tut-overlay.show{display:block}
 #tut-dim{position:fixed;inset:0;background:rgba(6,6,8,.74);backdrop-filter:blur(1.5px);
-  pointer-events:auto;opacity:0;transition:opacity .3s ease}
+  pointer-events:auto;opacity:0;transition:opacity .3s ease,clip-path .32s cubic-bezier(.34,1.56,.64,1);
+  clip-path:polygon(0 0,100% 0,100% 100%,0 100%);-webkit-clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}
 #tut-overlay.show #tut-dim{opacity:1}
 #tut-spot{position:fixed;border-radius:12px;pointer-events:none;
   box-shadow:0 0 0 6000px rgba(6,6,8,.74),0 0 0 2px #e8b86e,0 0 20px 2px rgba(232,184,110,.5);
@@ -3857,6 +3858,67 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
             </table>
           </div>
         </div>
+
+        <!-- ══ KALENDER KONTEN (v14) — kalender per bulan + tabel 3 slot/hari.
+             Diisi moderator (tema, script, deadline, jam upload, link referensi);
+             content creator mengisi progress pengerjaan & boleh menyunting script. ══ -->
+        <div class="ph" style="margin-top:22px">
+          <div class="ph-left">
+            <div class="pt">
+              Kalender Konten
+              <span class="mod-badge" id="cc-mod-badge" style="display:none">♔ Kelola</span>
+            </div>
+            <div class="ps" id="cc-page-sub">Tema, script, deadline & progress konten — 3 slot per hari</div>
+          </div>
+          <div class="ph-acts" id="cc-mod-tools" style="display:none"></div>
+        </div>
+
+        <div class="hs-switch-bar" id="cc-switch-bar" style="display:none">
+          <div class="hs-switch-lbl">Content Creator</div>
+          <div class="hs-switch" id="cc-switch"></div>
+        </div>
+
+        <div class="ads-toolbar">
+          <div class="ads-month-nav">
+            <button class="ads-nav-btn" onclick="ccMonthNav(-1)" aria-label="Prev">‹</button>
+            <button class="ads-nav-btn" onclick="ccMonthNav(1)" aria-label="Next">›</button>
+          </div>
+          <button class="btn-gold btn-sm ads-today-btn" onclick="ccGoToday()">Bulan Ini</button>
+        </div>
+
+        <div class="cal-wrap">
+          <div class="cal-title-bar">
+            <div class="cal-month-name" id="cc-cal-month-name">—</div>
+          </div>
+          <div class="cal-grid" id="cc-dow-row"></div>
+          <div class="cal-grid" id="cc-cal-grid"></div>
+        </div>
+
+        <div class="att-legend">
+          <span><i class="dot Hadir"></i> Ada slot diisi</span>
+          <span><i class="dot" style="background:#7abf8e"></i> Semua slot selesai</span>
+          <span style="color:var(--text2)">Klik tanggal untuk lihat 3 slot konten</span>
+        </div>
+
+        <div class="tbl-wrap" style="margin-top:6px">
+          <div class="tbl-head">
+            <div class="tbl-title" id="cc-day-title">Slot Konten</div>
+          </div>
+          <div class="tbl-scroll">
+            <table>
+              <thead><tr>
+                <th style="width:56px">Slot</th>
+                <th>Tema & Script</th>
+                <th>Deadline</th>
+                <th>Jam Upload</th>
+                <th>Referensi</th>
+                <th>Progress</th>
+                <th id="cc-day-act-col">Aksi</th>
+              </tr></thead>
+              <tbody id="cc-day-tbl"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       <!-- ⑧ LIVE STUDIO (Host Live) -->
@@ -4483,7 +4545,7 @@ const LOCAL_USERS = {
   erika:  { pass:'333',      role:'content_creator', name:'Erika',   email:'erika@dhp.id' },
   // ─── HOST LIVE ───
   hana:   { pass:'780',      role:'host_live',       name:'Hana',    email:'hana@dhp.id' },
-  sekar:  { pass:'098',      role:'host_live',       name:'Sekar',   email:'sekar@dhp.id' },
+  sekar:  { pass:'098',      role:'host_live',       name:'Kayla',   email:'kayla@dhp.id' },
   // ─── B2B MARKETING ───
   galih:  { pass:'888',      role:'b2b_marketing',   name:'Galih',   email:'galih@dhp.id' },
 };
@@ -6309,6 +6371,7 @@ if (!contentDrafts.length) {
   ];
 }
 function renderContentStudio() {
+  renderContentCalendarPanel();
   const cards = document.getElementById('content-studio-cards');
   const tbody = document.getElementById('content-drafts-tbl');
   if (!cards || !tbody) return;
@@ -6434,6 +6497,289 @@ function deleteDraft(id) {
   saveDrafts();
   renderContentStudio();
   toast(t('draftDeleted'));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ⑰-b KALENDER KONTEN (v14) — kalender per bulan + 3 slot/hari.
+   Moderator mengisi tema, script, tanggal deadline, jam upload &
+   link referensi tiap slot. Content Creator mengisi Progress
+   Pengerjaan (dan boleh menyunting script). Pola mengikuti Jadwal
+   Live (kalender + tabel per tanggal) supaya konsisten satu sistem.
+   ═══════════════════════════════════════════════════════════ */
+const CC_SLOTS = [1, 2, 3];
+const CC_PROGRESS = {
+  belum_mulai: { label: 'Belum Mulai', pill: 'lsr-pill-locked' },
+  proses:      { label: 'Proses',      pill: 'lsr-pill-pending' },
+  review:      { label: 'Review',      pill: 'lsr-pill-wait' },
+  selesai:     { label: 'Selesai',     pill: 'lsr-pill-done' },
+};
+let ccCursor       = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+let ccTargetId     = null;                 // akun content creator yang sedang dikelola/dilihat
+let ccSelectedDate = ymdKey(new Date());
+let ccMonthCache   = {};                   // { 'YYYY-MM-DD': [slot,...] }
+
+function contentCreatorIds() {
+  return Object.entries(LOCAL_USERS).filter(([id, u]) => u.role === 'content_creator').map(([id]) => id);
+}
+
+function renderContentCalendarPanel() {
+  if (!currentUser) return;
+  const isMod = can.isMod(currentUser.role);
+  const ids = contentCreatorIds();
+  if (!ccTargetId || !ids.includes(ccTargetId)) {
+    ccTargetId = can.isContent(currentUser.role) ? currentUser.id : (ids[0] || null);
+  }
+
+  const modBadge = document.getElementById('cc-mod-badge');
+  const modTools = document.getElementById('cc-mod-tools');
+  const switchBar = document.getElementById('cc-switch-bar');
+  const actCol = document.getElementById('cc-day-act-col');
+  const sub = document.getElementById('cc-page-sub');
+  if (!modBadge) return;
+
+  modBadge.style.display = isMod ? '' : 'none';
+  modTools.style.display = 'none';
+  actCol.style.display = isMod ? '' : 'none';
+  sub.textContent = isMod
+    ? 'Isi tema, script, deadline, jam upload & link referensi untuk tiap slot konten'
+    : 'Tema, script, deadline & link referensi diisi moderator — kamu isi progress pengerjaan';
+
+  if (isMod && ids.length > 1) {
+    switchBar.style.display = '';
+    renderCcSwitch(ids, ccTargetId);
+  } else {
+    switchBar.style.display = 'none';
+  }
+
+  loadCcMonth();
+}
+
+function renderCcSwitch(ids, activeId) {
+  const wrap = document.getElementById('cc-switch');
+  wrap.innerHTML = ids.map(id => {
+    const name = LOCAL_USERS[id]?.name || id;
+    return `<button class="hs-switch-btn${activeId === id ? ' active' : ''}" onclick="ccSwitchTo('${id}')">${escHtml(name)}</button>`;
+  }).join('');
+}
+
+function ccSwitchTo(uid) { ccTargetId = uid; renderContentCalendarPanel(); }
+
+function ccMonthNav(dir) { ccCursor.setMonth(ccCursor.getMonth() + dir); loadCcMonth(); }
+function ccGoToday() {
+  ccCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  ccSelectedDate = ymdKey(new Date());
+  loadCcMonth();
+}
+
+async function loadCcMonth() {
+  ccMonthCache = {};
+  if (!ccTargetId) { renderCcCalendar(); renderCcDayTable(); return; }
+  const y = ccCursor.getFullYear(), m = ccCursor.getMonth();
+  const first = ymdKey(new Date(y, m, 1));
+  const last  = ymdKey(new Date(y, m + 1, 0));
+
+  if (db) {
+    const res = await dbQ(d => d.from('content_calendar').select('*')
+      .eq('creator_user_id', ccTargetId).gte('content_date', first).lte('content_date', last)
+      .order('slot_no', { ascending: true }));
+    if (res?.data) res.data.forEach(s => {
+      (ccMonthCache[s.content_date] = ccMonthCache[s.content_date] || []).push(s);
+    });
+  }
+  renderCcCalendar();
+  renderCcDayTable();
+}
+
+function renderCcCalendar() {
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const dows   = currentLang === 'id' ? DOW_ID   : DOW_EN;
+  const y = ccCursor.getFullYear(), m = ccCursor.getMonth();
+  document.getElementById('cc-cal-month-name').textContent = `${months[m]} ${y}`;
+  document.getElementById('cc-dow-row').innerHTML = dows.map((d, i) => `<div class="cal-dow ${i===0?'sun':''}">${d}</div>`).join('');
+
+  const firstDow    = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const todayKey    = ymdKey(new Date());
+
+  let cells = '';
+  for (let i = 0; i < firstDow; i++) cells += `<div class="cal-cell empty"></div>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ymd = ymdKey(new Date(y, m, d));
+    const isToday    = ymd === todayKey;
+    const isSelected = ymd === ccSelectedDate;
+    const slots = (ccMonthCache[ymd] || []);
+    const filled = slots.length;
+    const allDone = filled === CC_SLOTS.length && slots.every(s => s.progress_status === 'selesai');
+    const cls = ['cal-cell'];
+    if (isToday) cls.push('today');
+    if (isSelected) cls.push('ls-selected');
+    if (filled) cls.push('att-Hadir');
+    cells += `
+      <div class="${cls.join(' ')}" onclick="ccSelectDate('${ymd}')" style="cursor:pointer">
+        <div class="cal-daynum">${d}</div>
+        ${filled ? `<div class="att-day-tag att-Hadir" style="${allDone ? 'background:rgba(122,191,142,.14);color:#7abf8e;border-color:rgba(122,191,142,.35)' : ''}">${filled}/${CC_SLOTS.length} slot</div>` : ''}
+      </div>`;
+  }
+  document.getElementById('cc-cal-grid').innerHTML = cells;
+}
+
+function ccSelectDate(ymd) { ccSelectedDate = ymd; renderCcCalendar(); renderCcDayTable(); }
+
+function renderCcDayTable() {
+  const tbody = document.getElementById('cc-day-tbl');
+  const titleEl = document.getElementById('cc-day-title');
+  if (!tbody || !titleEl) return;
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const dObj = new Date(ccSelectedDate + 'T00:00:00');
+  const creatorName = LOCAL_USERS[ccTargetId]?.name || ccTargetId || '—';
+  titleEl.textContent = `Slot Konten ${creatorName} — ${days[dObj.getDay()]}, ${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
+
+  const isMod = can.isMod(currentUser?.role);
+  const isOwnCreator = currentUser && currentUser.id === ccTargetId;
+  const bySlot = {};
+  (ccMonthCache[ccSelectedDate] || []).forEach(s => { bySlot[s.slot_no] = s; });
+
+  tbody.innerHTML = CC_SLOTS.map(slotNo => {
+    const s = bySlot[slotNo];
+    const prog = CC_PROGRESS[s?.progress_status] || CC_PROGRESS.belum_mulai;
+    const deadline = s?.deadline_date ? new Date(s.deadline_date + 'T00:00:00') : null;
+    const deadlineTxt = deadline ? `${deadline.getDate()} ${months[deadline.getMonth()]}` : '—';
+    const uploadTxt = s?.upload_time ? s.upload_time.slice(0, 5) : '—';
+    const refTxt = s?.reference_link
+      ? `<a href="${escHtml(s.reference_link)}" target="_blank" rel="noopener" style="color:var(--gold-hi)">Lihat ↗</a>` : '—';
+    const themeTxt = s
+      ? `<div style="font-weight:600;color:var(--text)">${escHtml(s.theme || '(Tanpa tema)')}</div>
+         <div style="font-size:11.5px;color:var(--text2);margin-top:2px;max-width:260px;white-space:pre-wrap">${escHtml((s.script||'').slice(0,140))}${(s.script||'').length>140?'…':''}</div>`
+      : `<span style="color:var(--text2)">— slot kosong —</span>`;
+
+    let actions = '';
+    if (isMod) {
+      actions = `<button class="btn-sm btn-edit" onclick="openCcSlotModal(${slotNo})">${s ? '✎ Edit' : '+ Isi'}</button>`
+        + (s ? ` <button class="btn-sm btn-del" onclick="deleteCcSlot('${s.id}')">✕</button>` : '');
+    } else if (isOwnCreator && s) {
+      actions = `<button class="btn-sm btn-gold" onclick="openCcProgressModal('${s.id}')">Update Progress</button>`;
+    } else {
+      actions = '—';
+    }
+
+    return `<tr>
+      <td style="font-weight:700;color:var(--gold)">${slotNo}</td>
+      <td>${themeTxt}</td>
+      <td>${deadlineTxt}</td>
+      <td>${uploadTxt}</td>
+      <td>${refTxt}</td>
+      <td>${s ? `<span class="lsr-pill ${prog.pill}">${prog.label}</span>` : `<span style="color:var(--text2)">—</span>`}</td>
+      <td>${actions}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── Moderator: isi/edit 1 slot konten (tema, script, deadline, jam upload, link referensi) ── */
+function openCcSlotModal(slotNo) {
+  if (!can.isMod(currentUser?.role)) return;
+  const s = (ccMonthCache[ccSelectedDate] || []).find(x => x.slot_no === slotNo);
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const dObj = new Date(ccSelectedDate + 'T00:00:00');
+
+  document.getElementById('m-title').textContent =
+    `${s ? 'Edit' : 'Isi'} Slot ${slotNo} — ${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
+
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg"><label>Tema Konten</label>
+      <input class="fi" id="cc-ed-theme" value="${escHtml(s?.theme || '')}" placeholder="mis. Tips menata linen kamar tidur"/>
+    </div>
+    <div class="fg"><label>Script / Caption</label>
+      <textarea class="fi" id="cc-ed-script" rows="5" placeholder="Tulis script atau poin-poin konten di sini…">${escHtml(s?.script || '')}</textarea>
+    </div>
+    <div class="fg" style="display:flex;gap:8px">
+      <div style="flex:1"><label>Tanggal Deadline</label>
+        <input class="fi" id="cc-ed-deadline" type="date" value="${s?.deadline_date || ''}"/>
+      </div>
+      <div style="flex:1"><label>Jam Upload</label>
+        <input class="fi" id="cc-ed-upload" type="time" value="${(s?.upload_time||'').slice(0,5)}"/>
+      </div>
+    </div>
+    <div class="fg"><label>Link Referensi (opsional)</label>
+      <input class="fi" id="cc-ed-ref" value="${escHtml(s?.reference_link || '')}" placeholder="https://…"/>
+    </div>`;
+
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-gold" onclick="saveCcSlot(${slotNo}, ${s ? JSON.stringify(s.id) : 'null'})">Simpan</button>
+    <button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+
+async function saveCcSlot(slotNo, slotId) {
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  const theme    = document.getElementById('cc-ed-theme').value.trim();
+  const script   = document.getElementById('cc-ed-script').value.trim();
+  const deadline = document.getElementById('cc-ed-deadline').value || null;
+  const upload   = document.getElementById('cc-ed-upload').value || null;
+  const ref      = document.getElementById('cc-ed-ref').value.trim();
+  if (!theme) { toast('Isi tema konten dulu'); return; }
+
+  const res = await dbQ(d => d.rpc('moderator_upsert_content_slot', {
+    p_moderator_id: currentUser.id, p_creator_user: ccTargetId, p_content_date: ccSelectedDate,
+    p_slot_no: slotNo, p_theme: theme, p_script: script || null,
+    p_deadline_date: deadline, p_upload_time: upload, p_reference_link: ref || null
+  }));
+  if (res?.error) { toast('Gagal menyimpan: ' + res.error.message); return; }
+  closeModal();
+  await loadCcMonth();
+  toast(`Slot ${slotNo} konten ${LOCAL_USERS[ccTargetId]?.name||ccTargetId} disimpan`);
+  pushActivity(`Slot konten ${ccTargetId} #${slotNo} (${ccSelectedDate}) diperbarui`, 'info');
+}
+
+async function deleteCcSlot(slotId) {
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  if (!can.isMod(currentUser?.role)) return;
+  if (!confirm('Hapus slot konten ini? Progress yang sudah diisi content creator akan ikut terhapus.')) return;
+  const res = await dbQ(d => d.rpc('moderator_delete_content_slot', {
+    p_moderator_id: currentUser.id, p_slot_id: slotId
+  }));
+  if (res?.error) { toast('Gagal menghapus: ' + res.error.message); return; }
+  await loadCcMonth();
+  toast('Slot konten dihapus');
+}
+
+/* ── Content Creator: update progress pengerjaan (+ boleh menyunting script) ── */
+function openCcProgressModal(slotId) {
+  const s = (ccMonthCache[ccSelectedDate] || []).find(x => x.id === slotId);
+  if (!s) { toast('Slot tidak ditemukan'); return; }
+  document.getElementById('m-title').textContent = `Progress Slot ${s.slot_no} — ${escHtml(s.theme || '')}`;
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg"><label>Progress Pengerjaan</label>
+      <select class="fi" id="cc-prog-status">
+        ${Object.entries(CC_PROGRESS).map(([k,v]) => `<option value="${k}" ${s.progress_status===k?'selected':''}>${v.label}</option>`).join('')}
+      </select>
+    </div>
+    <div class="fg"><label>Script (boleh disunting)</label>
+      <textarea class="fi" id="cc-prog-script" rows="5">${escHtml(s.script || '')}</textarea>
+    </div>
+    <div class="fg"><label>Catatan Progress (opsional)</label>
+      <input class="fi" id="cc-prog-note" value="${escHtml(s.progress_note || '')}" placeholder="mis. Sudah syuting, tinggal edit"/>
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-gold" onclick="saveCcProgress('${slotId}')">Simpan</button>
+    <button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+
+async function saveCcProgress(slotId) {
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  const status = document.getElementById('cc-prog-status').value;
+  const script = document.getElementById('cc-prog-script').value.trim();
+  const note   = document.getElementById('cc-prog-note').value.trim();
+  const res = await dbQ(d => d.rpc('creator_update_content_progress', {
+    p_creator_id: currentUser.id, p_slot_id: slotId,
+    p_progress_status: status, p_progress_note: note || null, p_script: script || null
+  }));
+  if (res?.error) { toast('Gagal menyimpan progress: ' + res.error.message); return; }
+  closeModal();
+  await loadCcMonth();
+  toast('Progress konten diperbarui');
+  pushActivity(`${currentUser.name} update progress slot konten → ${CC_PROGRESS[status]?.label||status}`, 'info');
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -13342,6 +13688,38 @@ const TUT_STEPS_DEFS = [
   { id:'mode-btn-dash',    title:'Ganti Tema',             desc:'Suka tampilan terang atau gelap? Tinggal klik ini kapan saja.' },
   { id:'btn-my-profile',   title:'Profil Saya',            desc:'Ubah info akun dan lihat pengaturan pribadimu di sini. Selamat berkarya! ✦' },
 ];
+/* Langkah tambahan: penjelasan CARA MENGISI fitur, beda per role.
+   Ditampilkan tepat setelah step nav yang bersangkutan, menyorot
+   elemen yang sama (drill-down), supaya orang tahu APA yang harus
+   diisi & KAPAN, bukan cuma "ini menunya". */
+const TUT_ROLE_EXTRA = [
+  // ── HEAD MODERATOR / MODERATOR ──
+  { afterId:'n-content-studio', roles:['head_moderator','moderator'],
+    title:'Isi Kalender Konten', desc:'Klik tanggal di Kalender Konten, lalu isi Tema, Script, Deadline, Jam Upload & Link Referensi untuk tiap slot (maks 3 slot/hari). Content Creator akan melihat & mengisi Progress dari slot yang sama.' },
+  { afterId:'n-live-studio', roles:['head_moderator','moderator'],
+    title:'Atur Jadwal & Libur Host', desc:'Pilih host di atas kalender, klik tanggalnya, lalu "+ Tambah Sesi" untuk jadwal live atau "◈ Tandai Libur" kalau host tsb libur. ACC/tolak laporan sesi yang masuk lewat banner di atas halaman.' },
+  { afterId:'n-team-tasks', roles:['head_moderator','moderator'],
+    title:'Tugaskan & Pantau', desc:'Beri tugas baru ke anggota tim dari sini, dan pantau progress penyelesaiannya sampai selesai.' },
+  { afterId:'n-users', roles:['head_moderator'],
+    title:'Kelola Peran Tim', desc:'Sovereign Moderator bisa mengubah role, reset password, dan menonaktifkan akun anggota tim langsung dari sini.' },
+
+  // ── CONTENT CREATOR ──
+  { afterId:'n-content-studio', roles:['content_creator'],
+    title:'Kalender Konten Kamu', desc:'Moderator yang mengisi Tema, Script, Deadline, Jam Upload & Link Referensi tiap slot. Tugas kamu: buka tanggalnya lalu klik "Update Progress" untuk ubah status (Belum Mulai → Proses → Review → Selesai) — script juga boleh kamu sunting di modal yang sama.' },
+
+  // ── HOST LIVE ──
+  { afterId:'n-live-studio', roles:['host_live'],
+    title:'Jadwal & Libur Kamu', desc:'Moderator yang mengatur jam sesi live dan hari libur kamu — semua otomatis tampil di kalender ini. Begitu sesi selesai, klik "Isi Laporan" untuk mencatat produk terjual, GMV & jumlah penonton.' },
+
+  // ── B2B MARKETING ──
+  { afterId:'n-pipeline', roles:['b2b_marketing'],
+    title:'Jalankan Pipeline', desc:'Pindahkan lead ke tahap berikutnya begitu ada progress nyata, dan pastikan follow-up tidak lewat sebelum deadline tahap tersebut.' },
+
+  // ── ADMIN ──
+  { afterId:'n-ad-task', roles:['admin'],
+    title:'Kerjakan Task Iklan', desc:'Task baru dari moderator muncul di sini lengkap dengan deadline-nya — tandai selesai setelah lead sudah kamu input ke Database Customer.' },
+];
+
 let tutSteps = [];
 let tutIdx = 0;
 
@@ -13349,11 +13727,17 @@ function tutIsMobile() { return window.innerWidth <= 768; }
 function tutInSidebar(el) { return !!el.closest('#sidebar, .sb'); }
 
 function getTutorialSteps() {
-  return TUT_STEPS_DEFS.filter(d => {
+  const role = currentUser?.role;
+  const steps = [];
+  TUT_STEPS_DEFS.forEach(d => {
     const el = document.getElementById(d.id);
-    if (!el) return false;
-    return getComputedStyle(el).display !== 'none';
+    if (!el || getComputedStyle(el).display === 'none') return;
+    steps.push(d);
+    TUT_ROLE_EXTRA
+      .filter(x => x.afterId === d.id && (!x.roles || x.roles.includes(role)))
+      .forEach(x => steps.push({ id: d.id, title: x.title, desc: x.desc }));
   });
+  return steps;
 }
 
 function startTutorial(force) {
@@ -13365,6 +13749,33 @@ function startTutorial(force) {
   tutIdx = 0;
   document.getElementById('tut-overlay').classList.add('show');
   renderTutStep();
+}
+
+function tutPunchDimHole(r, pad) {
+  const dim = document.getElementById('tut-dim');
+  if (!dim) return;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const x = Math.max(0, r.left - pad), y = Math.max(0, r.top - pad);
+  const w = r.width + pad * 2, h = r.height + pad * 2;
+  const rad = 12; // match #tut-spot border-radius
+  // Outer full-viewport rect + inner rounded-rect "hole", combined with evenodd fill-rule
+  // so everything outside the hole keeps the dim/blur, and the target area is left untouched.
+  const d = `M0,0 H${vw} V${vh} H0 Z ` +
+    `M${x + rad},${y} H${x + w - rad} A${rad},${rad} 0 0 1 ${x + w},${y + rad} ` +
+    `V${y + h - rad} A${rad},${rad} 0 0 1 ${x + w - rad},${y + h} ` +
+    `H${x + rad} A${rad},${rad} 0 0 1 ${x},${y + h - rad} ` +
+    `V${y + rad} A${rad},${rad} 0 0 1 ${x + rad},${y} Z`;
+  const clip = `path(evenodd, '${d}')`;
+  dim.style.clipPath = clip;
+  dim.style.webkitClipPath = clip;
+}
+
+function tutResetDimHole() {
+  const dim = document.getElementById('tut-dim');
+  if (!dim) return;
+  const full = 'polygon(0 0,100% 0,100% 100%,0 100%)';
+  dim.style.clipPath = full;
+  dim.style.webkitClipPath = full;
 }
 
 function renderTutStep() {
@@ -13384,6 +13795,7 @@ function renderTutStep() {
     spot.style.left = (r.left - pad) + 'px';
     spot.style.width = (r.width + pad * 2) + 'px';
     spot.style.height = (r.height + pad * 2) + 'px';
+    tutPunchDimHole(r, pad);
 
     const card = document.getElementById('tut-card');
     const arrow = document.getElementById('tut-arrow');
@@ -13444,6 +13856,7 @@ function tutFinish() { tutCloseOverlay(); tutBurst(); }
 function tutCloseOverlay() {
   document.getElementById('tut-overlay').classList.remove('show');
   document.getElementById('tut-card').classList.remove('in');
+  tutResetDimHole();
   if (tutIsMobile()) navClose();
   if (currentUser) localStorage.setItem('dhp_tut_seen_' + currentUser.id, '1');
 }
