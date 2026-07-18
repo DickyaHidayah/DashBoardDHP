@@ -1436,6 +1436,11 @@ body.role-theme-b2b_marketing .nav-item.active .nav-icon{color:#7ea8c9}
 .studio-card-sub{font-size:10px;color:var(--text2);letter-spacing:.08em;text-transform:uppercase}
 .studio-card-body{color:var(--text2);font-size:13px;line-height:1.6;flex:1}
 .studio-card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.studio-card{cursor:pointer}
+.cc-empty-banner{display:flex;align-items:center;gap:10px;background:rgba(232,184,110,.08);border:1px solid rgba(232,184,110,.28);border-radius:var(--r);padding:11px 16px;font-size:12.5px;color:var(--gold-hi);letter-spacing:.02em;margin:-6px 0 18px;cursor:pointer;transition:all var(--trans)}
+.cc-empty-banner:hover{background:rgba(232,184,110,.13);border-color:rgba(232,184,110,.45)}
+.cc-empty-banner b{color:var(--text);font-weight:700}
+body.light .cc-empty-banner{background:rgba(200,140,20,.07);border-color:rgba(200,140,20,.22);color:#8a6412}
 .studio-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:10px;font-size:10px;letter-spacing:.08em;background:rgba(201,169,110,.08);border:1px solid var(--border);color:var(--text2)}
 
 /* Pipeline list (b2b) */
@@ -3825,31 +3830,15 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
             </div>
             <div class="ps" data-i18n="contentStudioSub">Plan, draft, and publish content for the brand</div>
           </div>
-          <div class="ph-acts">
-            <button class="btn-add" onclick="openContentDraft()" data-i18n="newDraft">+ New Draft</button>
-          </div>
         </div>
+
         <div class="studio-grid" id="content-studio-cards"></div>
-        <div class="tbl-wrap" style="margin-top:6px">
-          <div class="tbl-head"><div class="tbl-title" data-i18n="draftQueue">Draft Queue</div></div>
-          <div class="tbl-scroll">
-            <table>
-              <thead><tr>
-                <th data-i18n="titleCol">Title</th>
-                <th data-i18n="platformCol">Platform</th>
-                <th data-i18n="statusCol">Status</th>
-                <th data-i18n="scheduledCol">Scheduled</th>
-                <th data-i18n="action">Aksi</th>
-              </tr></thead>
-              <tbody id="content-drafts-tbl"></tbody>
-            </table>
-          </div>
-        </div>
+        <div class="cc-empty-banner" id="cc-empty-banner" style="display:none" onclick="ccScrollToCalendar()"></div>
 
         <!-- ══ KALENDER KONTEN (v14) — kalender per bulan + tabel 3 slot/hari.
              Diisi moderator (tema, script, deadline, jam upload, link referensi);
              content creator mengisi progress pengerjaan & boleh menyunting script. ══ -->
-        <div class="ph" style="margin-top:22px">
+        <div class="ph" id="cc-calendar-anchor" style="margin-top:22px">
           <div class="ph-left">
             <div class="pt">
               Kalender Konten
@@ -5467,7 +5456,7 @@ const i18n = {
     presOnline:'Online Sekarang', presOffline:'Offline', presTotal:'Total Pengguna',
     presActiveSessions:'Sesi aktif', presLastSeen:'Terakhir terlihat baru-baru ini', presAllRoles:'Semua peran',
     // Content Studio page header
-    contentStudioSub:'Rencanakan, buat draf, dan publikasikan konten merek',
+    contentStudioSub:'Pantau progress & kerjakan konten sesuai Kalender Konten yang diisi moderator',
     liveStudioSub:'Kontrol siaran, jadwal, dan metrik penonton live',
     liveDashboardSub:'Ringkasan & perbandingan performa seluruh Host Live secara real-time',
     b2bPipelineSub:'Lacak kemitraan dan kesepakatan enterprise melalui funnel',
@@ -6345,142 +6334,70 @@ function renderStats() {
 /* ═══════════════════════════════════════════════════════════
    ⑰-b CONTENT STUDIO  (Content Creator dashboard)
    ═══════════════════════════════════════════════════════════ */
-let contentDrafts = JSON.parse(localStorage.getItem('dhp_drafts') || '[]');
-if (!contentDrafts.length) {
-  contentDrafts = [
-    { id:1, title:'Behind-the-scenes reel',     platform:'Instagram', status:'draft',     scheduled:'—' },
-    { id:2, title:'Brand story carousel',       platform:'Instagram', status:'review',    scheduled:'Tomorrow 10:00' },
-    { id:3, title:'TikTok dance challenge',     platform:'TikTok',    status:'scheduled', scheduled:'Fri 19:00' },
-    { id:4, title:'YouTube long-form interview',platform:'YouTube',   status:'idea',      scheduled:'—' }
-  ];
-}
 function renderContentStudio() {
   renderContentCalendarPanel();
-  const cards = document.getElementById('content-studio-cards');
-  const tbody = document.getElementById('content-drafts-tbl');
-  if (!cards || !tbody) return;
-  const drafts  = contentDrafts.filter(d => d.status === 'draft').length;
-  const review  = contentDrafts.filter(d => d.status === 'review').length;
-  const sched   = contentDrafts.filter(d => d.status === 'scheduled').length;
-  const ideas   = contentDrafts.filter(d => d.status === 'idea').length;
-  cards.innerHTML = `
-    <div class="studio-card">
-      <div class="studio-card-head">
-        <div class="studio-card-icon" style="background:rgba(217,142,192,.15);color:#d98ec0">
-          <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M6 5l4 3-4 3V5z" fill="currentColor"/></svg>
-        </div>
-        <div>
-          <div class="studio-card-title">${drafts}</div>
-          <div class="studio-card-sub">${t('inDrafts')}</div>
-        </div>
-      </div>
-      <div class="studio-card-body">${t('piecesEditing')}</div>
-    </div>
-    <div class="studio-card">
-      <div class="studio-card-head">
-        <div class="studio-card-icon" style="background:rgba(232,184,110,.15);color:var(--amber)">
-          <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M8 4v4l3 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-        </div>
-        <div>
-          <div class="studio-card-title">${review}</div>
-          <div class="studio-card-sub">${t('awaitingReviewSub')}</div>
-        </div>
-      </div>
-      <div class="studio-card-body">${t('awaitingReviewBody')}</div>
-    </div>
-    <div class="studio-card">
-      <div class="studio-card-head">
-        <div class="studio-card-icon" style="background:rgba(122,191,142,.15);color:var(--green)">
-          <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M2 6h12M5 1v3M11 1v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-        </div>
-        <div>
-          <div class="studio-card-title">${sched}</div>
-          <div class="studio-card-sub">${t('scheduled2')}</div>
-        </div>
-      </div>
-      <div class="studio-card-body">${t('scheduledBody')}</div>
-    </div>
-    <div class="studio-card">
-      <div class="studio-card-head">
-        <div class="studio-card-icon" style="background:rgba(126,168,201,.15);color:var(--blue)">
-          <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M8 1l2 4 4 .5-3 3 .8 4.5L8 11l-3.8 2 .8-4.5-3-3 4-.5L8 1z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
-        </div>
-        <div>
-          <div class="studio-card-title">${ideas}</div>
-          <div class="studio-card-sub">${t('ideasCaptured')}</div>
-        </div>
-      </div>
-      <div class="studio-card-body">${t('ideasBody')}</div>
-    </div>`;
+}
 
-  const statusColors = {
-    draft:    'b-moderator',
-    review:   'b-content_creator',
-    scheduled:'b-admin',
-    idea:     'b-b2b_marketing'
-  };
-  tbody.innerHTML = contentDrafts.length ? contentDrafts.map(d => `
-    <tr>
-      <td style="font-weight:600;color:var(--text)">${d.title}</td>
-      <td>${d.platform}</td>
-      <td><span class="badge ${statusColors[d.status]||'b-guest'}">${d.status}</span></td>
-      <td>${d.scheduled}</td>
-      <td>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="btn-sm btn-edit" onclick="cycleDraft(${d.id})">${t('advanceBtn')}</button>
-          <button class="btn-sm btn-del" onclick="deleteDraft(${d.id})">Hapus</button>
+/* Kartu ringkasan Content Studio — dihitung LANGSUNG dari data
+   Kalender Konten (content_calendar) bulan berjalan, jadi selalu
+   sinkron dengan tabel slot di bawahnya. Tidak ada data terpisah/palsu. */
+const CC_CARD_DEFS = [
+  { key:'belum_mulai', label:'Belum Mulai', sub:'Siap Dikerjakan',
+    body:'Slot yang sudah diisi moderator (tema, script, deadline) tapi belum kamu sentuh.',
+    color:'var(--text2)', bg:'rgba(158,158,158,.12)',
+    icon:'<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/>' },
+  { key:'proses', label:'Proses', sub:'Sedang Dikerjakan',
+    body:'Lagi kamu garap — syuting, edit, atau tulis caption.',
+    color:'#e8b86e', bg:'rgba(232,184,110,.15)',
+    icon:'<path d="M8 2v3l2.2 2.2M8 2a6 6 0 1 0 6 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/>' },
+  { key:'review', label:'Review', sub:'Menunggu Review',
+    body:'Sudah kamu selesaikan, tinggal dicek & di-ACC moderator.',
+    color:'var(--gold-hi)', bg:'rgba(201,169,110,.15)',
+    icon:'<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M8 5v3l2 1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>' },
+  { key:'selesai', label:'Selesai', sub:'Siap / Sudah Tayang',
+    body:'Sudah di-ACC moderator — siap atau sudah tayang di platform.',
+    color:'#7abf8e', bg:'rgba(122,191,142,.15)',
+    icon:'<path d="M3 8.5l3.2 3.2L13 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' },
+];
+function renderCcCards() {
+  const cards = document.getElementById('content-studio-cards');
+  const banner = document.getElementById('cc-empty-banner');
+  if (!cards) return;
+
+  const monthSlots = Object.values(ccMonthCache).flat();
+  const counts = { belum_mulai:0, proses:0, review:0, selesai:0 };
+  monthSlots.forEach(s => { if (counts[s.progress_status] !== undefined) counts[s.progress_status]++; });
+
+  cards.innerHTML = CC_CARD_DEFS.map(c => `
+    <div class="studio-card" onclick="ccScrollToCalendar()">
+      <div class="studio-card-head">
+        <div class="studio-card-icon" style="background:${c.bg};color:${c.color}">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none">${c.icon}</svg>
         </div>
-      </td>
-    </tr>`).join('') : `<tr><td colspan="5" class="tbl-empty">${t('noDraftsYet')}</td></tr>`;
+        <div>
+          <div class="studio-card-title">${counts[c.key]}</div>
+          <div class="studio-card-sub">${c.sub}</div>
+        </div>
+      </div>
+      <div class="studio-card-body">${c.body}</div>
+    </div>`).join('');
+
+  if (!banner) return;
+  const y = ccCursor.getFullYear(), m = ccCursor.getMonth();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const totalPossible = daysInMonth * CC_SLOTS.length;
+  const filled = monthSlots.length;
+  const empty = totalPossible - filled;
+  if (empty > 0) {
+    banner.style.display = 'flex';
+    banner.innerHTML = `⏳ <span><b>${empty} slot</b> bulan ini masih kosong — menunggu diisi moderator (Tema, Script, Deadline, Jam Upload &amp; Link Referensi). Klik untuk lihat kalender ↓</span>`;
+  } else {
+    banner.style.display = 'none';
+  }
 }
-function saveDrafts(){ localStorage.setItem('dhp_drafts', JSON.stringify(contentDrafts)); }
-function openContentDraft() {
-  document.getElementById('m-title').textContent = t('newContentDraft');
-  document.getElementById('m-body').innerHTML = `
-    <div class="fg"><label>${t('titleCol')}</label><input class="fi" id="dr-title" placeholder="Behind-the-scenes…"/></div>
-    <div class="fg"><label>${t('platformCol')}</label>
-      <select class="fi" id="dr-platform">
-        <option>Instagram</option><option>TikTok</option><option>YouTube</option><option>X</option><option>LinkedIn</option>
-      </select>
-    </div>
-    <div class="fg"><label>${t('statusCol')}</label>
-      <select class="fi" id="dr-status">
-        <option value="idea">Idea</option><option value="draft" selected>Draft</option><option value="review">Review</option><option value="scheduled">${t('scheduled2')}</option>
-      </select>
-    </div>
-    <div class="fg"><label>${t('scheduledCol')} (optional)</label><input class="fi" id="dr-sched" placeholder="Fri 19:00"/></div>`;
-  document.getElementById('m-foot').innerHTML = `
-    <button class="btn-sm btn-gold" onclick="saveDraft()">${t('saveDraft')}</button>
-    <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>`;
-  document.getElementById('modal-ov').classList.add('open');
-}
-function saveDraft() {
-  const title    = document.getElementById('dr-title').value.trim();
-  const platform = document.getElementById('dr-platform').value;
-  const status   = document.getElementById('dr-status').value;
-  const sched    = document.getElementById('dr-sched').value.trim() || '—';
-  if (!title) { toast(t('titleRequired')); return; }
-  contentDrafts.unshift({ id: Date.now(), title, platform, status, scheduled: sched });
-  saveDrafts();
-  closeModal();
-  toast(t('draftSaved'));
-  pushActivity(`${currentUser.name} added draft: ${title}`, 'info');
-  renderContentStudio();
-}
-function cycleDraft(id) {
-  const order = ['idea','draft','review','scheduled'];
-  const d = contentDrafts.find(x => x.id === id); if (!d) return;
-  const idx = order.indexOf(d.status);
-  d.status = order[(idx + 1) % order.length];
-  saveDrafts();
-  pushActivity(`${currentUser.name} moved "${d.title}" → ${d.status}`, 'info');
-  renderContentStudio();
-}
-function deleteDraft(id) {
-  contentDrafts = contentDrafts.filter(x => x.id !== id);
-  saveDrafts();
-  renderContentStudio();
-  toast(t('draftDeleted'));
+function ccScrollToCalendar() {
+  const el = document.getElementById('cc-calendar-anchor');
+  if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -6557,7 +6474,7 @@ function ccGoToday() {
 
 async function loadCcMonth() {
   ccMonthCache = {};
-  if (!ccTargetId) { renderCcCalendar(); renderCcDayTable(); return; }
+  if (!ccTargetId) { renderCcCalendar(); renderCcDayTable(); renderCcCards(); return; }
   const y = ccCursor.getFullYear(), m = ccCursor.getMonth();
   const first = ymdKey(new Date(y, m, 1));
   const last  = ymdKey(new Date(y, m + 1, 0));
@@ -6572,6 +6489,7 @@ async function loadCcMonth() {
   }
   renderCcCalendar();
   renderCcDayTable();
+  renderCcCards();
 }
 
 function renderCcCalendar() {
@@ -13646,7 +13564,7 @@ function fireStAchieveConfetti(ov) {
 /* ══════ ONBOARDING TUTORIAL ENGINE — game-style step-by-step guide ══════ */
 const TUT_STEPS_DEFS = [
   { id:'n-mod-tasks',      title:'Tugas Saya',             desc:'Semua tugas yang ditugaskan ke kamu ada di sini. Tandai selesai begitu sudah kamu kerjakan.' },
-  { id:'n-content-studio', title:'Studio Konten',          desc:'Kelola ide, draft, dan progress konten kamu dari halaman ini.' },
+  { id:'n-content-studio', title:'Studio Konten',          desc:'4 kartu ringkasan progress kontenmu bulan ini, plus Kalender Konten tempat semua tema, script & jadwal konten kamu berada.' },
   { id:'n-live-studio',    title:'Studio Live',            desc:'Lihat jadwal live kamu, isi laporan sesi, dan pantau dashboard performa milikmu sendiri di sini.' },
   { id:'n-live-dashboard', title:'Live Dashboard',         desc:'Bandingkan performa seluruh Host Live dalam satu tampilan — khusus moderator.' },
   { id:'n-team-tasks',     title:'Progress Tugas Tim',     desc:'Pantau progress tugas seluruh anggota tim dari satu tempat.' },
@@ -13667,7 +13585,9 @@ const TUT_STEPS_DEFS = [
 const TUT_ROLE_EXTRA = [
   // ── HEAD MODERATOR / MODERATOR ──
   { afterId:'n-content-studio', roles:['head_moderator','moderator'],
-    title:'Isi Kalender Konten', desc:'Klik tanggal di Kalender Konten, lalu isi Tema, Script, Deadline, Jam Upload & Link Referensi untuk tiap slot (maks 3 slot/hari). Content Creator akan melihat & mengisi Progress dari slot yang sama.' },
+    title:'Isi Kalender Konten', desc:'Klik tanggal di Kalender Konten, lalu isi Tema, Script, Deadline, Jam Upload & Link Referensi untuk tiap slot (maks 3 slot/hari). Sebelum kamu isi, slot itu tampil "kosong" ke Content Creator — mereka baru bisa mulai kerja setelah kamu isi.' },
+  { afterId:'n-content-studio', roles:['head_moderator','moderator'],
+    title:'Pantau 4 Kartu Ringkasan', desc:'4 kartu di atas kalender otomatis menghitung slot creator yang sedang dipilih: Belum Mulai, Proses, Review, Selesai. Slot yang masuk status "Review" berarti creator sudah selesai kerja dan menunggu kamu cek.' },
   { afterId:'n-live-studio', roles:['head_moderator','moderator'],
     title:'Atur Jadwal & Libur Host', desc:'Pilih host di atas kalender, klik tanggalnya, lalu "+ Tambah Sesi" untuk jadwal live atau "◈ Tandai Libur" kalau host tsb libur. ACC/tolak laporan sesi yang masuk lewat banner di atas halaman.' },
   { afterId:'n-team-tasks', roles:['head_moderator','moderator'],
@@ -13677,7 +13597,13 @@ const TUT_ROLE_EXTRA = [
 
   // ── CONTENT CREATOR ──
   { afterId:'n-content-studio', roles:['content_creator'],
-    title:'Kalender Konten Kamu', desc:'Moderator yang mengisi Tema, Script, Deadline, Jam Upload & Link Referensi tiap slot. Tugas kamu: buka tanggalnya lalu klik "Update Progress" untuk ubah status (Belum Mulai → Proses → Review → Selesai) — script juga boleh kamu sunting di modal yang sama.' },
+    title:'1. Nunggu Moderator Isi Dulu', desc:'Sebelum kamu bisa kerja, moderator harus isi tiap slot di Kalender Konten dulu — Tema, Script/Caption, Tanggal Deadline, Jam Upload, dan Link Referensi. Selama belum diisi, slot itu tampil "— slot kosong —" dan tombol aksinya kosong. Ada juga banner kuning di atas kalender yang kasih tau berapa slot bulan ini yang masih kosong.' },
+  { afterId:'n-content-studio', roles:['content_creator'],
+    title:'2. Setelah Slot Diisi, Kamu Ngapain', desc:'Begitu moderator selesai isi, buka tanggalnya di kalender lalu baca Tema & Script di slot itu. Klik "Update Progress" untuk mulai kerja — di modal yang sama kamu juga boleh menyunting script/caption sebelum syuting atau posting.' },
+  { afterId:'n-content-studio', roles:['content_creator'],
+    title:'3. Status Progress: Belum Mulai → Selesai', desc:'Ubah status sesuai progress asli: "Belum Mulai" (baru dapat tugas), "Proses" (lagi syuting/edit/nulis), "Review" (udah kelar, kamu kirim buat dicek moderator), "Selesai" (moderator sudah ACC — tinggal upload sesuai Jam Upload atau memang sudah tayang). Kalau ditolak moderator, tinggal balik ke "Proses" dan revisi.' },
+  { afterId:'n-content-studio', roles:['content_creator'],
+    title:'4. Isi Kalender Konten Ada Apa Aja', desc:'Tiap slot berisi: Tema (topik konten), Script/Caption (boleh kamu sunting), Tanggal Deadline (batas kerja), Jam Upload (jadwal posting), Link Referensi (contoh/inspirasi dari moderator), Progress (status kerja kamu), dan Catatan Progress (opsional, buat kasih konteks ke moderator).' },
 
   // ── HOST LIVE ──
   { afterId:'n-live-studio', roles:['host_live'],
