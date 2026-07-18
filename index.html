@@ -404,6 +404,10 @@ body.light .hs-switch-btn.active{color:#fff}
 .lsr-pill.lsr-pill-pending{color:#e8b86e;border-color:rgba(232,184,110,.45);animation:lsrPulse 2.2s ease-in-out infinite}
 .lsr-pill.lsr-pill-rejected{color:#e87070;border-color:rgba(232,112,112,.4)}
 .lsr-pill.lsr-pill-locked{color:var(--text2);border-color:var(--border)}
+.lsr-pill.cc-pill-blue{color:#8fb3d9;border-color:rgba(143,179,217,.4)}
+.lsr-pill.cc-pill-red{color:#d97a6c;border-color:rgba(217,122,108,.4)}
+.lsr-pill.cc-pill-icon{gap:5px}
+.lsr-pill.cc-pill-icon svg{flex:0 0 auto;opacity:.9}
 .lsr-reject-note{font-size:11px;color:#e87070;margin-top:4px;font-style:italic}
 
 /* ── Panel "Menunggu ACC" & "Izin Telat Lapor" (moderator) ── */
@@ -3206,7 +3210,11 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
           <label data-i18n="password">Password</label>
           <input class="fi" id="li-pw" type="password" autocomplete="current-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')handleLogin()"/>
           <!-- Forgot password placed BELOW password field -->
-          <div class="forgot-link-wrap">
+          <div class="forgot-link-wrap" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);cursor:pointer;user-select:none">
+              <input type="checkbox" id="li-remember" style="accent-color:var(--gold-hi);width:14px;height:14px;cursor:pointer"/>
+              <span data-i18n="rememberMe">Ingat saya</span>
+            </label>
             <button class="txt-lnk" onclick="showPanel('panel-forgot')" data-i18n="forgotPw">Forgot Password?</button>
           </div>
         </div>
@@ -4317,6 +4325,7 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
   <div class="np-head">
     <div class="np-title" data-i18n="notifications">Notifikasi</div>
     <div class="np-head-right">
+      <button class="np-mark-all" id="np-push-alert-btn" style="display:none" onclick="openPushAlertModal()" title="Kirim notifikasi tugas ke role tertentu">+ Tugas</button>
       <button class="np-mark-all" onclick="markAllRead()" data-i18n="markRead">Tandai dibaca</button>
       <button class="np-close" onclick="toggleNotifPanel()">
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -4826,6 +4835,7 @@ window.notifPopup = notifPopup;
 function pushNotif(n, opts = {}) {
   const item = { id:Date.now() + Math.random(), type:n.type||'system', msg:n.msg,
     title:n.title||null, body:n.body||null, regId:n.regId||null, taskId:n.taskId||null,
+    roleAlertId:n.roleAlertId||null,
     read:false, time:Date.now() };
   notifications.unshift(item);
   if (notifications.length > 80) notifications = notifications.slice(0, 80);
@@ -4858,7 +4868,7 @@ function updateNotifBadge() {
   if (notifUnread > 0) { el.style.animation = 'none'; el.offsetHeight; el.style.animation = ''; }
 }
 function markAllRead() {
-  notifications.forEach(n => n.read = true);
+  notifications.forEach(n => { if (!n.read && n.roleAlertId) markRoleAlertReadDb(n.roleAlertId); n.read = true; });
   notifUnread = 0;
   updateNotifBadge();
   renderNotifPanel();
@@ -4897,7 +4907,10 @@ function renderNotifPanel() {
 }
 function markNotif(id) {
   const n = notifications.find(x => x.id === id);
-  if (n && !n.read) { n.read = true; notifUnread = Math.max(0, notifUnread - 1); updateNotifBadge(); renderNotifPanel(); }
+  if (n && !n.read) {
+    n.read = true; notifUnread = Math.max(0, notifUnread - 1); updateNotifBadge(); renderNotifPanel();
+    if (n.roleAlertId) markRoleAlertReadDb(n.roleAlertId);
+  }
 }
 function toggleNotifPanel() {
   const p = document.getElementById('notif-panel');
@@ -4924,6 +4937,138 @@ document.addEventListener('click', e => {
     }
   }
 });
+
+/* ═══════════════════════════════════════════════════════════
+   ⑤-b ROLE ALERTS — Notifikasi Tugas Baru per Role
+   (Jadwal Live Khusus, Pengumpulan Laporan Live, Ads Tanggal &
+   Rekap Ads, Content Plan, Umum). Moderator kirim ke 1 role / 1
+   user; masing-masing role hanya melihat notifikasi miliknya di
+   lonceng, lengkap dengan angka belum dibaca & detail saat diklik.
+   ═══════════════════════════════════════════════════════════ */
+const RA_TYPE_META = {
+  live_schedule: { label:'Jadwal Live',   icon:'ad',   title:'Jadwal Live Khusus' },
+  live_report:   { label:'Laporan Live',  icon:'task', title:'Pengumpulan Laporan Live' },
+  ads_recap:     { label:'Rekap Ads',     icon:'ad',   title:'Ads Tanggal & Rekap Ads' },
+  content_plan:  { label:'Content Plan',  icon:'task', title:'Content Plan' },
+  general:       { label:'Info Tugas',    icon:'info', title:'Notifikasi Tugas' },
+};
+let _raSeenIds = new Set(); // anti-dobel notifikasi role_alert dalam 1 sesi
+
+/* Muat notifikasi tugas yang relevan utk role/diri sendiri saat login,
+   yang belum ditandai dibaca (tidak ada baris di role_alert_reads). */
+async function loadRoleAlerts() {
+  if (!db || !currentUser) return;
+  const dbRole = roleToDb(currentUser.role);
+  const res = await dbQ(d => d.from('role_alerts').select('*')
+    .or(`target_role.eq.${dbRole},target_user_id.eq.${currentUser.id}`)
+    .order('created_at', { ascending:false }).limit(40));
+  if (res?.error || !res?.data) return;
+  const readRes = await dbQ(d => d.from('role_alert_reads').select('alert_id').eq('user_id', currentUser.id));
+  const readIds = new Set((readRes?.data || []).map(r => r.alert_id));
+  res.data.slice().reverse().forEach(a => {
+    if (_raSeenIds.has(a.id)) return;
+    _raSeenIds.add(a.id);
+    const meta = RA_TYPE_META[a.alert_type] || RA_TYPE_META.general;
+    const item = { id:'ra_' + a.id, roleAlertId:a.id, type:meta.icon,
+      title:`${meta.label}: ${a.title}`, body:a.message || null,
+      read: readIds.has(a.id), time:new Date(a.created_at).getTime() };
+    notifications.unshift(item);
+    if (!item.read) notifUnread++;
+  });
+  if (notifications.length > 80) notifications = notifications.slice(0, 80);
+  updateNotifBadge();
+  renderNotifPanel();
+}
+
+/* Realtime: notifikasi tugas baru masuk langsung ke bell + popup,
+   tanpa perlu refresh tab / login ulang. */
+let roleAlertChannel = null;
+function initRoleAlertRealtime() {
+  if (!db || !currentUser) return;
+  if (roleAlertChannel) { try { roleAlertChannel.unsubscribe(); } catch(e){} }
+  const dbRole = roleToDb(currentUser.role);
+  roleAlertChannel = db.channel('dhp_role_alerts')
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'role_alerts' }, (payload) => {
+      const a = payload.new;
+      if (!a) return;
+      const forMe = a.target_user_id === currentUser.id || a.target_role === dbRole;
+      if (!forMe || _raSeenIds.has(a.id)) return;
+      _raSeenIds.add(a.id);
+      const meta = RA_TYPE_META[a.alert_type] || RA_TYPE_META.general;
+      pushNotif({ type:meta.icon, roleAlertId:a.id,
+        title:`${meta.label}: ${a.title}`, body:a.message || null });
+    })
+    .subscribe();
+}
+
+/* Tandai satu notifikasi tugas (role_alert) sudah dibaca di DB */
+function markRoleAlertReadDb(alertId) {
+  if (!db || !currentUser || !alertId) return;
+  dbQ(d => d.rpc('mark_role_alert_read', { p_user_id:currentUser.id, p_alert_id:alertId }));
+}
+
+/* ── Moderator: kirim notifikasi tugas baru ke role/user tertentu ── */
+const RA_ROLE_OPTIONS = [
+  ['content-creator','Content Creator'], ['host-live','Host Live'],
+  ['b2b-marketing','B2B Marketing'], ['admin','Administrator'],
+  ['editor','Editor'], ['moderator','Moderator'], ['viewer','Viewer'],
+];
+function openPushAlertModal() {
+  if (!currentUser || !can.isMod(currentUser.role)) return;
+  document.getElementById('m-title').textContent = 'Kirim Notifikasi Tugas';
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg"><label>Jenis Tugas</label>
+      <select class="fi" id="ra-type">
+        <option value="live_schedule">Jadwal Live Khusus</option>
+        <option value="live_report">Pengumpulan Laporan Live</option>
+        <option value="ads_recap">Ads Tanggal &amp; Rekap Ads</option>
+        <option value="content_plan">Content Plan</option>
+        <option value="general">Umum / Lainnya</option>
+      </select>
+    </div>
+    <div class="fg"><label>Kirim ke</label>
+      <select class="fi" id="ra-target" onchange="document.getElementById('ra-user-wrap').style.display=this.value==='__user'?'':'none'">
+        ${RA_ROLE_OPTIONS.map(([v,l]) => `<option value="${v}">Semua role: ${l}</option>`).join('')}
+        <option value="__user">User tertentu (ID pengguna)</option>
+      </select>
+    </div>
+    <div class="fg" id="ra-user-wrap" style="display:none"><label>ID Pengguna Tujuan</label>
+      <input class="fi" id="ra-user-id" placeholder="mis. yuna"/>
+    </div>
+    <div class="fg"><label>Judul</label>
+      <input class="fi" id="ra-title" placeholder="mis. Jadwal live tambahan Sabtu malam"/>
+    </div>
+    <div class="fg"><label>Isi / Catatan (opsional)</label>
+      <textarea class="fi" id="ra-msg" rows="3" placeholder="Detail tugas, deadline, atau instruksi tambahan…"></textarea>
+    </div>
+    <div class="fg"><label>Tanggal Terkait (opsional)</label>
+      <input class="fi" id="ra-date" type="date"/>
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-gold" onclick="submitPushAlert()">Kirim</button>
+    <button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+async function submitPushAlert() {
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  const type   = document.getElementById('ra-type').value;
+  const target = document.getElementById('ra-target').value;
+  const title  = document.getElementById('ra-title').value.trim();
+  const msg    = document.getElementById('ra-msg').value.trim();
+  const date   = document.getElementById('ra-date').value || null;
+  if (!title) { toast('Isi judul notifikasi dulu'); return; }
+  const isUser = target === '__user';
+  const targetUserId = isUser ? document.getElementById('ra-user-id').value.trim() : null;
+  if (isUser && !targetUserId) { toast('Isi ID pengguna tujuan'); return; }
+  const res = await dbQ(d => d.rpc('moderator_push_role_alert', {
+    p_moderator_id: currentUser.id, p_alert_type: type, p_title: title,
+    p_message: msg || null, p_target_role: isUser ? null : target,
+    p_target_user_id: isUser ? targetUserId : null, p_related_date: date
+  }));
+  if (res?.error) { toast('Gagal mengirim: ' + res.error.message); return; }
+  closeModal();
+  toast('Notifikasi tugas terkirim');
+}
 
 /* ═══════════════════════════════════════════════════════════
    ⑥ NATIONAL HOLIDAYS — Akurat per SKB 3 Menteri 2026
@@ -5055,7 +5200,7 @@ const i18n = {
   en: {
     brandTagline:'Design · Heritage · Presence', signIn:'Sign In',
     enterCreds:'Enter your credentials to continue', userId:'User ID',
-    password:'Password', forgotPw:'Forgot Password?',
+    password:'Password', forgotPw:'Forgot Password?', rememberMe:'Remember me',
     enterPortal:'Enter Portal', or:'or', continueGuest:'◆  Continue as Guest',
     createAccount:'Create Account', resetPw:'Reset Password',
     sendRecovery:"We'll send a recovery link to your email", emailAddr:'Email Address',
@@ -5310,7 +5455,7 @@ const i18n = {
   id: {
     brandTagline:'Desain · Warisan · Kehadiran', signIn:'Masuk',
     enterCreds:'Masukkan kredensial Anda untuk melanjutkan', userId:'ID Pengguna',
-    password:'Kata Sandi', forgotPw:'Lupa Kata Sandi?',
+    password:'Kata Sandi', forgotPw:'Lupa Kata Sandi?', rememberMe:'Ingat saya',
     enterPortal:'Masuk Portal', or:'atau', continueGuest:'◆  Lanjut sebagai Tamu',
     createAccount:'Buat Akun', resetPw:'Reset Kata Sandi',
     sendRecovery:'Kami akan kirimkan tautan pemulihan ke email Anda', emailAddr:'Alamat Email',
@@ -5965,10 +6110,26 @@ function updateClock() {
    ═══════════════════════════════════════════════════════════ */
 let currentUser = null;
 
+/* ── Ingat Saya (remember-me) ─────────────────────────────────
+   Simpan ID + password di localStorage bila dicentang, supaya lain
+   kali buka portal langsung auto-login tanpa ketik ulang. Dihapus
+   otomatis saat logout manual atau saat dicentang OFF lalu login. */
+const REMEMBER_KEY = 'dhp_remember_creds';
+function saveRememberedCreds(id, pw) {
+  try { localStorage.setItem(REMEMBER_KEY, JSON.stringify({ id, pw })); } catch (e) {}
+}
+function clearRememberedCreds() {
+  try { localStorage.removeItem(REMEMBER_KEY); } catch (e) {}
+}
+function loadRememberedCreds() {
+  try { return JSON.parse(localStorage.getItem(REMEMBER_KEY) || 'null'); } catch (e) { return null; }
+}
+
 async function handleLogin() {
   hideAlert('login-al');
   const id = document.getElementById('li-id').value.trim();
   const pw = document.getElementById('li-pw').value;
+  const remember = document.getElementById('li-remember')?.checked;
   if (!id || !pw) { showAlert('login-al', 'error', t('fillFields')); return; }
   const btn = document.getElementById('btn-login');
   btn.classList.add('loading'); await delay(900); btn.classList.remove('loading');
@@ -5980,8 +6141,29 @@ async function handleLogin() {
     const u = LOCAL_USERS[id];
     if (u && u.pass === pw) { success = true; role = u.role; name = u.name; }
   }
-  if (success) loginSuccess(id, role, name);
-  else { showAlert('login-al', 'error', t('invalidCreds')); shake(document.getElementById('card')); }
+  if (success) {
+    if (remember) saveRememberedCreds(id, pw); else clearRememberedCreds();
+    loginSuccess(id, role, name);
+  } else { showAlert('login-al', 'error', t('invalidCreds')); shake(document.getElementById('card')); }
+}
+
+/* ── Auto-login saat portal dibuka, bila ada kredensial tersimpan ── */
+async function tryAutoLogin() {
+  const creds = loadRememberedCreds();
+  if (!creds || !creds.id || !creds.pw) return;
+  document.getElementById('li-id').value = creds.id;
+  document.getElementById('li-pw').value = creds.pw;
+  const rc = document.getElementById('li-remember'); if (rc) rc.checked = true;
+  let success = false, role = '', name = '';
+  const res = await dbQ(d => d.from('users').select('*').eq('user_id', creds.id).eq('is_active', true).single());
+  if (res?.data) {
+    if (res.data.password_hash === creds.pw) { success = true; role = roleFromDb(res.data.role); name = res.data.full_name; }
+  } else {
+    const u = LOCAL_USERS[creds.id];
+    if (u && u.pass === creds.pw) { success = true; role = u.role; name = u.name; }
+  }
+  if (success) loginSuccess(creds.id, role, name);
+  else clearRememberedCreds(); // kredensial sudah tidak valid (akun dihapus/nonaktif/password diganti)
 }
 
 async function handleForgot() {
@@ -6021,6 +6203,7 @@ function loginSuccess(id, role, name) {
     document.body.className = document.body.className.replace(/\brole-theme-\S+/g, '').trim();
     document.body.classList.remove('is-mod','is-head-mod');
     if (can.isMod(role)) document.body.classList.add('is-mod');
+    { const pab = document.getElementById('np-push-alert-btn'); if (pab) pab.style.display = can.isMod(role) ? '' : 'none'; }
     if (role === 'head_moderator') document.body.classList.add('is-head-mod');
     document.body.classList.add(`role-theme-${role}`);
 
@@ -6031,6 +6214,10 @@ function loginSuccess(id, role, name) {
     await earlyLoadBrand();
     await initDashboard();
     initRealtimePresence(id, role, name);
+    // ── Notifikasi Tugas per Role (Role Alerts): muat yang belum
+    //    dibaca + aktifkan realtime supaya tugas baru dari moderator
+    //    langsung masuk bell tanpa refresh tab ──
+    try { await loadRoleAlerts(); initRoleAlertRealtime(); } catch (e) { console.warn('[DHP] role alerts gagal:', e); }
     // ── Start brand polling sebagai fallback realtime ─────────────
     startBrandPolling();
     if (role === 'guest') toast(t('guestReadOnly'));
@@ -6058,6 +6245,7 @@ function handleLogout() {
     if (presChannel) { presChannel.untrack(); presChannel.unsubscribe(); presChannel = null; }
     if (adChannel)   { try { adChannel.unsubscribe();  } catch(e){} adChannel  = null; }
     if (crmChannel)  { try { crmChannel.unsubscribe(); } catch(e){} crmChannel = null; }
+    if (roleAlertChannel) { try { roleAlertChannel.unsubscribe(); } catch(e){} roleAlertChannel = null; }
     // ── Cleanup brand channel & polling ──────────────────────────
     if (_brandChannel)  { try { _brandChannel.unsubscribe();  } catch(e){} _brandChannel  = null; }
     if (_brandPollInterval) { clearInterval(_brandPollInterval); _brandPollInterval = null; }
@@ -6068,6 +6256,7 @@ function handleLogout() {
     pushActivity(`${currentUser.name} signed out`, 'leave');
   }
   currentUser = null;
+  _raSeenIds = new Set();
   document.body.classList.remove('is-mod');
   document.body.classList.remove('is-head-mod');
   document.body.className = document.body.className.replace(/\brole-theme-\S+/g, '').trim();
@@ -6075,6 +6264,7 @@ function handleLogout() {
   document.getElementById('pres-fab').classList.remove('visible');
   document.getElementById('pres-panel').classList.remove('open');
   document.getElementById('notif-bell').style.display = 'none';
+  { const pab = document.getElementById('np-push-alert-btn'); if (pab) pab.style.display = 'none'; }
   const tFab = document.getElementById('task-fab'); if (tFab) tFab.classList.remove('visible');
   const tPanel = document.getElementById('task-panel'); if (tPanel) tPanel.classList.remove('open');
   adTasks = []; ads = []; taskLeadCount = {};
@@ -6342,20 +6532,28 @@ function renderContentStudio() {
    Kalender Konten (content_calendar) bulan berjalan, jadi selalu
    sinkron dengan tabel slot di bawahnya. Tidak ada data terpisah/palsu. */
 const CC_CARD_DEFS = [
-  { key:'belum_mulai', label:'Belum Mulai', sub:'Siap Dikerjakan',
-    body:'Slot yang sudah diisi moderator (tema, script, deadline) tapi belum kamu sentuh.',
+  { key:'belum_dikerjakan', label:'Belum Dikerjakan', sub:'Siap Dikerjakan',
+    body:'Slot yang sudah diisi moderator (tema, script, deadline) tapi belum kamu sentuh sama sekali.',
     color:'var(--text2)', bg:'rgba(158,158,158,.12)',
-    icon:'<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/>' },
-  { key:'proses', label:'Proses', sub:'Sedang Dikerjakan',
-    body:'Lagi kamu garap — syuting, edit, atau tulis caption.',
+    icon:'<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3" stroke-dasharray="1.6 2.2"/>' },
+  { key:'belum_take_video', label:'Belum Take Video', sub:'Menunggu Syuting',
+    body:'Konsep & script sudah siap, tinggal syuting / ambil video.',
+    color:'#8fb3d9', bg:'rgba(143,179,217,.15)',
+    icon:'<rect x="2.5" y="4.5" width="8" height="7" rx="1.4" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M10.5 7l3-1.8v5.6l-3-1.8" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/>' },
+  { key:'sudah_take', label:'Sudah Take', sub:'Footage Siap',
+    body:'Sudah selesai syuting — tinggal masuk proses edit.',
     color:'#e8b86e', bg:'rgba(232,184,110,.15)',
-    icon:'<path d="M8 2v3l2.2 2.2M8 2a6 6 0 1 0 6 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/>' },
-  { key:'review', label:'Review', sub:'Menunggu Review',
-    body:'Sudah kamu selesaikan, tinggal dicek & di-ACC moderator.',
+    icon:'<rect x="2.5" y="4.5" width="8" height="7" rx="1.4" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M10.5 7l3-1.8v5.6l-3-1.8" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/><path d="M4.3 7.7l1.4 1.4 2.4-2.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' },
+  { key:'revisi', label:'Revisi', sub:'Perlu Diperbaiki',
+    body:'Moderator minta perbaikan — cek catatan revisi sebelum lanjut.',
+    color:'#d97a6c', bg:'rgba(217,122,108,.15)',
+    icon:'<path d="M4 4.6A5 5 0 1 1 3 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/><path d="M3 2.4v2.6h2.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' },
+  { key:'sudah_preview', label:'Sudah Preview', sub:'Menunggu ACC',
+    body:'Sudah selesai diedit & dipreview, tinggal dicek & di-ACC moderator.',
     color:'var(--gold-hi)', bg:'rgba(201,169,110,.15)',
-    icon:'<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M8 5v3l2 1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>' },
-  { key:'selesai', label:'Selesai', sub:'Siap / Sudah Tayang',
-    body:'Sudah di-ACC moderator — siap atau sudah tayang di platform.',
+    icon:'<path d="M1.5 8S4 3.6 8 3.6 14.5 8 14.5 8 12 12.4 8 12.4 1.5 8 1.5 8Z" stroke="currentColor" stroke-width="1.3" fill="none"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.3"/>' },
+  { key:'done_upload', label:'Done Upload', sub:'Sudah Tayang',
+    body:'Sudah diunggah & tayang di platform — konten ini selesai.',
     color:'#7abf8e', bg:'rgba(122,191,142,.15)',
     icon:'<path d="M3 8.5l3.2 3.2L13 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' },
 ];
@@ -6365,7 +6563,7 @@ function renderCcCards() {
   if (!cards) return;
 
   const monthSlots = Object.values(ccMonthCache).flat();
-  const counts = { belum_mulai:0, proses:0, review:0, selesai:0 };
+  const counts = { belum_dikerjakan:0, belum_take_video:0, sudah_take:0, revisi:0, sudah_preview:0, done_upload:0 };
   monthSlots.forEach(s => { if (counts[s.progress_status] !== undefined) counts[s.progress_status]++; });
 
   cards.innerHTML = CC_CARD_DEFS.map(c => `
@@ -6409,10 +6607,18 @@ function ccScrollToCalendar() {
    ═══════════════════════════════════════════════════════════ */
 const CC_SLOTS = [1, 2, 3];
 const CC_PROGRESS = {
-  belum_mulai: { label: 'Belum Mulai', pill: 'lsr-pill-locked' },
-  proses:      { label: 'Proses',      pill: 'lsr-pill-pending' },
-  review:      { label: 'Review',      pill: 'lsr-pill-wait' },
-  selesai:     { label: 'Selesai',     pill: 'lsr-pill-done' },
+  belum_dikerjakan: { label: 'Belum Dikerjakan',  pill: 'lsr-pill-locked',
+    icon:'<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3" stroke-dasharray="1.6 2.2"/>' },
+  belum_take_video: { label: 'Belum Take Video',  pill: 'cc-pill-blue',
+    icon:'<rect x="2.5" y="4.5" width="8" height="7" rx="1.4" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M10.5 7l3-1.8v5.6l-3-1.8" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/>' },
+  sudah_take:       { label: 'Sudah Take',        pill: 'lsr-pill-pending',
+    icon:'<rect x="2.5" y="4.5" width="8" height="7" rx="1.4" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M4.3 7.7l1.4 1.4 2.4-2.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' },
+  revisi:           { label: 'Revisi',            pill: 'cc-pill-red',
+    icon:'<path d="M4 4.6A5 5 0 1 1 3 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/><path d="M3 2.4v2.6h2.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' },
+  sudah_preview:    { label: 'Sudah Preview',     pill: 'lsr-pill-wait',
+    icon:'<path d="M1.5 8S4 3.6 8 3.6 14.5 8 14.5 8 12 12.4 8 12.4 1.5 8 1.5 8Z" stroke="currentColor" stroke-width="1.3" fill="none"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.3"/>' },
+  done_upload:      { label: 'Done Upload',       pill: 'lsr-pill-done',
+    icon:'<path d="M3 8.5l3.2 3.2L13 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' },
 };
 let ccCursor       = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 let ccTargetId     = null;                 // akun content creator yang sedang dikelola/dilihat
@@ -6511,7 +6717,7 @@ function renderCcCalendar() {
     const isSelected = ymd === ccSelectedDate;
     const slots = (ccMonthCache[ymd] || []);
     const filled = slots.length;
-    const allDone = filled === CC_SLOTS.length && slots.every(s => s.progress_status === 'selesai');
+    const allDone = filled === CC_SLOTS.length && slots.every(s => s.progress_status === 'done_upload');
     const cls = ['cal-cell'];
     if (isToday) cls.push('today');
     if (isSelected) cls.push('ls-selected');
@@ -6544,7 +6750,7 @@ function renderCcDayTable() {
 
   tbody.innerHTML = CC_SLOTS.map(slotNo => {
     const s = bySlot[slotNo];
-    const prog = CC_PROGRESS[s?.progress_status] || CC_PROGRESS.belum_mulai;
+    const prog = CC_PROGRESS[s?.progress_status] || CC_PROGRESS.belum_dikerjakan;
     const deadline = s?.deadline_date ? new Date(s.deadline_date + 'T00:00:00') : null;
     const deadlineTxt = deadline ? `${deadline.getDate()} ${months[deadline.getMonth()]}` : '—';
     const uploadTxt = s?.upload_time ? s.upload_time.slice(0, 5) : '—';
@@ -6571,7 +6777,7 @@ function renderCcDayTable() {
       <td>${deadlineTxt}</td>
       <td>${uploadTxt}</td>
       <td>${refTxt}</td>
-      <td>${s ? `<span class="lsr-pill ${prog.pill}">${prog.label}</span>` : `<span style="color:var(--text2)">—</span>`}</td>
+      <td>${s ? `<span class="lsr-pill ${prog.pill} cc-pill-icon"><svg width="12" height="12" viewBox="0 0 16 16" fill="none">${prog.icon}</svg>${prog.label}</span>` : `<span style="color:var(--text2)">—</span>`}</td>
       <td>${actions}</td>
     </tr>`;
   }).join('');
@@ -12767,6 +12973,10 @@ document.addEventListener('keydown', e => {
 applyTranslations();
 initTheme();
 startThemeReminderLoop();
+
+// ── Ingat Saya: coba auto-login bila ada kredensial tersimpan ──
+// Ditunda sedikit supaya Supabase client (db) & elemen form sudah siap.
+setTimeout(() => { try { tryAutoLogin(); } catch (e) { console.warn('[DHP] auto-login gagal:', e); } }, 250);
 
 // ── Brand Identity: load dari Supabase saat halaman pertama dibuka ──
 // Dipanggil di sini (paling bawah) supaya semua fungsi sudah terdefinisi.
