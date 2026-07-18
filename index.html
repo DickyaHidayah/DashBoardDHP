@@ -2982,43 +2982,52 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
 /* ══════ ONBOARDING TUTORIAL — game-style step-by-step guide ══════ */
 #tut-overlay{position:fixed;inset:0;z-index:9000;display:none;pointer-events:none}
 #tut-overlay.show{display:block}
-#tut-dim{position:fixed;inset:0;background:rgba(6,6,8,.72);backdrop-filter:blur(1.5px);
-  pointer-events:auto;opacity:0;transition:opacity .35s ease}
+#tut-dim{position:fixed;inset:0;background:rgba(6,6,8,.74);backdrop-filter:blur(1.5px);
+  pointer-events:auto;opacity:0;transition:opacity .3s ease}
 #tut-overlay.show #tut-dim{opacity:1}
-#tut-spot{position:fixed;border-radius:14px;pointer-events:none;
-  box-shadow:0 0 0 6000px rgba(6,6,8,.72),0 0 0 3px #e8b86e,0 0 26px 4px rgba(232,184,110,.55);
-  transition:top .38s cubic-bezier(.34,1.56,.64,1),left .38s cubic-bezier(.34,1.56,.64,1),
-             width .38s cubic-bezier(.34,1.56,.64,1),height .38s cubic-bezier(.34,1.56,.64,1),opacity .25s;
-  z-index:9001;animation:tutPulse 1.6s ease-in-out infinite}
+#tut-spot{position:fixed;border-radius:12px;pointer-events:none;
+  box-shadow:0 0 0 6000px rgba(6,6,8,.74),0 0 0 2px #e8b86e,0 0 20px 2px rgba(232,184,110,.5);
+  transition:top .32s cubic-bezier(.34,1.56,.64,1),left .32s cubic-bezier(.34,1.56,.64,1),
+             width .32s cubic-bezier(.34,1.56,.64,1),height .32s cubic-bezier(.34,1.56,.64,1),opacity .2s;
+  z-index:9001;animation:tutPulse 1.7s ease-in-out infinite}
+#tut-spot::before,#tut-spot::after,#tut-spot i::before,#tut-spot i::after{content:''}
+/* corner brackets — reticle/targeting feel */
+#tut-spot b{position:absolute;width:9px;height:9px;border:2px solid #e8b86e;opacity:.9}
+#tut-spot b:nth-child(1){top:-2px;left:-2px;border-right:none;border-bottom:none;border-radius:4px 0 0 0}
+#tut-spot b:nth-child(2){top:-2px;right:-2px;border-left:none;border-bottom:none;border-radius:0 4px 0 0}
+#tut-spot b:nth-child(3){bottom:-2px;left:-2px;border-right:none;border-top:none;border-radius:0 0 0 4px}
+#tut-spot b:nth-child(4){bottom:-2px;right:-2px;border-left:none;border-top:none;border-radius:0 0 4px 0}
 @keyframes tutPulse{
-  0%,100%{box-shadow:0 0 0 6000px rgba(6,6,8,.72),0 0 0 3px #e8b86e,0 0 26px 4px rgba(232,184,110,.55)}
-  50%{box-shadow:0 0 0 6000px rgba(6,6,8,.72),0 0 0 5px #e8b86e,0 0 40px 10px rgba(232,184,110,.75)}
+  0%,100%{box-shadow:0 0 0 6000px rgba(6,6,8,.74),0 0 0 2px #e8b86e,0 0 20px 2px rgba(232,184,110,.5)}
+  50%{box-shadow:0 0 0 6000px rgba(6,6,8,.74),0 0 0 3px #e8b86e,0 0 30px 6px rgba(232,184,110,.7)}
 }
-#tut-card{position:fixed;z-index:9002;width:296px;max-width:88vw;background:linear-gradient(165deg,#181818,#101010);
-  border:1px solid rgba(232,184,110,.4);border-radius:16px;padding:18px 20px 16px;
-  box-shadow:0 20px 50px rgba(0,0,0,.5);pointer-events:auto;
-  opacity:0;transform:translateY(10px) scale(.96);transition:opacity .3s ease,transform .3s cubic-bezier(.34,1.56,.64,1)}
-#tut-card.in{opacity:1;transform:translateY(0) scale(1)}
-#tut-step-badge{display:inline-flex;align-items:center;gap:6px;font-family:'Playfair Display',serif;
-  font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#e8b86e;font-weight:600;margin-bottom:8px}
+#tut-card{position:fixed;z-index:9002;width:248px;max-width:82vw;background:var(--surface2);
+  border:1px solid var(--border-hi);border-radius:13px;padding:14px 16px 12px;
+  box-shadow:0 16px 40px rgba(0,0,0,.35);pointer-events:auto;
+  opacity:0;transform:scale(.92);transform-origin:var(--tut-origin,50% 50%);
+  transition:opacity .22s ease,transform .3s cubic-bezier(.34,1.56,.64,1)}
+#tut-card.in{opacity:1;transform:scale(1)}
+#tut-step-badge{display:flex;align-items:center;justify-content:space-between;gap:6px;font-family:'Playfair Display',serif;
+  font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:7px}
 #tut-step-badge .tut-dot-track{display:inline-flex;gap:3px}
-#tut-step-badge .tut-dot{width:5px;height:5px;border-radius:50%;background:rgba(232,184,110,.28);transition:all .25s}
-#tut-step-badge .tut-dot.on{background:#e8b86e;width:14px;border-radius:3px}
-#tut-title{font-size:15.5px;font-weight:700;color:#fff;margin-bottom:6px;line-height:1.3}
-#tut-desc{font-size:12.5px;color:#b8b8b8;line-height:1.55;margin-bottom:16px}
-.tut-foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.tut-skip{background:none;border:none;color:#888;font-size:12px;cursor:pointer;padding:6px 4px;transition:color .15s}
-.tut-skip:hover{color:#e87070}
-.tut-nav-btns{display:flex;gap:8px}
-.tut-btn{border-radius:9px;padding:8px 16px;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .15s;border:1px solid transparent}
-.tut-btn-prev{background:transparent;border-color:rgba(255,255,255,.15);color:#ccc}
-.tut-btn-prev:hover{border-color:rgba(255,255,255,.3)}
-.tut-btn-next{background:linear-gradient(135deg,#e8b86e,#c99a4e);color:#141414;box-shadow:0 4px 14px rgba(232,184,110,.3)}
-.tut-btn-next:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(232,184,110,.45)}
-.tut-btn-next:active{transform:translateY(0)}
-#tut-arrow{position:fixed;z-index:9002;width:14px;height:14px;background:#141414;
-  border:1px solid rgba(232,184,110,.4);transform:rotate(45deg);pointer-events:none;
-  opacity:0;transition:opacity .2s}
+#tut-step-badge .tut-dot{width:4px;height:4px;border-radius:50%;background:var(--border-hi);transition:all .25s}
+#tut-step-badge .tut-dot.on{background:var(--gold);width:11px;border-radius:3px}
+#tut-title{font-size:13.5px;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.3;display:flex;align-items:center;gap:6px}
+#tut-title .tut-title-ic{font-size:12px;color:var(--gold)}
+#tut-desc{font-size:11.5px;color:var(--text2);line-height:1.5;margin-bottom:12px}
+.tut-foot{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.tut-skip{background:none;border:none;color:var(--muted);font-size:10.5px;cursor:pointer;padding:5px 2px;transition:color .15s}
+.tut-skip:hover{color:var(--red)}
+.tut-nav-btns{display:flex;gap:6px}
+.tut-btn{border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;border:1px solid transparent}
+.tut-btn-prev{background:transparent;border-color:var(--border-hi);color:var(--text2)}
+.tut-btn-prev:hover{border-color:var(--gold)}
+.tut-btn-next{background:linear-gradient(135deg,#e8b86e,#c99a4e);color:#141414;box-shadow:0 3px 10px rgba(232,184,110,.3)}
+.tut-btn-next:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(232,184,110,.45)}
+.tut-btn-next:active{transform:translateY(0) scale(.97)}
+#tut-arrow{position:fixed;z-index:9002;width:12px;height:12px;background:var(--surface2);
+  border:1px solid var(--border-hi);border-right:none;border-bottom:none;
+  pointer-events:none;opacity:0;transition:opacity .2s,top .32s cubic-bezier(.34,1.56,.64,1),left .32s cubic-bezier(.34,1.56,.64,1)}
 #tut-arrow.in{opacity:1}
 #tut-finish-burst{position:fixed;inset:0;z-index:9003;pointer-events:none;display:none}
 .tut-spark{position:absolute;width:6px;height:6px;border-radius:50%;background:#e8b86e;
@@ -3032,8 +3041,34 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
   cursor:pointer;transition:all .15s}
 #tut-replay-btn:hover{border-color:var(--gold);background:rgba(232,184,110,.08)}
 @media (max-width:640px){
-  #tut-card{width:270px}
+  #tut-card{width:224px;padding:12px 14px 10px}
 }
+
+/* ══════ THEME TOGGLE — elegant animated sun/moon pill switch ══════ */
+.theme-toggle{position:relative;display:inline-flex;align-items:center;flex-shrink:0;
+  width:50px;height:26px;border-radius:20px;padding:0;cursor:pointer;overflow:hidden;
+  background:var(--surface2);border:1px solid var(--border-hi);
+  transition:background .3s,border-color .3s;-webkit-tap-highlight-color:transparent}
+.theme-toggle:hover{border-color:var(--gold)}
+.theme-toggle .tt-ic{position:absolute;top:50%;width:12px;height:12px;transform:translateY(-50%);
+  transition:opacity .3s ease,color .3s ease;pointer-events:none;z-index:1}
+.theme-toggle .tt-sun{left:7px;color:#8a6020}
+.theme-toggle .tt-moon{right:7px;color:var(--text)}
+.theme-toggle .tt-knob{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;
+  background:linear-gradient(150deg,#f0dbaa,#c9a96e);box-shadow:0 2px 8px rgba(0,0,0,.4),inset 0 1px 1px rgba(255,255,255,.4);
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1),background .35s;z-index:2}
+body.light .theme-toggle .tt-knob{transform:translateX(0)}
+body.light .theme-toggle .tt-sun{opacity:1}
+body.light .theme-toggle .tt-moon{opacity:.3}
+body:not(.light) .theme-toggle .tt-knob{transform:translateX(24px);background:linear-gradient(150deg,#4a443b,#221e18)}
+body:not(.light) .theme-toggle .tt-sun{opacity:.3}
+body:not(.light) .theme-toggle .tt-moon{opacity:1}
+.theme-toggle.tt-sm{width:40px;height:21px}
+.theme-toggle.tt-sm .tt-knob{width:16px;height:16px;top:1.5px;left:1.5px}
+.theme-toggle.tt-sm .tt-ic{width:10px;height:10px}
+.theme-toggle.tt-sm .tt-sun{left:5px}
+.theme-toggle.tt-sm .tt-moon{right:5px}
+body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
 </style>
 </head>
 <body class="light">
@@ -3047,11 +3082,11 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
 <!-- ══════ ONBOARDING TUTORIAL OVERLAY ══════ -->
 <div id="tut-overlay">
   <div id="tut-dim" onclick="tutSkip()"></div>
-  <div id="tut-spot"></div>
+  <div id="tut-spot"><b></b><b></b><b></b><b></b></div>
   <div id="tut-arrow"></div>
   <div id="tut-card">
     <div id="tut-step-badge"><span id="tut-step-num">1/8</span><span class="tut-dot-track" id="tut-dot-track"></span></div>
-    <div id="tut-title"></div>
+    <div id="tut-title"><span class="tut-title-ic">✦</span><span id="tut-title-txt"></span></div>
     <div id="tut-desc"></div>
     <div class="tut-foot">
       <button class="tut-skip" onclick="tutSkip()">Lewati Tutorial</button>
@@ -3091,7 +3126,11 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
 <!-- ══ CONTROLS (login page only) ══ -->
 <div class="ctrl-bar" id="ctrl-bar">
   <button class="cb" id="lang-btn" onclick="toggleLang()" title="Toggle language">ID</button>
-  <button class="cb" id="mode-btn" onclick="toggleMode()" title="Toggle theme">◑ Dark</button>
+  <button class="theme-toggle" id="mode-btn" onclick="toggleMode()" title="Ganti tema" aria-label="Toggle theme">
+    <svg class="tt-ic tt-sun" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.4" stroke="currentColor" stroke-width="1.8"/><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2.6v2.6M12 18.8v2.6M4.6 12H2M22 12h-2.6M6 6l1.9 1.9M16.1 16.1L18 18M18 6l-1.9 1.9M7.9 16.1L6 18"/></g></svg>
+    <svg class="tt-ic tt-moon" viewBox="0 0 24 24" fill="none"><path d="M19.8 14.3A8.4 8.4 0 1 1 9.7 4.2a6.9 6.9 0 0 0 10.1 10.1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+    <span class="tt-knob"></span>
+  </button>
 </div>
 
 <!-- ══ LOGIN SCENE ══ -->
@@ -3428,7 +3467,11 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
         <!-- Replay onboarding tutorial -->
         <button class="tb-btn" id="tut-replay-btn" onclick="startTutorial(true)" title="Tampilkan tutorial lagi">✦</button>
         <!-- Theme / Lang (inside dash) -->
-        <button class="tb-btn" onclick="toggleMode()" id="mode-btn-dash" title="Toggle theme">◑</button>
+        <button class="theme-toggle tt-sm" onclick="toggleMode()" id="mode-btn-dash" title="Toggle theme" aria-label="Toggle theme">
+          <svg class="tt-ic tt-sun" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.4" stroke="currentColor" stroke-width="1.8"/><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2.6v2.6M12 18.8v2.6M4.6 12H2M22 12h-2.6M6 6l1.9 1.9M16.1 16.1L18 18M18 6l-1.9 1.9M7.9 16.1L6 18"/></g></svg>
+          <svg class="tt-ic tt-moon" viewBox="0 0 24 24" fill="none"><path d="M19.8 14.3A8.4 8.4 0 1 1 9.7 4.2a6.9 6.9 0 0 0 10.1 10.1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          <span class="tt-knob"></span>
+        </button>
         <button class="tb-btn" onclick="toggleLang()" id="lang-btn-dash" title="Toggle language" style="font-size:10px;font-weight:700;letter-spacing:.1em">ID</button>
         <!-- Notification bell (all roles) -->
         <button class="tb-btn notif-bell-btn" id="notif-bell" onclick="toggleNotifPanel()" style="display:none" title="Notifications">
@@ -3946,6 +3989,7 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
           <div class="tbl-head">
             <div class="tbl-title" id="ls-day-title">Sesi Live</div>
             <div style="display:flex;gap:8px">
+              <button class="btn-sm" id="ls-libur-btn" style="display:none;border-color:rgba(155,139,212,.4);color:#9b8bd4" onclick="toggleLsLibur()">◈ Tandai Libur</button>
               <button class="btn-sm btn-gold" id="ls-add-btn" style="display:none" onclick="openLsSessionModal(null)">+ Tambah Sesi</button>
               <button class="btn-sm btn-del" id="ls-clear-btn" style="display:none" onclick="clearLsDay()">✕ Hapus Semua</button>
             </div>
@@ -5551,11 +5595,6 @@ let isDark = false; // Default tampilan: LIGHT MODE
 
 function applyThemeToUI() {
   document.body.classList.toggle('light', !isDark);
-  const lbl = isDark ? '◑ Light' : '◑ Dark';
-  const b1 = document.getElementById('mode-btn');
-  const b2 = document.getElementById('mode-btn-dash');
-  if (b1) b1.textContent = lbl;
-  if (b2) b2.textContent = '◑';
   if (window.bgRenderer) bgRenderer.setMode(!isDark);
 }
 
@@ -6484,6 +6523,7 @@ function renderLiveSchedulePanel() {
   document.getElementById('ls-mod-tools').style.display = isMod ? '' : 'none';
   document.getElementById('ls-add-btn').style.display   = isMod ? '' : 'none';
   document.getElementById('ls-clear-btn').style.display = isMod ? '' : 'none';
+  document.getElementById('ls-libur-btn').style.display = isMod ? '' : 'none';
   document.getElementById('ls-day-act-col').style.display = isMod ? '' : 'none';
   document.getElementById('ls-page-sub').textContent = isMod
     ? 'Atur hari libur & jadwal sesi live untuk tim Host Live'
@@ -6947,6 +6987,15 @@ function renderLsDayTable() {
   const isLibur = lsAttCache[lsSelectedDate] === 'Libur';
   const sessions = (lsMonthCache[lsSelectedDate] || []).slice().sort((a,b) => a.session_no - b.session_no);
 
+  const liburBtn = document.getElementById('ls-libur-btn');
+  const addBtn   = document.getElementById('ls-add-btn');
+  if (liburBtn && isMod) {
+    liburBtn.textContent = isLibur ? '✕ Batal Libur' : '◈ Tandai Libur';
+    liburBtn.style.color = isLibur ? '#e87070' : '#9b8bd4';
+    liburBtn.style.borderColor = isLibur ? 'rgba(232,112,112,.4)' : 'rgba(155,139,212,.4)';
+  }
+  if (addBtn && isMod) addBtn.style.display = isLibur ? 'none' : '';
+
   if (isLibur) {
     tbody.innerHTML = `<tr><td colspan="${isMod?7:6}" class="tbl-empty">✦ Libur — tidak ada sesi live tanggal ini</td></tr>`;
     return;
@@ -7387,6 +7436,40 @@ async function deleteLsSession(sessionId) {
   if (res?.error) { toast('Gagal menghapus: ' + res.error.message); return; }
   await loadLsMonth();
   toast('Sesi live dihapus');
+}
+
+/* ── Moderator: tandai/batal Libur langsung dari kalender Jadwal Live
+   (v13: dipindah dari halaman Absensi yang sudah dihapus) ── */
+async function toggleLsLibur() {
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  if (!can.isMod(currentUser?.role)) return;
+  if (!lsTargetId) { toast('Pilih host terlebih dahulu'); return; }
+
+  const hostName = LOCAL_USERS[lsTargetId]?.name || lsTargetId || '—';
+  const dObj = new Date(lsSelectedDate + 'T00:00:00');
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const label = `${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
+  const isLibur = lsAttCache[lsSelectedDate] === 'Libur';
+  const existing = (lsMonthCache[lsSelectedDate] || []);
+
+  if (isLibur) {
+    const res = await dbQ(d => d.rpc('moderator_clear_attendance', {
+      p_moderator_id: currentUser.id, p_target_user: lsTargetId, p_att_date: lsSelectedDate
+    }));
+    if (res?.error) { toast('Gagal membatalkan Libur: ' + res.error.message); return; }
+    toast(`Libur ${hostName} tanggal ${label} dibatalkan`);
+    pushActivity(`Libur ${lsTargetId} (${lsSelectedDate}) dibatalkan moderator`, 'info');
+  } else {
+    if (existing.length && !confirm(`${hostName} sudah punya ${existing.length} sesi live terjadwal pada ${label}. Tandai Libur tetap akan menyembunyikan sesi tersebut dari tampilan. Lanjutkan?`)) return;
+    const res = await dbQ(d => d.rpc('moderator_set_attendance', {
+      p_moderator_id: currentUser.id, p_target_user: lsTargetId, p_att_date: lsSelectedDate,
+      p_status: 'Libur', p_note: null
+    }));
+    if (res?.error) { toast('Gagal menandai Libur: ' + res.error.message); return; }
+    toast(`${hostName} ditandai Libur tanggal ${label}`);
+    pushActivity(`${lsTargetId} ditandai Libur (${lsSelectedDate}) oleh moderator`, 'info');
+  }
+  await loadLsMonth();
 }
 
 /* ── Moderator: hapus SEMUA sesi live 1 host pada tanggal yg sedang dibuka
@@ -13295,7 +13378,7 @@ function renderTutStep() {
 
   setTimeout(() => {
     const r = el.getBoundingClientRect();
-    const pad = 8;
+    const pad = 6;
     const spot = document.getElementById('tut-spot');
     spot.style.top = (r.top - pad) + 'px';
     spot.style.left = (r.left - pad) + 'px';
@@ -13303,18 +13386,45 @@ function renderTutStep() {
     spot.style.height = (r.height + pad * 2) + 'px';
 
     const card = document.getElementById('tut-card');
-    card.classList.remove('in');
-    const cw = 296, ch = card.offsetHeight || 160;
-    let top, left;
+    const arrow = document.getElementById('tut-arrow');
+    card.classList.remove('in'); arrow.classList.remove('in');
+    const cw = 248, gap = 16;
+    const ch = card.offsetHeight || 130;
+    let top, left, side, origin;
     const spaceRight = window.innerWidth - r.right;
-    if (spaceRight > cw + 40) { left = r.right + 20; top = Math.min(Math.max(r.top - 10, 12), window.innerHeight - ch - 12); }
-    else if (r.left > cw + 40) { left = r.left - cw - 20; top = Math.min(Math.max(r.top - 10, 12), window.innerHeight - ch - 12); }
-    else if (r.top > ch + 40) { top = r.top - ch - 20; left = Math.min(Math.max(r.left, 12), window.innerWidth - cw - 12); }
-    else { top = Math.min(r.bottom + 20, window.innerHeight - ch - 12); left = Math.min(Math.max(r.left, 12), window.innerWidth - cw - 12); }
-    card.style.top = top + 'px'; card.style.left = left + 'px';
-    requestAnimationFrame(() => card.classList.add('in'));
+    const spaceLeft  = r.left;
+    const spaceBelow = window.innerHeight - r.bottom;
+    const spaceAbove = r.top;
 
-    document.getElementById('tut-title').textContent = step.title;
+    if (spaceRight > cw + gap + 10) {
+      side = 'right'; left = r.right + gap; top = Math.min(Math.max(r.top + r.height / 2 - ch / 2, 12), window.innerHeight - ch - 12);
+      origin = '0% 50%';
+    } else if (spaceLeft > cw + gap + 10) {
+      side = 'left'; left = r.left - cw - gap; top = Math.min(Math.max(r.top + r.height / 2 - ch / 2, 12), window.innerHeight - ch - 12);
+      origin = '100% 50%';
+    } else if (spaceBelow > ch + gap + 10) {
+      side = 'bottom'; top = r.bottom + gap; left = Math.min(Math.max(r.left + r.width / 2 - cw / 2, 12), window.innerWidth - cw - 12);
+      origin = '50% 0%';
+    } else if (spaceAbove > ch + gap + 10) {
+      side = 'top'; top = r.top - ch - gap; left = Math.min(Math.max(r.left + r.width / 2 - cw / 2, 12), window.innerWidth - cw - 12);
+      origin = '50% 100%';
+    } else {
+      side = 'bottom'; top = Math.min(r.bottom + gap, window.innerHeight - ch - 12); left = Math.min(Math.max(r.left, 12), window.innerWidth - cw - 12);
+      origin = '50% 0%';
+    }
+    card.style.setProperty('--tut-origin', origin);
+    card.style.top = top + 'px'; card.style.left = left + 'px';
+
+    // arrow: small diamond glued to the card edge facing the target
+    const arrowSize = 12;
+    if (side === 'right')      { arrow.style.top = (r.top + r.height / 2 - arrowSize / 2) + 'px'; arrow.style.left = (left - arrowSize / 2 - 1) + 'px'; arrow.style.transform = 'rotate(-45deg)'; }
+    else if (side === 'left')  { arrow.style.top = (r.top + r.height / 2 - arrowSize / 2) + 'px'; arrow.style.left = (left + cw - arrowSize / 2 + 1) + 'px'; arrow.style.transform = 'rotate(135deg)'; }
+    else if (side === 'bottom'){ arrow.style.top = (top - arrowSize / 2 - 1) + 'px'; arrow.style.left = (r.left + r.width / 2 - arrowSize / 2) + 'px'; arrow.style.transform = 'rotate(45deg)'; }
+    else                        { arrow.style.top = (top + ch - arrowSize / 2 + 1) + 'px'; arrow.style.left = (r.left + r.width / 2 - arrowSize / 2) + 'px'; arrow.style.transform = 'rotate(225deg)'; }
+
+    requestAnimationFrame(() => { card.classList.add('in'); arrow.classList.add('in'); });
+
+    document.getElementById('tut-title-txt').textContent = step.title;
     document.getElementById('tut-desc').textContent = step.desc;
     document.getElementById('tut-step-num').textContent = `${tutIdx + 1}/${tutSteps.length}`;
     document.getElementById('tut-dot-track').innerHTML =
