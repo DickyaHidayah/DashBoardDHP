@@ -9,6 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
 /* ══════════════════════════════════════════════════════════
    DHP CREATIVE PORTAL  v5.3  —  Command System
@@ -464,6 +465,32 @@ body.light .hs-switch-btn.active{color:#fff}
 .alld-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .alld-section-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--text);letter-spacing:.01em}
 .alld-section-sub{font-size:10.5px;color:var(--text2);letter-spacing:.03em;margin-top:2px}
+
+/* ── MY PERFORMANCE — monthly dashboard, all roles ── */
+.myperf-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.myperf-kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;position:relative;overflow:hidden}
+.myperf-kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--gold-lo),var(--gold-hi))}
+.myperf-kpi-num{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;color:var(--gold-hi);line-height:1.15}
+.myperf-kpi-lbl{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);margin-top:4px}
+.myperf-kpi-delta{font-size:10.5px;margin-top:6px;font-weight:600}
+.myperf-kpi-delta.up{color:var(--green)}
+.myperf-kpi-delta.down{color:var(--red)}
+.myperf-kpi-delta.flat{color:var(--text2)}
+.myperf-charts{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:900px){.myperf-charts{grid-template-columns:1fr}}
+.myperf-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px}
+.myperf-card-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--text);margin-bottom:2px}
+.myperf-card-sub{font-size:10.5px;color:var(--text2);letter-spacing:.03em;margin-bottom:14px}
+.myperf-canvas-wrap{position:relative;height:260px}
+.myperf-canvas-wrap.donut{height:200px;display:flex;align-items:center;justify-content:center}
+.myperf-donut-center{position:absolute;text-align:center;pointer-events:none}
+.myperf-donut-num{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:var(--gold-hi)}
+.myperf-donut-lbl{font-size:9px;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+.myperf-empty{padding:40px;text-align:center;color:var(--text2);font-size:12.5px;font-style:italic}
+.myperf-mini-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:11.5px}
+.myperf-mini-row:last-child{border-bottom:none}
+.myperf-mini-name{color:var(--text2)}
+.myperf-mini-val{font-weight:700;color:var(--text)}
 .alld-row{display:flex;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid var(--border);cursor:pointer;transition:background var(--trans)}
 .alld-row:first-of-type{border-top:none}
 .alld-row:hover{background:rgba(201,169,110,.05)}
@@ -1972,6 +1999,16 @@ body.light .notif-bell-btn .badge-dot{border-color:#ffffff;background:#c0392b;co
 }
 .notif-bell-btn.bell-ring svg{animation:bell-ring .55s cubic-bezier(.4,0,.2,1)}
 
+/* ── GLOBAL REFRESH BUTTON (topbar, all roles/pages) ── */
+.refresh-btn{transition:all var(--trans);position:relative}
+.refresh-btn svg{transition:transform .3s ease}
+.refresh-btn:hover svg{transform:rotate(65deg)}
+.refresh-btn.spinning svg{animation:refresh-spin .7s linear infinite}
+.refresh-btn.spinning{pointer-events:none;opacity:.7}
+@keyframes refresh-spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.refresh-btn .refresh-dot{position:absolute;top:2px;right:2px;width:6px;height:6px;border-radius:50%;background:var(--green);opacity:0;transition:opacity .25s}
+.refresh-btn.just-updated .refresh-dot{opacity:1}
+
 /* ── SHAKE ── */
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 
@@ -3339,6 +3376,16 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
         <span data-i18n="myTasks">Tugas Saya</span>
         <span class="nav-badge" id="mt-pending-badge" style="display:none">0</span>
       </button>
+      <!-- ══ PERFORMA SAYA — tersedia untuk SEMUA role, dashboard bulanan bergrafik ══ -->
+      <button class="nav-item" onclick="navTo('my_performance',this)" id="n-my-performance">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M2 13.5V2M2 13.5h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M4.3 11.2l2.6-3.4 2.1 2 3.3-4.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span data-i18n="myPerformance">Performa Saya</span>
+      </button>
       <!-- ══ OVERVIEW TIM — khusus Moderator (lihat dashboard bulanan semua role) ══ -->
       <div class="nav-sec-lbl mod-only" id="ns-all-dash" style="display:none">
         <span class="sec-name">Overview Tim</span>
@@ -3548,6 +3595,14 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
           <span class="tt-knob"></span>
         </button>
         <button class="tb-btn" onclick="toggleLang()" id="lang-btn-dash" title="Toggle language" style="font-size:10px;font-weight:700;letter-spacing:.1em">ID</button>
+        <!-- Global refresh (all roles, all pages) — muat ulang data halaman aktif + notifikasi tanpa refresh tab -->
+        <button class="tb-btn refresh-btn" id="global-refresh-btn" onclick="manualRefresh()" title="Muat ulang data">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M13.5 2.5v3.4h-3.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="refresh-dot"></span>
+        </button>
         <!-- Notification bell (all roles) -->
         <button class="tb-btn notif-bell-btn" id="notif-bell" onclick="toggleNotifPanel()" style="display:none" title="Notifications">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -4181,6 +4236,25 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
       </div>
 
       <!-- ⑧-b LIVE DASHBOARD — perbandingan seluruh Host Live sekaligus (khusus moderator) -->
+      <!-- PERFORMA SAYA — dashboard performa bulanan bergrafik, tersedia untuk SEMUA role -->
+      <div class="sp" id="pg-my_performance">
+        <div class="ph">
+          <div class="ph-left">
+            <div class="pt">
+              <span data-i18n="myPerformance">Performa Saya</span>
+              <span class="role-pill" id="myperf-role-pill" style="background:rgba(201,169,110,.14);color:var(--gold-hi);border:1px solid rgba(201,169,110,.32)">
+                <span class="pill-dot" style="background:var(--gold)"></span> <span id="myperf-role-pill-txt">—</span>
+              </span>
+            </div>
+            <div class="ps" data-i18n="myPerformanceSub">Ringkasan performamu bulan ini &amp; tren 6 bulan terakhir, lengkap dengan grafik</div>
+          </div>
+          <div class="ph-acts">
+            <button class="btn-sm btn-gold" onclick="loadMyPerformance()" title="Muat ulang">⟲ Muat Ulang</button>
+          </div>
+        </div>
+        <div id="myperf-view"><div class="myperf-empty">Memuat performa…</div></div>
+      </div>
+
       <div class="sp" id="pg-live_dashboard">
         <div class="ph">
           <div class="ph-left">
@@ -5330,6 +5404,7 @@ const i18n = {
     totalAssignedCustomers:'total assigned customers',
     // My Tasks (moderator personal job notes)
     myTasks:'My Tasks', myTasksSub:'Note down the jobs you need to do, set a deadline & time, and get notified as it approaches',
+    myPerformance:'My Performance', myPerformanceSub:'Your performance summary this month & the 6-month trend, with charts',
     myTasksNew:'New Task', myTasksActive:'Active', myTasksDoneTab:'Done', myTasksAll:'All',
     myTasksTotal:'Total Tasks', myTasksPending:'Pending', myTasksOverdue:'Overdue',
     myTasksEmpty:'No tasks here yet — add your first job note.',
@@ -5585,6 +5660,7 @@ const i18n = {
     totalAssignedCustomers:'total customer yang ditangani',
     // Tugas Saya (catatan pekerjaan pribadi moderator)
     myTasks:'Tugas Saya', myTasksSub:'Catat pekerjaan yang harus kamu kerjakan, atur deadline & waktu, dapat notifikasi saat mendekati tenggat',
+    myPerformance:'Performa Saya', myPerformanceSub:'Ringkasan performamu bulan ini & tren 6 bulan terakhir, lengkap dengan grafik',
     myTasksNew:'Tugas Baru', myTasksActive:'Berjalan', myTasksDoneTab:'Selesai', myTasksAll:'Semua',
     myTasksTotal:'Total Tugas', myTasksPending:'Belum Selesai', myTasksOverdue:'Terlambat',
     myTasksEmpty:'Belum ada tugas — catat pekerjaan pertamamu di sini.',
@@ -6367,6 +6443,7 @@ async function initDashboard() {
   navShow('ns-all-dash',      isMod);   // Overview Tim — Dashboard Semua Role, khusus moderator
   navShow('n-all-dashboard',  isMod);
   navShow('n-mod-tasks',      true);    // Tugas Saya — tersedia untuk semua role
+  navShow('n-my-performance', true);    // Performa Saya — dashboard bulanan bergrafik, tersedia untuk semua role
 
   // Administration (Moderator+)
   navShow('ns-admin',         isMod);
@@ -7622,6 +7699,331 @@ function alldGoToLive(id) {
 }
 function alldGoToFollowup(id) {
   navTo('crm', document.getElementById('n-crm'));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ㉗ PERFORMA SAYA — dashboard performa bulanan bergrafik,
+   tersedia untuk SEMUA role (content, host live, admin/b2b, moderator).
+   Pakai Chart.js. Data sumbernya sama dengan RPC yang sudah ada
+   (host_dashboard_stats, followup_monthly_daily) + content_calendar.
+   ═══════════════════════════════════════════════════════════ */
+let _myPerfCharts = {};
+function _myPerfDestroyCharts() {
+  Object.values(_myPerfCharts).forEach(c => { try { c.destroy(); } catch (e) {} });
+  _myPerfCharts = {};
+}
+function _last6Months() {
+  const out = [];
+  const now = new Date();
+  const mn = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    out.push({ ym: ymPeriodKey(d), label: mn[d.getMonth()].slice(0, 3) + ' ' + String(d.getFullYear()).slice(2) });
+  }
+  return out;
+}
+function _myPerfChartColors() {
+  const css = getComputedStyle(document.body);
+  const g = (v, fb) => (css.getPropertyValue(v).trim() || fb);
+  return {
+    gold:  g('--gold-hi', '#e8cc99'),
+    gold2: g('--gold', '#c9a96e'),
+    green: g('--green', '#7abf8e'),
+    blue:  g('--blue', '#7ea8c9'),
+    red:   g('--red', '#e87070'),
+    text2: g('--text2', '#999999'),
+    border: g('--border', 'rgba(255,255,255,.12)'),
+  };
+}
+function _myPerfKpiHtml(num, lbl, delta) {
+  let deltaHtml = '';
+  if (delta !== undefined && delta !== null && isFinite(delta)) {
+    const cls = delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
+    const arrow = delta > 0 ? '▲' : delta < 0 ? '▼' : '—';
+    deltaHtml = `<div class="myperf-kpi-delta ${cls}">${arrow} ${Math.abs(delta)}% vs bulan lalu</div>`;
+  }
+  return `<div class="myperf-kpi"><div class="myperf-kpi-num">${num}</div><div class="myperf-kpi-lbl">${lbl}</div>${deltaHtml}</div>`;
+}
+function _myPerfBarOpts(c) {
+  return {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: c.text2, font: { size: 10 }, boxWidth: 10, boxHeight: 10 } } },
+    scales: {
+      x: { ticks: { color: c.text2, font: { size: 9.5 } }, grid: { display: false } },
+      y: { ticks: { color: c.text2, font: { size: 9.5 } }, grid: { color: c.border }, beginAtZero: true }
+    }
+  };
+}
+function _myPerfLineOpts(c) {
+  return {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: c.text2, font: { size: 10 }, boxWidth: 10, boxHeight: 10 } } },
+    scales: {
+      x: { ticks: { color: c.text2, font: { size: 9.5 } }, grid: { display: false } },
+      y: { ticks: { color: c.text2, font: { size: 9.5 } }, grid: { color: c.border }, beginAtZero: true }
+    }
+  };
+}
+function _myPerfMakeDonut(canvasId, data, colors, centerNum, centerLbl, c) {
+  const el = document.getElementById(canvasId); if (!el) return null;
+  const ctx = el.getContext('2d');
+  return new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels: data.labels, datasets: [{ data: data.values, backgroundColor: colors, borderWidth: 0 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '72%',
+      plugins: { legend: { position: 'bottom', labels: { color: c.text2, font: { size: 9.5 }, boxWidth: 8, boxHeight: 8, padding: 10 } } }
+    },
+    plugins: [{
+      id: 'centerText_' + canvasId,
+      afterDraw(chart) {
+        const { ctx, chartArea: { width, height, left, top } } = chart;
+        ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.font = "700 22px 'Cormorant Garamond', serif"; ctx.fillStyle = c.gold;
+        ctx.fillText(centerNum, left + width / 2, top + height / 2 - 8);
+        ctx.font = "600 9px sans-serif"; ctx.fillStyle = c.text2;
+        ctx.fillText(centerLbl, left + width / 2, top + height / 2 + 11);
+        ctx.restore();
+      }
+    }]
+  });
+}
+
+async function loadMyPerformance() {
+  const wrap = document.getElementById('myperf-view');
+  if (!wrap || !currentUser) return;
+  wrap.innerHTML = `<div class="myperf-empty">${currentLang === 'id' ? 'Memuat performa…' : 'Loading performance…'}</div>`;
+  const pillTxt = document.getElementById('myperf-role-pill-txt');
+  if (pillTxt) pillTxt.textContent = rn(currentUser.role);
+
+  const r = currentUser.role;
+  try {
+    if (can.isContent(r))  { await _loadMyPerfContent();  return; }
+    if (can.isHostLive(r)) { await _loadMyPerfHost();      return; }
+    if (r === 'admin' || can.isB2B(r)) { await _loadMyPerfFollowup(); return; }
+    if (can.isMod(r))      { await _loadMyPerfModerator(); return; }
+    wrap.innerHTML = `<div class="myperf-empty">${currentLang === 'id' ? 'Dashboard performa belum tersedia untuk role ini.' : 'Performance dashboard not available for this role yet.'}</div>`;
+  } catch (e) {
+    console.warn('[DHP] loadMyPerformance gagal:', e);
+    wrap.innerHTML = `<div class="myperf-empty">${currentLang === 'id' ? 'Gagal memuat performa. Coba tombol refresh.' : 'Failed to load performance. Try the refresh button.'}</div>`;
+  }
+}
+
+async function _loadMyPerfContent() {
+  const wrap = document.getElementById('myperf-view');
+  const months = _last6Months();
+  let rows = [];
+  if (db) {
+    const first = months[0].ym + '-01';
+    const [ly, lm] = months[5].ym.split('-').map(Number);
+    const lastDate = ymdKey(new Date(ly, lm, 0));
+    const res = await dbQ(d => d.from('content_calendar').select('content_date,progress_status')
+      .eq('creator_user_id', currentUser.id).gte('content_date', first).lte('content_date', lastDate));
+    rows = res?.data || [];
+  }
+  const byMonth = {}; months.forEach(m => byMonth[m.ym] = { total: 0, done: 0 });
+  rows.forEach(row => { const ym = String(row.content_date).slice(0, 7); if (byMonth[ym]) { byMonth[ym].total++; if (row.progress_status === 'done_upload') byMonth[ym].done++; } });
+  const curr = byMonth[months[5].ym], prev = byMonth[months[4].ym];
+  const currPct = curr.total ? Math.round(curr.done / curr.total * 100) : 0;
+  const prevPct = prev.total ? Math.round(prev.done / prev.total * 100) : 0;
+  const delta = prevPct ? Math.round(((currPct - prevPct) / prevPct) * 100) : (currPct > 0 ? 100 : 0);
+
+  wrap.innerHTML = `<div class="myperf-kpis">
+      ${_myPerfKpiHtml(curr.total, 'Konten Bulan Ini', null)}
+      ${_myPerfKpiHtml(curr.done, 'Sudah Tayang', null)}
+      ${_myPerfKpiHtml(currPct + '%', 'Completion Rate', delta)}
+    </div>
+    <div class="myperf-charts">
+      <div class="myperf-card">
+        <div class="myperf-card-title">Tren Konten 6 Bulan</div>
+        <div class="myperf-card-sub">Total slot vs. selesai tayang per bulan</div>
+        <div class="myperf-canvas-wrap"><canvas id="myperf-trend-canvas"></canvas></div>
+      </div>
+      <div class="myperf-card">
+        <div class="myperf-card-title">Bulan Ini</div>
+        <div class="myperf-card-sub">Persentase konten selesai</div>
+        <div class="myperf-canvas-wrap donut"><canvas id="myperf-donut-canvas"></canvas></div>
+      </div>
+    </div>`;
+
+  _myPerfDestroyCharts();
+  const c = _myPerfChartColors();
+  _myPerfCharts.trend = new Chart(document.getElementById('myperf-trend-canvas').getContext('2d'), {
+    type: 'bar',
+    data: { labels: months.map(m => m.label), datasets: [
+      { label: 'Total Slot', data: months.map(m => byMonth[m.ym].total), backgroundColor: c.border, borderRadius: 6 },
+      { label: 'Selesai Tayang', data: months.map(m => byMonth[m.ym].done), backgroundColor: c.gold, borderRadius: 6 },
+    ] },
+    options: _myPerfBarOpts(c)
+  });
+  _myPerfCharts.donut = _myPerfMakeDonut('myperf-donut-canvas',
+    { labels: ['Selesai', 'Sisa'], values: [curr.done, Math.max(0, curr.total - curr.done)] },
+    [c.gold, c.border], currPct + '%', 'Selesai', c);
+}
+
+async function _loadMyPerfHost() {
+  const wrap = document.getElementById('myperf-view');
+  const months = _last6Months();
+  let statsArr = months.map(() => ({}));
+  if (db) {
+    const results = await Promise.all(months.map(m => dbQ(d => d.rpc('host_dashboard_stats', { p_host_id: currentUser.id, p_period_ym: m.ym }))));
+    statsArr = results.map(res => res?.data?.[0] || {});
+  }
+  const curr = statsArr[5] || {}, prev = statsArr[4] || {};
+  const currAch = Number(curr.total_sales) || 0, currTgt = Number(curr.target_amount) || 0;
+  const currPct = currTgt ? Math.min(100, Math.round(currAch / currTgt * 100)) : 0;
+  const prevAch = Number(prev.total_sales) || 0, prevTgt = Number(prev.target_amount) || 0;
+  const prevPct = prevTgt ? Math.round(prevAch / prevTgt * 100) : 0;
+  const delta = prevPct ? Math.round(((currPct - prevPct) / prevPct) * 100) : (currPct > 0 ? 100 : 0);
+
+  wrap.innerHTML = `<div class="myperf-kpis">
+      ${_myPerfKpiHtml(crmFmtRupiah(currAch), 'Penjualan Bulan Ini', null)}
+      ${_myPerfKpiHtml(curr.total_sessions || 0, 'Sesi Live', null)}
+      ${_myPerfKpiHtml(curr.pending_sessions || 0, 'Laporan Menunggu ACC', null)}
+      ${_myPerfKpiHtml(currPct + '%', 'Capaian Target', delta)}
+    </div>
+    <div class="myperf-charts">
+      <div class="myperf-card">
+        <div class="myperf-card-title">Tren Penjualan 6 Bulan</div>
+        <div class="myperf-card-sub">Realisasi vs target penjualan live per bulan</div>
+        <div class="myperf-canvas-wrap"><canvas id="myperf-trend-canvas"></canvas></div>
+      </div>
+      <div class="myperf-card">
+        <div class="myperf-card-title">Bulan Ini</div>
+        <div class="myperf-card-sub">Capaian target penjualan</div>
+        <div class="myperf-canvas-wrap donut"><canvas id="myperf-donut-canvas"></canvas></div>
+      </div>
+    </div>`;
+
+  _myPerfDestroyCharts();
+  const c = _myPerfChartColors();
+  _myPerfCharts.trend = new Chart(document.getElementById('myperf-trend-canvas').getContext('2d'), {
+    type: 'line',
+    data: { labels: months.map(m => m.label), datasets: [
+      { label: 'Target', data: statsArr.map(s => Number(s.target_amount) || 0), borderColor: c.border, backgroundColor: 'transparent', borderDash: [4, 4], tension: .3 },
+      { label: 'Realisasi', data: statsArr.map(s => Number(s.total_sales) || 0), borderColor: c.gold, backgroundColor: c.gold + '33', fill: true, tension: .3 },
+    ] },
+    options: _myPerfLineOpts(c)
+  });
+  _myPerfCharts.donut = _myPerfMakeDonut('myperf-donut-canvas',
+    { labels: ['Tercapai', 'Sisa'], values: [Math.min(currAch, currTgt), Math.max(0, currTgt - currAch)] },
+    [c.gold, c.border], currPct + '%', 'Target', c);
+}
+
+async function _loadMyPerfFollowup() {
+  const wrap = document.getElementById('myperf-view');
+  const months = _last6Months();
+  let dailyArr = months.map(() => []);
+  if (db) {
+    const results = await Promise.all(months.map(m => dbQ(d => d.rpc('followup_monthly_daily', { p_user_id: currentUser.id, p_period_ym: m.ym }))));
+    dailyArr = results.map(res => res?.data || []);
+  }
+  const monthTotals  = dailyArr.map(daily => daily.reduce((s, d) => s + (d.cnt || 0), 0));
+  const monthHitDays = dailyArr.map(daily => daily.filter(d => (d.cnt || 0) >= FOLLOWUP_DAILY_TARGET).length);
+  const monthDays    = dailyArr.map(daily => daily.length);
+  const currTotal = monthTotals[5], currHit = monthHitDays[5], currDays = monthDays[5];
+  const currPct = currDays ? Math.round(currHit / currDays * 100) : 0;
+  const prevPct = monthDays[4] ? Math.round(monthHitDays[4] / monthDays[4] * 100) : 0;
+  const delta = prevPct ? Math.round(((currPct - prevPct) / prevPct) * 100) : (currPct > 0 ? 100 : 0);
+
+  wrap.innerHTML = `<div class="myperf-kpis">
+      ${_myPerfKpiHtml(currTotal, 'Total Follow-up Bulan Ini', null)}
+      ${_myPerfKpiHtml(currHit + '/' + currDays, 'Hari Capai Target', null)}
+      ${_myPerfKpiHtml(currPct + '%', 'Konsistensi', delta)}
+    </div>
+    <div class="myperf-charts">
+      <div class="myperf-card">
+        <div class="myperf-card-title">Tren Follow-up 6 Bulan</div>
+        <div class="myperf-card-sub">Total follow-up customer per bulan (target ${FOLLOWUP_DAILY_TARGET}/hari)</div>
+        <div class="myperf-canvas-wrap"><canvas id="myperf-trend-canvas"></canvas></div>
+      </div>
+      <div class="myperf-card">
+        <div class="myperf-card-title">Bulan Ini</div>
+        <div class="myperf-card-sub">Hari capai target harian</div>
+        <div class="myperf-canvas-wrap donut"><canvas id="myperf-donut-canvas"></canvas></div>
+      </div>
+    </div>`;
+
+  _myPerfDestroyCharts();
+  const c = _myPerfChartColors();
+  _myPerfCharts.trend = new Chart(document.getElementById('myperf-trend-canvas').getContext('2d'), {
+    type: 'bar',
+    data: { labels: months.map(m => m.label), datasets: [{ label: 'Follow-up', data: monthTotals, backgroundColor: c.gold, borderRadius: 6 }] },
+    options: _myPerfBarOpts(c)
+  });
+  _myPerfCharts.donut = _myPerfMakeDonut('myperf-donut-canvas',
+    { labels: ['Capai Target', 'Kurang'], values: [currHit, Math.max(0, currDays - currHit)] },
+    [c.gold, c.border], currPct + '%', 'Hari', c);
+}
+
+async function _loadMyPerfModerator() {
+  const wrap = document.getElementById('myperf-view');
+  const months = _last6Months();
+  const creatorIds = contentCreatorIds();
+  const hostIds = hostLiveIds();
+  const fuIds = Object.entries(LOCAL_USERS).filter(([, u]) => u.role === 'admin' || u.role === 'b2b_marketing').map(([id]) => id);
+
+  let ccRows = [];
+  if (db) {
+    const first = months[0].ym + '-01';
+    const [ly, lm] = months[5].ym.split('-').map(Number);
+    const lastDate = ymdKey(new Date(ly, lm, 0));
+    const res = await dbQ(d => d.from('content_calendar').select('content_date,progress_status').gte('content_date', first).lte('content_date', lastDate));
+    ccRows = res?.data || [];
+  }
+  const ccByMonth = {}; months.forEach(m => ccByMonth[m.ym] = { total: 0, done: 0 });
+  ccRows.forEach(row => { const ym = String(row.content_date).slice(0, 7); if (ccByMonth[ym]) { ccByMonth[ym].total++; if (row.progress_status === 'done_upload') ccByMonth[ym].done++; } });
+
+  const hostByMonth = {}; months.forEach(m => hostByMonth[m.ym] = { ach: 0, tgt: 0 });
+  if (db && hostIds.length) {
+    const results = await Promise.all(months.flatMap(m => hostIds.map(id =>
+      dbQ(d => d.rpc('host_dashboard_stats', { p_host_id: id, p_period_ym: m.ym })).then(r => ({ ym: m.ym, r })))));
+    results.forEach(({ ym, r }) => { const s = r?.data?.[0]; if (!s) return; hostByMonth[ym].ach += Number(s.total_sales) || 0; hostByMonth[ym].tgt += Number(s.target_amount) || 0; });
+  }
+
+  const fuByMonth = {}; months.forEach(m => fuByMonth[m.ym] = { hit: 0, days: 0 });
+  if (db && fuIds.length) {
+    const results = await Promise.all(months.flatMap(m => fuIds.map(id =>
+      dbQ(d => d.rpc('followup_monthly_daily', { p_user_id: id, p_period_ym: m.ym })).then(r => ({ ym: m.ym, r })))));
+    results.forEach(({ ym, r }) => { const daily = r?.data || []; fuByMonth[ym].hit += daily.filter(d => (d.cnt || 0) >= FOLLOWUP_DAILY_TARGET).length; fuByMonth[ym].days += daily.length; });
+  }
+
+  const pctSeries = key => months.map(m => {
+    if (key === 'content') { const s = ccByMonth[m.ym]; return s.total ? Math.round(s.done / s.total * 100) : 0; }
+    if (key === 'live')    { const s = hostByMonth[m.ym]; return s.tgt ? Math.min(100, Math.round(s.ach / s.tgt * 100)) : 0; }
+    return (() => { const s = fuByMonth[m.ym]; return s.days ? Math.round(s.hit / s.days * 100) : 0; })();
+  });
+  const contentPct = pctSeries('content'), livePct = pctSeries('live'), fuPct = pctSeries('fu');
+  const curr = 5;
+
+  wrap.innerHTML = `<div class="myperf-kpis">
+      ${_myPerfKpiHtml(contentPct[curr] + '%', 'Konten Selesai (Tim)', null)}
+      ${_myPerfKpiHtml(livePct[curr] + '%', 'Live vs Target (Tim)', null)}
+      ${_myPerfKpiHtml(fuPct[curr] + '%', 'Follow-up Capai Target (Tim)', null)}
+    </div>
+    <div class="myperf-charts" style="grid-template-columns:1fr">
+      <div class="myperf-card">
+        <div class="myperf-card-title">Tren Performa Tim — 6 Bulan</div>
+        <div class="myperf-card-sub">Persentase capaian tiap kategori per bulan (semua role di bawahmu)</div>
+        <div class="myperf-canvas-wrap"><canvas id="myperf-trend-canvas"></canvas></div>
+      </div>
+    </div>
+    <div class="myperf-card" style="margin-top:16px">
+      <div class="myperf-card-title">Breakdown Lengkap</div>
+      <div class="myperf-card-sub">Lihat rincian per orang di halaman <b>Dashboard Semua Role</b> di sidebar (Overview Tim)</div>
+    </div>`;
+
+  _myPerfDestroyCharts();
+  const c = _myPerfChartColors();
+  _myPerfCharts.trend = new Chart(document.getElementById('myperf-trend-canvas').getContext('2d'), {
+    type: 'line',
+    data: { labels: months.map(m => m.label), datasets: [
+      { label: 'Konten', data: contentPct, borderColor: c.gold, backgroundColor: 'transparent', tension: .3 },
+      { label: 'Live', data: livePct, borderColor: c.blue, backgroundColor: 'transparent', tension: .3 },
+      { label: 'Follow-up', data: fuPct, borderColor: c.green, backgroundColor: 'transparent', tension: .3 },
+    ] },
+    options: _myPerfLineOpts(c)
+  });
 }
 
 function lsSwitchUser(uid) { lsTargetId = uid; loadLsMonth(); }
@@ -13211,7 +13613,17 @@ function navTo(page, btn) {
   const target = document.getElementById(`pg-${page}`); if (target) target.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  loadPageData(page);
+  // Auto-close drawer on mobile after navigating
+  navClose();
+}
+
+/* Data-loading per halaman — dipakai oleh navTo() (saat pindah halaman) DAN
+   manualRefresh() (saat klik tombol refresh global, tanpa pindah halaman),
+   supaya semua page bisa "muat ulang" data terbaru tanpa perlu refresh tab. */
+function loadPageData(page) {
   if (page === 'mod_tasks')       { renderModTasks(); renderMtMainSection(); }
+  if (page === 'my_performance')  loadMyPerformance();
   if (page === 'team_tasks')      renderTeamTasks();
   if (page === 'users')           renderUsers();
   if (page === 'settings')        renderSettings();
@@ -13239,8 +13651,37 @@ function navTo(page, btn) {
       renderAdTaskPage();
     }
   }
-  // Auto-close drawer on mobile after navigating
-  navClose();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ㉖ GLOBAL REFRESH — tombol refresh di topbar (semua role, semua page).
+   Muat ulang notifikasi + presence + data halaman yang sedang aktif,
+   tanpa perlu refresh tab manual (menutup celah "belum realtime").
+   ═══════════════════════════════════════════════════════════ */
+async function manualRefresh() {
+  if (!currentUser) return;
+  const btn = document.getElementById('global-refresh-btn');
+  if (btn) btn.classList.add('spinning');
+  try {
+    const activeSp = document.querySelector('.sp.active');
+    const page = activeSp ? activeSp.id.replace(/^pg-/, '') : null;
+    const tasks = [
+      loadPersistentNotifications(currentUser.id),
+    ];
+    if (page) tasks.push(Promise.resolve(loadPageData(page)));
+    await Promise.all(tasks);
+    try { refreshPresenceUI(); } catch (e) {}
+    try { updateTaskBadges(); } catch (e) {}
+    toast(currentLang === 'id' ? 'Data diperbarui' : 'Data updated');
+  } catch (e) {
+    console.warn('[DHP] manualRefresh gagal:', e);
+  } finally {
+    if (btn) {
+      btn.classList.remove('spinning');
+      btn.classList.add('just-updated');
+      setTimeout(() => btn.classList.remove('just-updated'), 1500);
+    }
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -14132,6 +14573,7 @@ function fireStAchieveConfetti(ov) {
 /* ══════ ONBOARDING TUTORIAL ENGINE — game-style step-by-step guide ══════ */
 const TUT_STEPS_DEFS = [
   { id:'n-mod-tasks',      title:'Tugas Saya',             desc:'Semua tugas yang ditugaskan ke kamu ada di sini. Tandai selesai begitu sudah kamu kerjakan.' },
+  { id:'n-my-performance', title:'Performa Saya',          desc:'Dashboard performa bulananmu — grafik tren 6 bulan & capaian bulan ini, tersedia untuk semua role.' },
   { id:'n-content-studio', title:'Studio Konten',          desc:'4 kartu ringkasan progress kontenmu bulan ini, plus Kalender Konten tempat semua tema, script & jadwal konten kamu berada.' },
   { id:'n-live-studio',    title:'Studio Live',            desc:'Lihat jadwal live kamu, isi laporan sesi, dan pantau dashboard performa milikmu sendiri di sini.' },
   { id:'n-live-dashboard', title:'Live Dashboard',         desc:'Bandingkan performa seluruh Host Live dalam satu tampilan — khusus moderator.' },
@@ -14142,6 +14584,7 @@ const TUT_STEPS_DEFS = [
   { id:'n-ad-customers',   title:'Pelanggan Iklan',        desc:'Database leads dan pelanggan hasil iklan, lengkap dengan status follow-up.' },
   { id:'n-ad-task',        title:'Task Iklan',             desc:'Daftar tugas terkait iklan yang perlu kamu kerjakan.' },
   { id:'n-crm',            title:'Database Customer',      desc:'Semua data customer tersimpan rapi di sini, siap untuk kamu follow-up.' },
+  { id:'global-refresh-btn', title:'Refresh',              desc:'Klik untuk muat ulang data halaman ini & notifikasi tanpa perlu refresh tab browser.' },
   { id:'notif-bell',       title:'Notifikasi',             desc:'Update penting — dari ACC laporan sampai aktivitas tim — selalu muncul di sini.' },
   { id:'mode-btn-dash',    title:'Ganti Tema',             desc:'Suka tampilan terang atau gelap? Tinggal klik ini kapan saja.' },
   { id:'btn-my-profile',   title:'Profil Saya',            desc:'Ubah info akun dan lihat pengaturan pribadimu di sini. Selamat berkarya! ✦' },
