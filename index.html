@@ -4098,7 +4098,6 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
               <thead><tr>
                 <th style="width:56px">Slot</th>
                 <th>Tema & Script</th>
-                <th>Deadline</th>
                 <th>Jam Upload</th>
                 <th>Referensi</th>
                 <th>Progress</th>
@@ -6979,8 +6978,6 @@ function renderCcDayTable() {
   tbody.innerHTML = CC_SLOTS.map(slotNo => {
     const s = bySlot[slotNo];
     const prog = CC_PROGRESS[s?.progress_status] || CC_PROGRESS.belum_dikerjakan || { label:'—', pill:'', icon:'' };
-    const deadline = s?.deadline_date ? new Date(s.deadline_date + 'T00:00:00') : null;
-    const deadlineTxt = deadline ? `${deadline.getDate()} ${months[deadline.getMonth()]}` : '—';
     const uploadTxt = s?.upload_time ? s.upload_time.slice(0, 5) : '—';
     const refTxt = s?.reference_link
       ? `<a href="${escHtml(s.reference_link)}" target="_blank" rel="noopener" style="color:var(--gold-hi)">Lihat ↗</a>` : '—';
@@ -7002,7 +6999,6 @@ function renderCcDayTable() {
     return `<tr>
       <td style="font-weight:700;color:var(--gold)">${slotNo}</td>
       <td>${themeTxt}</td>
-      <td>${deadlineTxt}</td>
       <td>${uploadTxt}</td>
       <td>${refTxt}</td>
       <td>${s ? `<span class="lsr-pill ${prog.pill}"><svg width="12" height="12" viewBox="0 0 16 16" fill="none">${prog.icon||''}</svg>${prog.label}</span>` : `<span style="color:var(--text2)">—</span>`}</td>
@@ -7028,13 +7024,8 @@ function openCcSlotModal(slotNo) {
     <div class="fg"><label>Script / Caption</label>
       <textarea class="fi" id="cc-ed-script" rows="5" placeholder="Tulis script atau poin-poin konten di sini…">${escHtml(s?.script || '')}</textarea>
     </div>
-    <div class="fg" style="display:flex;gap:8px">
-      <div style="flex:1"><label>Tanggal Deadline</label>
-        <input class="fi" id="cc-ed-deadline" type="date" value="${s?.deadline_date || ''}"/>
-      </div>
-      <div style="flex:1"><label>Jam Upload</label>
-        <input class="fi" id="cc-ed-upload" type="time" value="${(s?.upload_time||'').slice(0,5)}"/>
-      </div>
+    <div class="fg"><label>Jam Upload</label>
+      <input class="fi" id="cc-ed-upload" type="time" value="${(s?.upload_time||'').slice(0,5)}"/>
     </div>
     <div class="fg"><label>Link Referensi (opsional)</label>
       <input class="fi" id="cc-ed-ref" value="${escHtml(s?.reference_link || '')}" placeholder="https://…"/>
@@ -7050,15 +7041,16 @@ async function saveCcSlot(slotNo, slotId) {
   if (!db) { toast('Supabase tidak aktif'); return; }
   const theme    = document.getElementById('cc-ed-theme').value.trim();
   const script   = document.getElementById('cc-ed-script').value.trim();
-  const deadline = document.getElementById('cc-ed-deadline').value || null;
   const upload   = document.getElementById('cc-ed-upload').value || null;
   const ref      = document.getElementById('cc-ed-ref').value.trim();
   if (!theme) { toast('Isi tema konten dulu'); return; }
 
+  // Deadline otomatis mengikuti tanggal slotnya sendiri (nggak perlu diisi manual —
+  // konten memang harus kelar di hari yang sama dengan tanggal slotnya).
   const res = await dbQ(d => d.rpc('moderator_upsert_content_slot', {
     p_moderator_id: currentUser.id, p_creator_user: ccTargetId, p_content_date: ccSelectedDate,
     p_slot_no: slotNo, p_theme: theme, p_script: script || null,
-    p_deadline_date: deadline, p_upload_time: upload, p_reference_link: ref || null
+    p_deadline_date: ccSelectedDate, p_upload_time: upload, p_reference_link: ref || null
   }));
   if (res?.error) { toast('Gagal menyimpan: ' + res.error.message); return; }
   closeModal();
@@ -14669,7 +14661,7 @@ const TUT_ROLE_EXTRA = [
       fields:[
         { label:'Tema Konten', placeholder:'mis. Tips menata linen kamar tidur', value:'Tips menata linen kamar tidur ala Japandi' },
         { type:'textarea', label:'Script / Caption', rows:3, placeholder:'Tulis script atau poin-poin konten…', value:'Hook: "Kamar tidur berantakan? 3 trik ini bikin rapi dalam 5 menit."' },
-        [ { type:'date', label:'Tanggal Deadline' }, { type:'time', label:'Jam Upload', value:'19:00' } ],
+        [ { type:'time', label:'Jam Upload', value:'19:00' } ],
         { label:'Link Referensi (opsional)', placeholder:'https://…' },
       ] } },
   { afterId:'n-content-studio', roles:['head_moderator','moderator'],
@@ -14710,7 +14702,7 @@ const TUT_ROLE_EXTRA = [
   // ── CONTENT CREATOR ──
   // ══════════════════════════════════════════════════════════════
   { afterId:'n-content-studio', roles:['content_creator'],
-    title:'1. Nunggu Moderator Isi Dulu', desc:'Sebelum kamu bisa kerja, moderator harus isi tiap slot di Kalender Konten dulu — Tema, Script/Caption, Tanggal Deadline, Jam Upload, dan Link Referensi. Selama belum diisi, slot itu tampil "— slot kosong —". Ada juga banner kuning di atas kalender yang kasih tau berapa slot bulan ini yang masih kosong.' },
+    title:'1. Nunggu Moderator Isi Dulu', desc:'Sebelum kamu bisa kerja, moderator harus isi tiap slot di Kalender Konten dulu — Tema, Script/Caption, Jam Upload, dan Link Referensi. Deadline-nya otomatis di hari yang sama dengan tanggal slotnya, jadi nggak perlu diisi terpisah. Selama belum diisi, slot itu tampil "— slot kosong —". Ada juga banner kuning di atas kalender yang kasih tau berapa slot bulan ini yang masih kosong.' },
   { afterId:'n-content-studio', roles:['content_creator'],
     title:'2. Status Progress: 6 Tahap', desc:'Update sesuai progress asli: "Belum Dikerjakan" (baru dapat tugas) → "Belum Take Video" (lagi prep/nulis) → "Sudah Take" (sudah direkam, tinggal edit) → "Sudah Preview" (udah kelar diedit, dicek moderator) → "Done Upload" (sudah di-ACC & tayang). Kalau moderator minta perbaikan, statusnya jadi "Revisi" — kerjakan ulang lalu naikkan lagi ke "Sudah Preview". Tiap status punya warna sendiri biar gampang dipantau sekilas.' },
   { afterId:'n-content-studio', roles:['content_creator'],
@@ -14729,7 +14721,7 @@ const TUT_ROLE_EXTRA = [
         { label:'Catatan Progress (opsional)', placeholder:'mis. Sudah syuting, tinggal edit', value:'Sudah take, tinggal edit malam ini' },
       ] } },
   { afterId:'n-content-studio', roles:['content_creator'],
-    title:'4. Isi Kalender Konten Ada Apa Aja', desc:'Tiap slot berisi: Tema (topik konten), Script/Caption (boleh kamu sunting), Tanggal Deadline (batas kerja), Jam Upload (jadwal posting), Link Referensi (contoh/inspirasi dari moderator), Progress (status kerja kamu), dan Catatan Progress (opsional, buat kasih konteks ke moderator).' },
+    title:'4. Isi Kalender Konten Ada Apa Aja', desc:'Tiap slot berisi: Tema (topik konten), Script/Caption (boleh kamu sunting), Jam Upload (jadwal posting, sekaligus jadi patokan deadline karena deadline-nya otomatis di hari itu juga), Link Referensi (contoh/inspirasi dari moderator), Progress (status kerja kamu), dan Catatan Progress (opsional, buat kasih konteks ke moderator).' },
 
   // ══════════════════════════════════════════════════════════════
   // ── HOST LIVE ──
