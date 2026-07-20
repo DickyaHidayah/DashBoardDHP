@@ -3143,7 +3143,43 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
 #tut-replay-btn:hover{border-color:var(--gold);background:rgba(232,184,110,.08)}
 @media (max-width:640px){
   #tut-card{width:224px;padding:12px 14px 10px}
+  #tut-card.tut-wide{width:min(300px,86vw)}
 }
+/* ── Tutorial: kotak demo interaktif "coba isi sendiri" ── */
+#tut-card.tut-wide{width:360px}
+#tut-demo-area{display:none}
+.tut-demo-box{margin:0 0 12px;padding:11px 12px 10px;border:1px dashed rgba(232,184,110,.45);
+  border-radius:10px;background:rgba(232,184,110,.05)}
+.tut-demo-label{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);
+  font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.tut-demo-fg{margin-bottom:7px}
+.tut-demo-fg:last-of-type{margin-bottom:0}
+.tut-demo-fg label{display:block;font-size:9.5px;color:var(--text2);margin-bottom:3px;letter-spacing:.02em}
+.tut-demo-row{display:flex;gap:8px}
+.tut-demo-row .tut-demo-fg{flex:1}
+.tut-demo-fi{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;
+  padding:6px 8px;font-size:11px;color:var(--text);font-family:inherit;transition:all .15s}
+.tut-demo-fi:focus{outline:none;border-color:var(--gold)}
+select.tut-demo-fi{appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg width='9' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23c9a96e' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 9px center;padding-right:26px}
+textarea.tut-demo-fi{resize:vertical;min-height:38px}
+.tut-demo-readonly{font-size:10.5px;color:var(--text2);background:rgba(255,255,255,.03);
+  border:1px solid var(--border);border-radius:6px;padding:7px 9px;margin-bottom:7px;line-height:1.45}
+.tut-demo-btn{width:100%;margin-top:2px;border:none;border-radius:8px;padding:7px 10px;font-size:10.5px;
+  font-weight:700;letter-spacing:.02em;cursor:pointer;color:#141414;
+  background:linear-gradient(135deg,#e8b86e,#c99a4e);transition:all .15s;box-shadow:0 3px 10px rgba(232,184,110,.25)}
+.tut-demo-btn:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(232,184,110,.4)}
+.tut-demo-btn:active{transform:translateY(0) scale(.98)}
+.tut-demo-btn:disabled{cursor:default;transform:none;opacity:.85;background:linear-gradient(135deg,#7abf8e,#5a9a6e);
+  box-shadow:0 3px 10px rgba(122,191,142,.25)}
+.tut-demo-btn-2{display:flex;gap:8px;margin-top:2px}
+.tut-demo-btn-2 button{flex:1;border-radius:8px;padding:7px 8px;font-size:10px;font-weight:700;
+  cursor:pointer;border:1px solid transparent;transition:all .15s}
+.tut-demo-btn-approve{background:linear-gradient(135deg,#8fd1a2,#6bab7d);color:#0e2013}
+.tut-demo-btn-reject{background:transparent;border-color:rgba(224,138,125,.5);color:#e08a7d}
+.tut-demo-btn-2 button:disabled{opacity:.7;cursor:default;transform:none}
+.tut-demo-note{font-size:9px;color:var(--muted);margin-top:7px;font-style:italic;line-height:1.4}
 
 /* ══════ THEME TOGGLE — elegant animated sun/moon pill switch ══════ */
 .theme-toggle{position:relative;display:inline-flex;align-items:center;flex-shrink:0;
@@ -3189,6 +3225,7 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
     <div id="tut-step-badge"><span id="tut-step-num">1/8</span><span class="tut-dot-track" id="tut-dot-track"></span></div>
     <div id="tut-title"><span class="tut-title-ic">✦</span><span id="tut-title-txt"></span></div>
     <div id="tut-desc"></div>
+    <div id="tut-demo-area"></div>
     <div class="tut-foot">
       <button class="tut-skip" onclick="tutSkip()">Lewati Tutorial</button>
       <div class="tut-nav-btns">
@@ -6256,10 +6293,10 @@ async function handleLogin() {
   if (!id || !pw) { showAlert('login-al', 'error', t('fillFields')); return; }
   const btn = document.getElementById('btn-login');
   btn.classList.add('loading'); await delay(900); btn.classList.remove('loading');
-  let success = false, role = '', name = '';
+  let success = false, role = '', name = '', tutSeenAt = null;
   const res = await dbQ(d => d.from('users').select('*').eq('user_id', id).eq('is_active', true).single());
   if (res?.data) {
-    if (res.data.password_hash === pw) { success = true; role = roleFromDb(res.data.role); name = res.data.full_name; }
+    if (res.data.password_hash === pw) { success = true; role = roleFromDb(res.data.role); name = res.data.full_name; tutSeenAt = res.data.tutorial_seen_at || null; }
   } else {
     const u = LOCAL_USERS[id];
     if (u && u.pass === pw) { success = true; role = u.role; name = u.name; }
@@ -6272,7 +6309,7 @@ async function handleLogin() {
       if (remember) localStorage.setItem('dhp_remember', JSON.stringify({ id, pw }));
       else localStorage.removeItem('dhp_remember');
     } catch (e) { console.warn('[DHP] simpan remember-me gagal:', e); }
-    loginSuccess(id, role, name);
+    loginSuccess(id, role, name, tutSeenAt);
   }
   else { showAlert('login-al', 'error', t('invalidCreds')); shake(document.getElementById('card')); }
 }
@@ -6293,8 +6330,8 @@ function handleGuest() {
   loginSuccess(claim.id, 'guest', claim.name);
 }
 
-function loginSuccess(id, role, name) {
-  currentUser = { id, role, name };
+function loginSuccess(id, role, name, tutSeenAt) {
+  currentUser = { id, role, name, tutSeenAt: tutSeenAt || null };
   // Reset notifikasi sesi sebelumnya (fix: ganti akun di tab yang sama
   // sempat menampilkan notif milik akun lama saat transisi login).
   notifications = []; notifUnread = 0;
@@ -14594,39 +14631,136 @@ const TUT_STEPS_DEFS = [
    elemen yang sama (drill-down), supaya orang tahu APA yang harus
    diisi & KAPAN, bukan cuma "ini menunya". */
 const TUT_ROLE_EXTRA = [
+  // ══════════════════════════════════════════════════════════════
   // ── HEAD MODERATOR / MODERATOR ──
+  // ══════════════════════════════════════════════════════════════
   { afterId:'n-content-studio', roles:['head_moderator','moderator'],
-    title:'Isi Kalender Konten', desc:'Klik tanggal di Kalender Konten, lalu isi Tema, Script, Deadline, Jam Upload & Link Referensi untuk tiap slot (maks 3 slot/hari). Sebelum kamu isi, slot itu tampil "kosong" ke Content Creator — mereka baru bisa mulai kerja setelah kamu isi.' },
+    title:'1. Isi Kalender Konten Dulu', desc:'Klik tanggal di Kalender Konten, lalu isi Tema, Script, Deadline, Jam Upload & Link Referensi untuk tiap slot (maks 3 slot/hari). Sebelum kamu isi, slot itu tampil "kosong" ke Content Creator — mereka baru bisa mulai kerja setelah kamu isi.' },
   { afterId:'n-content-studio', roles:['head_moderator','moderator'],
-    title:'Pantau 6 Kartu Ringkasan', desc:'6 kartu di atas kalender otomatis menghitung slot creator yang sedang dipilih, dari Belum Dikerjakan sampai Done Upload. Slot berstatus "Sudah Preview" berarti creator sudah selesai kerja dan menunggu kamu cek.' },
+    title:'2. Coba Isi Slot Konten', desc:'Ini persis form yang muncul saat kamu klik "+ Isi" di sebuah slot. Coba isi field-nya sendiri di bawah ini dulu sebelum praktik ke slot beneran.',
+    demo:{ button:'Simpan Slot (Demo)', successMsg:'Slot demo tersimpan — di dunia nyata, Content Creator langsung dapat notifikasi.',
+      fields:[
+        { label:'Tema Konten', placeholder:'mis. Tips menata linen kamar tidur', value:'Tips menata linen kamar tidur ala Japandi' },
+        { type:'textarea', label:'Script / Caption', rows:3, placeholder:'Tulis script atau poin-poin konten…', value:'Hook: "Kamar tidur berantakan? 3 trik ini bikin rapi dalam 5 menit."' },
+        [ { type:'date', label:'Tanggal Deadline' }, { type:'time', label:'Jam Upload', value:'19:00' } ],
+        { label:'Link Referensi (opsional)', placeholder:'https://…' },
+      ] } },
+  { afterId:'n-content-studio', roles:['head_moderator','moderator'],
+    title:'3. Pantau 6 Kartu Ringkasan', desc:'6 kartu di atas kalender otomatis menghitung slot creator yang sedang dipilih, dari Belum Dikerjakan sampai Done Upload. Slot berstatus "Sudah Preview" berarti creator sudah selesai kerja dan menunggu kamu cek — ACC lewat "Done Upload" atau minta perbaikan lewat "Revisi".' },
   { afterId:'n-live-studio', roles:['head_moderator','moderator'],
-    title:'Atur Jadwal & Libur Host', desc:'Pilih host di atas kalender, klik tanggalnya, lalu "+ Tambah Sesi" untuk jadwal live atau "◈ Tandai Libur" kalau host tsb libur. ACC/tolak laporan sesi yang masuk lewat banner di atas halaman.' },
+    title:'4. Atur Jadwal & Libur Host', desc:'Pilih host di atas kalender, klik tanggalnya, lalu "+ Tambah Sesi" untuk jadwal live atau "◈ Tandai Libur" kalau host tsb libur.',
+    demo:{ button:'Simpan Jadwal (Demo)', successMsg:'Jadwal demo tersimpan — host akan lihat sesi ini otomatis di kalendernya.',
+      fields:[
+        { type:'select', label:'Pilih Host Live', options:[{v:'kayla',label:'Kayla'},{v:'nina',label:'Nina'}] },
+        [ { type:'date', label:'Tanggal Sesi' } ],
+        [ { type:'time', label:'Jam Mulai', value:'20:00' }, { type:'time', label:'Jam Selesai', value:'22:00' } ],
+      ] } },
+  { afterId:'n-live-studio', roles:['head_moderator','moderator'],
+    title:'5. ACC / Tolak Laporan Sesi', desc:'Setelah host selesai live dan isi laporan (produk terjual, GMV, penonton), laporannya masuk ke banner "Menunggu Persetujuan" di atas halaman Studio Live. Cek angkanya, lalu Setujui atau Tolak dengan alasan.',
+    demo:{ readonly:'📋 Laporan masuk — Sesi 2 · Kayla · Produk Terjual: 18 · GMV: Rp 4.250.000 · Penonton: 620',
+      buttons:[
+        { label:'✓ Setujui', cls:'tut-demo-btn-approve', msg:'Laporan demo disetujui — GMV otomatis masuk ke Target Penjualan host.' },
+        { label:'✕ Tolak', cls:'tut-demo-btn-reject', msg:'Laporan demo ditolak — host akan diminta mengisi ulang dengan alasan yang kamu tulis.' },
+      ] } },
   { afterId:'n-team-tasks', roles:['head_moderator','moderator'],
-    title:'Tugaskan & Pantau', desc:'Beri tugas baru ke anggota tim dari sini, dan pantau progress penyelesaiannya sampai selesai.' },
+    title:'6. Tugaskan Task ke Tim', desc:'Beri tugas baru ke anggota tim dari sini, dan pantau progress penyelesaiannya sampai selesai.',
+    demo:{ button:'Tugaskan (Demo)', successMsg:'Tugas demo tersimpan — anggota tim yang dipilih dapat notifikasi seketika.',
+      fields:[
+        { label:'Judul Tugas', placeholder:'mis. Follow-up 5 lead Shopee', value:'Follow-up 5 lead Shopee minggu ini' },
+        [ { type:'select', label:'Assign ke', options:[{v:'yuna',label:'Yuna (Admin)'},{v:'galih',label:'Galih (B2B)'},{v:'erika',label:'Erika (Creator)'}] },
+          { type:'select', label:'Prioritas', options:[{v:'normal',label:'Normal'},{v:'high',label:'Tinggi'},{v:'urgent',label:'Mendesak'}] } ],
+        { type:'date', label:'Deadline' },
+      ] } },
   { afterId:'n-users', roles:['head_moderator'],
-    title:'Kelola Peran Tim', desc:'Sovereign Moderator bisa mengubah role, reset password, dan menonaktifkan akun anggota tim langsung dari sini.' },
+    title:'7. Kelola Peran Tim', desc:'Sovereign Moderator bisa mengubah role, reset password, dan menonaktifkan akun anggota tim langsung dari sini.',
+    demo:{ button:'Terapkan (Demo)', successMsg:'Perubahan role demo diterapkan — di akun asli, anggota tim langsung lihat menu sesuai role barunya begitu login ulang.',
+      fields:[
+        { type:'select', label:'Anggota Tim', options:[{v:'firman',label:'Firman'},{v:'puji',label:'Puji'},{v:'erni',label:'Erni'}] },
+        { type:'select', label:'Role Baru', options:[{v:'moderator',label:'Moderator'},{v:'admin',label:'Admin'},{v:'content_creator',label:'Content Creator'},{v:'host_live',label:'Host Live'}] },
+      ] } },
 
+  // ══════════════════════════════════════════════════════════════
   // ── CONTENT CREATOR ──
+  // ══════════════════════════════════════════════════════════════
   { afterId:'n-content-studio', roles:['content_creator'],
-    title:'1. Nunggu Moderator Isi Dulu', desc:'Sebelum kamu bisa kerja, moderator harus isi tiap slot di Kalender Konten dulu — Tema, Script/Caption, Tanggal Deadline, Jam Upload, dan Link Referensi. Selama belum diisi, slot itu tampil "— slot kosong —" dan tombol aksinya kosong. Ada juga banner kuning di atas kalender yang kasih tau berapa slot bulan ini yang masih kosong.' },
+    title:'1. Nunggu Moderator Isi Dulu', desc:'Sebelum kamu bisa kerja, moderator harus isi tiap slot di Kalender Konten dulu — Tema, Script/Caption, Tanggal Deadline, Jam Upload, dan Link Referensi. Selama belum diisi, slot itu tampil "— slot kosong —". Ada juga banner kuning di atas kalender yang kasih tau berapa slot bulan ini yang masih kosong.' },
   { afterId:'n-content-studio', roles:['content_creator'],
-    title:'2. Setelah Slot Diisi, Kamu Ngapain', desc:'Begitu moderator selesai isi, buka tanggalnya di kalender lalu baca Tema & Script di slot itu. Klik "Update Progress" untuk mulai kerja — di modal yang sama kamu juga boleh menyunting script/caption sebelum syuting atau posting.' },
+    title:'2. Status Progress: 6 Tahap', desc:'Update sesuai progress asli: "Belum Dikerjakan" (baru dapat tugas) → "Belum Take Video" (lagi prep/nulis) → "Sudah Take" (sudah direkam, tinggal edit) → "Sudah Preview" (udah kelar diedit, dicek moderator) → "Done Upload" (sudah di-ACC & tayang). Kalau moderator minta perbaikan, statusnya jadi "Revisi" — kerjakan ulang lalu naikkan lagi ke "Sudah Preview". Tiap status punya warna sendiri biar gampang dipantau sekilas.' },
   { afterId:'n-content-studio', roles:['content_creator'],
-    title:'3. Status Progress: 6 Tahap', desc:'Update sesuai progress asli: "Belum Dikerjakan" (baru dapat tugas) → "Belum Take Video" (lagi prep/nulis, belum syuting) → "Sudah Take" (video/foto sudah direkam, tinggal edit) → "Sudah Preview" (udah kelar diedit, kamu kirim buat dicek moderator) → "Done Upload" (moderator sudah ACC, sudah tayang). Kalau moderator minta perbaikan, statusnya jadi "Revisi" — kerjakan ulang lalu naikkan lagi ke "Sudah Preview".' },
+    title:'3. Coba Update Progress Sendiri', desc:'Ini persis modal yang muncul saat kamu klik "Update Progress" di sebuah slot. Coba ganti status di bawah — warnanya ikut berubah — lalu isi catatan seperti biasa.',
+    demo:{ button:'Simpan Progress (Demo)', successMsg:'Progress demo tersimpan — kalau kamu pilih "Sudah Preview" atau "Done Upload" di akun asli, moderator otomatis dapat notifikasi.',
+      fields:[
+        { type:'select', label:'Progress Pengerjaan', colorized:true, value:'sudah_take', options:[
+          {v:'belum_dikerjakan', label:'Belum Dikerjakan', color:'#9a9a9a'},
+          {v:'belum_take', label:'Belum Take Video', color:'#7ea8c9'},
+          {v:'sudah_take', label:'Sudah Take', color:'#e8b86e'},
+          {v:'revisi', label:'Revisi', color:'#e08a7d'},
+          {v:'sudah_preview', label:'Sudah Preview', color:'#c9a96e'},
+          {v:'done_upload', label:'Done Upload', color:'#7abf8e'},
+        ] },
+        { type:'textarea', label:'Script (boleh kamu sunting)', rows:2, placeholder:'Tulis/edit script di sini…', value:'Hook: "Kamar tidur berantakan? 3 trik ini bikin rapi dalam 5 menit."' },
+        { label:'Catatan Progress (opsional)', placeholder:'mis. Sudah syuting, tinggal edit', value:'Sudah take, tinggal edit malam ini' },
+      ] } },
   { afterId:'n-content-studio', roles:['content_creator'],
     title:'4. Isi Kalender Konten Ada Apa Aja', desc:'Tiap slot berisi: Tema (topik konten), Script/Caption (boleh kamu sunting), Tanggal Deadline (batas kerja), Jam Upload (jadwal posting), Link Referensi (contoh/inspirasi dari moderator), Progress (status kerja kamu), dan Catatan Progress (opsional, buat kasih konteks ke moderator).' },
 
+  // ══════════════════════════════════════════════════════════════
   // ── HOST LIVE ──
+  // ══════════════════════════════════════════════════════════════
   { afterId:'n-live-studio', roles:['host_live'],
-    title:'Jadwal & Libur Kamu', desc:'Moderator yang mengatur jam sesi live dan hari libur kamu — semua otomatis tampil di kalender ini. Begitu sesi selesai, klik "Isi Laporan" untuk mencatat produk terjual, GMV & jumlah penonton.' },
+    title:'1. Jadwal & Libur Kamu', desc:'Moderator yang mengatur jam sesi live dan hari libur kamu — semua otomatis tampil di kalender ini. Begitu sesi selesai, klik "Isi Laporan" untuk mencatat produk terjual, GMV & jumlah penonton.' },
+  { afterId:'n-live-studio', roles:['host_live'],
+    title:'2. Coba Isi Laporan Sesi', desc:'Ini persis form yang muncul saat kamu klik "Isi Laporan" setelah sesi live selesai. Coba isi angkanya di bawah ini dulu.',
+    demo:{ button:'Simpan Laporan (Demo)', successMsg:'Laporan demo tersimpan — di akun asli, laporan ini masuk ke antrean ACC moderator dulu sebelum masuk ke Target Penjualan kamu.',
+      fields:[
+        { type:'number', label:'Total Produk Terjual', placeholder:'mis. 42', value:'18' },
+        { label:'Total GMV (Rp)', placeholder:'mis. 3.500.000', value:'4.250.000' },
+        { type:'number', label:'Total Penonton', placeholder:'mis. 850', value:'620' },
+        { label:'Catatan (opsional)', placeholder:'mis. banyak repeat order' },
+      ] } },
+  { afterId:'n-live-studio', roles:['host_live'],
+    title:'3. Kalau Laporan Ditolak', desc:'Kalau moderator menolak laporanmu (misalnya angka GMV tidak cocok screenshot), sesi itu akan kembali terbuka untuk kamu isi ulang — cek alasan penolakannya di notifikasi lonceng, betulkan datanya, lalu kirim ulang.' },
 
+  // ══════════════════════════════════════════════════════════════
   // ── B2B MARKETING ──
-  { afterId:'n-pipeline', roles:['b2b_marketing'],
-    title:'Jalankan Pipeline', desc:'Pindahkan lead ke tahap berikutnya begitu ada progress nyata, dan pastikan follow-up tidak lewat sebelum deadline tahap tersebut.' },
+  // ══════════════════════════════════════════════════════════════
+  { afterId:'n-ad-customers', roles:['b2b_marketing'],
+    title:'1. Cara Kerja Pipeline Lead', desc:'Buka Task Iklan yang ditugaskan ke kamu, klik "Isi Lead", lalu catat calon customer dengan kategori Cold → Warm → Hot → Closing. Semua lead otomatis masuk ke Database Customer.' },
+  { afterId:'n-ad-customers', roles:['b2b_marketing'],
+    title:'2. Coba Input Lead Sendiri', desc:'Ini persis form input lead. Coba isi datanya, lalu pilih kategori — kalau kamu pilih "Closing", muncul field detail transaksi tambahan.',
+    demo:{ button:'Simpan Lead (Demo)', successMsg:'Lead demo tersimpan — otomatis muncul di Database Customer dengan kategori yang kamu pilih.',
+      fields:[
+        { label:'Nama Lead', placeholder:'Nama calon customer', value:'Bpk. Andra (GM Hotel Kavia)' },
+        { label:'No. WhatsApp', placeholder:'81234567890', value:'812xxxxxxx' },
+        [ { label:'Wilayah', placeholder:'mis. Bali', value:'Bali' },
+          { type:'select', label:'Kategori', options:[{v:'cold',label:'Cold'},{v:'warm',label:'Warm'},{v:'hot',label:'Hot'},{v:'closing',label:'Closing'}], value:'warm' } ],
+      ] } },
+  { afterId:'n-ad-customers', roles:['b2b_marketing'],
+    title:'3. Follow-up Sampai Closing', desc:'Pindahkan lead ke tahap berikutnya begitu ada progress nyata (mis. sudah dikirim penawaran, sudah nego harga), dan catat follow-up-nya di Database Customer supaya moderator bisa lihat riwayatnya. Pastikan follow-up tidak lewat sebelum deadline tahap tersebut.',
+    demo:{ button:'Catat Follow-up (Demo)', successMsg:'Catatan follow-up demo tersimpan ke riwayat customer ini.',
+      fields:[
+        { type:'textarea', label:'Catatan Follow-up', rows:2, placeholder:'mis. Sudah kirim katalog B2B, nunggu approval procurement', value:'Sudah kirim penawaran linen, nunggu approval procurement hotel' },
+        { type:'date', label:'Follow-up Berikutnya' },
+      ] } },
 
+  // ══════════════════════════════════════════════════════════════
   // ── ADMIN ──
+  // ══════════════════════════════════════════════════════════════
   { afterId:'n-ad-task', roles:['admin'],
-    title:'Kerjakan Task Iklan', desc:'Task baru dari moderator muncul di sini lengkap dengan deadline-nya — tandai selesai setelah lead sudah kamu input ke Database Customer.' },
+    title:'1. Kerjakan Task Iklan', desc:'Task baru dari moderator muncul di sini lengkap dengan deadline-nya. Buka task, klik "Isi Lead" untuk mencatat calon customer, lalu tandai task selesai setelah semua lead sudah kamu input.' },
+  { afterId:'n-ad-task', roles:['admin'],
+    title:'2. Coba Input Lead Sendiri', desc:'Sama seperti B2B Marketing — buka task iklan, lalu isi data lead yang masuk. Coba dulu di bawah ini.',
+    demo:{ button:'Simpan Lead (Demo)', successMsg:'Lead demo tersimpan — otomatis muncul di Database Customer, siap kamu follow-up.',
+      fields:[
+        { label:'Nama Lead', placeholder:'Nama calon customer', value:'Ibu Sari' },
+        { label:'No. WhatsApp', placeholder:'81234567890' },
+        [ { label:'Wilayah', placeholder:'mis. Jakarta Selatan' },
+          { type:'select', label:'Kategori', options:[{v:'cold',label:'Cold'},{v:'warm',label:'Warm'},{v:'hot',label:'Hot'},{v:'closing',label:'Closing'}] } ],
+      ] } },
+  { afterId:'n-ad-task', roles:['admin'],
+    title:'3. Tandai Task Selesai', desc:'Setelah semua lead dari task itu sudah kamu input ke Database Customer, tandai task-nya selesai supaya moderator tahu task ini sudah kelar.',
+    demo:{ button:'Tandai Selesai (Demo)', successMsg:'Task demo ditandai selesai — moderator akan lihat status ini otomatis di Progress Tugas Tim.',
+      readonly:'📌 Task: Follow-up 8 lead promo Shopee 9.9 — Deadline: 2 hari lagi' } },
 ];
 
 let tutSteps = [];
@@ -14644,7 +14778,7 @@ function getTutorialSteps() {
     steps.push(d);
     TUT_ROLE_EXTRA
       .filter(x => x.afterId === d.id && (!x.roles || x.roles.includes(role)))
-      .forEach(x => steps.push({ id: d.id, title: x.title, desc: x.desc }));
+      .forEach(x => steps.push({ id: d.id, title: x.title, desc: x.desc, demo: x.demo }));
   });
   return steps;
 }
@@ -14652,7 +14786,8 @@ function getTutorialSteps() {
 function startTutorial(force) {
   if (!currentUser) return;
   const key = 'dhp_tut_seen_' + currentUser.id;
-  if (!force && localStorage.getItem(key)) return;
+  const alreadySeen = currentUser.tutSeenAt || localStorage.getItem(key);
+  if (!force && alreadySeen) return;
   tutSteps = getTutorialSteps();
   if (!tutSteps.length) return;
   tutIdx = 0;
@@ -14697,6 +14832,32 @@ function renderTutStep() {
   if (tutIsMobile()) { if (inSidebar) navOpen(); else navClose(); }
 
   setTimeout(() => {
+    const card = document.getElementById('tut-card');
+    const arrow = document.getElementById('tut-arrow');
+    card.classList.remove('in'); arrow.classList.remove('in');
+
+    // ── Isi konten kartu DULU (termasuk kotak demo interaktif kalau ada),
+    //    baru ukur tinggi/lebar kartu — supaya posisi kartu akurat
+    //    walau kontennya jauh lebih tinggi (langkah dengan form demo). ──
+    document.getElementById('tut-title-txt').textContent = step.title;
+    document.getElementById('tut-desc').textContent = step.desc;
+    const demoArea = document.getElementById('tut-demo-area');
+    if (step.demo) {
+      demoArea.innerHTML = tutDemoBoxHtml(step.demo);
+      demoArea.style.display = '';
+      card.classList.add('tut-wide');
+      tutWireDemoColorSelects(demoArea);
+    } else {
+      demoArea.innerHTML = '';
+      demoArea.style.display = 'none';
+      card.classList.remove('tut-wide');
+    }
+    document.getElementById('tut-step-num').textContent = `${tutIdx + 1}/${tutSteps.length}`;
+    document.getElementById('tut-dot-track').innerHTML =
+      tutSteps.map((_, i) => `<span class="tut-dot${i === tutIdx ? ' on' : ''}"></span>`).join('');
+    document.getElementById('tut-prev-btn').style.visibility = tutIdx === 0 ? 'hidden' : 'visible';
+    document.getElementById('tut-next-btn').textContent = tutIdx === tutSteps.length - 1 ? 'Selesai ✦' : 'Lanjut →';
+
     const r = el.getBoundingClientRect();
     const pad = 6;
     const spot = document.getElementById('tut-spot');
@@ -14706,11 +14867,8 @@ function renderTutStep() {
     spot.style.height = (r.height + pad * 2) + 'px';
     tutPunchDimHole(r, pad);
 
-    const card = document.getElementById('tut-card');
-    const arrow = document.getElementById('tut-arrow');
-    card.classList.remove('in'); arrow.classList.remove('in');
-    const cw = 248, gap = 16;
-    const ch = card.offsetHeight || 130;
+    const cw = card.offsetWidth || (step.demo ? 360 : 248), gap = 16;
+    const ch = card.offsetHeight || (step.demo ? 320 : 130);
     let top, left, side, origin;
     const spaceRight = window.innerWidth - r.right;
     const spaceLeft  = r.left;
@@ -14745,16 +14903,66 @@ function renderTutStep() {
 
     requestAnimationFrame(() => { card.classList.add('in'); arrow.classList.add('in'); });
 
-    document.getElementById('tut-title-txt').textContent = step.title;
-    document.getElementById('tut-desc').textContent = step.desc;
-    document.getElementById('tut-step-num').textContent = `${tutIdx + 1}/${tutSteps.length}`;
-    document.getElementById('tut-dot-track').innerHTML =
-      tutSteps.map((_, i) => `<span class="tut-dot${i === tutIdx ? ' on' : ''}"></span>`).join('');
-    document.getElementById('tut-prev-btn').style.visibility = tutIdx === 0 ? 'hidden' : 'visible';
-    document.getElementById('tut-next-btn').textContent = tutIdx === tutSteps.length - 1 ? 'Selesai ✦' : 'Lanjut →';
-
     el.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }, tutIsMobile() ? 260 : 30);
+}
+
+/* ── Kotak "coba isi sendiri" — form demo yang tampil di dalam kartu
+   tutorial. Murni simulasi lokal: TIDAK PERNAH memanggil dbQ/Supabase,
+   jadi apapun yang diketik/dipilih di sini pasti tidak tersimpan ke
+   sistem manapun. Tujuannya cuma melatih tangan sebelum kerja beneran. */
+function tutDemoFieldHtml(f, i) {
+  const id = `tdf-${i}`;
+  let input = '';
+  if (f.type === 'select') {
+    const opts = f.options.map(o => `<option value="${o.v}" ${f.value===o.v?'selected':''} data-color="${o.color||''}">${o.label}</option>`).join('');
+    input = `<select class="tut-demo-fi${f.colorized?' tut-demo-fi-colorized':''}" id="${id}">${opts}</select>`;
+  } else if (f.type === 'textarea') {
+    input = `<textarea class="tut-demo-fi" id="${id}" rows="${f.rows||2}" placeholder="${escHtml(f.placeholder||'')}">${escHtml(f.value||'')}</textarea>`;
+  } else {
+    input = `<input class="tut-demo-fi" id="${id}" type="${f.type||'text'}" placeholder="${escHtml(f.placeholder||'')}" value="${escHtml(f.value||'')}"/>`;
+  }
+  return `<div class="tut-demo-fg"><label>${f.label}</label>${input}</div>`;
+}
+function tutDemoBoxHtml(demo) {
+  if (!demo) return '';
+  const readonly = demo.readonly ? `<div class="tut-demo-readonly">${demo.readonly}</div>` : '';
+  const fieldsHtml = (demo.fields || []).map((f, i) => {
+    if (Array.isArray(f)) return `<div class="tut-demo-row">${f.map((ff, j) => tutDemoFieldHtml(ff, `${i}-${j}`)).join('')}</div>`;
+    return tutDemoFieldHtml(f, i);
+  }).join('');
+  const btnHtml = demo.buttons
+    ? `<div class="tut-demo-btn-2">${demo.buttons.map((b, i) =>
+        `<button type="button" class="${b.cls||'tut-demo-btn-approve'}" onclick="tutDemoSubmit(this, ${JSON.stringify(b.msg)})">${b.label}</button>`).join('')}</div>`
+    : `<button type="button" class="tut-demo-btn" onclick="tutDemoSubmit(this, ${JSON.stringify(demo.successMsg || 'Demo tersimpan.')})">${demo.button || 'Simpan (Demo)'}</button>`;
+  return `<div class="tut-demo-box">
+    <div class="tut-demo-label">🧪 Coba langsung — demo, tidak tersimpan</div>
+    ${readonly}${fieldsHtml}${btnHtml}
+    <div class="tut-demo-note">Ini cuma latihan biar kamu paham cara isinya. Isian di atas tidak dikirim ke database — di akun asli nanti, langkahnya persis sama.</div>
+  </div>`;
+}
+function tutDemoSubmit(btn, msg) {
+  const box = btn.closest('.tut-demo-box');
+  box.querySelectorAll('button').forEach(b => b.disabled = true);
+  if (box.querySelectorAll('.tut-demo-btn-2 button').length) {
+    btn.textContent = '✓ ' + btn.textContent.replace(/^✓\s*/, '');
+  } else {
+    btn.textContent = '✓ Tersimpan (Demo)';
+  }
+  toast('🧪 ' + msg);
+}
+/* Selagi opsi dropdown demo diganti, ikut warnai border/teks select-nya
+   (mis. dropdown status progress) — biar demo terasa persis kayak aslinya. */
+function tutWireDemoColorSelects(container) {
+  container.querySelectorAll('.tut-demo-fi-colorized').forEach(sel => {
+    const applyColor = () => {
+      const opt = sel.options[sel.selectedIndex];
+      const c = opt?.dataset?.color;
+      if (c) { sel.style.color = c; sel.style.borderColor = c; sel.style.fontWeight = '700'; }
+    };
+    sel.addEventListener('change', applyColor);
+    applyColor();
+  });
 }
 
 function tutNext() { if (tutIdx >= tutSteps.length - 1) { tutFinish(); return; } tutIdx++; renderTutStep(); }
@@ -14765,9 +14973,15 @@ function tutFinish() { tutCloseOverlay(); tutBurst(); }
 function tutCloseOverlay() {
   document.getElementById('tut-overlay').classList.remove('show');
   document.getElementById('tut-card').classList.remove('in');
+  document.getElementById('tut-card').classList.remove('tut-wide');
   tutResetDimHole();
   if (tutIsMobile()) navClose();
-  if (currentUser) localStorage.setItem('dhp_tut_seen_' + currentUser.id, '1');
+  if (currentUser) {
+    localStorage.setItem('dhp_tut_seen_' + currentUser.id, '1');
+    currentUser.tutSeenAt = new Date().toISOString();
+    if (db) dbQ(d => d.rpc('mark_tutorial_seen', { p_user_id: currentUser.id }))
+      .catch(e => console.warn('[DHP] simpan status tutorial gagal:', e));
+  }
 }
 
 function tutBurst() {
