@@ -241,6 +241,16 @@ body.light .heat-cold .hb-icon { background:rgba(26,86,160,.14); }
 .att-user-sel{min-width:190px}
 .att-edit-hint{position:absolute;top:4px;right:5px;font-size:9px;color:var(--gold-lo);opacity:0}
 .cal-cell:not(.empty):hover .att-edit-hint{opacity:.7}
+/* ── Kalender Konten: tint border per hari + dot warna per slot,
+   biar progress tiap slot kelihatan langsung dari tampilan kalender
+   (bukan cuma di tabel/modal), konsisten sama warna CC_PROGRESS. ── */
+.cal-cell.cc-day-revisi{box-shadow:inset 0 0 0 1.5px rgba(224,138,125,.55);background:rgba(224,138,125,.055)}
+.cal-cell.cc-day-review{box-shadow:inset 0 0 0 1.5px rgba(201,169,110,.55);background:rgba(201,169,110,.055)}
+.cal-cell.cc-day-done{box-shadow:inset 0 0 0 1.5px rgba(122,191,142,.5);background:rgba(122,191,142,.05)}
+.cal-cell.cc-day-progress{box-shadow:inset 0 0 0 1.5px rgba(126,168,201,.4);background:rgba(126,168,201,.045)}
+.cc-cal-dots{display:flex;gap:4px;margin-top:6px}
+.cc-cal-dot{width:7px;height:7px;border-radius:50%;border:1.4px solid var(--border);background:transparent;transition:all .15s}
+.cc-cal-tag{font-size:8.5px;letter-spacing:.03em;color:var(--text2);margin-top:4px;font-weight:600}
 
 /* ══════════════════════════════════════════════════════════
    FOLLOW UP MILESTONE — perayaan pencapaian (v7.1)
@@ -6918,15 +6928,32 @@ function renderCcCalendar() {
     const isSelected = ymd === ccSelectedDate;
     const slots = (ccMonthCache[ymd] || []);
     const filled = slots.length;
-    const allDone = filled === CC_SLOTS.length && slots.every(s => s.progress_status === 'done_upload');
+    const bySlotNo = {};
+    slots.forEach(s => { bySlotNo[s.slot_no] = s; });
+    const allDone   = filled === CC_SLOTS.length && slots.every(s => s.progress_status === 'done_upload');
+    const hasRevisi = slots.some(s => s.progress_status === 'revisi');
+    const hasReview = slots.some(s => s.progress_status === 'sudah_preview');
     const cls = ['cal-cell'];
     if (isToday) cls.push('today');
     if (isSelected) cls.push('ls-selected');
-    if (filled) cls.push('att-Hadir');
+    // Tint border hari sesuai progress paling "butuh perhatian": Revisi > Sudah Preview > Done semua > lagi dikerjakan
+    if (filled) {
+      if (hasRevisi) cls.push('cc-day-revisi');
+      else if (hasReview) cls.push('cc-day-review');
+      else if (allDone) cls.push('cc-day-done');
+      else cls.push('cc-day-progress');
+    }
+    const dots = CC_SLOTS.map(no => {
+      const s = bySlotNo[no];
+      const prog = s ? (CC_PROGRESS[s.progress_status] || CC_PROGRESS.belum_dikerjakan) : null;
+      const style = prog ? `background:${prog.color};border-color:${prog.color}` : '';
+      const title = s ? `Slot ${no}: ${prog.label}` : `Slot ${no}: belum diisi moderator`;
+      return `<span class="cc-cal-dot" style="${style}" title="${escHtml(title)}"></span>`;
+    }).join('');
     cells += `
       <div class="${cls.join(' ')}" onclick="ccSelectDate('${ymd}')" style="cursor:pointer">
         <div class="cal-daynum">${d}</div>
-        ${filled ? `<div class="att-day-tag att-Hadir" style="${allDone ? 'background:rgba(122,191,142,.14);color:#7abf8e;border-color:rgba(122,191,142,.35)' : ''}">${filled}/${CC_SLOTS.length} slot</div>` : ''}
+        ${filled ? `<div class="cc-cal-dots">${dots}</div><div class="cc-cal-tag">${filled}/${CC_SLOTS.length} slot</div>` : ''}
       </div>`;
   }
   document.getElementById('cc-cal-grid').innerHTML = cells;
