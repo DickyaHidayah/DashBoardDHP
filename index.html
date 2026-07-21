@@ -2771,6 +2771,35 @@ body.light .adtask-empty{color:rgba(13,13,13,.38)}
 .crm-st-badge.st-agen{color:var(--amber);border-color:rgba(232,184,110,.5);background:rgba(232,184,110,.1)}
 .crm-st-badge.st-reseller{color:#d98ec0;border-color:rgba(217,142,192,.5);background:rgba(217,142,192,.12)}
 .crm-st-badge.st-leads{color:var(--red);border-color:rgba(232,112,112,.5);background:rgba(232,112,112,.1)}
+/* v5.5: Label kustom CRM — titik warna + garis elegan di bawah nama */
+.crm-name-wrap{display:inline-flex;flex-direction:column;gap:3px}
+.crm-name-line{display:inline-flex;align-items:center;gap:6px}
+.crm-label-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;display:inline-block}
+.crm-name-underline{height:2px;border-radius:2px;width:100%;opacity:.85}
+.crm-label-select{background:var(--surface2,rgba(255,255,255,.03));border:1px solid var(--border);color:var(--text2);
+  font-size:10px;border-radius:6px;padding:3px 6px;cursor:pointer;max-width:130px}
+.crm-label-empty{font-size:10px;color:var(--muted)}
+.crm-label-tabs{display:flex;gap:6px;margin-bottom:10px}
+.crm-label-tab{background:transparent;border:1px solid var(--border);color:var(--text2);font-size:11px;font-weight:600;
+  padding:6px 14px;border-radius:8px;cursor:pointer;transition:.15s}
+.crm-label-tab.active{background:rgba(201,169,110,.14);border-color:var(--gold);color:var(--gold)}
+.crm-lbl-manage-row{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--border)}
+.crm-lbl-manage-row:last-child{border-bottom:none}
+.crm-lbl-swatch{width:16px;height:16px;border-radius:50%;flex-shrink:0;box-shadow:0 0 6px 0 currentColor}
+/* Tab "Status" — sortable/filterable by label */
+.crm-status-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.crm-status-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:14px;white-space:nowrap}
+/* My Tasks — daftar follow-up belum & rekomendasi */
+.mt-fu-item-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.mt-fu-item-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.mt-fu-reco{border-left:3px solid var(--red)}
+.mt-fu-reco-tag{font-size:8.5px;font-weight:800;letter-spacing:.04em;padding:2px 6px;border-radius:8px;flex-shrink:0}
+.mt-fu-reco-tag.hot{background:rgba(232,112,112,.15);color:var(--red)}
+.mt-fu-reco-tag.warm{background:rgba(232,184,110,.15);color:var(--amber)}
+.mt-fu-quick-btn{background:rgba(122,191,142,.12);border:1px solid rgba(122,191,142,.4);color:var(--green);
+  font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:6px;cursor:pointer;flex-shrink:0;white-space:nowrap}
+.mt-fu-quick-btn:hover{background:rgba(122,191,142,.22)}
+.mt-fu-list-divider{font-size:9px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin:8px 0 4px;padding-top:6px;border-top:1px dashed var(--border)}
 .crm-row-acts{display:flex;gap:6px;white-space:nowrap}
 .crm-ico-btn{background:transparent;border:1px solid var(--border);color:var(--text2);width:28px;height:28px;
   border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all var(--trans)}
@@ -4529,6 +4558,9 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px"><path d="M8 10V1M8 1L5 4M8 1l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
               <span data-i18n="crmExport">Export Excel</span>
             </button>
+            <button class="btn-g btn-sm crm-btn" onclick="openCRMLabelManager()" title="Atur nama & warna label">
+              🏷 <span>Kelola Label</span>
+            </button>
             <button class="btn-add crm-btn" onclick="openCRMModal()" data-i18n="addNew">+ Tambah</button>
           </div>
         </div>
@@ -4539,14 +4571,20 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
         <!-- Diagram CRM -->
         <div id="crm-diagram" class="crm-diagram-wrap"></div>
 
-        <div class="crm-table-wrap">
+        <!-- v5.5: Tab Database vs Status Label -->
+        <div class="crm-label-tabs">
+          <button class="crm-label-tab active" id="crm-tab-db" onclick="crmSwitchTab('db')">📋 Database Customer</button>
+          <button class="crm-label-tab" id="crm-tab-status" onclick="crmSwitchTab('status')">🏷 Status Label</button>
+        </div>
+
+        <div class="crm-table-wrap" id="crm-view-db">
           <!-- v23: Baris pencarian & filter — dipindah ke sini supaya menyatu langsung dengan tabel yang difilter -->
           <div class="crm-tbl-filters">
             <div class="crm-tbl-filters-search">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none" class="crm-tbl-search-ico"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.4"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
               <input type="text" class="search-box crm-search" id="crm-search" placeholder="Cari nama / WA / kota / produk…" oninput="renderCRM()"/>
             </div>
-            <select class="fi crm-filter" id="crm-status-filter" onchange="renderCRM()">
+            <select class="fi crm-filter" id="crm-status-filter" style="display:none">
               <option value="all" data-i18n="crmAllStatus">Semua Status</option>
               <option value="New">New</option>
               <option value="Repeat">Repeat</option>
@@ -4586,9 +4624,6 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
                 <th data-i18n="crmColWA">Nomor WhatsApp</th>
                 <th data-i18n="crmColCity">Kota</th>
                 <th data-i18n="crmColChannel">Channel</th>
-                <th data-i18n="crmColFirstOrder" style="cursor:pointer" onclick="crmSortByDate()" title="Klik untuk sortir">
-                  Tgl First Order ↕
-                </th>
                 <th data-i18n="crmColTotalOrder" style="white-space:nowrap">
                   Total Order
                   <div style="font-size:8px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;margin-top:1px">Jumlah transaksi</div>
@@ -4597,12 +4632,11 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
                   Total Belanja
                   <div style="font-size:8px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;margin-top:1px">Akumulasi (Rp)</div>
                 </th>
-                <th data-i18n="crmColStatus">Status</th>
                 <th style="white-space:nowrap">
                   Panas/Dingin
                   <div style="font-size:8px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;margin-top:1px">Tingkat Keaktifan</div>
                 </th>
-                <th data-i18n="crmColFavProduct">Produk</th>
+                <th style="white-space:nowrap">🏷 Label</th>
                 <th>Diinput Oleh</th>
                 <th style="white-space:nowrap">
                   Follow Up
@@ -4613,8 +4647,38 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
             </thead>
             <tbody id="crm-body"></tbody>
           </table>
+          <div class="crm-foot-note" id="crm-foot-note"></div>
+        </div><!-- /crm-view-db -->
+
+        <!-- v5.5: Tab "Status Label" — sortir/filter customer berdasarkan label -->
+        <div class="crm-table-wrap" id="crm-view-status" style="display:none">
+          <div class="crm-status-toolbar">
+            <select class="fi crm-filter" id="crm-label-filter" onchange="renderCRMStatusTab()">
+              <option value="all">Semua Label</option>
+              <option value="unlabeled">Belum Diberi Label</option>
+            </select>
+            <select class="fi crm-filter" id="crm-label-sort" onchange="renderCRMStatusTab()" style="max-width:170px">
+              <option value="label">Urut: Label A–Z</option>
+              <option value="name">Urut: Nama A–Z</option>
+              <option value="recent">Urut: Terbaru Ditandai</option>
+            </select>
+            <span class="crm-tbl-info" id="crm-status-foot"></span>
+          </div>
+          <table class="crm-table">
+            <thead>
+              <tr>
+                <th data-i18n="crmColId">ID Customer</th>
+                <th data-i18n="crmColName">Nama</th>
+                <th data-i18n="crmColWA">Nomor WhatsApp</th>
+                <th data-i18n="crmColCity">Kota</th>
+                <th style="white-space:nowrap">🏷 Label</th>
+                <th>Diinput Oleh</th>
+                <th style="white-space:nowrap">Ditandai Pada</th>
+              </tr>
+            </thead>
+            <tbody id="crm-status-body"></tbody>
+          </table>
         </div>
-        <div class="crm-foot-note" id="crm-foot-note"></div>
       </div>
 
       <!-- ⑩ PRESENCE PAGE -->
@@ -9034,7 +9098,33 @@ async function renderMtMainSection() {
           <div class="mt-fu-list-col">
             <div class="mt-fu-list-title" style="color:var(--amber)">○ Belum di-follow up (${pendingCount})</div>
             <div class="mt-fu-list-body">
-              ${mine.filter(c => !followupDoneTodayIds.has(_followupCustKey(c))).slice(0,30).map(c => `<div class="mt-fu-list-item">${escHtml(c.nama||'—')}</div>`).join('') || `<div class="mt-fu-list-empty">Semua sudah di-follow up 🎉</div>`}
+              ${(function(){
+                const pending = mine.filter(c => !followupDoneTodayIds.has(_followupCustKey(c)));
+                if (!pending.length) return `<div class="mt-fu-list-empty">Semua sudah di-follow up 🎉</div>`;
+                const heatOf = c => c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status));
+                // Direkomendasikan: yang Hot/Warm didahulukan (paling layak difollow-up)
+                const reco = pending.filter(c => ['Hot','Warm'].includes(heatOf(c)))
+                  .sort((a,b) => (heatOf(a)==='Hot'?0:1) - (heatOf(b)==='Hot'?0:1));
+                // Sisanya (Cold/None) diacak — tidak perlu urut, biar merata semua kebagian
+                const rest = shuffleArr(pending.filter(c => !['Hot','Warm'].includes(heatOf(c))));
+                const renderItem = c => {
+                  const idx = crmData.indexOf(c);
+                  const heat = heatOf(c);
+                  const tagCls = heat === 'Hot' ? 'hot' : heat === 'Warm' ? 'warm' : '';
+                  const tag = heat === 'Hot' ? '🔥 Hot' : heat === 'Warm' ? '☀ Warm' : '';
+                  return `<div class="mt-fu-list-item${tag?' mt-fu-reco':''}">
+                      <div class="mt-fu-item-row">
+                        ${tag ? `<span class="mt-fu-reco-tag ${tagCls}">${tag}</span>` : ''}
+                        <span class="mt-fu-item-name">${escHtml(c.nama||'—')}</span>
+                        <button class="mt-fu-quick-btn" onclick="mtQuickFollowUp(${idx})">✓ Follow Up</button>
+                      </div>
+                    </div>`;
+                };
+                let html = '';
+                if (reco.length) html += `<div class="mt-fu-list-divider">Direkomendasikan duluan</div>` + reco.slice(0,15).map(renderItem).join('');
+                html += (reco.length ? `<div class="mt-fu-list-divider">Lainnya (acak)</div>` : '') + rest.slice(0, 30-Math.min(reco.length,15)).map(renderItem).join('');
+                return html;
+              })()}
             </div>
           </div>
         </div>
@@ -12256,6 +12346,22 @@ const CRM_STATUSES = ['New','Repeat','Agen','Reseller','Leads'];
 const HEAT_ICONS = { Hot:'🔥', Warm:'☀️', Cold:'❄️', None:'—' };
 const HEAT_LABELS = { Hot:'Hot', Warm:'Warm', Cold:'Cold', None:'—' };
 
+// Fisher–Yates shuffle — dipakai supaya daftar "Belum di-follow up" di My Tasks tidak berurutan
+function shuffleArr(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Follow-up langsung dari widget My Tasks (tanpa perlu pindah ke halaman CRM)
+function mtQuickFollowUp(idx) {
+  markFollowedUp(idx);
+}
+window.mtQuickFollowUp = mtQuickFollowUp;
+
 function crmComputeHeat(totalOrder, status) {
   const ord = parseInt(totalOrder,10) || 0;
   const st  = String(status||'');
@@ -12299,6 +12405,241 @@ let crmChannel = null;
 let _crmLoading = false;
 let crmOwnerFilter = 'all';  // moderator: filter per user (user_id atau 'all')
 
+/* ══════════════════════════════════════════════════════════════
+   v5.5 — LABEL KUSTOM CRM (5 slot warna, bisa dinamai role manapun)
+   ══════════════════════════════════════════════════════════════ */
+const CRM_LABEL_COLORS = [
+  { key: 'blue',   hex: '#5B9BD5' },
+  { key: 'green',  hex: '#6FBF73' },
+  { key: 'purple', hex: '#9B7ED9' },
+  { key: 'orange', hex: '#E8A24E' },
+  { key: 'pink',   hex: '#D96B95' },
+];
+const CRM_LABEL_DEFS_LS_KEY = 'dhp_crm_label_defs';
+let crmLabelDefs = CRM_LABEL_COLORS.map(c => ({ color_key: c.key, color_hex: c.hex, label_name: '' }));
+let _crmLabelDefsLoaded = false;
+
+function crmLabelDefByKey(key) { return crmLabelDefs.find(d => d.color_key === key) || null; }
+function crmLabelName(key) {
+  const d = crmLabelDefByKey(key);
+  if (!d) return '';
+  return d.label_name && d.label_name.trim() ? d.label_name.trim() : ('Label ' + key);
+}
+
+async function loadCRMLabelDefs() {
+  if (crmUsesDB()) {
+    const res = await dbQ(d => d.from('crm_label_defs').select('*'));
+    if (res && res.data && res.data.length) {
+      crmLabelDefs = CRM_LABEL_COLORS.map(c => {
+        const row = res.data.find(r => r.color_key === c.key);
+        return { color_key: c.key, color_hex: (row && row.color_hex) || c.hex, label_name: (row && row.label_name) || '' };
+      });
+      _crmLabelDefsLoaded = true;
+      return crmLabelDefs;
+    }
+  }
+  try {
+    const saved = JSON.parse(localStorage.getItem(CRM_LABEL_DEFS_LS_KEY) || 'null');
+    if (Array.isArray(saved) && saved.length) {
+      crmLabelDefs = CRM_LABEL_COLORS.map(c => {
+        const row = saved.find(r => r.color_key === c.key);
+        return { color_key: c.key, color_hex: c.hex, label_name: (row && row.label_name) || '' };
+      });
+    }
+  } catch(e) {}
+  _crmLabelDefsLoaded = true;
+  return crmLabelDefs;
+}
+
+async function saveCRMLabelDefs(newDefs) {
+  crmLabelDefs = newDefs;
+  if (crmUsesDB()) {
+    for (const d of newDefs) {
+      await dbQ(x => x.from('crm_label_defs').update({
+        label_name: d.label_name || null,
+        updated_by: currentUser?.id || null,
+        updated_at: new Date().toISOString(),
+      }).eq('color_key', d.color_key));
+    }
+  } else {
+    try { localStorage.setItem(CRM_LABEL_DEFS_LS_KEY, JSON.stringify(newDefs)); } catch(e) {}
+  }
+}
+
+function openCRMLabelManager() {
+  document.getElementById('m-title').textContent = '🏷 Kelola Label Customer';
+  document.getElementById('m-body').innerHTML = `
+    <div style="font-size:11.5px;color:var(--text2);margin-bottom:12px">
+      Pilih nama untuk masing-masing dari 5 slot warna label. Label ini bisa dipakai semua role
+      yang punya akses CRM untuk menandai customer — mis. warna biru diberi nama "Reseller".
+    </div>
+    ${crmLabelDefs.map(d => `
+      <div class="crm-lbl-manage-row">
+        <span class="crm-lbl-swatch" style="background:${d.color_hex};color:${d.color_hex}"></span>
+        <input class="fi" id="crm-lbl-name-${d.color_key}" placeholder="Nama untuk warna ${d.color_key}…" value="${escHtml(d.label_name||'')}" style="flex:1"/>
+      </div>`).join('')}`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button>
+    <button class="btn-sm btn-gold" onclick="_saveCRMLabelManager()">Simpan</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+window.openCRMLabelManager = openCRMLabelManager;
+
+async function _saveCRMLabelManager() {
+  const newDefs = crmLabelDefs.map(d => ({
+    ...d,
+    label_name: (document.getElementById('crm-lbl-name-' + d.color_key)?.value || '').trim(),
+  }));
+  await saveCRMLabelDefs(newDefs);
+  closeModal();
+  toast('Label tersimpan');
+  if (document.getElementById('pg-crm')?.classList.contains('active')) { renderCRM(); renderCRMStatusTab(); }
+}
+window._saveCRMLabelManager = _saveCRMLabelManager;
+
+// Nama customer + titik & garis label yang elegan
+function crmNameCell(c) {
+  const def = c.label_key ? crmLabelDefByKey(c.label_key) : null;
+  const color = def ? def.color_hex : null;
+  const noteHtml = c.catatan
+    ? `<div style="font-size:9px;color:var(--muted);margin-top:2px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(c.catatan)}">${escHtml(c.catatan)}</div>` : '';
+  if (!color) {
+    return `<span class="crm-name">${escHtml(c.nama||'—')}</span>${noteHtml}`;
+  }
+  return `<span class="crm-name-wrap">
+      <span class="crm-name-line">
+        <span class="crm-label-dot" style="background:${color};box-shadow:0 0 5px ${color}"></span>
+        <span class="crm-name">${escHtml(c.nama||'—')}</span>
+      </span>
+      <span class="crm-name-underline" style="background:${color}"></span>
+    </span>${noteHtml}`;
+}
+
+// Dropdown pilih label langsung di baris tabel — dot berubah warna begitu dipilih
+function crmLabelSelectCell(c, idx) {
+  const opts = crmLabelDefs.map(d =>
+    `<option value="${d.color_key}" ${c.label_key===d.color_key?'selected':''}>${escHtml(crmLabelName(d.color_key))}</option>`
+  ).join('');
+  return `<select class="crm-label-select" onchange="setCRMLabel(${idx}, this.value)" title="Tandai label customer ini">
+      <option value="" ${!c.label_key?'selected':''}>— Tanpa Label —</option>
+      ${opts}
+    </select>`;
+}
+
+async function setCRMLabel(idx, colorKey) {
+  const c = crmData[idx];
+  if (!c || !currentUser) return;
+  const key = colorKey || null;
+  const now = new Date().toISOString();
+  c.label_key = key;
+  c.label_at  = key ? now : null;
+  c.label_by  = key ? currentUser.id : null;
+  if (crmUsesDB() && c._uuid) {
+    await dbQ(d => d.from('crm_customers').update({
+      label_key: key, label_at: c.label_at, label_by: c.label_by,
+    }).eq('id', c._uuid));
+  } else {
+    saveCRM();
+  }
+  toast(key ? `🏷 ${c.nama||'Customer'} ditandai "${crmLabelName(key)}"` : `Label ${c.nama||'customer'} dihapus`);
+  renderCRM();
+  if (document.getElementById('crm-view-status')?.style.display !== 'none') renderCRMStatusTab();
+}
+window.setCRMLabel = setCRMLabel;
+
+// ── Tab switch: Database vs Status Label ──
+async function crmSwitchTab(tab) {
+  const dbTab = document.getElementById('crm-tab-db');
+  const stTab = document.getElementById('crm-tab-status');
+  const dbView = document.getElementById('crm-view-db');
+  const stView = document.getElementById('crm-view-status');
+  if (!dbTab || !stTab || !dbView || !stView) return;
+  const showStatus = tab === 'status';
+  dbTab.classList.toggle('active', !showStatus);
+  stTab.classList.toggle('active', showStatus);
+  dbView.style.display = showStatus ? 'none' : '';
+  stView.style.display = showStatus ? '' : 'none';
+  if (showStatus) {
+    if (!_crmLabelDefsLoaded) { try { await loadCRMLabelDefs(); } catch(e) {} }
+    if (!crmData.length) { try { await loadCRM(); } catch(e) {} }
+    renderCRMStatusTab();
+  }
+}
+window.crmSwitchTab = crmSwitchTab;
+
+// ── Tab "Status Label" — sortir/filter otomatis berdasar label yang sudah ditandai ──
+function renderCRMStatusTab() {
+  const body = document.getElementById('crm-status-body');
+  if (!body) return;
+  const lf = document.getElementById('crm-label-filter')?.value || 'all';
+  const sortBy = document.getElementById('crm-label-sort')?.value || 'label';
+
+  // Isi opsi filter dinamis dari nama label yang sudah diberi
+  const filterEl = document.getElementById('crm-label-filter');
+  if (filterEl && filterEl.options.length <= 2) {
+    crmLabelDefs.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d.color_key; opt.textContent = crmLabelName(d.color_key);
+      filterEl.appendChild(opt);
+    });
+  }
+
+  let rows = crmData.slice();
+  if (lf === 'unlabeled') rows = rows.filter(c => !c.label_key);
+  else if (lf !== 'all') rows = rows.filter(c => c.label_key === lf);
+
+  if (sortBy === 'name') {
+    rows.sort((a,b) => (a.nama||'').localeCompare(b.nama||''));
+  } else if (sortBy === 'recent') {
+    rows.sort((a,b) => new Date(b.label_at||0) - new Date(a.label_at||0));
+  } else {
+    // urut: berlabel dulu (A–Z nama label), lalu yang belum berlabel di bawah
+    rows.sort((a,b) => {
+      const la = a.label_key ? crmLabelName(a.label_key) : '\uffff';
+      const lb = b.label_key ? crmLabelName(b.label_key) : '\uffff';
+      return la.localeCompare(lb) || (a.nama||'').localeCompare(b.nama||'');
+    });
+  }
+
+  const footEl = document.getElementById('crm-status-foot');
+  if (footEl) footEl.textContent = `${rows.length} / ${crmData.length} customer`;
+
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="7" class="tbl-empty">Belum ada customer</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = rows.map(c => {
+    const idx = crmData.indexOf(c);
+    const waDigits = (c.wa||'').replace(/[^0-9]/g,'');
+    const waCell = waDigits
+      ? `<a href="https://wa.me/${waDigits}" target="_blank" rel="noopener" class="wa-link">${escHtml(c.wa)}</a>`
+      : `<span style="color:var(--muted)">—</span>`;
+    const ownerMeta = getUserMeta(c.owner_id || c.created_by);
+    const ownerClr  = ROLE_COLORS[ownerMeta.role] || '#888';
+    const inputByCell = c.owner_id || c.created_by
+      ? `<span class="adcust-owner"><span class="role-dot" style="background:${ownerClr}"></span>${escHtml(ownerMeta.name)}</span>`
+      : `<span style="color:var(--muted)">—</span>`;
+    const labelBadge = c.label_key
+      ? (function(){ const def = crmLabelDefByKey(c.label_key); const color = def?.color_hex || '#888';
+          return `<span class="crm-status-badge" style="background:${color}18;color:${color};border:1px solid ${color}44">
+              <span class="crm-label-dot" style="background:${color}"></span>${escHtml(crmLabelName(c.label_key))}
+            </span>`; })()
+      : `<span class="crm-label-empty">— belum ditandai —</span>`;
+    const taggedAt = c.label_at ? new Date(c.label_at).toLocaleString('id-ID', {dateStyle:'medium', timeStyle:'short'}) : '—';
+    return `<tr>
+      <td><span class="crm-id">${escHtml(c.id_customer||'—')}</span></td>
+      <td>${crmNameCell(c)}</td>
+      <td>${waCell}</td>
+      <td>${escHtml(c.kota||'—')}</td>
+      <td>${crmLabelSelectCell(c, idx)}${c.label_key ? `<div style="margin-top:4px">${labelBadge}</div>` : ''}</td>
+      <td>${inputByCell}</td>
+      <td style="white-space:nowrap;font-size:10.5px;color:var(--text2)">${taggedAt}</td>
+    </tr>`;
+  }).join('');
+}
+window.renderCRMStatusTab = renderCRMStatusTab;
+
 // ── Konversi baris DB → bentuk UI (key internal) ──
 function crmFromDb(row) {
   return {
@@ -12323,6 +12664,9 @@ function crmFromDb(row) {
     updated_by:     row.updated_by || '',
     last_followup_at: row.last_followup_at || '',   // v5.4 — task follow up harian
     last_followup_by: row.last_followup_by || '',
+    label_key:      row.label_key || '',             // v5.5 — label kustom
+    label_at:       row.label_at || '',
+    label_by:       row.label_by || '',
   };
 }
 
@@ -12563,6 +12907,7 @@ async function _confirmFollowup(idx, response) {
     toast(`✓ ${c.nama || 'Customer'} sudah di-follow up hari ini`);
   }
   if (document.getElementById('pg-crm')?.classList.contains('active')) renderCRM();
+  if (document.getElementById('pg-mod_tasks')?.classList.contains('active')) { try { await renderMtMainSection(); } catch(e) {} }
   try { await checkAndCelebrateFollowupMilestone(); } catch(e) { console.warn('[DHP] cek milestone follow up gagal:', e); }
 }
 window._confirmFollowup = _confirmFollowup;
@@ -12952,6 +13297,7 @@ async function renderCRM() {
   else if (!crmData.length) { await loadCRM(); }
   // Status follow up hari ini — dipakai untuk badge kolom "Follow Up"
   try { await loadFollowupLogsToday(); } catch(e) {}
+  if (!_crmLabelDefsLoaded) { try { await loadCRMLabelDefs(); } catch(e) {} }
   const body = document.getElementById('crm-body');
   const statsEl = document.getElementById('crm-stats');
   const footEl = document.getElementById('crm-foot-note');
@@ -13061,7 +13407,7 @@ async function renderCRM() {
   if (footEl) footEl.textContent = crmData.length ? `${rows.length} / ${crmData.length} · ${t('crmFootNote')}` : '';
 
   if (!rows.length) {
-    body.innerHTML = `<tr><td colspan="14" class="tbl-empty">${crmData.length ? t('noCustomers') : t('crmEmpty')}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="12" class="tbl-empty">${crmData.length ? t('noCustomers') : t('crmEmpty')}</td></tr>`;
     return;
   }
 
@@ -13094,11 +13440,10 @@ async function renderCRM() {
     const rowDoneToday = followupDoneTodayIds.has(_followupCustKey(c));
     return `<tr>
       <td><span class="crm-id">${escHtml(c.id_customer||'—')}</span></td>
-      <td><span class="crm-name">${escHtml(c.nama||'—')}</span>${c.catatan?`<div style="font-size:9px;color:var(--muted);margin-top:2px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(c.catatan)}">${escHtml(c.catatan)}</div>`:''}</td>
+      <td>${crmNameCell(c)}</td>
       <td>${waCell}</td>
       <td>${escHtml(c.kota||'—')}</td>
       <td>${chBadge}</td>
-      <td style="white-space:nowrap">${escHtml(c.first_order||'—')}</td>
       <td style="text-align:right;font-variant-numeric:tabular-nums">${(function(){
         const heat = c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status));
         const ord = crmParseInt(c.total_order);
@@ -13109,9 +13454,8 @@ async function renderCRM() {
         const sp = crmParseMoney(c.total_belanja);
         return heat === 'Cold' && sp === 0 ? '<span style="color:var(--muted)">—</span>' : crmFmtRupiah(sp);
       })()}</td>
-      <td><span class="crm-st-badge ${crmStatusCls(c.status)}">${crmNormStatus(c.status)}</span></td>
       <td>${crmHeatBadge(c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status)))}</td>
-      <td><span class="crm-fav">${escHtml(c.produk_fav||'—')}</span></td>
+      <td>${crmLabelSelectCell(c, idx)}</td>
       <td>${inputByCell}</td>
       <td>${(function(){
         const days = daysSinceFollowup(c);
