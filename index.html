@@ -2604,6 +2604,26 @@ body.light .mt-card{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
 .mt-main-section{margin-bottom:20px}
 .mt-main-card{background:linear-gradient(135deg,rgba(201,169,110,.08),rgba(201,169,110,.02));border:1px solid rgba(201,169,110,.25);
   border-radius:13px;padding:16px 18px}
+.target-fu-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.crm-fu-locked{background:rgba(122,191,142,.16)!important;color:var(--green)!important;border-color:rgba(122,191,142,.4)!important}
+.mt-fu-lists{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+.mt-fu-list-title{font-size:10.5px;font-weight:700;letter-spacing:.03em;margin-bottom:8px}
+.mt-fu-list-body{max-height:170px;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+.mt-fu-list-item{font-size:11.5px;color:var(--text);padding:5px 9px;background:var(--surface2,rgba(255,255,255,.02));border-radius:6px;border:1px solid var(--border)}
+.mt-fu-list-empty{font-size:11px;color:var(--muted);padding:6px 2px}
+@media (max-width:640px){.mt-fu-lists{grid-template-columns:1fr}}
+.target-role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.target-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;transition:border-color var(--trans)}
+.target-card:hover{border-color:var(--border-hi)}
+.target-card-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px}
+.target-card-role{font-size:10px;color:var(--text2);margin-bottom:10px}
+.target-card-row{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:4px}
+.target-card-row b{color:var(--text);font-variant-numeric:tabular-nums}
+.target-progress-track{height:6px;border-radius:4px;background:rgba(201,169,110,.12);overflow:hidden;margin:8px 0}
+.target-progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),#e8cc99);border-radius:4px;transition:width .6s cubic-bezier(.16,1,.3,1)}
+.target-card-edit{display:flex;gap:8px;margin-top:10px}
+.target-card-edit input{flex:1;min-width:0}
+body.light .target-card{background:#ffffff}
 .mt-main-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
 .mt-main-tag{font-size:8.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#0a0906;
   background:var(--gold);padding:3px 9px;border-radius:5px}
@@ -3590,6 +3610,16 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
         </span>
         <span data-i18n="teamTasks">Progress Tugas Tim</span>
       </button>
+      <button class="nav-item mod-only" onclick="navTo('mod_target',this)" id="n-mod-target" style="display:none">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/>
+            <circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.4"/>
+            <circle cx="8" cy="8" r="0.9" fill="currentColor"/>
+          </svg>
+        </span>
+        <span data-i18n="modTargetNav">Target</span>
+      </button>
       <button class="nav-item mod-only" onclick="navTo('users',this)" id="n-users" style="display:none">
         <span class="nav-icon">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -3786,6 +3816,39 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
         </div>
         <div class="stats-grid" id="tt-summary"></div>
         <div id="tt-role-groups"></div>
+      </div>
+
+      <!-- ①c TARGET — moderator atur target omzet Host/Admin/B2B + target follow-up harian -->
+      <div class="sp" id="pg-mod_target">
+        <div class="ph">
+          <div class="ph-left">
+            <div class="pt">
+              <span data-i18n="modTargetTitle">Target</span>
+              <span class="mod-badge">♔ Moderator</span>
+            </div>
+            <div class="ps" data-i18n="modTargetSub">Atur & ubah target omzet bulanan tiap Host Live, Admin, B2B Marketing — dan target follow-up harian Admin/B2B</div>
+          </div>
+        </div>
+
+        <div class="mt-section-head">
+          <div class="mt-section-title">Target Follow-up Harian</div>
+        </div>
+        <div class="target-fu-grid" id="mtg-followup-grid"></div>
+
+        <div class="mt-section-head" style="margin-top:22px">
+          <div class="mt-section-title">Target Omzet — Host Live</div>
+        </div>
+        <div class="target-role-grid" id="mtg-host-grid"></div>
+
+        <div class="mt-section-head" style="margin-top:22px">
+          <div class="mt-section-title">Target Omzet — Admin</div>
+        </div>
+        <div class="target-role-grid" id="mtg-admin-grid"></div>
+
+        <div class="mt-section-head" style="margin-top:22px">
+          <div class="mt-section-title">Target Omzet — B2B Marketing</div>
+        </div>
+        <div class="target-role-grid" id="mtg-b2b-grid"></div>
       </div>
 
       <!-- ⑤ USER MANAGEMENT (Moderator only) -->
@@ -6407,6 +6470,9 @@ async function initDashboard() {
   const r = currentUser.role;
   const isHead = currentUser.id === HEAD_MODERATOR_ID;
 
+  syncFollowupTargetForCurrentUser();
+  loadFollowupTargetsFromDB(); // async, tidak diblok — begitu selesai target langsung disinkron ulang
+
   document.getElementById('sb-uname').textContent = currentUser.name;
   document.getElementById('sb-rdot').className = `role-dot role-${r}`;
 
@@ -6443,6 +6509,7 @@ async function initDashboard() {
   // Administration (Moderator+)
   navShow('ns-admin',         isMod);
   navShow('n-team-tasks',     isMod);
+  navShow('n-mod-target',     isMod);
   navShow('n-users',          isMod);
   // Settings — Sovereign only (otherwise moderator can rename their own role)
   navShow('n-settings',       isHead);
@@ -7618,7 +7685,7 @@ async function loadAllRoleDashboard() {
     fuIds.forEach((id,i) => {
       const daily = results[i]?.data || [];
       const total = daily.reduce((s,d) => s + (d.cnt||0), 0);
-      const hit = daily.filter(d => (d.cnt||0) >= FOLLOWUP_DAILY_TARGET).length;
+      const hit = daily.filter(d => (d.cnt||0) >= followupTargetForUser(id)).length;
       fuStats[id] = { total, hit, days: daily.length };
     });
   }
@@ -7999,8 +8066,8 @@ async function _loadMyPerfModerator() {
   const fuByMonth = {}; months.forEach(m => fuByMonth[m.ym] = { hit: 0, days: 0 });
   if (db && fuIds.length) {
     const results = await Promise.all(months.flatMap(m => fuIds.map(id =>
-      dbQ(d => d.rpc('followup_monthly_daily', { p_user_id: id, p_period_ym: m.ym })).then(r => ({ ym: m.ym, r })))));
-    results.forEach(({ ym, r }) => { const daily = r?.data || []; fuByMonth[ym].hit += daily.filter(d => (d.cnt || 0) >= FOLLOWUP_DAILY_TARGET).length; fuByMonth[ym].days += daily.length; });
+      dbQ(d => d.rpc('followup_monthly_daily', { p_user_id: id, p_period_ym: m.ym })).then(r => ({ ym: m.ym, r, id })))));
+    results.forEach(({ ym, r, id }) => { const daily = r?.data || []; fuByMonth[ym].hit += daily.filter(d => (d.cnt || 0) >= followupTargetForUser(id)).length; fuByMonth[ym].days += daily.length; });
   }
 
   const pctSeries = key => months.map(m => {
@@ -8667,7 +8734,6 @@ let teamTaskData = []; // [{id,name,role,total,done,pending,target,pct,unit,onli
 
 async function loadTeamTaskData() {
   if (!can.isMod(currentUser?.role)) return [];
-  const fuTarget = FOLLOWUP_DAILY_TARGET;
   const today = new Date().toISOString().slice(0,10);
 
   const rosterFU      = Object.entries(LOCAL_USERS).filter(([,u]) => u.role === 'admin' || u.role === 'b2b_marketing').map(([id,u]) => ({ id, name:u.name, role:u.role }));
@@ -8742,6 +8808,7 @@ async function loadTeamTaskData() {
     const total   = byOwnerTotal[u.id] || 0;
     const done    = byUserDoneToday[u.id] || 0;
     const pending = Math.max(0, total - done);
+    const fuTarget = followupTargetForRole(u.role);
     const pct     = fuTarget ? Math.min(100, Math.round((done / fuTarget) * 100)) : 0;
     return { id:u.id, name:u.name, role:u.role, total, done, pending, target:fuTarget, pct, unit:'followup', online: !!(presenceMap[u.id]?.online) };
   });
@@ -8950,6 +9017,20 @@ async function renderMtMainSection() {
             <div><b>${mine.length}</b><span>${t('myTasksFollowupTotal')}</span></div>
           </div>
           <button class="btn-g btn-sm" onclick="navTo('crm', document.getElementById('n-crm'))">${t('myTasksOpenCRM')}</button>
+        </div>
+        <div class="mt-fu-lists">
+          <div class="mt-fu-list-col">
+            <div class="mt-fu-list-title" style="color:var(--green)">✓ Sudah di-follow up (${doneCount})</div>
+            <div class="mt-fu-list-body">
+              ${mine.filter(c => followupDoneTodayIds.has(_followupCustKey(c))).slice(0,30).map(c => `<div class="mt-fu-list-item">${escHtml(c.nama||'—')}</div>`).join('') || `<div class="mt-fu-list-empty">Belum ada yang di-follow up hari ini</div>`}
+            </div>
+          </div>
+          <div class="mt-fu-list-col">
+            <div class="mt-fu-list-title" style="color:var(--amber)">○ Belum di-follow up (${pendingCount})</div>
+            <div class="mt-fu-list-body">
+              ${mine.filter(c => !followupDoneTodayIds.has(_followupCustKey(c))).slice(0,30).map(c => `<div class="mt-fu-list-item">${escHtml(c.nama||'—')}</div>`).join('') || `<div class="mt-fu-list-empty">Semua sudah di-follow up 🎉</div>`}
+            </div>
+          </div>
         </div>
       </div>`;
     const dashEl = document.getElementById('mt-followup-dash');
@@ -12307,7 +12388,30 @@ function initCRMRealtime() {
                      dari jumlah customer UNIK yang sudah di-log
                      hari ini oleh user yang sedang login.
    ═══════════════════════════════════════════════════════════ */
-const FOLLOWUP_DAILY_TARGET = 50;
+// v23: target follow-up harian sekarang bisa diubah moderator per role (dulu konstanta tetap 50)
+let FOLLOWUP_DAILY_TARGETS = { admin: 50, b2b: 50 };
+let FOLLOWUP_DAILY_TARGET  = 50; // target milik currentUser yang login (disinkron via syncFollowupTargetForCurrentUser)
+
+function followupTargetForRole(jsRole) {
+  return jsRole === 'b2b_marketing' ? FOLLOWUP_DAILY_TARGETS.b2b : FOLLOWUP_DAILY_TARGETS.admin;
+}
+function followupTargetForUser(uid) {
+  return followupTargetForRole(getUserMeta(uid).role);
+}
+async function loadFollowupTargetsFromDB() {
+  try {
+    const [admT, b2bT] = await Promise.all([
+      _getPortalConfigVal('followup_target_admin', '50'),
+      _getPortalConfigVal('followup_target_b2b', '50'),
+    ]);
+    FOLLOWUP_DAILY_TARGETS = { admin: Math.max(1, crmParseInt(admT) || 50), b2b: Math.max(1, crmParseInt(b2bT) || 50) };
+  } catch(e) { console.warn('[DHP] loadFollowupTargetsFromDB gagal:', e); }
+  syncFollowupTargetForCurrentUser();
+}
+function syncFollowupTargetForCurrentUser() {
+  if (!currentUser) return;
+  FOLLOWUP_DAILY_TARGET = followupTargetForRole(currentUser.role);
+}
 let followupDoneTodayIds = new Set();     // set of crm_customers._uuid (atau id_customer di mode offline)
 
 function _followupTodayKey() {
@@ -12367,13 +12471,70 @@ async function markFollowedUp(idx) {
     return;
   }
 
+  // v23: Kunci — kalau customer ini sudah di-follow up hari ini, tombol tidak
+  // boleh ditekan lagi (nunggu besok). Cegah spam & log ganda.
+  const lockKey = _followupCustKey(c);
+  if (followupDoneTodayIds.has(lockKey)) {
+    toast(`${c.nama || 'Customer'} ini sudah di-follow up hari ini — coba lagi besok`);
+    return;
+  }
+
+  openFollowupResponseModal(idx);
+}
+window.openFollowupResponseModal = openFollowupResponseModal;
+
+/* v23: Sebelum log follow-up beneran disimpan, tanya dulu apakah ada respon
+   dari customer & apakah heat-nya naik (Cold→Warm→Hot). Ini juga jadi
+   momen "kuncian harian" — sesudah salah satu tombol di modal ini ditekan,
+   customer otomatis masuk daftar followupDoneTodayIds & tombol di tabel terkunci. */
+function openFollowupResponseModal(idx) {
+  const c = crmData[idx];
+  if (!c) return;
+  const heatNow = c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status));
+  document.getElementById('m-title').textContent = `Follow Up — ${c.nama || 'Customer'}`;
+  document.getElementById('m-body').innerHTML = `
+    <div style="font-size:12px;color:var(--text2);margin-bottom:14px">
+      Status saat ini: ${crmHeatBadge(heatNow)}<br/>
+      Apakah ada respon dari customer ini hari ini?
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn-sm btn-g" style="justify-content:flex-start" onclick="_confirmFollowup(${idx},'none')">
+        Tidak ada respon — catat follow-up saja
+      </button>
+      <button class="btn-sm" style="justify-content:flex-start;background:rgba(232,184,110,.14);color:var(--amber);border:1px solid rgba(232,184,110,.35)" onclick="_confirmFollowup(${idx},'warm')">
+        Ada respon — naikkan ke Warm
+      </button>
+      <button class="btn-sm" style="justify-content:flex-start;background:rgba(232,112,112,.14);color:var(--red);border:1px solid rgba(232,112,112,.35)" onclick="_confirmFollowup(${idx},'hot')">
+        Sangat tertarik / closing — naikkan ke Hot
+      </button>
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `<button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+
+async function _confirmFollowup(idx, response) {
+  const c = crmData[idx];
+  if (!c || !currentUser) { closeModal(); return; }
+  closeModal();
+
+  const heatBefore = c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status));
+  let heatAfter = heatBefore;
+  if (response === 'warm' && (heatBefore === 'Cold' || heatBefore === 'None')) heatAfter = 'Warm';
+  if (response === 'hot'  && heatBefore !== 'Hot') heatAfter = 'Hot';
+  const hasResponse = response !== 'none';
+
   const now = new Date().toISOString();
   const key = _followupCustKey(c);
 
   if (crmUsesDB() && c._uuid) {
     try {
-      await dbQ(d => d.from('followup_logs').insert({ customer_id: c._uuid, user_id: currentUser.id, followed_up_at: now }));
-      await dbQ(d => d.from('crm_customers').update({ last_followup_at: now, last_followup_by: currentUser.id }).eq('id', c._uuid));
+      await dbQ(d => d.from('followup_logs').insert({
+        customer_id: c._uuid, user_id: currentUser.id, followed_up_at: now,
+        has_response: hasResponse, heat_before: heatBefore, heat_after: heatAfter
+      }));
+      const upd = { last_followup_at: now, last_followup_by: currentUser.id };
+      if (heatAfter !== heatBefore) upd.heat_category = heatAfter;
+      await dbQ(d => d.from('crm_customers').update(upd).eq('id', c._uuid));
     } catch(e) { console.warn('[DHP] markFollowedUp gagal:', e); }
   } else {
     // Mode offline — simpan progress harian di localStorage
@@ -12386,12 +12547,19 @@ async function markFollowedUp(idx) {
 
   c.last_followup_at = now;
   c.last_followup_by  = currentUser.id;
+  if (heatAfter !== heatBefore) c.heat_category = heatAfter;
   followupDoneTodayIds.add(key);
   saveCRM();
-  toast(`✓ ${c.nama || 'Customer'} sudah di-follow up hari ini`);
+
+  if (heatAfter !== heatBefore) {
+    toast(`🔥 ${c.nama || 'Customer'} naik dari ${heatBefore} → ${heatAfter}!`);
+  } else {
+    toast(`✓ ${c.nama || 'Customer'} sudah di-follow up hari ini`);
+  }
   if (document.getElementById('pg-crm')?.classList.contains('active')) renderCRM();
   try { await checkAndCelebrateFollowupMilestone(); } catch(e) { console.warn('[DHP] cek milestone follow up gagal:', e); }
 }
+window._confirmFollowup = _confirmFollowup;
 window.markFollowedUp      = markFollowedUp;
 
 /* ═══════════════════════════════════════════════════════════
@@ -12450,6 +12618,121 @@ async function saveAdminTarget(uid) {
   pushActivity(`Target omzet ${uid} (${periodYm}) diatur ${crmFmtRupiah(amount)}`, 'info');
 }
 window.saveAdminTarget = saveAdminTarget;
+
+/* ═══════════════════════════════════════════════════════════
+   ⑪-d HALAMAN TARGET (moderator) — v23
+   ─ Target follow-up harian Admin & B2B (portal_config)
+   ─ Target omzet bulanan Host Live / Admin / B2B Marketing
+   ═══════════════════════════════════════════════════════════ */
+async function renderModTargetPage() {
+  if (!can.isMod(currentUser?.role)) return;
+  await Promise.all([
+    _renderFollowupTargetGrid(),
+    _renderRoleTargetGrid('host',  'mtg-host-grid',  'host_live',     'host_user_id',  'v_host_target_progress'),
+    _renderRoleTargetGrid('admin', 'mtg-admin-grid', 'admin',         'admin_user_id', 'v_admin_target_progress'),
+    _renderRoleTargetGrid('b2b',   'mtg-b2b-grid',   'b2b_marketing', 'b2b_user_id',   'v_b2b_target_progress'),
+  ]);
+}
+window.renderModTargetPage = renderModTargetPage;
+
+async function _getPortalConfigVal(key, fallback) {
+  if (db) {
+    const res = await dbQ(d => d.from('portal_config').select('value').eq('key', key).maybeSingle());
+    if (res?.data?.value != null && res.data.value !== '') return res.data.value;
+  }
+  return localStorage.getItem(`dhp_cfg_${key}`) || fallback;
+}
+async function _setPortalConfigVal(key, val) {
+  if (db) {
+    await dbQ(d => d.from('portal_config').upsert({ key, value: String(val), updated_by: currentUser.id, updated_at: new Date().toISOString() }));
+  }
+  localStorage.setItem(`dhp_cfg_${key}`, String(val));
+}
+
+async function _renderFollowupTargetGrid() {
+  const grid = document.getElementById('mtg-followup-grid');
+  if (!grid) return;
+  const [admTarget, b2bTarget] = await Promise.all([
+    _getPortalConfigVal('followup_target_admin', '50'),
+    _getPortalConfigVal('followup_target_b2b', '50'),
+  ]);
+  grid.innerHTML = `
+    <div class="target-card">
+      <div class="target-card-name">Admin</div>
+      <div class="target-card-role">Target follow-up customer / hari</div>
+      <div class="target-card-edit">
+        <input class="fi" id="mtg-fu-admin" type="number" min="1" value="${escHtml(admTarget)}"/>
+        <button class="btn-sm btn-gold" onclick="_saveFollowupTarget('admin')">Simpan</button>
+      </div>
+    </div>
+    <div class="target-card">
+      <div class="target-card-name">B2B Marketing</div>
+      <div class="target-card-role">Target follow-up customer / hari</div>
+      <div class="target-card-edit">
+        <input class="fi" id="mtg-fu-b2b" type="number" min="1" value="${escHtml(b2bTarget)}"/>
+        <button class="btn-sm btn-gold" onclick="_saveFollowupTarget('b2b')">Simpan</button>
+      </div>
+    </div>`;
+}
+
+async function _saveFollowupTarget(roleKey) {
+  const input = document.getElementById(`mtg-fu-${roleKey}`);
+  const val = Math.max(1, crmParseInt(input?.value) || 1);
+  await _setPortalConfigVal(`followup_target_${roleKey}`, val);
+  FOLLOWUP_DAILY_TARGETS[roleKey] = val;
+  toast(`Target follow-up ${roleKey === 'admin' ? 'Admin' : 'B2B Marketing'} diatur: ${val}/hari`);
+  pushActivity(`Target follow-up harian ${roleKey} diatur ${val}/hari`, 'info');
+}
+window._saveFollowupTarget = _saveFollowupTarget;
+
+async function _renderRoleTargetGrid(roleKey, gridId, jsRole, ownerField, viewName) {
+  const grid = document.getElementById(gridId);
+  if (!grid) return;
+  const users = Object.entries(LOCAL_USERS).filter(([id,u]) => u.role === jsRole);
+  let progressMap = {};
+  if (db) {
+    const res = await dbQ(d => d.from(viewName).select('*'));
+    if (res?.data) res.data.forEach(row => { progressMap[row[ownerField]] = row; });
+  }
+  if (!users.length) { grid.innerHTML = `<div style="font-size:11px;color:var(--muted)">Belum ada user role ini.</div>`; return; }
+  grid.innerHTML = users.map(([id, u]) => {
+    const p = progressMap[id] || { target_amount:0, achieved_amount:0 };
+    const target = Number(p.target_amount)||0, achieved = Number(p.achieved_amount)||0;
+    const pct = target > 0 ? Math.min(100, Math.round(achieved/target*100)) : 0;
+    return `<div class="target-card">
+      <div class="target-card-name">${escHtml(u.name)}</div>
+      <div class="target-card-role">${rn(jsRole)}</div>
+      <div class="target-card-row"><span>Tercapai</span><b>${crmFmtRupiah(achieved)}</b></div>
+      <div class="target-card-row"><span>Target</span><b>${target > 0 ? crmFmtRupiah(target) : '—'}</b></div>
+      <div class="target-progress-track"><div class="target-progress-fill" style="width:${pct}%"></div></div>
+      <div class="target-card-edit">
+        <input class="fi" id="mtg-${roleKey}-${id}" type="number" min="0" step="100000" value="${target||''}" placeholder="mis. 20000000"/>
+        <button class="btn-sm btn-gold" onclick="_saveRoleTarget('${roleKey}','${id}')">Simpan</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function _saveRoleTarget(roleKey, uid) {
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  const input = document.getElementById(`mtg-${roleKey}-${uid}`);
+  const amount = Math.max(0, crmParseInt(input?.value) || 0);
+  const now = new Date();
+  const periodYm = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const rpcName = roleKey === 'host' ? 'moderator_set_host_target' : roleKey === 'admin' ? 'moderator_set_admin_target' : 'moderator_set_b2b_target';
+  const paramKey = roleKey === 'host' ? 'p_host_user' : roleKey === 'admin' ? 'p_admin_user' : 'p_b2b_user';
+  const res = await dbQ(d => d.rpc(rpcName, {
+    p_moderator_id: currentUser.id, [paramKey]: uid, p_period_ym: periodYm, p_target_amount: amount
+  }));
+  if (res?.error) { toast('Gagal menyimpan: ' + res.error.message); return; }
+  toast(`Target omzet ${getUserMeta(uid).name} diatur: ${crmFmtRupiah(amount)}`);
+  pushActivity(`Target omzet ${uid} (${periodYm}) diatur ${crmFmtRupiah(amount)}`, 'info');
+  _renderRoleTargetGrid(roleKey, `mtg-${roleKey}-grid`, roleKey === 'host' ? 'host_live' : roleKey === 'admin' ? 'admin' : 'b2b_marketing',
+    roleKey === 'host' ? 'host_user_id' : roleKey === 'admin' ? 'admin_user_id' : 'b2b_user_id',
+    roleKey === 'host' ? 'v_host_target_progress' : roleKey === 'admin' ? 'v_admin_target_progress' : 'v_b2b_target_progress');
+}
+window._saveRoleTarget = _saveRoleTarget;
+
 
 /* ── Admin: render kartu progress ring target omzet di kartu "Tugas Utama" ── */
 function renderAdminTargetCard() {
@@ -12802,6 +13085,7 @@ async function renderCRM() {
     const inputByCell = c.owner_id || c.created_by
       ? `<span class="adcust-owner" title="${escHtml(c.catatan||'')}"><span class="role-dot" style="background:${ownerClr}"></span>${escHtml(ownerMeta.name)}</span>`
       : `<span style="color:var(--muted)">—</span>`;
+    const rowDoneToday = followupDoneTodayIds.has(_followupCustKey(c));
     return `<tr>
       <td><span class="crm-id">${escHtml(c.id_customer||'—')}</span></td>
       <td><span class="crm-name">${escHtml(c.nama||'—')}</span>${c.catatan?`<div style="font-size:9px;color:var(--muted);margin-top:2px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(c.catatan)}">${escHtml(c.catatan)}</div>`:''}</td>
@@ -12835,7 +13119,7 @@ async function renderCRM() {
           <button class="crm-ico-btn" onclick="openCRMModal(${idx})" title="Edit">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5l2 2L6 12l-2.5.5L4 10l7.5-7.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
           </button>
-          <button class="crm-ico-btn" onclick="markFollowedUp(${idx})" title="${isModRow ? 'Moderator: klik untuk lihat siapa yang harus follow-up' : 'Tandai sudah di-follow up hari ini'}" style="${isModRow ? 'opacity:.55' : ''}">
+          <button class="crm-ico-btn${(!isModRow && rowDoneToday) ? ' crm-fu-locked' : ''}" onclick="markFollowedUp(${idx})" title="${isModRow ? 'Moderator: klik untuk lihat siapa yang harus follow-up' : (rowDoneToday ? 'Sudah di-follow up hari ini — terkunci sampai besok' : 'Tandai sudah di-follow up hari ini')}" style="${isModRow ? 'opacity:.55' : (rowDoneToday ? 'opacity:.5;cursor:not-allowed' : '')}">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3 3 7-7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
           <button class="crm-ico-btn del" onclick="deleteCRM(${idx})" title="Hapus">
@@ -13802,7 +14086,7 @@ async function submitUnlockRequest() {
 function navTo(page, btn) {
   const r = currentUser.role;
   // Moderator-only pages
-  if (['team_tasks','users'].includes(page) && !can.isMod(r)) { toast('Moderator access required'); return; }
+  if (['team_tasks','users','mod_target'].includes(page) && !can.isMod(r)) { toast('Moderator access required'); return; }
   // Manage (Ads) pages: moderator + admin/b2b (target)
   if (['ad_scheduler','ad_customers','ad_task'].includes(page) && !can.canSeeAds(r)) { toast(t('adAccessReq')); return; }
   // Manage CRM page: moderator + admin/b2b
@@ -13830,6 +14114,7 @@ function loadPageData(page) {
   if (page === 'mod_tasks')       { renderModTasks(); renderMtMainSection(); }
   if (page === 'my_performance')  loadMyPerformance();
   if (page === 'team_tasks')      renderTeamTasks();
+  if (page === 'mod_target')      renderModTargetPage();
   if (page === 'users')           renderUsers();
   if (page === 'settings')        renderSettings();
   if (page === 'presence')        renderPresencePage();
