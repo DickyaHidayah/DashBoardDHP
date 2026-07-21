@@ -3682,6 +3682,9 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
         <!-- (A) TUGAS UTAMA — task bawaan sesuai role, auto-tracked, bukan dibuat manual -->
         <div class="mt-main-section" id="mt-main-section"></div>
 
+        <!-- (A-bis) TARGET OMZET ADMIN (v22) — khusus role Admin -->
+        <div id="mt-admin-target-card" style="display:none;margin-bottom:20px"></div>
+
         <!-- (A2) DASHBOARD PROGRESS BULANAN — khusus Admin/B2B (follow-up) -->
         <div id="mt-followup-dash" style="display:none">
           <div class="ph" style="margin-top:4px">
@@ -4436,6 +4439,10 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
             <select class="fi crm-filter" id="crm-owner-filter" onchange="crmOwnerFilter=this.value;renderCRM()" style="display:none">
               <option value="all">Semua Admin & B2B</option>
             </select>
+            <!-- v22: Moderator atur target omzet bulanan — hanya tampil saat filter di atas mengarah ke 1 Admin -->
+            <button class="btn-g btn-sm crm-btn" id="crm-admin-target-btn" onclick="openAdminTargetModal()" title="Atur target omzet bulanan Admin ini" style="display:none">
+              🎯 <span data-i18n="crmSetAdminTarget">Atur Target Omzet</span>
+            </button>
             <button class="btn-g btn-sm crm-btn" onclick="openCRMImport()" title="Import dari Excel/CSV">
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px"><path d="M8 1v9M8 10L5 7M8 10l3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
               <span data-i18n="crmImport">Import</span>
@@ -4984,18 +4991,6 @@ function startLocalTick() {
 function releaseGuest(id) {
   Object.entries(guestSlots).forEach(([k, v]) => { if (v === id) guestSlots[k] = null; });
 }
-function claimGuest() {
-  for (let i = 1; i <= MAX_GUEST; i++) {
-    if (!guestSlots[i]) {
-      const id = `guest_${i}`, name = `Guest ${i}`;
-      guestSlots[i] = id;
-      presenceMap[id] = { id, role:'guest', name, online:false, loginAt:0, lastSeen:0 };
-      return { id, name };
-    }
-  }
-  return null;
-}
-
 /* ═══════════════════════════════════════════════════════════
    ⑤ NOTIFICATIONS — cross-role, persistent
    ═══════════════════════════════════════════════════════════ */
@@ -6333,12 +6328,6 @@ async function handleForgot() {
   document.getElementById('fo-email').value = '';
 }
 
-function handleGuest() {
-  const claim = claimGuest();
-  if (!claim) { showAlert('login-al', 'error', t('guestFull')); return; }
-  loginSuccess(claim.id, 'guest', claim.name);
-}
-
 function loginSuccess(id, role, name, tutSeenAt) {
   currentUser = { id, role, name, tutSeenAt: tutSeenAt || null };
   // Reset notifikasi sesi sebelumnya (fix: ganti akun di tab yang sama
@@ -6437,18 +6426,6 @@ function handleLogout() {
   setTimeout(() => { sc.style.opacity = '1'; sc.style.transition = 'opacity .5s'; }, 10);
   document.getElementById('li-id').value = ''; document.getElementById('li-pw').value = '';
   hideAlert('login-al'); showPanel('panel-login');
-}
-
-function checkStrength(v) {
-  const bars = ['sb1','sb2','sb3','sb4'], lbl = document.getElementById('str-lbl');
-  bars.forEach(id => { const el = document.getElementById(id); if (el) el.className = 'str-bar'; });
-  if (!v) { if (lbl) lbl.textContent = '—'; return; }
-  let sc = 0;
-  if (v.length >= 6) sc++; if (v.length >= 10) sc++; if (/[A-Z]/.test(v) && /[0-9]/.test(v)) sc++; if (/[^A-Za-z0-9]/.test(v)) sc++;
-  const cls = sc <= 1 ? 'w' : sc === 2 ? 'f' : sc === 3 ? 's' : 'v';
-  const lbls = { w:t('weakPw'), f:t('fairPw'), s:t('strongPw'), v:t('veryStrongPw') };
-  bars.slice(0, sc).forEach(id => { const el = document.getElementById(id); if (el) el.className = `str-bar ${cls}`; });
-  if (lbl) lbl.textContent = lbls[cls] || '';
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -6991,7 +6968,8 @@ function renderCcDayTable() {
       actions = `<button class="btn-sm btn-edit" onclick="openCcSlotModal(${slotNo})">${s ? '✎ Edit' : '+ Isi'}</button>`
         + (s ? ` <button class="btn-sm btn-move" onclick="openCcMoveModal('${s.id}')" title="Pindahkan ke hari lain">↔ Pindah</button> <button class="btn-sm btn-del" onclick="deleteCcSlot('${s.id}')">✕</button>` : '');
     } else if (isOwnCreator && s) {
-      actions = `<button class="btn-sm btn-gold" onclick="openCcProgressModal('${s.id}')">Update Progress</button>`;
+      actions = `<button class="btn-sm btn-gold" onclick="openCcProgressModal('${s.id}')">Update Progress</button>`
+        + ` <button class="btn-sm btn-move" onclick="openCcMoveModal('${s.id}')" title="Pindahkan ke hari lain">↔ Pindah</button>`;
     } else {
       actions = '—';
     }
@@ -7071,9 +7049,12 @@ async function deleteCcSlot(slotId) {
   toast('Slot konten dihapus');
 }
 
-/* ── Moderator: pindahkan slot konten yang sudah diisi ke hari (dan/atau slot) lain ── */
+/* ── Moderator ATAU Content Creator (slot miliknya sendiri): pindahkan
+   slot konten yang sudah diisi ke hari (dan/atau slot) lain ── */
 function openCcMoveModal(slotId) {
-  if (!can.isMod(currentUser?.role)) return;
+  const isMod = can.isMod(currentUser?.role);
+  const isOwnCreator = currentUser && currentUser.id === ccTargetId && can.isContent(currentUser.role);
+  if (!isMod && !isOwnCreator) return;
   const s = (ccMonthCache[ccSelectedDate] || []).find(x => x.id === slotId);
   if (!s) { toast('Slot tidak ditemukan'); return; }
   const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
@@ -7095,6 +7076,7 @@ function openCcMoveModal(slotId) {
         </select>
       </div>
     </div>
+    ${!isMod ? `<div style="font-size:10.5px;color:var(--text2);margin-top:4px">Moderator akan mendapat notifikasi begitu kamu memindahkan slot ini.</div>` : ''}
     <div style="font-size:10.5px;color:var(--text2);margin-top:4px">Kalau slot tujuan sudah ada isinya, pemindahan akan ditolak — kosongkan dulu slot itu atau pilih slot lain.</div>`;
   document.getElementById('m-foot').innerHTML = `
     <button class="btn-sm btn-gold" onclick="saveCcMove('${slotId}')">↔ Pindahkan</button>
@@ -7107,9 +7089,14 @@ async function saveCcMove(slotId) {
   const newDate = document.getElementById('cc-mv-date').value;
   const newSlot = parseInt(document.getElementById('cc-mv-slot').value, 10);
   if (!newDate) { toast('Pilih tanggal tujuan dulu'); return; }
-  const res = await dbQ(d => d.rpc('moderator_move_content_slot', {
-    p_moderator_id: currentUser.id, p_slot_id: slotId, p_new_date: newDate, p_new_slot_no: newSlot
-  }));
+  const isMod = can.isMod(currentUser?.role);
+  const res = isMod
+    ? await dbQ(d => d.rpc('moderator_move_content_slot', {
+        p_moderator_id: currentUser.id, p_slot_id: slotId, p_new_date: newDate, p_new_slot_no: newSlot
+      }))
+    : await dbQ(d => d.rpc('creator_move_content_slot', {
+        p_creator_id: currentUser.id, p_slot_id: slotId, p_new_date: newDate, p_new_slot_no: newSlot
+      }));
   if (res?.error) { toast('Gagal memindahkan: ' + res.error.message); return; }
   closeModal();
   await loadCcMonth();
@@ -8082,7 +8069,6 @@ async function _loadMyPerfModerator() {
   });
 }
 
-function lsSwitchUser(uid) { lsTargetId = uid; loadLsMonth(); }
 function lsMonthNav(dir) { lsCursor.setMonth(lsCursor.getMonth() + dir); loadLsMonth(); }
 function lsGoToday() {
   lsCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
@@ -8900,6 +8886,8 @@ async function renderMtMainSection() {
   const r = currentUser.role;
   const fuDashEl = document.getElementById('mt-followup-dash');
   if (fuDashEl) fuDashEl.style.display = 'none';
+  const atCardEl = document.getElementById('mt-admin-target-card');
+  if (atCardEl) atCardEl.style.display = 'none';
 
   if (can.isB2B(r) || r === 'admin') {
     if (crmUsesDB()) { try { await loadCRM(); } catch(e){} }
@@ -8934,6 +8922,10 @@ async function renderMtMainSection() {
       </div>`;
     const dashEl = document.getElementById('mt-followup-dash');
     if (dashEl) { dashEl.style.display = ''; try { await renderFollowupMonthlyDashboard(); } catch(e){ console.warn('[DHP] followup monthly dashboard gagal:', e); } }
+    // v22: Target Omzet — hanya untuk role Admin, bukan B2B
+    if (r === 'admin') {
+      try { await loadAdminTargetProgress(currentUser.id); renderAdminTargetCard(); } catch(e) { console.warn('[DHP] admin target card gagal:', e); }
+    }
   } else if (can.isMod(r)) {
     el.innerHTML = `
       <div class="mt-main-card mt-main-simple">
@@ -10255,19 +10247,6 @@ function playNotifBeep() {
 
 /* Singkatan t() agar bisa dipanggil di luar konteks render (saat polling) */
 function t_(key) { try { return t(key); } catch(e) { return key; } }
-
-/* Judul + isi notif task baru, disesuaikan role penerima (ringkas) */
-function taskNotifFor(tk) {
-  const mod = can.isMod(currentUser?.role);
-  const dateStr = fmtDayShort(tk.date || tk.ad_date);
-  if (mod) {
-    // Moderator melihat semua → sebutkan untuk siapa
-    const who = (tk.assignee || tk.assignee_id || '').toString();
-    return { title:t_('npTask'), body:`${tk.title} · ${who} · ${dateStr}` };
-  }
-  // Target (admin/b2b) → ini tugas untuk dirinya
-  return { title:t_('npAssigned'), body:`${tk.title} · ${dateStr}` };
-}
 
 /* Notif sambutan saat login — beda isi per role, mengikuti alur kerja masing-masing.
    Dipanggil setelah dashboard & data termuat. */
@@ -12338,6 +12317,24 @@ async function loadFollowupLogsToday() {
 async function markFollowedUp(idx) {
   const c = crmData[idx];
   if (!c || !currentUser) return;
+
+  // v20: Moderator tidak follow-up customer secara langsung — tugas itu
+  // milik role yang menginput customernya (admin/b2b). Moderator cukup
+  // diarahkan untuk mendelegasikan follow-up ini ke pemiliknya.
+  if (can.isMod(currentUser.role)) {
+    const ownerId = c.owner_id || c.created_by || '';
+    const ownerMeta = getUserMeta(ownerId);
+    const ownerLabel = ownerId ? `${ownerMeta.name} (${rn(ownerMeta.role)})` : 'pemilik customer ini';
+    const msg = `Sebagai moderator, follow-up customer bukan tugasmu langsung — silahkan berikan job ini ke ${ownerLabel}.`;
+    toast(msg);
+    pushNotif({
+      type: 'alert', popup: true,
+      title: 'Follow-up Bukan Tugas Moderator',
+      msg
+    });
+    return;
+  }
+
   const now = new Date().toISOString();
   const key = _followupCustKey(c);
 
@@ -12364,6 +12361,101 @@ async function markFollowedUp(idx) {
   try { await checkAndCelebrateFollowupMilestone(); } catch(e) { console.warn('[DHP] cek milestone follow up gagal:', e); }
 }
 window.markFollowedUp      = markFollowedUp;
+
+/* ═══════════════════════════════════════════════════════════
+   ⑪-c TARGET OMZET ADMIN (v22) — diatur moderator, per bulan
+   ─ achieved dihitung server-side lewat view v_admin_target_progress
+     (total_spend customer milik Admin − baseline periode berjalan)
+   ═══════════════════════════════════════════════════════════ */
+let adminTargetCache = { target_amount:0, achieved_amount:0, current_total_spend:0 };
+
+async function loadAdminTargetProgress(uid) {
+  adminTargetCache = { target_amount:0, achieved_amount:0, current_total_spend:0 };
+  if (!db || !uid) return adminTargetCache;
+  try {
+    const res = await dbQ(d => d.from('v_admin_target_progress').select('*').eq('admin_user_id', uid).maybeSingle());
+    if (res?.data) adminTargetCache = res.data;
+  } catch(e) { console.warn('[DHP] loadAdminTargetProgress gagal:', e); }
+  return adminTargetCache;
+}
+
+/* ── Moderator: buka modal atur target omzet untuk Admin yang lagi dipilih di filter CRM ── */
+async function openAdminTargetModal() {
+  if (!can.isMod(currentUser?.role)) return;
+  const uid = crmOwnerFilter;
+  if (!uid || uid === 'all') { toast('Pilih 1 Admin dulu di filter di atas'); return; }
+  const meta = getUserMeta(uid);
+  if (meta.role !== 'admin') { toast('Target omzet hanya untuk role Admin'); return; }
+  await loadAdminTargetProgress(uid);
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const now = new Date();
+  document.getElementById('m-title').textContent = `Atur Target Omzet — ${meta.name} · ${months[now.getMonth()]} ${now.getFullYear()}`;
+  document.getElementById('m-body').innerHTML = `
+    <div style="font-size:11px;color:var(--text2);margin-bottom:10px">
+      Omzet berjalan saat ini: <b style="color:var(--text)">${crmFmtRupiah(adminTargetCache.current_total_spend)}</b>
+    </div>
+    <div class="fg"><label>Target Omzet Bulan Ini (Rp)</label>
+      <input class="fi" id="at-ed-target" type="number" min="0" step="100000" value="${adminTargetCache.target_amount || ''}" placeholder="mis. 20000000"/>
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-gold" onclick="saveAdminTarget('${uid}')">${t('save')||'Simpan'}</button>
+    <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')||'Batal'}</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+window.openAdminTargetModal = openAdminTargetModal;
+
+async function saveAdminTarget(uid) {
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  const amount = crmParseInt(document.getElementById('at-ed-target').value);
+  const now = new Date();
+  const periodYm = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const res = await dbQ(d => d.rpc('moderator_set_admin_target', {
+    p_moderator_id: currentUser.id, p_admin_user: uid, p_period_ym: periodYm, p_target_amount: amount
+  }));
+  if (res?.error) { toast('Gagal menyimpan: ' + res.error.message); return; }
+  closeModal();
+  toast(`Target omzet ${getUserMeta(uid).name} diatur: ${crmFmtRupiah(amount)}`);
+  pushActivity(`Target omzet ${uid} (${periodYm}) diatur ${crmFmtRupiah(amount)}`, 'info');
+}
+window.saveAdminTarget = saveAdminTarget;
+
+/* ── Admin: render kartu progress ring target omzet di kartu "Tugas Utama" ── */
+function renderAdminTargetCard() {
+  const wrap = document.getElementById('mt-admin-target-card');
+  if (!wrap) return;
+  const { target_amount, achieved_amount } = adminTargetCache;
+  const CIRC = 2 * Math.PI * 34;
+  const pct = target_amount > 0 ? Math.min(achieved_amount / target_amount, 1) : 0;
+  const over = target_amount > 0 && achieved_amount > target_amount;
+  let remark;
+  if (target_amount <= 0) remark = 'Belum ada target omzet diatur moderator bulan ini.';
+  else if (over) remark = `🎉 Melebihi target sebesar ${crmFmtRupiah(achieved_amount - target_amount)}!`;
+  else remark = `Kurang ${crmFmtRupiah(target_amount - achieved_amount)} lagi untuk mencapai target.`;
+
+  wrap.style.display = '';
+  wrap.innerHTML = `
+    <div class="mt-main-card">
+      <div class="mt-main-head">
+        <span class="mt-main-tag">${t('myTasksMainTag')}</span>
+        <span class="mt-main-title">Target Omzet Bulan Ini</span>
+      </div>
+      <div class="mt-main-body">
+        <div class="mt-main-ring">
+          <svg viewBox="0 0 80 80" width="72" height="72">
+            <circle cx="40" cy="40" r="34" stroke="var(--border)" stroke-width="7" fill="none"/>
+            <circle cx="40" cy="40" r="34" stroke="${over||pct>=1?'var(--green)':'var(--gold)'}" stroke-width="7" fill="none"
+              stroke-dasharray="${CIRC}" stroke-dashoffset="${CIRC*(1-pct)}" stroke-linecap="round" transform="rotate(-90 40 40)"/>
+          </svg>
+          <div class="mt-main-ring-num" style="font-size:9.5px">${target_amount>0?Math.round(pct*100)+'%':'—'}</div>
+        </div>
+        <div class="mt-main-stats">
+          <div><b style="color:var(--text)">${crmFmtRupiah(achieved_amount)}</b><span>tercapai</span></div>
+          <div><b>${crmFmtRupiah(target_amount)}</b><span>target</span></div>
+        </div>
+      </div>
+      <div style="font-size:10.5px;color:var(--text2);margin-top:8px">${remark}</div>
+    </div>`;
+}
 
 // ── Helper format & parsing ──
 function crmParseMoney(v) {
@@ -12554,6 +12646,7 @@ async function renderCRM() {
 
   // Owner filter dropdown — hanya moderator
   const ownerFilterEl = document.getElementById('crm-owner-filter');
+  const targetBtnEl = document.getElementById('crm-admin-target-btn');
   const isMod2 = can.isMod(currentUser?.role);
   if (ownerFilterEl) {
     if (isMod2) {
@@ -12568,8 +12661,14 @@ async function renderCRM() {
         });
       }
       ownerFilterEl.value = crmOwnerFilter;
+      // v22: tombol "Atur Target Omzet" — hanya saat filter mengarah ke 1 Admin (bukan B2B, bukan "Semua")
+      if (targetBtnEl) {
+        const selUser = targets.find(u => u.user_id === crmOwnerFilter);
+        targetBtnEl.style.display = (selUser && selUser.role === 'admin') ? '' : 'none';
+      }
     } else {
       ownerFilterEl.style.display = 'none';
+      if (targetBtnEl) targetBtnEl.style.display = 'none';
     }
   }
   updateCRMBadge();
@@ -12645,6 +12744,7 @@ async function renderCRM() {
     return;
   }
 
+  const isModRow = can.isMod(currentUser?.role);
   body.innerHTML = rows.map(c => {
     const idx = crmData.indexOf(c);
     const waDigits = (c.wa||'').replace(/[^0-9]/g,'');
@@ -12703,7 +12803,7 @@ async function renderCRM() {
           <button class="crm-ico-btn" onclick="openCRMModal(${idx})" title="Edit">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5l2 2L6 12l-2.5.5L4 10l7.5-7.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
           </button>
-          <button class="crm-ico-btn" onclick="markFollowedUp(${idx})" title="Tandai sudah di-follow up hari ini">
+          <button class="crm-ico-btn" onclick="markFollowedUp(${idx})" title="${isModRow ? 'Moderator: klik untuk lihat siapa yang harus follow-up' : 'Tandai sudah di-follow up hari ini'}" style="${isModRow ? 'opacity:.55' : ''}">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3 3 7-7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
           <button class="crm-ico-btn del" onclick="deleteCRM(${idx})" title="Hapus">
@@ -14323,21 +14423,6 @@ async function checkAndCelebrateFollowupMilestone() {
   }
 }
 
-/* ── Reminder: masih ada customer yang belum di-follow up ──
-   Muncul 1x per hari per user (via bell notif), bukan popup spam. */
-function maybeRemindPendingFollowup(pendingCount) {
-  if (!currentUser || !pendingCount) return;
-  const key = `dhp_fu_reminder_${currentUser.id}_${new Date().toISOString().slice(0,10)}`;
-  if (localStorage.getItem(key)) return;
-  localStorage.setItem(key, '1');
-  pushNotif({
-    type: 'alert',
-    title: currentLang === 'id' ? 'Masih Ada yang Perlu Di-follow Up' : 'Pending Follow-ups',
-    msg: currentLang === 'id'
-      ? `Masih ada ${pendingCount} customer yang belum di-follow up hari ini.`
-      : `You still have ${pendingCount} customers not yet followed up today.`
-  });
-}
 </script>
 
 <!-- ══ JADWAL LIVE HARI INI: REMINDER POPUP (v11) — muncul saat Host buka Studio Live ══ -->
