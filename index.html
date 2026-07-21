@@ -12916,6 +12916,11 @@ async function renderCRM() {
 function openCRMModal(idx) {
   const editing = (typeof idx === 'number' && idx >= 0);
   const c = editing ? crmData[idx] : {};
+  // v23-FIX: `isAdsEntry` dipakai di bawah tapi sebelumnya TIDAK PERNAH didefinisikan —
+  // ini bikin ReferenceError setiap kali tombol pensil diklik, sehingga modal edit
+  // gagal terbuka sama sekali (error-nya "ketelan" browser, jadi user cuma lihat
+  // tidak terjadi apa-apa). Ini penyebab utama pensil edit "tidak berfungsi".
+  const isAdsEntry = editing && !!c.channel_is_ads;
   document.getElementById('m-title').textContent = editing ? t('crmEditCustomer') : t('crmAddCustomer');
   const opts = CRM_STATUSES.map(s => `<option value="${s}" ${crmNormStatus(c.status)===s?'selected':''}>${s}</option>`).join('');
   const channelOpts = ['Shopee','TikTok','Instagram','WhatsApp','Leads','Lainnya'].map(ch => `<option value="${ch}" ${(c.channel||'')=== ch?'selected':''}>${ch}</option>`).join('');
