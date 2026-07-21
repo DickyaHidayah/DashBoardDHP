@@ -3076,6 +3076,22 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
 .crm-diag-bar-fill{height:100%;border-radius:4px;transition:width .5s cubic-bezier(.4,0,.2,1)}
 .crm-diag-bar-val{font-size:11px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
 
+/* v23: CRM table filters row — search & filter menyatu langsung dengan tabel */
+.crm-tbl-filters{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:12px 14px;margin-bottom:10px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);
+}
+.crm-tbl-filters-search{position:relative;flex:1 1 220px;min-width:180px}
+.crm-tbl-filters-search .crm-search{width:100%;padding-left:32px}
+.crm-tbl-search-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.crm-tbl-filters .crm-filter{flex:0 0 auto}
+@media (max-width:640px){
+  .crm-tbl-filters{padding:10px}
+  .crm-tbl-filters-search{flex:1 1 100%}
+  .crm-tbl-filters .crm-filter{flex:1 1 auto}
+}
+
 /* CRM table toolbar */
 .crm-tbl-toolbar{
   display:flex;justify-content:space-between;align-items:center;
@@ -3742,7 +3758,7 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
               <span data-i18n="teamTasks">Progress Tugas Tim</span>
               <span class="mod-badge">♔ Moderator</span>
             </div>
-            <div class="ps" data-i18n="teamTasksSub">Pantau task follow-up harian setiap Admin dan B2B Marketing beserta progress mereka</div>
+            <div class="ps" data-i18n="teamTasksSub">Pantau task harian setiap anggota tim beserta progress-nya — Admin, B2B Marketing, Content Creator & Host Live</div>
           </div>
           <div class="ph-acts">
             <input class="search-box" id="tt-search" placeholder="Cari nama anggota..." oninput="renderTeamTasks()"/>
@@ -3750,6 +3766,8 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
               <option value="all">Semua Role</option>
               <option value="admin">Admin</option>
               <option value="b2b_marketing">B2B Marketing</option>
+              <option value="content_creator">Content Creator</option>
+              <option value="host_live">Host Live</option>
             </select>
           </div>
         </div>
@@ -4420,7 +4438,32 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
             <div class="ps" data-i18n="crmSub">Data customer utama — import, kelola & export rapi ke Excel</div>
           </div>
           <div class="ph-acts crm-acts">
-            <input class="search-box crm-search" id="crm-search" placeholder="Cari nama / WA / kota / produk…" oninput="renderCRM()"/>
+            <!-- v23: hanya tombol AKSI global di header — search & filter dipindah ke toolbar tabel (dekat data) -->
+            <button class="btn-g btn-sm crm-btn" onclick="openCRMImport()" title="Import dari Excel/CSV">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px"><path d="M8 1v9M8 10L5 7M8 10l3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <span data-i18n="crmImport">Import</span>
+            </button>
+            <button class="btn-g btn-sm crm-btn" onclick="exportCRMExcel()" title="Export ke Excel rapi + statistik">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px"><path d="M8 10V1M8 1L5 4M8 1l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <span data-i18n="crmExport">Export Excel</span>
+            </button>
+            <button class="btn-add crm-btn" onclick="openCRMModal()" data-i18n="addNew">+ Tambah</button>
+          </div>
+        </div>
+
+        <!-- Statistik & ringkasan -->
+        <div class="crm-stats" id="crm-stats"></div>
+
+        <!-- Diagram CRM -->
+        <div id="crm-diagram" class="crm-diagram-wrap"></div>
+
+        <div class="crm-table-wrap">
+          <!-- v23: Baris pencarian & filter — dipindah ke sini supaya menyatu langsung dengan tabel yang difilter -->
+          <div class="crm-tbl-filters">
+            <div class="crm-tbl-filters-search">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" class="crm-tbl-search-ico"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.4"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              <input type="text" class="search-box crm-search" id="crm-search" placeholder="Cari nama / WA / kota / produk…" oninput="renderCRM()"/>
+            </div>
             <select class="fi crm-filter" id="crm-status-filter" onchange="renderCRM()">
               <option value="all" data-i18n="crmAllStatus">Semua Status</option>
               <option value="New">New</option>
@@ -4443,25 +4486,7 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
             <button class="btn-g btn-sm crm-btn" id="crm-admin-target-btn" onclick="openAdminTargetModal()" title="Atur target omzet bulanan Admin ini" style="display:none">
               🎯 <span data-i18n="crmSetAdminTarget">Atur Target Omzet</span>
             </button>
-            <button class="btn-g btn-sm crm-btn" onclick="openCRMImport()" title="Import dari Excel/CSV">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px"><path d="M8 1v9M8 10L5 7M8 10l3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              <span data-i18n="crmImport">Import</span>
-            </button>
-            <button class="btn-g btn-sm crm-btn" onclick="exportCRMExcel()" title="Export ke Excel rapi + statistik">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px"><path d="M8 10V1M8 1L5 4M8 1l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              <span data-i18n="crmExport">Export Excel</span>
-            </button>
-            <button class="btn-add crm-btn" onclick="openCRMModal()" data-i18n="addNew">+ Tambah</button>
           </div>
-        </div>
-
-        <!-- Statistik & ringkasan -->
-        <div class="crm-stats" id="crm-stats"></div>
-
-        <!-- Diagram CRM -->
-        <div id="crm-diagram" class="crm-diagram-wrap"></div>
-
-        <div class="crm-table-wrap">
           <div class="crm-tbl-toolbar">
             <span class="crm-tbl-info" id="crm-foot-note2"></span>
             <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
@@ -5436,13 +5461,19 @@ const i18n = {
     pendingRegistrations:'Pending Registrations', awaitingReview:'Awaiting review',
     active:'active', closedWon:'closed won',
     // Team Task Progress (moderator)
-    teamTasks:'Team Task Progress', teamTasksSub:'Monitor every Admin and B2B Marketing member\u2019s daily follow-up task and progress',
+    teamTasks:'Team Task Progress', teamTasksSub:'Monitor every team member\u2019s daily task and progress — Admin, B2B Marketing, Content Creator & Host Live',
     totalTeamMembers:'Total Team Members', acrossAllRoles:'Across all roles',
     totalCRMRecords:'Total CRM Records', allOwners:'All owners',
     teamMembersTracked:'Team Members Tracked', teamFollowupsToday:'Follow-ups Today (Team)',
     outOfTarget:'out of {n} target', teamPendingToday:'Pending Today (Team)', needsFollowup:'Still need follow-up',
     noTeamMembers:'No team members found', followedUpToday:'followed up today', remaining:'remaining',
     totalAssignedCustomers:'total assigned customers',
+    // v23: Content Creator & Host Live daily progress labels
+    ttContentDoneToday:'content slots uploaded today', ttContentRemaining:'slots remaining',
+    ttContentTotalToday:'content slots scheduled today',
+    ttLiveDoneToday:'live sessions completed today', ttLiveRemaining:'sessions remaining',
+    ttLiveTotalToday:'live sessions scheduled today',
+    ttNoTaskToday:'No task scheduled for today',
     // My Tasks (moderator personal job notes)
     myTasks:'My Tasks', myTasksSub:'Note down the jobs you need to do, set a deadline & time, and get notified as it approaches',
     myPerformance:'My Performance', myPerformanceSub:'Your performance summary this month & the 6-month trend, with charts',
@@ -5692,13 +5723,19 @@ const i18n = {
     pendingRegistrations:'Pendaftaran Menunggu', awaitingReview:'Menunggu ditinjau',
     active:'aktif', closedWon:'deal ditutup',
     // Progress Tugas Tim (moderator)
-    teamTasks:'Progress Tugas Tim', teamTasksSub:'Pantau task follow-up harian setiap Admin dan B2B Marketing beserta progress mereka',
+    teamTasks:'Progress Tugas Tim', teamTasksSub:'Pantau task harian setiap anggota tim beserta progress-nya — Admin, B2B Marketing, Content Creator & Host Live',
     totalTeamMembers:'Total Anggota Tim', acrossAllRoles:'Seluruh role',
     totalCRMRecords:'Total Data CRM', allOwners:'Semua pemilik',
     teamMembersTracked:'Anggota Tim Terpantau', teamFollowupsToday:'Follow Up Hari Ini (Tim)',
     outOfTarget:'dari target {n}', teamPendingToday:'Belum Follow Up (Tim)', needsFollowup:'Masih perlu di-follow up',
     noTeamMembers:'Tidak ada anggota tim ditemukan', followedUpToday:'di-follow up hari ini', remaining:'tersisa',
     totalAssignedCustomers:'total customer yang ditangani',
+    // v23: Label progress harian Content Creator & Host Live
+    ttContentDoneToday:'slot konten sudah upload hari ini', ttContentRemaining:'slot tersisa',
+    ttContentTotalToday:'slot konten terjadwal hari ini',
+    ttLiveDoneToday:'sesi live selesai hari ini', ttLiveRemaining:'sesi tersisa',
+    ttLiveTotalToday:'sesi live terjadwal hari ini',
+    ttNoTaskToday:'Belum ada jadwal untuk hari ini',
     // Tugas Saya (catatan pekerjaan pribadi moderator)
     myTasks:'Tugas Saya', myTasksSub:'Catat pekerjaan yang harus kamu kerjakan, atur deadline & waktu, dapat notifikasi saat mendekati tenggat',
     myPerformance:'Performa Saya', myPerformanceSub:'Ringkasan performamu bulan ini & tren 6 bulan terakhir, lengkap dengan grafik',
@@ -8691,17 +8728,23 @@ async function loadUpcomingLiveSchedule() {
      sehingga moderator bisa melihat task semua role sekaligus
      progress tiap orang, bukan hanya milik dirinya sendiri.
    ═══════════════════════════════════════════════════════════ */
-let teamTaskData = []; // [{id,name,role,total,done,pending,target,pct,online}]
+let teamTaskData = []; // [{id,name,role,total,done,pending,target,pct,unit,online}]
 
 async function loadTeamTaskData() {
   if (!can.isMod(currentUser?.role)) return [];
-  const target = FOLLOWUP_DAILY_TARGET;
-  const roster = Object.entries(LOCAL_USERS)
-    .filter(([id, u]) => u.role === 'admin' || u.role === 'b2b_marketing')
-    .map(([id, u]) => ({ id, name: u.name, role: u.role }));
+  const fuTarget = FOLLOWUP_DAILY_TARGET;
+  const today = new Date().toISOString().slice(0,10);
 
-  let byOwnerTotal = {};     // total customer CRM per owner_id
-  let byUserDoneToday = {};  // jumlah customer unik yang sudah di-follow up hari ini per user_id
+  const rosterFU      = Object.entries(LOCAL_USERS).filter(([,u]) => u.role === 'admin' || u.role === 'b2b_marketing').map(([id,u]) => ({ id, name:u.name, role:u.role }));
+  // v23: Content Creator & Host Live sekarang ikut dipantau progress harian-nya di sini juga —
+  // sebelumnya halaman ini cuma menghitung Admin & B2B (Content/Host tidak pernah muncul).
+  const rosterContent = Object.entries(LOCAL_USERS).filter(([,u]) => u.role === 'content_creator').map(([id,u]) => ({ id, name:u.name, role:u.role }));
+  const rosterHost    = Object.entries(LOCAL_USERS).filter(([,u]) => u.role === 'host_live').map(([id,u]) => ({ id, name:u.name, role:u.role }));
+
+  let byOwnerTotal = {};     // total customer CRM per owner_id (Admin/B2B)
+  let byUserDoneToday = {};  // jumlah customer unik yang sudah di-follow up hari ini per user_id (Admin/B2B)
+  let ccByCreator = {};      // { creator_user_id: {total, done} } — slot konten hari ini (Content Creator)
+  let lsByHost = {};         // { host_user_id: {total, done} } — sesi live hari ini (Host Live)
 
   if (crmUsesDB()) {
     try {
@@ -8721,8 +8764,30 @@ async function loadTeamTaskData() {
         byUserDoneToday[row.user_id] = (byUserDoneToday[row.user_id] || 0) + 1;
       });
     } catch(e) { console.warn('[DHP] loadTeamTaskData followup gagal:', e); }
+    if (rosterContent.length) {
+      try {
+        const ccRes = await dbQ(d => d.from('content_calendar').select('creator_user_id,progress_status').eq('content_date', today));
+        (ccRes?.data || []).forEach(row => {
+          const cid = row.creator_user_id || '';
+          if (!ccByCreator[cid]) ccByCreator[cid] = { total:0, done:0 };
+          ccByCreator[cid].total++;
+          if (row.progress_status === 'done_upload') ccByCreator[cid].done++;
+        });
+      } catch(e) { console.warn('[DHP] loadTeamTaskData content_calendar gagal:', e); }
+    }
+    if (rosterHost.length) {
+      try {
+        const lsRes = await dbQ(d => d.from('live_schedule').select('host_user_id,status').eq('schedule_date', today));
+        (lsRes?.data || []).forEach(row => {
+          const hid = row.host_user_id || '';
+          if (!lsByHost[hid]) lsByHost[hid] = { total:0, done:0 };
+          lsByHost[hid].total++;
+          if (row.status === 'completed') lsByHost[hid].done++;
+        });
+      } catch(e) { console.warn('[DHP] loadTeamTaskData live_schedule gagal:', e); }
+    }
   } else {
-    // Fallback offline: hanya data lokal yang tersedia
+    // Fallback offline: hanya data lokal yang tersedia (follow-up saja)
     try {
       const all = JSON.parse(localStorage.getItem(CRM_LS_KEY) || '[]');
       (Array.isArray(all) ? all : []).forEach(c => {
@@ -8738,13 +8803,31 @@ async function loadTeamTaskData() {
     }
   }
 
-  teamTaskData = roster.map(u => {
+  const fuData = rosterFU.map(u => {
     const total   = byOwnerTotal[u.id] || 0;
     const done    = byUserDoneToday[u.id] || 0;
     const pending = Math.max(0, total - done);
-    const pct     = target ? Math.min(100, Math.round((done / target) * 100)) : 0;
-    return { id: u.id, name: u.name, role: u.role, total, done, pending, target, pct, online: !!(presenceMap[u.id]?.online) };
+    const pct     = fuTarget ? Math.min(100, Math.round((done / fuTarget) * 100)) : 0;
+    return { id:u.id, name:u.name, role:u.role, total, done, pending, target:fuTarget, pct, unit:'followup', online: !!(presenceMap[u.id]?.online) };
   });
+
+  // v23: progress Content Creator hari ini — target = jumlah slot konten yang dijadwalkan hari ini
+  const contentData = rosterContent.map(u => {
+    const s = ccByCreator[u.id] || { total:0, done:0 };
+    const pending = Math.max(0, s.total - s.done);
+    const pct = s.total ? Math.min(100, Math.round((s.done / s.total) * 100)) : 0;
+    return { id:u.id, name:u.name, role:u.role, total:s.total, done:s.done, pending, target:s.total, pct, unit:'content', online: !!(presenceMap[u.id]?.online) };
+  });
+
+  // v23: progress Host Live hari ini — target = jumlah sesi live yang dijadwalkan hari ini
+  const hostData = rosterHost.map(u => {
+    const s = lsByHost[u.id] || { total:0, done:0 };
+    const pending = Math.max(0, s.total - s.done);
+    const pct = s.total ? Math.min(100, Math.round((s.done / s.total) * 100)) : 0;
+    return { id:u.id, name:u.name, role:u.role, total:s.total, done:s.done, pending, target:s.total, pct, unit:'live', online: !!(presenceMap[u.id]?.online) };
+  });
+
+  teamTaskData = [...fuData, ...contentData, ...hostData];
   return teamTaskData;
 }
 
@@ -8785,10 +8868,19 @@ async function renderTeamTasks() {
   // ── Kelompokkan per role ──
   const groups = {};
   list.forEach(u => { (groups[u.role] = groups[u.role] || []).push(u); });
-  const roleOrder = ['admin', 'b2b_marketing'];
+  // v23: Content Creator & Host Live sekarang ikut tampil di sini, bukan cuma Admin & B2B
+  const roleOrder = ['admin', 'b2b_marketing', 'content_creator', 'host_live'];
   const wrap = document.getElementById('tt-role-groups');
   if (!wrap) return;
   if (!list.length) { wrap.innerHTML = `<div class="tbl-empty">${t('noTeamMembers')}</div>`; return; }
+
+  // v23: label progress berbeda sesuai unit kerja tiap role
+  // (followup = Admin/B2B, content = Content Creator slot konten, live = Host Live sesi live)
+  const unitLabels = {
+    followup: { done: t('followedUpToday'), remain: t('remaining'), total: t('totalAssignedCustomers') },
+    content:  { done: t('ttContentDoneToday'),  remain: t('ttContentRemaining'),  total: t('ttContentTotalToday') },
+    live:     { done: t('ttLiveDoneToday'),     remain: t('ttLiveRemaining'),     total: t('ttLiveTotalToday') },
+  };
 
   wrap.innerHTML = roleOrder.filter(rk => groups[rk] && groups[rk].length).map(rk => {
     const members = groups[rk].slice().sort((a, b) => b.done - a.done);
@@ -8798,8 +8890,10 @@ async function renderTeamTasks() {
       <div class="tt-member-grid">
         ${members.map(u => {
           const barPct = u.pct > 0 ? Math.max(4, Math.min(100, u.pct)) : 0;
-          const barColor = u.done >= u.target ? 'var(--green)' : u.pct >= 50 ? 'var(--gold)' : 'var(--amber)';
+          const barColor = u.target > 0 && u.done >= u.target ? 'var(--green)' : u.pct >= 50 ? 'var(--gold)' : 'var(--amber)';
           const initials = (u.name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+          const lbl = unitLabels[u.unit] || unitLabels.followup;
+          const noTaskToday = (u.unit === 'content' || u.unit === 'live') && u.total === 0;
           return `<div class="tt-member-card">
             <div class="tt-member-top">
               <div class="tt-member-av" style="background:${clr}22;color:${clr}">${initials}</div>
@@ -8808,12 +8902,15 @@ async function renderTeamTasks() {
                 <div class="tt-member-role">${rn(u.role)}</div>
               </div>
             </div>
-            <div class="tt-progress-bar"><div class="tt-progress-fill" style="width:${barPct}%;background:${barColor}"></div></div>
+            ${noTaskToday
+              ? `<div class="tt-member-empty" style="font-size:11px;color:var(--muted);padding:10px 0">${t('ttNoTaskToday')}</div>`
+              : `<div class="tt-progress-bar"><div class="tt-progress-fill" style="width:${barPct}%;background:${barColor}"></div></div>
             <div class="tt-member-stats">
-              <span>${u.done}/${u.target} ${t('followedUpToday')}</span>
-              <span style="color:${u.pending > 0 ? 'var(--amber)' : 'var(--green)'}">${u.pending} ${t('remaining')}</span>
+              <span>${u.done}/${u.target} ${lbl.done}</span>
+              <span style="color:${u.pending > 0 ? 'var(--amber)' : 'var(--green)'}">${u.pending} ${lbl.remain}</span>
             </div>
-            <div class="tt-member-total">${u.total} ${t('totalAssignedCustomers')}</div>
+            <div class="tt-member-total">${u.total} ${lbl.total}</div>`
+            }
           </div>`;
         }).join('')}
       </div>
@@ -12920,7 +13017,14 @@ async function saveCRMCustomer(idx) {
     }));
     if (!res || res.error) {
       const msg = res?.error?.message || '';
-      toast(msg.includes('akses') ? t('adAccessReq') : (msg.includes('NAME') ? t('crmFillName') : t('crmImportErr')));
+      // v23: tampilkan alasan asli dari server — supaya kalau gagal karena role belum
+      // punya akses CRM (assert_can_crm), pesannya jelas & bisa langsung diketahui sebabnya,
+      // bukan "gagal" generik yang menyembunyikan penyebab sebenarnya.
+      const friendly = msg.includes('akses') || msg.toLowerCase().includes('access')
+        ? (t('adAccessReq') + (msg ? ` (${msg})` : ''))
+        : (msg.includes('NAME') ? t('crmFillName') : (msg || t('crmImportErr')));
+      toast(friendly);
+      console.warn('[DHP] saveCRMCustomer gagal:', msg);
       return;
     }
     closeModal();
@@ -12952,7 +13056,12 @@ async function deleteCRM(idx) {
 
   if (crmUsesDB()) {
     const res = await dbQ(d => d.rpc('delete_crm_customer', { p_id: c._uuid, p_user_id: currentUser.id }));
-    if (!res || res.error) { toast(t('adAccessReq')); return; }
+    if (!res || res.error) {
+      const msg = res?.error?.message || '';
+      toast(msg.includes('akses') || msg.toLowerCase().includes('access') ? (t('adAccessReq') + (msg ? ` (${msg})` : '')) : (msg || t('adAccessReq')));
+      console.warn('[DHP] deleteCRM gagal:', msg);
+      return;
+    }
     await loadCRM();
     renderCRM();
     toast(t('crmDeleted'));
