@@ -104,22 +104,6 @@ body.light{background:#ffffff;color:#0d0d0d}
 }
 .heat-none .hb-icon { background:rgba(232,228,220,.06); }
 
-/* Editable heat select — dipakai admin/b2b utk ubah progress lead manual */
-.crm-heat-select {
-  appearance:none;-webkit-appearance:none;cursor:pointer;
-  padding:3px 22px 3px 9px;border-radius:20px;
-  font-size:10px;font-weight:700;letter-spacing:.05em;
-  background-repeat:no-repeat;background-position:right 7px center;background-size:8px;
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'><path d='M2 3.5l3 3 3-3' stroke='%23c9a96e' stroke-width='1.3' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-  transition:all .15s ease;
-}
-.crm-heat-select:hover { filter:brightness(1.12); }
-.crm-heat-select:focus { outline:2px solid rgba(201,169,110,.35); outline-offset:1px; }
-.crm-heat-select.heat-hot  { background-color:rgba(232,112,112,.14); color:#e87070; border:1px solid rgba(232,112,112,.35); }
-.crm-heat-select.heat-warm { background-color:rgba(232,184,110,.14); color:#e8a840; border:1px solid rgba(232,184,110,.35); }
-.crm-heat-select.heat-cold { background-color:rgba(126,168,201,.14); color:#7ea8c9; border:1px solid rgba(126,168,201,.35); }
-.crm-heat-select option { background:var(--panel,#1a1712); color:initial; }
-
 /* Light mode overrides */
 body.light .heat-hot  {
   background:linear-gradient(135deg,rgba(192,57,43,.10),rgba(192,57,43,.04));
@@ -1184,7 +1168,8 @@ body.light.is-head-mod .sb-user-name{ background:none; -webkit-text-fill-color:#
    ═══════════════════════════════════════════════════════ */
 
 /* Card */
-/* ── Scene: keep login-wrap visible ── */
+/* ── Scene: hide canvas only, keep login-wrap visible ── */
+body.light #three-canvas{display:none!important}
 body.light .bg-ov{background:#f0f0f2!important}
 body.light #scene{background:#f0f0f2}
 body.light .login-wrap{background:transparent;position:relative;z-index:10}
@@ -1292,6 +1277,21 @@ body.light .cb:hover{background:#f0f0f0;border-color:#111111}
 
 #scene{position:fixed;inset:0;z-index:0;transition:opacity .5s}
 
+#three-canvas{width:100%;height:100%;display:block}
+.static-bg{width:100%;height:100%;display:block;
+  background:
+    radial-gradient(ellipse 60% 45% at 18% 12%,rgba(201,169,110,.16),transparent 60%),
+    radial-gradient(ellipse 55% 40% at 85% 20%,rgba(232,204,153,.10),transparent 60%),
+    radial-gradient(ellipse 70% 55% at 50% 100%,rgba(160,104,64,.14),transparent 65%),
+    #0a0906;
+}
+.static-bg.light-mode{
+  background:
+    radial-gradient(ellipse 60% 45% at 18% 12%,rgba(139,94,42,.10),transparent 60%),
+    radial-gradient(ellipse 55% 40% at 85% 20%,rgba(160,104,64,.08),transparent 60%),
+    radial-gradient(ellipse 70% 55% at 50% 100%,rgba(92,61,40,.08),transparent 65%),
+    #f5f0e8;
+}
 .bg-ov{position:absolute;inset:0;background:radial-gradient(ellipse 120% 80% at 50% 120%,rgba(10,9,6,0),rgba(10,9,6,.7))}
 
 
@@ -1611,11 +1611,9 @@ body.light .nav-sec-lbl .sec-scope.scope-mod{background:rgba(201,169,110,.22);co
 
 /* ── STATS GRID ── */
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:22px}
-.stat-card{background:linear-gradient(160deg,var(--surface),rgba(255,255,255,.006));border:1px solid var(--border);border-radius:calc(var(--r) + 2px);padding:16px;position:relative;overflow:hidden;
-  box-shadow:0 1px 0 rgba(255,255,255,.02) inset, 0 3px 10px rgba(0,0,0,.09);
-  transition:border-color var(--trans), transform .18s ease, box-shadow .18s ease}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;position:relative;overflow:hidden;transition:border-color var(--trans)}
 .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold-lo),transparent);opacity:.5}
-.stat-card:hover{border-color:var(--border-hi);transform:translateY(-1px);box-shadow:0 1px 0 rgba(255,255,255,.02) inset, 0 6px 15px rgba(0,0,0,.13)}
+.stat-card:hover{border-color:var(--border-hi)}
 .stat-num{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;color:var(--gold-hi);line-height:1}
 .stat-lbl{font-size:9px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;margin-top:4px}
 .stat-sub{font-size:10px;color:var(--text2);margin-top:5px}
@@ -1705,26 +1703,7 @@ body.light .bc-textarea{background:rgba(0,0,0,.04)}
 
 /* ── USER MANAGEMENT ── */
 .user-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-
-/* v24 — halaman Target (konsolidasi target per role) */
-.tgt-section{margin-bottom:22px}
-.tgt-section-head{font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.03em;margin-bottom:10px;
-  padding-bottom:8px;border-bottom:1px solid var(--border)}
-.tgt-rows{display:flex;flex-direction:column;gap:10px}
-.tgt-row{display:flex;align-items:center;gap:14px;padding:11px 14px;border:1px solid var(--border);border-radius:11px;
-  background:rgba(255,255,255,.015);flex-wrap:wrap}
-.tgt-row-who{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--text);min-width:120px}
-.tgt-row-prog{flex:1;min-width:180px;display:flex;flex-direction:column;gap:4px}
-.tgt-row-bar{height:6px;border-radius:4px;background:var(--border);overflow:hidden}
-.tgt-row-bar span{display:block;height:100%;border-radius:4px;transition:width .3s ease}
-.tgt-row-pct{font-size:10.5px;color:var(--text2)}
-.tgt-row-edit{display:flex;align-items:center;gap:8px}
-.tgt-input{width:150px;padding:6px 9px;font-size:11px}
-.tgt-empty,.tgt-loading{font-size:11.5px;color:var(--muted);padding:10px 2px}
-.user-card{background:linear-gradient(160deg,var(--surface),rgba(255,255,255,.006));border:1px solid var(--border);border-radius:calc(var(--r) + 2px);padding:16px;
-  box-shadow:0 1px 0 rgba(255,255,255,.02) inset, 0 3px 10px rgba(0,0,0,.09);
-  transition:border-color var(--trans), transform .18s ease, box-shadow .18s ease}
-.user-card:hover{border-color:var(--border-hi);transform:translateY(-1px);box-shadow:0 1px 0 rgba(255,255,255,.02) inset, 0 6px 15px rgba(0,0,0,.13)}
+.user-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;transition:border-color var(--trans)}
 .user-card:hover{border-color:var(--border-hi)}
 .uc-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
 .uc-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;flex-shrink:0;position:relative}
@@ -2640,19 +2619,6 @@ body.light .mt-card{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
 .mt-main-simple{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .mt-main-simple-text{flex:1;min-width:160px;font-size:12px;color:var(--text2);line-height:1.5}
 
-/* v24 — split follow-up hari ini vs belum, di dalam kartu Tugas Utama */
-.mt-fu-split{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
-.mt-fu-tabs{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
-.mt-fu-tab{font-size:10.5px;font-weight:700;padding:5px 11px;border-radius:20px;border:1px solid var(--border);
-  background:transparent;color:var(--muted);cursor:pointer;transition:all .15s ease;letter-spacing:.02em}
-.mt-fu-tab:hover{border-color:rgba(201,169,110,.4);color:var(--text)}
-.mt-fu-tab.active{background:rgba(201,169,110,.14);border-color:rgba(201,169,110,.4);color:var(--gold)}
-.mt-fu-list{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto}
-.mt-fu-row{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.02);border:1px solid var(--border)}
-.mt-fu-name{flex:1;font-size:11.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mt-fu-done-tick{color:var(--green);font-size:12px;font-weight:800}
-.mt-fu-empty{font-size:11px;color:var(--muted);padding:10px 2px}
-
 /* Section head — pemisah antara Tugas Utama & Tugas Pribadi/Custom */
 .mt-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
 .mt-section-title{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
@@ -2749,13 +2715,8 @@ body.light .adtask-empty{color:rgba(13,13,13,.38)}
 .crm-btn{font-size:11px;white-space:nowrap}
 .crm-btn svg{margin-right:3px}
 .crm-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
-.crm-stat{flex:1;min-width:120px;background:linear-gradient(160deg,var(--surface2),rgba(255,255,255,.008));
-  border:1px solid var(--border);border-radius:calc(var(--r) + 2px);padding:14px 16px;
-  display:flex;flex-direction:column;gap:3px;position:relative;overflow:hidden;
-  box-shadow:0 1px 0 rgba(255,255,255,.02) inset, 0 3px 10px rgba(0,0,0,.10);transition:transform .18s ease, box-shadow .18s ease}
-.crm-stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.55}
-.crm-stat:hover{transform:translateY(-1px);box-shadow:0 1px 0 rgba(255,255,255,.02) inset, 0 6px 16px rgba(0,0,0,.14)}
+.crm-stat{flex:1;min-width:120px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--r);padding:13px 15px;display:flex;flex-direction:column;gap:3px}
 .crm-stat .cs-num{font-family:'Cormorant Garamond',serif;font-size:27px;font-weight:600;line-height:1;color:var(--gold-hi)}
 .crm-stat .cs-lbl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text2)}
 .crm-stat .cs-sub{font-size:10px;color:var(--muted)}
@@ -2765,14 +2726,13 @@ body.light .adtask-empty{color:rgba(13,13,13,.38)}
 .crm-stat.cs-agen{border-color:rgba(232,184,110,.3)} .crm-stat.cs-agen .cs-num{color:var(--amber)}
 .crm-stat.cs-reseller{border-color:rgba(217,142,192,.35)} .crm-stat.cs-reseller .cs-num{color:#d98ec0}
 .crm-stat.cs-leads{border-color:rgba(232,112,112,.3)} .crm-stat.cs-leads .cs-num{color:var(--red)}
-.crm-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:calc(var(--r) + 3px);
-  overflow:auto;max-height:62vh;box-shadow:0 4px 18px rgba(0,0,0,.12)}
+.crm-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:auto;max-height:62vh}
 .crm-table{width:100%;border-collapse:collapse;font-size:12px;min-width:1180px}
-.crm-table th{position:sticky;top:0;z-index:2;text-align:left;padding:12px 14px;font-size:9px;letter-spacing:.09em;
-  text-transform:uppercase;color:var(--gold);background:linear-gradient(180deg,var(--bg3),var(--bg3));border-bottom:1px solid var(--border-hi);white-space:nowrap}
-.crm-table td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+.crm-table th{position:sticky;top:0;z-index:2;text-align:left;padding:11px 13px;font-size:9px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--gold);background:var(--bg3);border-bottom:1px solid var(--border-hi);white-space:nowrap}
+.crm-table td{padding:10px 13px;border-bottom:1px solid var(--border);vertical-align:middle}
 .crm-table tr:last-child td{border-bottom:none}
-.crm-table tr:hover td{background:rgba(201,169,110,.045)}
+.crm-table tr:hover td{background:rgba(201,169,110,.04)}
 .crm-id{font-family:'Inter',monospace;font-size:11px;color:var(--gold);font-weight:600;white-space:nowrap}
 .crm-name{font-weight:600;color:var(--text);white-space:nowrap}
 .crm-money{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--green);font-weight:500}
@@ -3353,6 +3313,7 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
 <!-- ══ LOGIN SCENE ══ -->
 <div id="scene">
   <div style="position:absolute;inset:0">
+    <canvas id="three-canvas"></canvas>
     <div class="bg-ov"></div>
   </div>
   <div class="login-wrap">
@@ -3629,16 +3590,6 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
         </span>
         <span data-i18n="teamTasks">Progress Tugas Tim</span>
       </button>
-      <button class="nav-item mod-only" onclick="navTo('target',this)" id="n-target" style="display:none">
-        <span class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.4"/>
-            <circle cx="8" cy="8" r="3.4" stroke="currentColor" stroke-width="1.4"/>
-            <circle cx="8" cy="8" r="0.9" fill="currentColor"/>
-          </svg>
-        </span>
-        <span data-i18n="targetPage">Target</span>
-      </button>
       <button class="nav-item mod-only" onclick="navTo('users',this)" id="n-users" style="display:none">
         <span class="nav-icon">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -3835,20 +3786,6 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
         </div>
         <div class="stats-grid" id="tt-summary"></div>
         <div id="tt-role-groups"></div>
-      </div>
-
-      <!-- ⑤ TARGET — konsolidasi pengaturan target per role (Moderator only) -->
-      <div class="sp" id="pg-target">
-        <div class="ph">
-          <div class="ph-left">
-            <div class="pt">
-              <span data-i18n="targetPage">Target</span>
-              <span class="mod-badge">♔ Moderator</span>
-            </div>
-            <div class="ps" data-i18n="targetPageSub">Atur & tambah target bulanan untuk tiap peran dari satu tempat</div>
-          </div>
-        </div>
-        <div id="target-page-body"></div>
       </div>
 
       <!-- ⑤ USER MANAGEMENT (Moderator only) -->
@@ -5538,7 +5475,6 @@ const i18n = {
     active:'active', closedWon:'closed won',
     // Team Task Progress (moderator)
     teamTasks:'Team Task Progress', teamTasksSub:'Monitor every team member\u2019s daily task and progress — Admin, B2B Marketing, Content Creator & Host Live',
-    targetPage:'Target', targetPageSub:'Set and add monthly targets for each role from one place',
     totalTeamMembers:'Total Team Members', acrossAllRoles:'Across all roles',
     totalCRMRecords:'Total CRM Records', allOwners:'All owners',
     teamMembersTracked:'Team Members Tracked', teamFollowupsToday:'Follow-ups Today (Team)',
@@ -5801,7 +5737,6 @@ const i18n = {
     active:'aktif', closedWon:'deal ditutup',
     // Progress Tugas Tim (moderator)
     teamTasks:'Progress Tugas Tim', teamTasksSub:'Pantau task harian setiap anggota tim beserta progress-nya — Admin, B2B Marketing, Content Creator & Host Live',
-    targetPage:'Target', targetPageSub:'Atur & tambah target bulanan untuk tiap peran dari satu tempat',
     totalTeamMembers:'Total Anggota Tim', acrossAllRoles:'Seluruh role',
     totalCRMRecords:'Total Data CRM', allOwners:'Semua pemilik',
     teamMembersTracked:'Anggota Tim Terpantau', teamFollowupsToday:'Follow Up Hari Ini (Tim)',
@@ -6135,9 +6070,22 @@ function startThemeReminderLoop() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ⑩ 3D BACKGROUND — dinonaktifkan (terlalu berat, diganti no-op)
+   ⑩ BACKGROUND — statis, ringan (3D WebGL dilepas krn berat)
    ═══════════════════════════════════════════════════════════ */
-let bgRenderer = { setMode: () => {} };
+let bgRenderer = null;
+(function initBackground() {
+  const canvas = document.getElementById('three-canvas');
+  if (!canvas) { bgRenderer = { setMode:()=>{} }; return; }
+  // Ganti <canvas> jadi div gradient statis — nol JS render loop, nol GPU load.
+  const bg = document.createElement('div');
+  bg.id = canvas.id;
+  bg.className = 'static-bg';
+  canvas.replaceWith(bg);
+  bgRenderer = {
+    setMode(light) { bg.classList.toggle('light-mode', !!light); }
+  };
+})();
+
 /* ═══════════════════════════════════════════════════════════
    ⑪ LOADING SCREEN — dinonaktifkan (langsung sembunyikan)
    ═══════════════════════════════════════════════════════════ */
@@ -6495,7 +6443,6 @@ async function initDashboard() {
   // Administration (Moderator+)
   navShow('ns-admin',         isMod);
   navShow('n-team-tasks',     isMod);
-  navShow('n-target',         isMod);
   navShow('n-users',          isMod);
   // Settings — Sovereign only (otherwise moderator can rename their own role)
   navShow('n-settings',       isHead);
@@ -8964,35 +8911,6 @@ function setModTaskFilter(f) {
   renderModTasks();
 }
 
-/* v24 — daftar customer yg sudah/belum di-follow up hari ini, dipisah
-   dalam dua tab di dalam kartu Tugas Utama admin/b2b. */
-function mtToggleFollowupList(which) {
-  const listEl = document.getElementById('mt-fu-list');
-  if (!listEl) return;
-  document.querySelectorAll('.mt-fu-tab').forEach(b => b.classList.toggle('active', b.dataset.fu === which));
-  const mine = window._mtFollowupMine || [];
-  const items = mine.filter(c => {
-    const done = followupDoneTodayIds.has(_followupCustKey(c));
-    return which === 'done' ? done : !done;
-  });
-  if (!items.length) {
-    listEl.innerHTML = `<div class="mt-fu-empty">${which==='done' ? (currentLang==='id'?'Belum ada yang di-follow up hari ini.':'None followed up yet today.') : (currentLang==='id'?'Semua sudah di-follow up hari ini 🎉':'Everyone has been followed up today 🎉')}</div>`;
-    return;
-  }
-  listEl.innerHTML = items.map(c => {
-    const idx = crmData.indexOf(c);
-    const heat = c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status));
-    return `<div class="mt-fu-row">
-      <span class="mt-fu-name">${escHtml(c.nama||'—')}</span>
-      ${crmHeatBadge(heat)}
-      ${which==='pending' ? `<button class="crm-ico-btn" title="Tandai sudah di-follow up hari ini" onclick="markFollowedUp(${idx})">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3 3 7-7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>` : `<span class="mt-fu-done-tick">✓</span>`}
-    </div>`;
-  }).join('');
-}
-window.mtToggleFollowupList = mtToggleFollowupList;
-
 /* ── (A) TUGAS UTAMA — task bawaan sesuai role, auto-tracked ── */
 async function renderMtMainSection() {
   const el = document.getElementById('mt-main-section');
@@ -9033,16 +8951,7 @@ async function renderMtMainSection() {
           </div>
           <button class="btn-g btn-sm" onclick="navTo('crm', document.getElementById('n-crm'))">${t('myTasksOpenCRM')}</button>
         </div>
-        <div class="mt-fu-split">
-          <div class="mt-fu-tabs">
-            <button class="mt-fu-tab active" data-fu="pending" onclick="mtToggleFollowupList('pending')">${currentLang==='id'?'Belum Follow-up':'Not Followed Up'} (${pendingCount})</button>
-            <button class="mt-fu-tab" data-fu="done" onclick="mtToggleFollowupList('done')">${currentLang==='id'?'Sudah Follow-up Hari Ini':'Followed Up Today'} (${doneCount})</button>
-          </div>
-          <div id="mt-fu-list" class="mt-fu-list"></div>
-        </div>
       </div>`;
-    window._mtFollowupMine = mine;
-    mtToggleFollowupList('pending');
     const dashEl = document.getElementById('mt-followup-dash');
     if (dashEl) { dashEl.style.display = ''; try { await renderFollowupMonthlyDashboard(); } catch(e){ console.warn('[DHP] followup monthly dashboard gagal:', e); } }
     // v22: Target Omzet — hanya untuk role Admin, bukan B2B
@@ -12485,48 +12394,6 @@ async function markFollowedUp(idx) {
 }
 window.markFollowedUp      = markFollowedUp;
 
-/* v24 — Admin & B2B kini bisa naikkan/turunkan progress lead secara manual
-   (Cold → Warm → Hot), bukan cuma menandai follow-up. heat_category sudah
-   berupa kolom tersimpan di DB (bukan cuma hasil hitung), jadi begitu
-   diisi manual di sini nilainya akan menang atas hasil crmComputeHeat(). */
-async function updateHeatCategory(idx, newHeat) {
-  const c = crmData[idx];
-  if (!c || !currentUser) return;
-  if (!(can.isAdTarget(currentUser.role) || can.isMod(currentUser.role))) return;
-  const prevHeat = c.heat_category;
-  if (prevHeat === newHeat) return;
-  c.heat_category = newHeat;
-  if (crmUsesDB() && c._uuid) {
-    try {
-      await dbQ(d => d.from('crm_customers').update({ heat_category: newHeat, updated_by: currentUser.id }).eq('id', c._uuid));
-    } catch(e) {
-      console.warn('[DHP] updateHeatCategory gagal:', e);
-      c.heat_category = prevHeat;
-      toast('Gagal mengubah progress — coba lagi');
-      renderCRM();
-      return;
-    }
-  }
-  saveCRM();
-  const heatLabelMap = { Hot:'🔥 Panas', Warm:'☀ Hangat', Cold:'❄ Dingin' };
-  toast(`Progress ${c.nama || 'customer'} diubah ke ${heatLabelMap[newHeat] || newHeat}`);
-  if (document.getElementById('pg-crm')?.classList.contains('active')) renderCRM();
-}
-window.updateHeatCategory = updateHeatCategory;
-
-/* Render sel Tingkat Keaktifan — jadi <select> yang bisa diubah langsung
-   untuk admin & b2b (pemilik lead), badge statis (read-only) utk role lain. */
-function crmHeatCell(c, idx) {
-  const heat = c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status));
-  const canEditHeat = currentUser && (can.isAdTarget(currentUser.role) || can.isMod(currentUser.role));
-  if (!canEditHeat) return crmHeatBadge(heat);
-  const opts = ['Cold','Warm','Hot'].map(h => {
-    const lbl = h === 'Hot' ? '🔥 Panas' : h === 'Warm' ? '☀ Hangat' : '❄ Dingin';
-    return `<option value="${h}" ${heat===h?'selected':''}>${lbl}</option>`;
-  }).join('');
-  return `<select class="crm-heat-select heat-${heat.toLowerCase()}" title="Ubah progress lead" onchange="updateHeatCategory(${idx}, this.value)">${opts}</select>`;
-}
-
 /* ═══════════════════════════════════════════════════════════
    ⑪-c TARGET OMZET ADMIN (v22) — diatur moderator, per bulan
    ─ achieved dihitung server-side lewat view v_admin_target_progress
@@ -12583,95 +12450,6 @@ async function saveAdminTarget(uid) {
   pushActivity(`Target omzet ${uid} (${periodYm}) diatur ${crmFmtRupiah(amount)}`, 'info');
 }
 window.saveAdminTarget = saveAdminTarget;
-
-/* v24 — HALAMAN TARGET (konsolidasi) — moderator bisa lihat & edit/tambah
-   target bulanan tiap role (Admin: Target Omzet, Host Live: Target
-   Penjualan) dari satu tempat. */
-async function renderModTargetPage() {
-  const wrap = document.getElementById('target-page-body');
-  if (!wrap || !can.isMod(currentUser?.role)) return;
-  wrap.innerHTML = '<div class="tgt-loading">Memuat data target...</div>';
-
-  const periodYm = ymPeriodKey(new Date());
-  const adminIds = Object.entries(LOCAL_USERS).filter(function(e){ return e[1].role === 'admin'; }).map(function(e){ return e[0]; });
-  const hostIds  = stHostLiveIds();
-
-  var adminRows = null, hostTgtRows = null, hostLogRows = null;
-  if (db) {
-    try { adminRows = await dbQ(function(d){ return d.from('v_admin_target_progress').select('*'); }); } catch(e) {}
-    try { hostTgtRows = await dbQ(function(d){ return d.from('host_sales_target').select('*').eq('period_ym', periodYm); }); } catch(e) {}
-    try { hostLogRows = await dbQ(function(d){ return d.from('host_sales_log').select('host_user_id, amount').gte('log_date', periodYm + '-01'); }); } catch(e) {}
-  }
-  const adminMap = {}; (adminRows && adminRows.data || []).forEach(function(r){ adminMap[r.admin_user_id] = r; });
-  const hostTgtMap = {}; (hostTgtRows && hostTgtRows.data || []).forEach(function(r){ hostTgtMap[r.host_user_id] = Number(r.target_amount)||0; });
-  const hostAchMap = {};
-  (hostLogRows && hostLogRows.data || []).forEach(function(r){ hostAchMap[r.host_user_id] = (hostAchMap[r.host_user_id]||0) + Number(r.amount||0); });
-
-  function buildRows(ids, roleKey, map, inputPrefix, saveFn) {
-    return ids.map(function(uid) {
-      const meta = getUserMeta(uid);
-      var cur, ach;
-      if (roleKey === 'admin') {
-        const rec = map[uid] || {};
-        cur = Number(rec.target_amount)||0; ach = Number(rec.achieved_amount)||0;
-      } else {
-        cur = hostTgtMap[uid] || 0; ach = hostAchMap[uid] || 0;
-      }
-      const pct = cur > 0 ? Math.min(100, Math.round(ach/cur*100)) : 0;
-      return '<div class="tgt-row">'
-        + '<div class="tgt-row-who"><span class="role-dot" style="background:' + (ROLE_COLORS[roleKey]||'#888') + '"></span>' + escHtml(meta.name) + '</div>'
-        + '<div class="tgt-row-prog"><div class="tgt-row-bar"><span style="width:' + pct + '%;background:' + (pct>=100?'var(--green)':'var(--gold)') + '"></span></div>'
-        + '<span class="tgt-row-pct">' + crmFmtRupiah(ach) + ' / ' + (cur ? crmFmtRupiah(cur) : '-') + '</span></div>'
-        + '<div class="tgt-row-edit">'
-        + '<input class="fi tgt-input" id="' + inputPrefix + uid + '" type="number" min="0" step="100000" value="' + (cur||'') + '" placeholder="mis. 20000000"/>'
-        + '<button class="btn-sm btn-gold" onclick="' + saveFn + "('" + uid + "')" + '">Simpan</button>'
-        + '</div></div>';
-    }).join('');
-  }
-
-  const adminRowsHtml = buildRows(adminIds, 'admin', adminMap, 'tgt-admin-', 'saveAdminTargetInline');
-  const hostRowsHtml  = buildRows(hostIds, 'host_live', {}, 'tgt-host-', 'saveHostTargetInline');
-
-  wrap.innerHTML =
-    '<div class="tgt-section"><div class="tgt-section-head">Target Omzet - Admin</div>'
-    + '<div class="tgt-rows">' + (adminRowsHtml || '<div class="tgt-empty">Belum ada akun Admin.</div>') + '</div></div>'
-    + '<div class="tgt-section"><div class="tgt-section-head">Target Penjualan - Host Live</div>'
-    + '<div class="tgt-rows">' + (hostRowsHtml || '<div class="tgt-empty">Belum ada akun Host Live.</div>') + '</div></div>'
-    + '<div class="tgt-section"><div class="tgt-section-head">Target Follow-up Harian - Admin &amp; B2B</div>'
-    + '<div class="tgt-rows"><div class="tgt-row"><div class="tgt-row-who">Semua Admin &amp; B2B</div>'
-    + '<div class="tgt-row-prog"><span class="tgt-row-pct">' + FOLLOWUP_DAILY_TARGET + ' customer / hari (berlaku sama untuk semua)</span></div></div></div></div>';
-}
-window.renderModTargetPage = renderModTargetPage;
-
-async function saveAdminTargetInline(uid) {
-  if (!db) { toast('Supabase tidak aktif'); return; }
-  const el = document.getElementById('tgt-admin-' + uid);
-  const amount = crmParseInt(el && el.value);
-  const periodYm = ymPeriodKey(new Date());
-  const res = await dbQ(function(d){ return d.rpc('moderator_set_admin_target', {
-    p_moderator_id: currentUser.id, p_admin_user: uid, p_period_ym: periodYm, p_target_amount: amount
-  }); });
-  if (res && res.error) { toast('Gagal menyimpan: ' + res.error.message); return; }
-  toast('Target omzet ' + getUserMeta(uid).name + ' diatur: ' + crmFmtRupiah(amount));
-  pushActivity('Target omzet ' + uid + ' (' + periodYm + ') diatur ' + crmFmtRupiah(amount), 'info');
-  renderModTargetPage();
-}
-window.saveAdminTargetInline = saveAdminTargetInline;
-
-async function saveHostTargetInline(uid) {
-  if (!db) { toast('Supabase tidak aktif'); return; }
-  const el = document.getElementById('tgt-host-' + uid);
-  const amount = crmParseInt(el && el.value);
-  const periodYm = ymPeriodKey(new Date());
-  const res = await dbQ(function(d){ return d.rpc('moderator_set_sales_target', {
-    p_moderator_id: currentUser.id, p_host_user: uid, p_period_ym: periodYm, p_target_amount: amount
-  }); });
-  if (res && res.error) { toast('Gagal menyimpan: ' + res.error.message); return; }
-  toast('Target ' + getUserMeta(uid).name + ' diatur: ' + crmFmtRupiah(amount));
-  pushActivity('Target penjualan ' + uid + ' (' + periodYm + ') diatur ' + crmFmtRupiah(amount), 'info');
-  renderModTargetPage();
-}
-window.saveHostTargetInline = saveHostTargetInline;
 
 /* ── Admin: render kartu progress ring target omzet di kartu "Tugas Utama" ── */
 function renderAdminTargetCard() {
@@ -13042,7 +12820,7 @@ async function renderCRM() {
         return heat === 'Cold' && sp === 0 ? '<span style="color:var(--muted)">—</span>' : crmFmtRupiah(sp);
       })()}</td>
       <td><span class="crm-st-badge ${crmStatusCls(c.status)}">${crmNormStatus(c.status)}</span></td>
-      <td>${crmHeatCell(c, idx)}</td>
+      <td>${crmHeatBadge(c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status)))}</td>
       <td><span class="crm-fav">${escHtml(c.produk_fav||'—')}</span></td>
       <td>${inputByCell}</td>
       <td>${(function(){
@@ -14025,7 +13803,6 @@ function navTo(page, btn) {
   const r = currentUser.role;
   // Moderator-only pages
   if (['team_tasks','users'].includes(page) && !can.isMod(r)) { toast('Moderator access required'); return; }
-  if (page === 'target' && !can.isMod(r)) { toast('Moderator access required'); return; }
   // Manage (Ads) pages: moderator + admin/b2b (target)
   if (['ad_scheduler','ad_customers','ad_task'].includes(page) && !can.canSeeAds(r)) { toast(t('adAccessReq')); return; }
   // Manage CRM page: moderator + admin/b2b
@@ -14054,7 +13831,6 @@ function loadPageData(page) {
   if (page === 'my_performance')  loadMyPerformance();
   if (page === 'team_tasks')      renderTeamTasks();
   if (page === 'users')           renderUsers();
-  if (page === 'target')          renderModTargetPage();
   if (page === 'settings')        renderSettings();
   if (page === 'presence')        renderPresencePage();
   if (page === 'attendance')       renderAttendancePage();
@@ -14992,7 +14768,6 @@ const TUT_STEPS_DEFS = [
   { id:'n-live-studio',    title:'Studio Live',            desc:'Lihat jadwal live kamu, isi laporan sesi, dan pantau dashboard performa milikmu sendiri di sini.' },
   { id:'n-live-dashboard', title:'Live Dashboard',         desc:'Bandingkan performa seluruh Host Live dalam satu tampilan — khusus moderator.' },
   { id:'n-team-tasks',     title:'Progress Tugas Tim',     desc:'Pantau progress tugas seluruh anggota tim dari satu tempat.' },
-  { id:'n-target',         title:'Target',                 desc:'Atur & tambah target omzet Admin dan target penjualan Host Live untuk bulan ini, semuanya dari satu halaman.' },
   { id:'n-users',          title:'Manajemen Pengguna',     desc:'Atur akun, peran, dan akses tiap anggota tim di sini.' },
   { id:'n-settings',       title:'Pengaturan',             desc:'Atur identitas brand dan konfigurasi portal — khusus Sovereign Moderator.' },
   { id:'n-ad-scheduler',   title:'Jadwal Iklan',           desc:'Susun dan kelola jadwal campaign iklan kamu di sini.' },
