@@ -4824,7 +4824,6 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
 
 <script>
 'use strict';
-console.log('[DHP Command Portal] build v26 — WA link di My Task + Database Customer, realtime CRM didebounce (fix lemot abis import)');
 /* ═══════════════════════════════════════════════════════════
    ① SUPABASE CONFIG
    Replace YOUR_PROJECT and YOUR_ANON_KEY with real values.
@@ -4839,6 +4838,17 @@ if (configured() && window.supabase) {
 async function dbQ(fn) {
   if (!db) return null;
   try { return await fn(db); } catch(e) { console.warn('Supabase:', e.message); return null; }
+}
+
+/* ── Debounce util (v26 perf) ────────────────────────────────
+   Realtime Supabase mengirim 1 event per baris yang berubah.
+   Saat import massal (ratusan baris), tanpa debounce ini akan
+   memicu reload+render berkali-kali beruntun → tampilan macet/lag.
+   debounce() menunda eksekusi sampai event berhenti mengalir
+   selama `wait` ms, jadi 1 burst besar cukup 1x reload+render. */
+function debounce(fn, wait) {
+  let tm = null;
+  return (...args) => { clearTimeout(tm); tm = setTimeout(() => fn(...args), wait); };
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -10591,11 +10601,14 @@ function initAdRealtime() {
   const isMod = can.isMod(currentUser?.role);
   // Pembungkus aman: error saat render realtime tidak boleh mengosongkan dashboard
   const safe = (fn) => { try { fn(); } catch (e) { console.warn('[DHP] realtime render error:', e); } };
+  // v26: debounce 400ms — kalau banyak baris ad_schedule berubah nyaris
+  // bersamaan (mis. publish iklan massal), cukup 1x reload bukan N kali.
+  const _adScheduleReload = debounce(() => {
+    loadAdsFromDB().then(() => { if (isAdPageActive()) safe(renderAdScheduler); })
+                   .catch(e => console.warn('[DHP] reload ad_schedule gagal:', e));
+  }, 400);
   adChannel = db.channel('dhp_ads')
-    .on('postgres_changes', { event:'*', schema:'public', table:'ad_schedule' }, () => {
-      loadAdsFromDB().then(() => { if (isAdPageActive()) safe(renderAdScheduler); })
-                     .catch(e => console.warn('[DHP] reload ad_schedule gagal:', e));
-    })
+    .on('postgres_changes', { event:'*', schema:'public', table:'ad_schedule' }, _adScheduleReload)
     .on('postgres_changes', { event:'INSERT', schema:'public', table:'ad_tasks' }, payload => {
       const tk = payload.new;
       console.log('[DHP] Task INSERT received:', tk.assignee_id, '| me:', currentUser?.id, '| isMod:', isMod);
@@ -12644,26 +12657,22 @@ function updateCRMBadge() {
 }
 
 // ── Realtime: sinkron antar admin ──
-// v26: DIDEBOUNCE — sebelumnya setiap event INSERT/UPDATE/DELETE dari Supabase
-// Realtime langsung memicu loadCRM() + renderCRM() (reload SELURUH data +
-// render ulang SELURUH tabel). Saat import massal (ratusan/ribuan baris),
-// Supabase mengirim SATU event per baris → ratusan/ribuan reload+render
-// beruntun dalam hitungan detik, bikin tampilan freeze/lemot parah persis
-// setelah import. Sekarang semua event yang datang beruntun ditampung dan
-// hanya memicu SATU reload+render setelah 700ms tenang (tidak ada event baru).
+// v26: di-debounce 400ms — saat import massal (ratusan baris masuk
+// hampir bersamaan), tanpa ini setiap baris memicu reload+render
+// sendiri-sendiri sehingga tampilan macet & moderator ikut kebanjiran
+// render. Dengan debounce, seluruh burst import cukup 1x reload+render,
+// baik di sisi pengirim maupun di sisi moderator yang memantau.
 const _crmRealtimeReload = debounce(() => {
   loadCRM().then(() => {
     if (document.getElementById('pg-crm')?.classList.contains('active')) renderCRM();
     else updateCRMBadge();
   });
-}, 700);
+}, 400);
 function initCRMRealtime() {
   if (!crmUsesDB() || crmChannel) return;
   try {
     crmChannel = db.channel('dhp_crm')
-      .on('postgres_changes', { event:'*', schema:'public', table:'crm_customers' }, () => {
-        _crmRealtimeReload();
-      })
+      .on('postgres_changes', { event:'*', schema:'public', table:'crm_customers' }, _crmRealtimeReload)
       .subscribe();
   } catch(e) { console.warn('[CRM] realtime gagal:', e); }
 }
@@ -13697,6 +13706,10 @@ function downloadCRMTemplate() {
 function handleCRMFile(file) {
   if (!file) return;
   if (!window.XLSX) { toast(t('crmNoLib')); return; }
+  // v26: feedback loading — file besar (ribuan baris) butuh waktu utk dibaca,
+  // tanpa ini tampilan terlihat "diam"/macet seolah tidak merespon.
+  const resultEl = document.getElementById('crm-imp-result');
+  if (resultEl) resultEl.innerHTML = `<div class="crm-imp-summary">⏳ Membaca file…</div>`;
   const reader = new FileReader();
   reader.onload = e => {
     try {
@@ -13707,8 +13720,10 @@ function handleCRMFile(file) {
     } catch(err) {
       console.warn('[CRM import]', err);
       toast(t('crmImportErr'));
+      if (resultEl) resultEl.innerHTML = '';
     }
   };
+  reader.onerror = () => { toast(t('crmImportErr')); if (resultEl) resultEl.innerHTML = ''; };
   reader.readAsArrayBuffer(file);
 }
 
