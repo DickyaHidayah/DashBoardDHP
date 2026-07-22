@@ -2611,8 +2611,13 @@ body.light .mt-card{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
 .mt-fu-list-body{max-height:170px;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
 .mt-fu-list-item{font-size:11.5px;color:var(--text);padding:5px 9px;background:var(--surface2,rgba(255,255,255,.02));border-radius:6px;border:1px solid var(--border)}
 .mt-fu-list-item-action{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 6px 6px 9px}
-.mt-fu-item-info{display:flex;align-items:center;gap:6px;overflow:hidden}
+.mt-fu-item-info{display:flex;flex-direction:column;gap:2px;overflow:hidden;flex:1;min-width:0}
+.mt-fu-item-top{display:flex;align-items:center;gap:6px;overflow:hidden}
 .mt-fu-item-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mt-fu-item-wa{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:#7abf8e;text-decoration:none;white-space:nowrap;width:fit-content}
+.mt-fu-item-wa svg{flex-shrink:0}
+.mt-fu-item-wa:hover{text-decoration:underline}
+.mt-fu-item-wa-none{color:var(--muted)}
 .mt-fu-item-btn{padding:4px 10px!important;font-size:10px!important;flex-shrink:0}
 .mt-fu-reco-badge{font-size:8.5px;font-weight:700;letter-spacing:.03em;padding:2px 6px;border-radius:20px;white-space:nowrap;flex-shrink:0}
 .mt-fu-reco-badge.is-hot{color:#e87070;background:rgba(232,112,112,.14);border:1px solid rgba(232,112,112,.35)}
@@ -9091,10 +9096,20 @@ async function renderMtMainSection() {
                   const idx = crmData.indexOf(c);
                   const heat = heatOf(c);
                   const isReco = ['Hot','Warm'].includes(heat);
+                  // v25: nomor WA divalidasi lewat crmFormatWaLink — kalau formatnya
+                  // tidak terdeteksi sebagai nomor WA yang valid, nomornya disembunyikan
+                  // sama sekali (tidak ditampilkan sebagai teks biasa).
+                  const waInfo = crmFormatWaLink(c.wa);
                   return `<div class="mt-fu-list-item mt-fu-list-item-action">
                     <span class="mt-fu-item-info">
-                      ${isReco ? `<span class="mt-fu-reco-badge ${heat==='Hot'?'is-hot':'is-warm'}">${heat==='Hot'?'🔥':'☀'} Prioritas</span>` : ''}
-                      <span class="mt-fu-item-name">${escHtml(c.nama||'—')}</span>
+                      <span class="mt-fu-item-top">
+                        ${isReco ? `<span class="mt-fu-reco-badge ${heat==='Hot'?'is-hot':'is-warm'}">${heat==='Hot'?'🔥':'☀'} Prioritas</span>` : ''}
+                        <span class="mt-fu-item-name">${escHtml(c.nama||'—')}</span>
+                      </span>
+                      ${waInfo ? `<a href="${waInfo.href}" target="_blank" rel="noopener" class="mt-fu-item-wa" onclick="event.stopPropagation()">
+                        <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 00-6 10.6L1 15l3.5-1a7 7 0 106.5-13zm4 9.9c-.2.5-1 1-1.4 1-.4 0-.9.1-2.9-.7-2.4-1-4-3.5-4.1-3.6-.1-.2-1-1.3-1-2.5s.6-1.8.8-2c.2-.2.5-.3.6-.3h.5c.2 0 .4 0 .5.4l.7 1.7c.1.2.1.3 0 .5l-.4.5c-.1.1-.2.3-.1.5.2.3.7 1.1 1.5 1.8.9.8 1.6 1 1.9 1.2.2.1.4.1.5-.1l.5-.6c.2-.2.3-.2.5-.1l1.5.7c.2.1.3.1.4.3.1.2.1.7 0 1.2z"/></svg>
+                        ${escHtml(waInfo.display)}
+                      </a>` : `<span class="mt-fu-item-wa mt-fu-item-wa-none">— tanpa nomor WA valid</span>`}
                     </span>
                     <button class="btn-g btn-sm mt-fu-item-btn" onclick="markFollowedUp(${idx})">Update</button>
                   </div>`;
@@ -11669,6 +11684,20 @@ function normalizeWA(raw) {
 }
 function isValidWA(v) { return /^\+628[0-9]{7,12}$/.test(v); }
 
+/* v25: helper terpusat — dipakai di mana pun nomor WA customer CRM ditampilkan
+   (tabel Database Customer & daftar "Belum di-follow up" di My Task).
+   Nomor yang TIDAK valid format WA (bukan format Indonesia 08xxx / 62xxx / +62xxx
+   yang wajar) akan mengembalikan null → di UI, nomor itu disembunyikan sama sekali,
+   bukan ditampilkan sebagai teks biasa. Nomor yang valid dikembalikan sebagai link
+   wa.me yang langsung membuka chat WhatsApp orang tsb saat diklik. */
+function crmFormatWaLink(raw) {
+  const display = String(raw || '').trim();
+  if (!display) return null;
+  const norm = normalizeWA(display);
+  if (!isValidWA(norm)) return null;
+  return { href: `https://wa.me/${norm.slice(1)}`, display };
+}
+
 async function openLeadsModal(taskId) {
   const tk = adTasks.find(x => x.id === taskId);
   if (!tk) { toast(t('taskNotFound')); return; }
@@ -13365,9 +13394,9 @@ async function renderCRM(reload = true) {
   const isModRow = can.isMod(currentUser?.role);
   body.innerHTML = rows.map(c => {
     const idx = crmData.indexOf(c);
-    const waDigits = (c.wa||'').replace(/[^0-9]/g,'');
-    const waCell = waDigits
-      ? `<a href="https://wa.me/${waDigits}" target="_blank" rel="noopener" class="wa-link">${escHtml(c.wa)}</a>`
+    const waInfo = crmFormatWaLink(c.wa);
+    const waCell = waInfo
+      ? `<a href="${waInfo.href}" target="_blank" rel="noopener" class="wa-link">${escHtml(waInfo.display)}</a>`
       : `<span style="color:var(--muted)">—</span>`;
     // Channel badge — warna dinamis: green jika Leads·, gold jika Shopee/TikTok, dll.
     // v5.2: channel_is_ads → tampilkan ikon kunci (tidak bisa diubah manual)
@@ -13463,7 +13492,9 @@ function openCRMModal(idx) {
       </div>
     </div>
     <div class="fg"><label>${t('crmColName')} *</label><input class="fi" id="crm-f-nama" value="${escHtml(c.nama||'')}"/></div>
-    <div class="fg"><label>${t('crmColWA')}</label><input class="fi" id="crm-f-wa" value="${escHtml(c.wa||'')}" placeholder="08xxxxxxxxxx"/></div>
+    <div class="fg"><label>${t('crmColWA')}</label><input class="fi" id="crm-f-wa" value="${escHtml(c.wa||'')}" placeholder="08xxxxxxxxxx"/>
+      <span style="font-size:9.5px;color:var(--muted);margin-top:3px;display:block">Format Indonesia (08xxx / 62xxx / +62xxx) akan otomatis jadi link chat WhatsApp. Format lain tidak akan ditampilkan sebagai link.</span>
+    </div>
     <div class="fg"><label>${t('crmColCity')}</label><input class="fi" id="crm-f-kota" value="${escHtml(c.kota||'')}"/></div>
     <div class="fg"><label>${t('crmColChannel')}</label>
       ${isAdsEntry
@@ -13700,6 +13731,10 @@ function parseCRMImport(aoa) {
       if (key === 'total_order') rec[key] = crmParseInt(val);
       else if (key === 'total_belanja') rec[key] = crmParseMoney(val);
       else if (key === 'status') rec[key] = val ? crmNormStatus(val) : 'New';
+      // v25: nomor WA yang formatnya tidak valid (bukan format Indonesia yang wajar)
+      // dibuang saat import, bukan tetap dimasukkan — supaya tidak ada link wa.me
+      // rusak di Database Customer setelah import massal.
+      else if (key === 'wa') { const waOk = isValidWA(normalizeWA(val)); rec[key] = waOk ? val : ''; if (val && !waOk) rec._waDropped = true; }
       else rec[key] = val;
     });
     // baris dianggap valid bila ada nama atau wa atau id
@@ -13716,9 +13751,11 @@ function parseCRMImport(aoa) {
     return `<td>${escHtml(v===''||v==null?'—':v)}</td>`;
   }).join('')}</tr>`).join('');
   const blank = rows.filter(r=>!r.id_customer || !r.kota || !r.first_order).length;
+  const waDropped = rows.filter(r => r._waDropped).length;
   document.getElementById('crm-imp-result').innerHTML = `
     <div class="crm-imp-summary"><b>${rows.length}</b> ${t('crmImportRows')}${rows.length>30?' (preview 30)':''}. 
-      ${blank?`<br>${blank} baris ada sel kosong — bisa diisi langsung di tabel setelah import.`:''}</div>
+      ${blank?`<br>${blank} baris ada sel kosong — bisa diisi langsung di tabel setelah import.`:''}
+      ${waDropped?`<br><span style="color:var(--amber)">${waDropped} nomor WhatsApp formatnya tidak valid — nomor tersebut dikosongkan (bukan dibuang barisnya).</span>`:''}</div>
     <div class="crm-imp-mode">
       <label><input type="radio" name="crm-imp-mode" value="append" checked><span class="crm-imp-mode-txt"><strong>${t('crmModeAppend')}</strong>${t('crmModeAppendSub')}</span></label>
       <label><input type="radio" name="crm-imp-mode" value="replace"><span class="crm-imp-mode-txt"><strong>${t('crmModeReplace')}</strong>${t('crmModeReplaceSub')}</span></label>
