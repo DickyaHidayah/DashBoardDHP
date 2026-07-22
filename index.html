@@ -2610,13 +2610,9 @@ body.light .mt-card{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
 .mt-fu-list-title{font-size:10.5px;font-weight:700;letter-spacing:.03em;margin-bottom:8px}
 .mt-fu-list-body{max-height:170px;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
 .mt-fu-list-item{font-size:11.5px;color:var(--text);padding:5px 9px;background:var(--surface2,rgba(255,255,255,.02));border-radius:6px;border:1px solid var(--border)}
-.mt-fu-list-item-action{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 6px 7px 9px}
-.mt-fu-item-info{display:flex;align-items:center;gap:6px;overflow:hidden;min-width:0}
-.mt-fu-item-text{display:flex;flex-direction:column;gap:1px;overflow:hidden;min-width:0}
+.mt-fu-list-item-action{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 6px 6px 9px}
+.mt-fu-item-info{display:flex;align-items:center;gap:6px;overflow:hidden}
 .mt-fu-item-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mt-fu-item-wa-row{font-size:10px;display:flex;align-items:center;gap:3px;overflow:hidden;white-space:nowrap}
-.mt-fu-item-wa{color:var(--green);text-decoration:none;font-weight:600;overflow:hidden;text-overflow:ellipsis}
-.mt-fu-item-wa:hover{text-decoration:underline}
 .mt-fu-item-btn{padding:4px 10px!important;font-size:10px!important;flex-shrink:0}
 .mt-fu-reco-badge{font-size:8.5px;font-weight:700;letter-spacing:.03em;padding:2px 6px;border-radius:20px;white-space:nowrap;flex-shrink:0}
 .mt-fu-reco-badge.is-hot{color:#e87070;background:rgba(232,112,112,.14);border:1px solid rgba(232,112,112,.35)}
@@ -9095,16 +9091,10 @@ async function renderMtMainSection() {
                   const idx = crmData.indexOf(c);
                   const heat = heatOf(c);
                   const isReco = ['Hot','Warm'].includes(heat);
-                  // v25: nomor WA tampil sebagai link wa.me (klik → langsung buka chat).
-                  // Kalau nomornya tidak valid/tidak terdeteksi di WhatsApp, disembunyikan otomatis.
-                  const waHtml = waLinkHtml(c.wa, { cls:'mt-fu-item-wa' });
                   return `<div class="mt-fu-list-item mt-fu-list-item-action">
                     <span class="mt-fu-item-info">
                       ${isReco ? `<span class="mt-fu-reco-badge ${heat==='Hot'?'is-hot':'is-warm'}">${heat==='Hot'?'🔥':'☀'} Prioritas</span>` : ''}
-                      <span class="mt-fu-item-text">
-                        <span class="mt-fu-item-name">${escHtml(c.nama||'—')}</span>
-                        ${waHtml ? `<span class="mt-fu-item-wa-row">📱 ${waHtml}</span>` : ''}
-                      </span>
+                      <span class="mt-fu-item-name">${escHtml(c.nama||'—')}</span>
                     </span>
                     <button class="btn-g btn-sm mt-fu-item-btn" onclick="markFollowedUp(${idx})">Update</button>
                   </div>`;
@@ -11679,21 +11669,6 @@ function normalizeWA(raw) {
 }
 function isValidWA(v) { return /^\+628[0-9]{7,12}$/.test(v); }
 
-/* v25: render nomor WA (dari sumber manapun — CRM, leads, my task, dsb) sebagai
-   link wa.me yang langsung membuka chat orangnya saat diklik. Kalau nomornya
-   kosong atau tidak cocok format nomor Indonesia yang valid (jadi tidak akan
-   "terdeteksi" di WhatsApp), nomor tsb otomatis disembunyikan dari tampilan —
-   opts.fallback (default: string kosong) yang dipakai sebagai gantinya. */
-function waLinkHtml(raw, opts) {
-  opts = opts || {};
-  const norm = normalizeWA(raw);
-  if (!raw || !isValidWA(norm)) return opts.fallback !== undefined ? opts.fallback : '';
-  const digits = norm.replace(/[^0-9]/g, '');
-  const label = opts.label !== undefined ? opts.label : raw;
-  const cls = opts.cls || 'wa-link';
-  return `<a href="https://wa.me/${digits}" target="_blank" rel="noopener" class="${cls}" onclick="event.stopPropagation()">${escHtml(String(label))}</a>`;
-}
-
 async function openLeadsModal(taskId) {
   const tk = adTasks.find(x => x.id === taskId);
   if (!tk) { toast(t('taskNotFound')); return; }
@@ -11800,7 +11775,7 @@ function leadRowHtml(l) {
       <span class="lead-cat-badge lc-${catCls}">${t('leadCat'+(l.category||'Cold'))}</span>
     </div>
     <div class="lead-row-meta">
-      <span>📱 ${waLinkHtml(l.wa_phone) || escHtml(l.wa_phone)}</span>
+      <span>📱 ${escHtml(l.wa_phone)}</span>
       <span>📍 ${escHtml(l.region)}</span>
     </div>
     ${l.note ? `<div class="lead-row-note">${escHtml(l.note)}</div>` : ''}
@@ -12266,9 +12241,7 @@ async function renderAdCustomers() {
     const u = getUserMeta(r.owner_id);
     const clr = ROLE_COLORS[u.role] || '#888';
     const catCls = (r.category||'Cold').toLowerCase();
-    // v25: hanya tampilkan nomor WA yang formatnya valid (klik → langsung buka wa.me);
-    // nomor yang tidak terdeteksi/salah format disembunyikan otomatis.
-    const waCell = waLinkHtml(r.wa_phone) || `<span style="color:var(--muted)">—</span>`;
+    const waLink = `https://wa.me/${(r.wa_phone||'').replace(/[^0-9]/g,'')}`;
     const editable = leadIsEditable(r);
     // Channel badge — warna berbeda per tipe channel
     const channelRaw = r.ad_theme || '—';
@@ -12290,7 +12263,7 @@ async function renderAdCustomers() {
       : `<div style="font-size:10px;color:var(--muted);white-space:nowrap">${fmtDateTime(r.created_at)}</div>`;
     return `<tr>
       <td style="font-weight:600;color:var(--text)">${escHtml(r.name)}</td>
-      <td>${waCell}</td>
+      <td><a href="${waLink}" target="_blank" rel="noopener" class="wa-link">${escHtml(r.wa_phone)}</a></td>
       <td>${escHtml(r.region)}</td>
       <td><span class="lead-cat-badge lc-${catCls}">${t('leadCat'+(r.category||'Cold'))}</span></td>
       <td>${channelBadge}</td>
@@ -13392,9 +13365,10 @@ async function renderCRM(reload = true) {
   const isModRow = can.isMod(currentUser?.role);
   body.innerHTML = rows.map(c => {
     const idx = crmData.indexOf(c);
-    // v25: hanya tampilkan nomor WA yang formatnya valid (bisa dibuka di wa.me).
-    // Nomor yang tidak terdeteksi/salah format otomatis disembunyikan.
-    const waCell = waLinkHtml(c.wa) || `<span style="color:var(--muted)">—</span>`;
+    const waDigits = (c.wa||'').replace(/[^0-9]/g,'');
+    const waCell = waDigits
+      ? `<a href="https://wa.me/${waDigits}" target="_blank" rel="noopener" class="wa-link">${escHtml(c.wa)}</a>`
+      : `<span style="color:var(--muted)">—</span>`;
     // Channel badge — warna dinamis: green jika Leads·, gold jika Shopee/TikTok, dll.
     // v5.2: channel_is_ads → tampilkan ikon kunci (tidak bisa diubah manual)
     const chRaw = (c.channel||'').trim();
