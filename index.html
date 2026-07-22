@@ -4824,6 +4824,7 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
 
 <script>
 'use strict';
+console.log('[DHP Command Portal] build v26 — WA link di My Task + Database Customer, realtime CRM didebounce (fix lemot abis import)');
 /* ═══════════════════════════════════════════════════════════
    ① SUPABASE CONFIG
    Replace YOUR_PROJECT and YOUR_ANON_KEY with real values.
@@ -12643,16 +12644,25 @@ function updateCRMBadge() {
 }
 
 // ── Realtime: sinkron antar admin ──
+// v26: DIDEBOUNCE — sebelumnya setiap event INSERT/UPDATE/DELETE dari Supabase
+// Realtime langsung memicu loadCRM() + renderCRM() (reload SELURUH data +
+// render ulang SELURUH tabel). Saat import massal (ratusan/ribuan baris),
+// Supabase mengirim SATU event per baris → ratusan/ribuan reload+render
+// beruntun dalam hitungan detik, bikin tampilan freeze/lemot parah persis
+// setelah import. Sekarang semua event yang datang beruntun ditampung dan
+// hanya memicu SATU reload+render setelah 700ms tenang (tidak ada event baru).
+const _crmRealtimeReload = debounce(() => {
+  loadCRM().then(() => {
+    if (document.getElementById('pg-crm')?.classList.contains('active')) renderCRM();
+    else updateCRMBadge();
+  });
+}, 700);
 function initCRMRealtime() {
   if (!crmUsesDB() || crmChannel) return;
   try {
     crmChannel = db.channel('dhp_crm')
       .on('postgres_changes', { event:'*', schema:'public', table:'crm_customers' }, () => {
-        // reload + re-render hanya bila halaman CRM sedang aktif (hemat)
-        loadCRM().then(() => {
-          if (document.getElementById('pg-crm')?.classList.contains('active')) renderCRM();
-          else updateCRMBadge();
-        });
+        _crmRealtimeReload();
       })
       .subscribe();
   } catch(e) { console.warn('[CRM] realtime gagal:', e); }
