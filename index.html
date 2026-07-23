@@ -6954,12 +6954,18 @@ function renderContentCalendarPanel() {
   const sub = document.getElementById('cc-page-sub');
   if (!modBadge) return;
 
+  // v26: content creator kini juga boleh mengisi slot kontennya sendiri
+  // (tema, script, jam upload, link referensi), tidak melulu tugas moderator.
+  const canFillOwn = can.isContent(currentUser.role) && ccTargetId === currentUser.id;
+
   modBadge.style.display = isMod ? '' : 'none';
   modTools.style.display = 'none';
-  actCol.style.display = isMod ? '' : 'none';
+  actCol.style.display = (isMod || canFillOwn) ? '' : 'none';
   sub.textContent = isMod
     ? 'Isi tema, script, deadline, jam upload & link referensi untuk tiap slot konten'
-    : 'Tema, script, deadline & link referensi diisi moderator — kamu isi progress pengerjaan';
+    : canFillOwn
+      ? 'Kamu bisa mengisi sendiri tema, script, jam upload & link referensi kontenmu, selain update progress'
+      : 'Tema, script, deadline & link referensi diisi moderator — kamu isi progress pengerjaan';
 
   if (isMod && ids.length > 1) {
     switchBar.style.display = '';
@@ -7089,6 +7095,10 @@ function renderCcDayTable() {
          <div style="font-size:11.5px;color:var(--text2);margin-top:2px;max-width:260px;white-space:pre-wrap">${escHtml((s.script||'').slice(0,140))}${(s.script||'').length>140?'…':''}</div>`
       : `<span style="color:var(--text2)">— slot kosong —</span>`;
 
+    // v26: content creator boleh mengisi/mengedit/menghapus/memindah slot
+    // kontennya sendiri (bukan cuma moderator), selain update progress.
+    const canFillOwn = can.isContent(currentUser?.role) && isOwnCreator;
+
     let actions = '';
     if (isMod) {
       actions = `<button class="btn-sm btn-edit" onclick="openCcSlotModal(${slotNo})">${s ? '✎ Edit' : '+ Isi'}</button>`
@@ -7097,9 +7107,13 @@ function renderCcDayTable() {
       if (s && s.progress_status === 'menunggu_acc') {
         actions = `<button class="btn-sm btn-gold" onclick="openCcAccModal('${s.id}')" title="Setujui / minta revisi konten ini">✔ ACC</button> ` + actions;
       }
-    } else if (isOwnCreator && s) {
-      actions = `<button class="btn-sm btn-gold" onclick="openCcProgressModal('${s.id}')">Update Progress</button>`
-        + ` <button class="btn-sm btn-move" onclick="openCcMoveModal('${s.id}')" title="Pindahkan ke hari lain">↔ Pindah</button>`;
+    } else if (canFillOwn && s) {
+      actions = `<button class="btn-sm btn-edit" onclick="openCcSlotModal(${slotNo})">✎ Edit</button>`
+        + ` <button class="btn-sm btn-gold" onclick="openCcProgressModal('${s.id}')">Update Progress</button>`
+        + ` <button class="btn-sm btn-move" onclick="openCcMoveModal('${s.id}')" title="Pindahkan ke hari lain">↔ Pindah</button>`
+        + ` <button class="btn-sm btn-del" onclick="deleteCcSlot('${s.id}')">✕</button>`;
+    } else if (canFillOwn && !s) {
+      actions = `<button class="btn-sm btn-edit" onclick="openCcSlotModal(${slotNo})">+ Isi</button>`;
     } else {
       actions = '—';
     }
@@ -7115,9 +7129,12 @@ function renderCcDayTable() {
   }).join('');
 }
 
-/* ── Moderator: isi/edit 1 slot konten (tema, script, deadline, jam upload, link referensi) ── */
+/* ── Moderator ATAU Content Creator (slot miliknya sendiri): isi/edit 1 slot
+   konten (tema, script, deadline, jam upload, link referensi) ── */
 function openCcSlotModal(slotNo) {
-  if (!can.isMod(currentUser?.role)) return;
+  const isMod = can.isMod(currentUser?.role);
+  const isOwnCreator = currentUser && can.isContent(currentUser.role) && currentUser.id === ccTargetId;
+  if (!isMod && !isOwnCreator) return;
   const s = (ccMonthCache[ccSelectedDate] || []).find(x => x.slot_no === slotNo);
   const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
   const dObj = new Date(ccSelectedDate + 'T00:00:00');
@@ -7169,8 +7186,10 @@ async function saveCcSlot(slotNo, slotId) {
 
 async function deleteCcSlot(slotId) {
   if (!db) { toast('Supabase tidak aktif'); return; }
-  if (!can.isMod(currentUser?.role)) return;
-  if (!confirm('Hapus slot konten ini? Progress yang sudah diisi content creator akan ikut terhapus.')) return;
+  const isMod = can.isMod(currentUser?.role);
+  const isOwnCreator = currentUser && can.isContent(currentUser.role) && currentUser.id === ccTargetId;
+  if (!isMod && !isOwnCreator) return;
+  if (!confirm('Hapus slot konten ini? Progress yang sudah diisi akan ikut terhapus.')) return;
   const res = await dbQ(d => d.rpc('moderator_delete_content_slot', {
     p_moderator_id: currentUser.id, p_slot_id: slotId
   }));
