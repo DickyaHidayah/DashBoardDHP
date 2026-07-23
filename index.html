@@ -314,6 +314,16 @@ body.light .heat-cold .hb-icon { background:rgba(26,86,160,.14); }
    host mana yang sedang difokuskan. Mode "Bandingkan" sudah
    dipindah menjadi halaman tersendiri (lihat Live Dashboard di bawah).
    ══════════════════════════════════════════════════════════ */
+/* v25: Antrean ACC konten (moderator) */
+.cc-acc-queue{background:rgba(232,204,153,.06);border:1px solid rgba(232,204,153,.3);border-radius:var(--r);
+  padding:12px 14px;margin-bottom:16px}
+.cc-acc-queue-head{display:flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.04em;font-weight:600;
+  color:var(--gold-hi);margin-bottom:10px}
+.cc-acc-item{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;
+  padding:8px 0;border-bottom:1px solid var(--border)}
+.cc-acc-item:last-child{border-bottom:none}
+body.light .cc-acc-queue{background:#fffaf0;border:1.5px solid rgba(197,155,80,.3)}
+
 .hs-switch-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
   background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;margin-bottom:16px}
 .hs-switch-lbl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);white-space:nowrap}
@@ -2808,7 +2818,23 @@ body.light .adtask-empty{color:rgba(13,13,13,.38)}
   border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all var(--trans)}
 .crm-ico-btn:hover{border-color:var(--gold);color:var(--gold)}
 .crm-ico-btn.del:hover{border-color:var(--red);color:var(--red)}
-.crm-foot-note{margin-top:10px;font-size:10px;color:var(--muted);font-style:italic;text-align:right}
+.crm-foot-note{margin-top:10px;font-size:10px;color:var(--muted);font-style:italic;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.crm-pager{display:flex;align-items:center;gap:8px;font-style:normal}
+.crm-pager-page{font-size:10.5px;color:var(--text2);white-space:nowrap}
+.crm-pager button:disabled{opacity:.35;cursor:not-allowed}
+
+/* v25: bar kapasitas database customer (10.000/owner) */
+.crm-capacity-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:10px 14px;margin-bottom:14px}
+.crm-cap-label{font-size:11px;color:var(--text2);margin-bottom:7px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.crm-cap-label b{color:var(--text)}
+.crm-cap-pct{color:var(--muted)}
+.crm-cap-full{color:#e87070;font-weight:700;letter-spacing:.03em}
+.crm-cap-track{height:6px;border-radius:99px;background:var(--bg3);overflow:hidden}
+.crm-cap-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold),var(--gold-hi));transition:width .5s ease}
+.crm-cap-fill.full{background:linear-gradient(90deg,#e87070,#c94f4f)}
+body.light .crm-capacity-bar{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
 /* Import modal */
 .crm-imp-drop{border:1.5px dashed var(--border-hi);border-radius:10px;padding:26px 18px;text-align:center;
   cursor:pointer;transition:all var(--trans);background:var(--surface2)}
@@ -4197,6 +4223,16 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
           <div class="ph-acts" id="cc-mod-tools" style="display:none"></div>
         </div>
 
+        <!-- v25: Antrean ACC — konten dari SEMUA content creator yang sudah
+             ditandai "Done Upload" dan menunggu persetujuan moderator -->
+        <div class="cc-acc-queue" id="cc-acc-queue-wrap" style="display:none">
+          <div class="cc-acc-queue-head">
+            <span>🔔 Menunggu ACC</span>
+            <span class="mod-badge" id="cc-acc-queue-badge">0</span>
+          </div>
+          <div id="cc-acc-queue-list"></div>
+        </div>
+
         <div class="hs-switch-bar" id="cc-switch-bar" style="display:none">
           <div class="hs-switch-lbl">Content Creator</div>
           <div class="hs-switch" id="cc-switch"></div>
@@ -4565,6 +4601,9 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
           </div>
         </div>
 
+        <!-- v25: Kapasitas database customer (10.000/owner; moderator = gabungan semua) -->
+        <div class="crm-capacity-bar" id="crm-capacity-bar" style="display:none"></div>
+
         <!-- Statistik & ringkasan -->
         <div class="crm-stats" id="crm-stats"></div>
 
@@ -4597,7 +4636,7 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
               <option value="none">Belum diberi label</option>
             </select>
             <!-- Filter per user — hanya tampil untuk moderator -->
-            <select class="fi crm-filter" id="crm-owner-filter" onchange="crmOwnerFilter=this.value;renderCRM()" style="display:none">
+            <select class="fi crm-filter" id="crm-owner-filter" onchange="crmOwnerFilter=this.value;crmResetPaging();renderCRM()" style="display:none">
               <option value="all">Semua Admin & B2B</option>
             </select>
             <!-- v22: Moderator atur target omzet bulanan — hanya tampil saat filter di atas mengarah ke 1 Admin -->
@@ -4838,17 +4877,6 @@ if (configured() && window.supabase) {
 async function dbQ(fn) {
   if (!db) return null;
   try { return await fn(db); } catch(e) { console.warn('Supabase:', e.message); return null; }
-}
-
-/* ── Debounce util (v26 perf) ────────────────────────────────
-   Realtime Supabase mengirim 1 event per baris yang berubah.
-   Saat import massal (ratusan baris), tanpa debounce ini akan
-   memicu reload+render berkali-kali beruntun → tampilan macet/lag.
-   debounce() menunda eksekusi sampai event berhenti mengalir
-   selama `wait` ms, jadi 1 burst besar cukup 1x reload+render. */
-function debounce(fn, wait) {
-  let tm = null;
-  return (...args) => { clearTimeout(tm); tm = setTimeout(() => fn(...args), wait); };
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -6897,6 +6925,8 @@ const CC_PROGRESS = {
     icon: '<path d="M13 8A5 5 0 1 1 11.2 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/><path d="M13 2.5V6h-3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' },
   sudah_preview: { label: 'Sudah Preview', pill: 'lsr-pill-wait',
     icon: '<path d="M1.5 8S4 3.5 8 3.5 14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/><circle cx="8" cy="8" r="1.8" stroke="currentColor" stroke-width="1.3" fill="none"/>' },
+  menunggu_acc: { label: 'Menunggu ACC', pill: 'lsr-pill-wait',
+    icon: '<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M8 5v3.3l2.2 1.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' },
   done_upload: { label: 'Done Upload', pill: 'lsr-pill-done',
     icon: '<path d="M8 11V3.5M8 3.5L5.2 6.3M8 3.5l2.8 2.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M3 11v1.3A1.7 1.7 0 0 0 4.7 14h6.6A1.7 1.7 0 0 0 13 12.3V11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/>' },
 };
@@ -6937,6 +6967,8 @@ function renderContentCalendarPanel() {
   } else {
     switchBar.style.display = 'none';
   }
+
+  if (isMod) loadCcAccQueue();
 
   loadCcMonth();
 }
@@ -7002,7 +7034,7 @@ function renderCcCalendar() {
     slots.forEach(s => { bySlotNo[s.slot_no] = s; });
     const allDone   = filled === CC_SLOTS.length && slots.every(s => s.progress_status === 'done_upload');
     const hasRevisi = slots.some(s => s.progress_status === 'revisi');
-    const hasReview = slots.some(s => s.progress_status === 'sudah_preview');
+    const hasReview = slots.some(s => s.progress_status === 'sudah_preview' || s.progress_status === 'menunggu_acc');
     const cls = ['cal-cell'];
     if (isToday) cls.push('today');
     if (isSelected) cls.push('ls-selected');
@@ -7061,6 +7093,10 @@ function renderCcDayTable() {
     if (isMod) {
       actions = `<button class="btn-sm btn-edit" onclick="openCcSlotModal(${slotNo})">${s ? '✎ Edit' : '+ Isi'}</button>`
         + (s ? ` <button class="btn-sm btn-move" onclick="openCcMoveModal('${s.id}')" title="Pindahkan ke hari lain">↔ Pindah</button> <button class="btn-sm btn-del" onclick="deleteCcSlot('${s.id}')">✕</button>` : '');
+      // v25: kalau slot ini sedang menunggu ACC, tampilkan tombol ACC di depan
+      if (s && s.progress_status === 'menunggu_acc') {
+        actions = `<button class="btn-sm btn-gold" onclick="openCcAccModal('${s.id}')" title="Setujui / minta revisi konten ini">✔ ACC</button> ` + actions;
+      }
     } else if (isOwnCreator && s) {
       actions = `<button class="btn-sm btn-gold" onclick="openCcProgressModal('${s.id}')">Update Progress</button>`
         + ` <button class="btn-sm btn-move" onclick="openCcMoveModal('${s.id}')" title="Pindahkan ke hari lain">↔ Pindah</button>`;
@@ -7202,12 +7238,25 @@ async function saveCcMove(slotId) {
 function openCcProgressModal(slotId) {
   const s = (ccMonthCache[ccSelectedDate] || []).find(x => x.id === slotId);
   if (!s) { toast('Slot tidak ditemukan'); return; }
+  const isMod = can.isMod(currentUser?.role);
+  // v25: slot yang sedang menunggu ACC moderator tidak bisa diubah lagi
+  // oleh content creator biasa — harus menunggu keputusan moderator dulu.
+  if (!isMod && s.progress_status === 'menunggu_acc') {
+    toast('Konten ini sedang menunggu ACC moderator — tunggu keputusannya dulu');
+    return;
+  }
   document.getElementById('m-title').textContent = `Progress Slot ${s.slot_no} — ${escHtml(s.theme || '')}`;
+  // "Menunggu ACC" bukan pilihan manual — status ini otomatis dipakai
+  // server begitu creator menandai "Done Upload".
+  const statusOptions = Object.entries(CC_PROGRESS).filter(([k]) => k !== 'menunggu_acc');
   document.getElementById('m-body').innerHTML = `
     <div class="fg"><label>Progress Pengerjaan</label>
-      <select class="fi" id="cc-prog-status">
-        ${Object.entries(CC_PROGRESS).map(([k,v]) => `<option value="${k}" ${s.progress_status===k?'selected':''}>${v.label}</option>`).join('')}
+      <select class="fi" id="cc-prog-status" onchange="document.getElementById('cc-prog-acc-hint').style.display = this.value==='done_upload' && !${isMod} ? '' : 'none'">
+        ${statusOptions.map(([k,v]) => `<option value="${k}" ${s.progress_status===k?'selected':''}>${v.label}</option>`).join('')}
       </select>
+      <div id="cc-prog-acc-hint" style="display:${(!isMod && s.progress_status !== 'done_upload') ? 'none' : 'none'};font-size:10.5px;color:var(--gold-hi);margin-top:6px">
+        Menandai "Done Upload" akan mengirim konten ini ke moderator untuk di-ACC — belum langsung final.
+      </div>
     </div>
     <div class="fg"><label>Script (boleh disunting)</label>
       <textarea class="fi" id="cc-prog-script" rows="5">${escHtml(s.script || '')}</textarea>
@@ -7233,8 +7282,79 @@ async function saveCcProgress(slotId) {
   if (res?.error) { toast('Gagal menyimpan progress: ' + res.error.message); return; }
   closeModal();
   await loadCcMonth();
-  toast('Progress konten diperbarui');
-  pushActivity(`${currentUser.name} update progress slot konten → ${CC_PROGRESS[status]?.label||status}`, 'info');
+  // v25: server bisa mengalihkan "done_upload" → "menunggu_acc" secara otomatis
+  const finalStatus = (res?.data && res.data[0]?.progress_status) || (res?.data?.progress_status) || status;
+  if (finalStatus === 'menunggu_acc') {
+    toast('Konten dikirim — menunggu ACC moderator ✔');
+    pushActivity(`${currentUser.name} mengajukan ACC konten (menunggu persetujuan moderator)`, 'task');
+  } else {
+    toast('Progress konten diperbarui');
+    pushActivity(`${currentUser.name} update progress slot konten → ${CC_PROGRESS[finalStatus]?.label||finalStatus}`, 'info');
+  }
+}
+
+/* ── v25: Moderator — ACC (setujui / minta revisi) konten yang
+   sudah ditandai selesai oleh Content Creator ── */
+function openCcAccModal(slotId) {
+  const s = (ccMonthCache[ccSelectedDate] || []).find(x => x.id === slotId)
+    || (ccAccQueueCache || []).find(x => x.id === slotId);
+  if (!s) { toast('Slot tidak ditemukan'); return; }
+  const creatorName = LOCAL_USERS[s.creator_user_id]?.name || s.creator_user_id || '—';
+  document.getElementById('m-title').textContent = `ACC Konten — Slot ${s.slot_no}`;
+  document.getElementById('m-body').innerHTML = `
+    <div style="font-size:11.5px;color:var(--text2);margin-bottom:12px">
+      Creator: <b style="color:var(--text)">${escHtml(creatorName)}</b><br/>
+      Tanggal: <b style="color:var(--text)">${escHtml(String(s.content_date))}</b><br/>
+      Tema: <b style="color:var(--text)">${escHtml(s.theme || '(Tanpa tema)')}</b>
+    </div>
+    ${s.progress_note ? `<div style="font-size:11px;color:var(--text2);margin-bottom:12px">Catatan creator: ${escHtml(s.progress_note)}</div>` : ''}
+    <div class="fg"><label>Catatan ACC (opsional)</label>
+      <input class="fi" id="cc-acc-note" placeholder="mis. Sudah oke, lanjut jadwalkan tayang"/>
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-gold" onclick="saveCcAcc('${slotId}', true)">✅ Setujui</button>
+    <button class="btn-sm btn-del" onclick="saveCcAcc('${slotId}', false)">✎ Minta Revisi</button>
+    <button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+
+async function saveCcAcc(slotId, approve) {
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  const note = (document.getElementById('cc-acc-note')?.value || '').trim();
+  const res = await dbQ(d => d.rpc('moderator_review_content_progress', {
+    p_moderator_id: currentUser.id, p_slot_id: slotId, p_approve: approve, p_note: note || null
+  }));
+  if (res?.error) { toast('Gagal memproses ACC: ' + res.error.message); return; }
+  closeModal();
+  await loadCcMonth();
+  await loadCcAccQueue();
+  toast(approve ? 'Konten disetujui ✅' : 'Konten dikembalikan untuk revisi ✎');
+  pushActivity(`${currentUser.name} ${approve ? 'menyetujui' : 'meminta revisi'} konten`, 'task');
+}
+
+// ── v25: Antrean ACC lintas semua Content Creator — supaya moderator tidak
+//    perlu bolak-balik cek kalender tiap creator satu-satu ──
+let ccAccQueueCache = [];
+async function loadCcAccQueue() {
+  const wrap = document.getElementById('cc-acc-queue-wrap');
+  const listEl = document.getElementById('cc-acc-queue-list');
+  const badgeEl = document.getElementById('cc-acc-queue-badge');
+  if (!wrap || !can.isMod(currentUser?.role) || !db) { if (wrap) wrap.style.display = 'none'; return; }
+  const res = await dbQ(d => d.from('v_content_acc_queue').select('*'));
+  ccAccQueueCache = res?.data || [];
+  wrap.style.display = ccAccQueueCache.length ? '' : 'none';
+  if (badgeEl) badgeEl.textContent = ccAccQueueCache.length;
+  if (listEl) {
+    listEl.innerHTML = ccAccQueueCache.map(s => `
+      <div class="cc-acc-item">
+        <div>
+          <b>${escHtml(s.creator_name || s.creator_user_id)}</b> —
+          ${escHtml(s.theme || '(Tanpa tema)')}
+          <span style="color:var(--text2)">(${escHtml(String(s.content_date))} · Slot ${s.slot_no})</span>
+        </div>
+        <button class="btn-sm btn-gold" onclick="openCcAccModal('${s.id}')">Tinjau</button>
+      </div>`).join('');
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -10601,14 +10721,11 @@ function initAdRealtime() {
   const isMod = can.isMod(currentUser?.role);
   // Pembungkus aman: error saat render realtime tidak boleh mengosongkan dashboard
   const safe = (fn) => { try { fn(); } catch (e) { console.warn('[DHP] realtime render error:', e); } };
-  // v26: debounce 400ms — kalau banyak baris ad_schedule berubah nyaris
-  // bersamaan (mis. publish iklan massal), cukup 1x reload bukan N kali.
-  const _adScheduleReload = debounce(() => {
-    loadAdsFromDB().then(() => { if (isAdPageActive()) safe(renderAdScheduler); })
-                   .catch(e => console.warn('[DHP] reload ad_schedule gagal:', e));
-  }, 400);
   adChannel = db.channel('dhp_ads')
-    .on('postgres_changes', { event:'*', schema:'public', table:'ad_schedule' }, _adScheduleReload)
+    .on('postgres_changes', { event:'*', schema:'public', table:'ad_schedule' }, () => {
+      loadAdsFromDB().then(() => { if (isAdPageActive()) safe(renderAdScheduler); })
+                     .catch(e => console.warn('[DHP] reload ad_schedule gagal:', e));
+    })
     .on('postgres_changes', { event:'INSERT', schema:'public', table:'ad_tasks' }, payload => {
       const tk = payload.new;
       console.log('[DHP] Task INSERT received:', tk.assignee_id, '| me:', currentUser?.id, '| isMod:', isMod);
@@ -12407,6 +12524,15 @@ let crmChannel = null;
 let _crmLoading = false;
 let crmOwnerFilter = 'all';  // moderator: filter per user (user_id atau 'all')
 
+// ── v25: Paginasi Database Customer — 500 data pertama, lalu "Next" ──
+const CRM_PAGE_SIZE = 500;
+let crmPageOffset  = 0;      // offset baris saat ini (0, 500, 1000, …)
+let crmTotalCount  = 0;      // total baris sesuai filter owner yang sedang aktif (dari server)
+let crmHasMore     = false;  // masih ada halaman berikutnya?
+let crmCapacity    = null;   // { total_customers, capacity, remaining, is_full, pct_used }
+
+function crmResetPaging() { crmPageOffset = 0; }
+
 // ── Konversi baris DB → bentuk UI (key internal) ──
 function crmFromDb(row) {
   return {
@@ -12616,11 +12742,14 @@ async function assignCrmLabel(idx, labelId) {
 }
 
 // ── Muat data CRM (DB bila ada, else localStorage) ──
+// v25: sekarang paginasi 500 data per halaman (crmPageOffset menentukan
+// halaman keaktifan) — dipanggil ulang tiap kali crmNextPage()/crmPrevPage()
+// dipanggil, atau saat filter owner berganti (offset direset ke 0).
 async function loadCRM() {
   if (crmUsesDB()) {
     _crmLoading = true;
     const isMod = can.isMod(currentUser?.role);
-    let q = db.from('crm_customers').select('*');
+    let q = db.from('crm_customers').select('*', { count: 'exact' });
     // Non-moderator hanya melihat data yang mereka sendiri input
     if (!isMod && currentUser?.id) {
       q = q.eq('owner_id', currentUser.id);
@@ -12629,18 +12758,72 @@ async function loadCRM() {
     if (isMod && crmOwnerFilter && crmOwnerFilter !== 'all') {
       q = q.eq('owner_id', crmOwnerFilter);
     }
-    q = q.order('cust_code', { ascending: true });
+    q = q.order('cust_code', { ascending: true })
+         .range(crmPageOffset, crmPageOffset + CRM_PAGE_SIZE - 1);
     const res = await dbQ(() => q);
     _crmLoading = false;
-    if (res && res.data) { crmData = res.data.map(crmFromDb); updateCRMBadge(); return crmData; }
+    if (res && res.data) {
+      crmData = res.data.map(crmFromDb);
+      crmTotalCount = typeof res.count === 'number' ? res.count : crmData.length;
+      crmHasMore = (crmPageOffset + crmData.length) < crmTotalCount;
+      updateCRMBadge();
+      loadCrmCapacity();
+      return crmData;
+    }
     return crmData;
   }
-  // Fallback localStorage
+  // Fallback localStorage — tidak dipaginasi (dataset lokal biasanya kecil)
   try { crmData = JSON.parse(localStorage.getItem(CRM_LS_KEY) || '[]'); }
   catch(e) { crmData = []; }
   if (!Array.isArray(crmData)) crmData = [];
+  crmTotalCount = crmData.length;
+  crmHasMore = false;
   updateCRMBadge();
   return crmData;
+}
+
+// ── v25: Halaman berikutnya / sebelumnya pada Database Customer ──
+async function crmNextPage() {
+  if (!crmHasMore || _crmLoading) return;
+  crmPageOffset += CRM_PAGE_SIZE;
+  await renderCRM(true);
+  document.getElementById('pg-crm')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+async function crmPrevPage() {
+  if (crmPageOffset <= 0 || _crmLoading) return;
+  crmPageOffset = Math.max(0, crmPageOffset - CRM_PAGE_SIZE);
+  await renderCRM(true);
+  document.getElementById('pg-crm')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── v25: Status kapasitas database customer (10.000/owner, tak terbatas
+//    untuk moderator — moderator lihat gabungan SEMUA owner) ──
+async function loadCrmCapacity() {
+  if (!crmUsesDB() || !currentUser?.id) { crmCapacity = null; renderCrmCapacityBar(); return; }
+  const res = await dbQ(d => d.rpc('crm_capacity_status', { p_user_id: currentUser.id }));
+  crmCapacity = (res?.data && res.data[0]) || null;
+  renderCrmCapacityBar();
+}
+
+function renderCrmCapacityBar() {
+  const el = document.getElementById('crm-capacity-bar');
+  if (!el) return;
+  if (!crmCapacity) { el.style.display = 'none'; return; }
+  const isMod = can.isMod(currentUser?.role);
+  const pct = Math.min(100, Number(crmCapacity.pct_used) || 0);
+  const full = !!crmCapacity.is_full;
+  el.style.display = '';
+  el.innerHTML = `
+    <div class="crm-cap-label">
+      ${isMod ? 'Total Database (Semua Admin & B2B)' : 'Kapasitas Database Kamu'}:
+      <b>${Number(crmCapacity.total_customers).toLocaleString('id-ID')}</b> / ${Number(crmCapacity.capacity).toLocaleString('id-ID')}
+      ${full ? '<span class="crm-cap-full">● Database Penuh</span>' : `<span class="crm-cap-pct">(${pct}%)</span>`}
+    </div>
+    <div class="crm-cap-track"><div class="crm-cap-fill${full ? ' full' : ''}" style="width:${pct}%"></div></div>`;
+  if (full && !isMod && !window._crmFullNotified) {
+    window._crmFullNotified = true;
+    toast('Database customer kamu sudah penuh (maks ' + Number(crmCapacity.capacity).toLocaleString('id-ID') + ' data) — hubungi moderator untuk kapasitas tambahan');
+  }
 }
 
 // ── Simpan cache ke localStorage (hanya mode offline) ──
@@ -12653,26 +12836,22 @@ function saveCRM() {
 
 function updateCRMBadge() {
   const b = document.getElementById('crm-badge');
-  if (b) { b.textContent = crmData.length; b.style.display = crmData.length ? '' : 'none'; }
+  const n = crmTotalCount || crmData.length;
+  if (b) { b.textContent = n; b.style.display = n ? '' : 'none'; }
 }
 
 // ── Realtime: sinkron antar admin ──
-// v26: di-debounce 400ms — saat import massal (ratusan baris masuk
-// hampir bersamaan), tanpa ini setiap baris memicu reload+render
-// sendiri-sendiri sehingga tampilan macet & moderator ikut kebanjiran
-// render. Dengan debounce, seluruh burst import cukup 1x reload+render,
-// baik di sisi pengirim maupun di sisi moderator yang memantau.
-const _crmRealtimeReload = debounce(() => {
-  loadCRM().then(() => {
-    if (document.getElementById('pg-crm')?.classList.contains('active')) renderCRM();
-    else updateCRMBadge();
-  });
-}, 400);
 function initCRMRealtime() {
   if (!crmUsesDB() || crmChannel) return;
   try {
     crmChannel = db.channel('dhp_crm')
-      .on('postgres_changes', { event:'*', schema:'public', table:'crm_customers' }, _crmRealtimeReload)
+      .on('postgres_changes', { event:'*', schema:'public', table:'crm_customers' }, () => {
+        // reload + re-render hanya bila halaman CRM sedang aktif (hemat)
+        loadCRM().then(() => {
+          if (document.getElementById('pg-crm')?.classList.contains('active')) renderCRM();
+          else updateCRMBadge();
+        });
+      })
       .subscribe();
   } catch(e) { console.warn('[CRM] realtime gagal:', e); }
 }
@@ -13374,26 +13553,31 @@ async function renderCRM(reload = true) {
   }
 
   // ── Statistik & ringkasan ──
+  // v25: "Total Customer" sekarang memakai crmTotalCount (jumlah SEBENARNYA
+  // di database sesuai filter aktif), bukan cuma jumlah baris di halaman ini
+  // (crmData). Statistik lain (omzet/order/status/heat) dihitung dari
+  // halaman yang sedang dimuat — diberi label "halaman ini" biar jelas.
   if (statsEl) {
-    const total = crmData.length;
+    const total = crmTotalCount || crmData.length;
+    const pageLabel = crmTotalCount > crmData.length ? ' · halaman ini' : '';
     const totalSpend = crmData.reduce((s,c)=>s+crmParseMoney(c.total_belanja),0);
     const totalOrders = crmData.reduce((s,c)=>s+crmParseInt(c.total_order),0);
-    const avg = total ? totalSpend/total : 0;
+    const avg = crmData.length ? totalSpend/crmData.length : 0;
     const cnt = s => crmData.filter(c => crmNormStatus(c.status)===s).length;
     statsEl.innerHTML = `
-      <div class="crm-stat"><span class="cs-num">${total}</span><span class="cs-lbl">${t('crmTotalCust')}</span></div>
-      <div class="crm-stat cs-money"><span class="cs-num">${crmFmtRupiah(totalSpend)}</span><span class="cs-lbl">${t('crmTotalSpendStat')}</span></div>
-      <div class="crm-stat"><span class="cs-num">${totalOrders.toLocaleString('id-ID')}</span><span class="cs-lbl">${t('crmTotalOrdersStat')}</span></div>
-      <div class="crm-stat cs-money"><span class="cs-num">${crmFmtRupiah(Math.round(avg))}</span><span class="cs-lbl">${t('crmAvgSpend')}</span></div>
-      <div class="crm-stat cs-new"><span class="cs-num">${cnt('New')}</span><span class="cs-lbl">New</span></div>
-      <div class="crm-stat cs-repeat"><span class="cs-num">${cnt('Repeat')}</span><span class="cs-lbl">Repeat</span></div>
-      <div class="crm-stat cs-agen"><span class="cs-num">${cnt('Agen')}</span><span class="cs-lbl">Agen</span></div>
-      <div class="crm-stat cs-reseller"><span class="cs-num">${cnt('Reseller')}</span><span class="cs-lbl">Reseller</span></div>
-      <div class="crm-stat cs-leads"><span class="cs-num">${cnt('Leads')}</span><span class="cs-lbl">Leads</span></div>
+      <div class="crm-stat"><span class="cs-num">${total.toLocaleString('id-ID')}</span><span class="cs-lbl">${t('crmTotalCust')}</span></div>
+      <div class="crm-stat cs-money"><span class="cs-num">${crmFmtRupiah(totalSpend)}</span><span class="cs-lbl">${t('crmTotalSpendStat')}${pageLabel}</span></div>
+      <div class="crm-stat"><span class="cs-num">${totalOrders.toLocaleString('id-ID')}</span><span class="cs-lbl">${t('crmTotalOrdersStat')}${pageLabel}</span></div>
+      <div class="crm-stat cs-money"><span class="cs-num">${crmFmtRupiah(Math.round(avg))}</span><span class="cs-lbl">${t('crmAvgSpend')}${pageLabel}</span></div>
+      <div class="crm-stat cs-new"><span class="cs-num">${cnt('New')}</span><span class="cs-lbl">New${pageLabel}</span></div>
+      <div class="crm-stat cs-repeat"><span class="cs-num">${cnt('Repeat')}</span><span class="cs-lbl">Repeat${pageLabel}</span></div>
+      <div class="crm-stat cs-agen"><span class="cs-num">${cnt('Agen')}</span><span class="cs-lbl">Agen${pageLabel}</span></div>
+      <div class="crm-stat cs-reseller"><span class="cs-num">${cnt('Reseller')}</span><span class="cs-lbl">Reseller${pageLabel}</span></div>
+      <div class="crm-stat cs-leads"><span class="cs-num">${cnt('Leads')}</span><span class="cs-lbl">Leads${pageLabel}</span></div>
       <div style="width:1px;background:var(--border);margin:0 4px;align-self:stretch"></div>
-      <div class="crm-stat" style="background:rgba(232,112,112,.06)"><span class="cs-num" style="color:#e87070">${crmData.filter(c=>((c.heat_category||crmComputeHeat(crmParseInt(c.total_order),crmNormStatus(c.status)))==='Hot')).length}</span><span class="cs-lbl">🔥 Panas</span></div>
-      <div class="crm-stat" style="background:rgba(232,184,110,.06)"><span class="cs-num" style="color:#e8b86e">${crmData.filter(c=>((c.heat_category||crmComputeHeat(crmParseInt(c.total_order),crmNormStatus(c.status)))==='Warm')).length}</span><span class="cs-lbl">☀ Hangat</span></div>
-      <div class="crm-stat" style="background:rgba(126,168,201,.06)"><span class="cs-num" style="color:#7ea8c9">${crmData.filter(c=>((c.heat_category||crmComputeHeat(crmParseInt(c.total_order),crmNormStatus(c.status)))==='Cold')).length}</span><span class="cs-lbl">❄ Dingin</span></div>`;
+      <div class="crm-stat" style="background:rgba(232,112,112,.06)"><span class="cs-num" style="color:#e87070">${crmData.filter(c=>((c.heat_category||crmComputeHeat(crmParseInt(c.total_order),crmNormStatus(c.status)))==='Hot')).length}</span><span class="cs-lbl">🔥 Panas${pageLabel}</span></div>
+      <div class="crm-stat" style="background:rgba(232,184,110,.06)"><span class="cs-num" style="color:#e8b86e">${crmData.filter(c=>((c.heat_category||crmComputeHeat(crmParseInt(c.total_order),crmNormStatus(c.status)))==='Warm')).length}</span><span class="cs-lbl">☀ Hangat${pageLabel}</span></div>
+      <div class="crm-stat" style="background:rgba(126,168,201,.06)"><span class="cs-num" style="color:#7ea8c9">${crmData.filter(c=>((c.heat_category||crmComputeHeat(crmParseInt(c.total_order),crmNormStatus(c.status)))==='Cold')).length}</span><span class="cs-lbl">❄ Dingin${pageLabel}</span></div>`;
   }
 
   // Diagram
@@ -13401,9 +13585,21 @@ async function renderCRM(reload = true) {
 
   // Toolbar info
   const foot2 = document.getElementById('crm-foot-note2');
-  if (foot2) foot2.textContent = crmData.length ? `Menampilkan ${rows.length} dari ${crmData.length} customer` : '';
+  if (foot2) foot2.textContent = crmData.length ? `Menampilkan ${rows.length} dari ${crmData.length} customer (halaman ini)` : '';
 
-  if (footEl) footEl.textContent = crmData.length ? `${rows.length} / ${crmData.length} · ${t('crmFootNote')}` : '';
+  // v25: Info + kontrol paginasi (500 data / halaman)
+  if (footEl) {
+    const startN = crmData.length ? crmPageOffset + 1 : 0;
+    const endN   = crmPageOffset + crmData.length;
+    footEl.innerHTML = crmTotalCount
+      ? `<span>Data ${startN.toLocaleString('id-ID')}–${endN.toLocaleString('id-ID')} dari ${crmTotalCount.toLocaleString('id-ID')} customer · ${t('crmFootNote')}</span>
+         <div class="crm-pager">
+           <button class="btn-g btn-sm" onclick="crmPrevPage()" ${crmPageOffset<=0?'disabled':''}>‹ Sebelumnya</button>
+           <span class="crm-pager-page">Hal. ${Math.floor(crmPageOffset/CRM_PAGE_SIZE)+1} / ${Math.max(1, Math.ceil(crmTotalCount/CRM_PAGE_SIZE))}</span>
+           <button class="btn-g btn-sm" onclick="crmNextPage()" ${!crmHasMore?'disabled':''}>Berikutnya ›</button>
+         </div>`
+      : '';
+  }
 
   if (!rows.length) {
     body.innerHTML = `<tr><td colspan="12" class="tbl-empty">${crmData.length ? t('noCustomers') : t('crmEmpty')}</td></tr>`;
@@ -13605,7 +13801,9 @@ async function saveCRMCustomer(idx) {
       // v23: tampilkan alasan asli dari server — supaya kalau gagal karena role belum
       // punya akses CRM (assert_can_crm), pesannya jelas & bisa langsung diketahui sebabnya,
       // bukan "gagal" generik yang menyembunyikan penyebab sebenarnya.
-      const friendly = msg.includes('akses') || msg.toLowerCase().includes('access')
+      const friendly = msg.includes('CRM_CAPACITY_FULL')
+        ? '🚫 Database customer kamu sudah penuh — hubungi moderator untuk kapasitas tambahan.'
+        : msg.includes('akses') || msg.toLowerCase().includes('access')
         ? (t('adAccessReq') + (msg ? ` (${msg})` : ''))
         : (msg.includes('NAME') ? t('crmFillName') : (msg || t('crmImportErr')));
       toast(friendly);
@@ -13706,10 +13904,6 @@ function downloadCRMTemplate() {
 function handleCRMFile(file) {
   if (!file) return;
   if (!window.XLSX) { toast(t('crmNoLib')); return; }
-  // v26: feedback loading — file besar (ribuan baris) butuh waktu utk dibaca,
-  // tanpa ini tampilan terlihat "diam"/macet seolah tidak merespon.
-  const resultEl = document.getElementById('crm-imp-result');
-  if (resultEl) resultEl.innerHTML = `<div class="crm-imp-summary">⏳ Membaca file…</div>`;
   const reader = new FileReader();
   reader.onload = e => {
     try {
@@ -13720,10 +13914,8 @@ function handleCRMFile(file) {
     } catch(err) {
       console.warn('[CRM import]', err);
       toast(t('crmImportErr'));
-      if (resultEl) resultEl.innerHTML = '';
     }
   };
-  reader.onerror = () => { toast(t('crmImportErr')); if (resultEl) resultEl.innerHTML = ''; };
   reader.readAsArrayBuffer(file);
 }
 
@@ -13811,12 +14003,16 @@ async function confirmCRMImport() {
     }));
     if (!res || res.error) {
       if (btn) { btn.disabled = false; btn.textContent = t('crmImportDo'); }
-      toast(res?.error?.message?.includes('akses') ? t('adAccessReq') : t('crmImportErr'));
+      const msg = res?.error?.message || '';
+      toast(msg.includes('CRM_CAPACITY_FULL')
+        ? '🚫 Import dibatalkan — kapasitas database customer kamu sudah/akan penuh (maks 10.000 data). Hubungi moderator.'
+        : (msg.includes('akses') ? t('adAccessReq') : t('crmImportErr')));
       return;
     }
     const inserted = (typeof res.data === 'number') ? res.data : n;
     _crmImportRows = null;
     closeModal();
+    crmResetPaging();
     await loadCRM();
     renderCRM();
     toast(`${t('crmImportDone')}: ${inserted} customer.`);
@@ -13838,10 +14034,36 @@ async function confirmCRMImport() {
 }
 
 // ═══════════ EXPORT — Excel rapi + statistik + rekap + ringkasan ═══════════
+// ── v25: Ambil SELURUH data customer (bukan cuma 1 halaman 500) — dipakai
+//    khusus untuk export Excel, supaya file yang diunduh tetap lengkap
+//    walau UI tabel sedang menampilkan data per-halaman. Diambil per-batch
+//    1000 baris (batas aman Supabase) sampai habis, sesuai filter owner aktif.
+async function crmFetchAllForExport() {
+  if (!crmUsesDB()) return crmData.slice();
+  const isMod = can.isMod(currentUser?.role);
+  const BATCH = 1000;
+  let all = [];
+  let offset = 0;
+  for (;;) {
+    let q = db.from('crm_customers').select('*');
+    if (!isMod && currentUser?.id) q = q.eq('owner_id', currentUser.id);
+    if (isMod && crmOwnerFilter && crmOwnerFilter !== 'all') q = q.eq('owner_id', crmOwnerFilter);
+    q = q.order('cust_code', { ascending: true }).range(offset, offset + BATCH - 1);
+    const res = await dbQ(() => q);
+    const batch = res?.data || [];
+    all = all.concat(batch.map(crmFromDb));
+    if (batch.length < BATCH) break;
+    offset += BATCH;
+    if (offset > 50000) break; // safety guard
+  }
+  return all;
+}
+
 async function exportCRMExcel() {
   if (!window.XLSX) { toast(t('crmNoLib')); return; }
-  if (!crmData.length) { await loadCRM(); }
-  if (!crmData.length) { toast(t('crmEmpty')); return; }
+  const _pagedCrmData = crmData;                 // simpan halaman yang sedang aktif di UI
+  crmData = await crmFetchAllForExport();         // v25: export mengambil SEMUA data, bukan cuma 1 halaman
+  if (!crmData.length) { crmData = _pagedCrmData; toast(t('crmEmpty')); return; }
 
   const wb = XLSX.utils.book_new();
   const now = new Date();
@@ -14160,6 +14382,7 @@ async function exportCRMExcel() {
   XLSX.writeFile(wb, fname);
   toast(`✓ Export selesai — ${total} customer, ${sheetCount} sheet analitik`);
   pushActivity(`CRM: export Excel profesional (${total} customer, ${sheetCount} sheet${filterLabel})`, 'info');
+  crmData = _pagedCrmData;   // v25: kembalikan ke data halaman yang sedang aktif di UI
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -14167,8 +14390,9 @@ async function exportCRMExcel() {
 // ══════════════════════════════════════════════════════════════
 async function exportCRMDatabaseOnly() {
   if (!window.XLSX) { toast(t('crmNoLib')); return; }
-  if (!crmData.length) { await loadCRM(); }
-  if (!crmData.length) { toast(t('crmEmpty')); return; }
+  const _pagedCrmData = crmData;
+  crmData = await crmFetchAllForExport();   // v25: export SEMUA data, bukan cuma 1 halaman
+  if (!crmData.length) { crmData = _pagedCrmData; toast(t('crmEmpty')); return; }
 
   const wb   = XLSX.utils.book_new();
   const now  = new Date();
@@ -14247,6 +14471,7 @@ async function exportCRMDatabaseOnly() {
   XLSX.writeFile(wb, fname);
   toast(`✓ Export Database Customer — ${total} data`);
   pushActivity(`CRM: export Database Customer (${total} customer)`, 'info');
+  crmData = _pagedCrmData;   // v25: kembalikan ke data halaman yang sedang aktif di UI
 }
 
 // v5.2: live heat preview in CRM modal
