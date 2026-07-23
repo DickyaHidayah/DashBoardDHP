@@ -12494,6 +12494,11 @@ const CRM_COLUMNS = [
   { key:'produk_fav',  header:'Produk'            },
   { key:'catatan',     header:'Catatan Admin'     },
 ];
+// v26: ID Customer TIDAK LAGI diminta dari Excel — selalu dibuat otomatis
+// oleh sistem (per-owner, prefix nama akun) supaya tidak pernah tabrakan
+// antar admin (Yuna, Puji, Erni, Galih, dst). Dipakai khusus untuk
+// template download & parsing file import.
+const CRM_IMPORT_COLUMNS = CRM_COLUMNS.filter(c => c.key !== 'id_customer');
 const CRM_STATUSES = ['New','Repeat','Agen','Reseller','Leads'];
 
 // v5.2: heat category helpers
@@ -12523,7 +12528,9 @@ function crmHeatBadge(heat) {
 }
 // Sinonim header agar import tetap dikenali walau penulisan sedikit beda.
 const CRM_HEADER_ALIASES = {
-  'id customer':'id_customer','id':'id_customer','idcustomer':'id_customer','customer id':'id_customer',
+  // v26: kolom ID customer sengaja TIDAK dipetakan lagi — walau ada di
+  // file Excel (mis. dari template lama), isinya diabaikan; ID selalu
+  // dibuat otomatis oleh sistem saat import.
   'nama':'nama','name':'nama','nama customer':'nama','nama pelanggan':'nama',
   'nomor whatsapp':'wa','whatsapp':'wa','no whatsapp':'wa','no wa':'wa','wa':'wa','nomor wa':'wa','phone':'wa','hp':'wa',
   'kota':'kota','city':'kota','wilayah':'kota','domisili':'kota',
@@ -13886,7 +13893,7 @@ function openCRMImport() {
     <div class="crm-imp-drop" id="crm-drop" onclick="document.getElementById('crm-file').click()">
       <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5-5 5 5"/><path d="M12 5v12"/></svg>
       <div style="font-size:13px;color:var(--text)">${t('crmDropHint')}</div>
-      <div class="crm-imp-hint">Excel .xlsx / .xls · CSV — ${CRM_COLUMNS.length} kolom sesuai template</div>
+      <div class="crm-imp-hint">Excel .xlsx / .xls · CSV — ${CRM_IMPORT_COLUMNS.length} kolom sesuai template (ID Customer tidak perlu diisi, otomatis dibuat sistem)</div>
     </div>
     <input type="file" id="crm-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleCRMFile(this.files[0])"/>
     <div id="crm-imp-result"></div>`;
@@ -13906,11 +13913,12 @@ function openCRMImport() {
 
 function downloadCRMTemplate() {
   if (!window.XLSX) { toast(t('crmNoLib')); return; }
-  const headers = CRM_COLUMNS.map(c => c.header);
-  // 2 baris contoh agar user paham format
+  const headers = CRM_IMPORT_COLUMNS.map(c => c.header);
+  // 2 baris contoh agar user paham format — ID Customer tidak ada di
+  // sini lagi, dibuat otomatis oleh sistem saat import.
   const example = [
-    ['CST-0001','Budi Santoso','08123456789','Jakarta','Shopee','2024-01-15','12','3500000','Repeat','Hijab Premium','Pelanggan loyal, suka COD'],
-    ['CST-0002','Siti Aminah','08987654321','Bandung','TikTok','2024-03-02','1','150000','New','Gamis Polos','Dari iklan TikTok'],
+    ['Budi Santoso','08123456789','Jakarta','Shopee','2024-01-15','12','3500000','Repeat','Hijab Premium','Pelanggan loyal, suka COD'],
+    ['Siti Aminah','08987654321','Bandung','TikTok','2024-03-02','1','150000','New','Gamis Polos','Dari iklan TikTok'],
   ];
   const ws = XLSX.utils.aoa_to_sheet([headers, ...example]);
   ws['!cols'] = headers.map(h => ({ wch: Math.max(14, h.length + 2) }));
@@ -13956,7 +13964,7 @@ function parseCRMImport(aoa) {
   const rows = [];
   for (let i=headerRow+1;i<aoa.length;i++){
     const r = aoa[i]||[];
-    const rec = { id_customer:'',nama:'',wa:'',kota:'',channel:'',first_order:'',total_order:0,total_belanja:0,status:'New',produk_fav:'',catatan:'' };
+    const rec = { nama:'',wa:'',kota:'',channel:'',first_order:'',total_order:0,total_belanja:0,status:'New',produk_fav:'',catatan:'' };
     let hasData = false;
     Object.keys(map).forEach(ci => {
       const key = map[ci];
@@ -13973,20 +13981,20 @@ function parseCRMImport(aoa) {
       else if (key === 'wa') { const waOk = isValidWA(normalizeWA(val)); rec[key] = waOk ? val : ''; if (val && !waOk) rec._waDropped = true; }
       else rec[key] = val;
     });
-    // baris dianggap valid bila ada nama atau wa atau id
-    if (hasData && (rec.nama || rec.wa || rec.id_customer)) rows.push(rec);
+    // baris dianggap valid bila ada nama atau wa (ID selalu dibuat sistem)
+    if (hasData && (rec.nama || rec.wa)) rows.push(rec);
   }
   if (!rows.length) { toast(t('crmImportEmpty')); return; }
   _crmImportRows = rows;
 
   // Preview
-  const previewCols = ['id_customer','nama','wa','kota','channel','status','total_order','total_belanja'];
+  const previewCols = ['nama','wa','kota','channel','status','total_order','total_belanja'];
   const head = previewCols.map(k => `<th>${escHtml(CRM_COLUMNS.find(c=>c.key===k).header)}</th>`).join('');
   const trs = rows.slice(0,30).map(r => `<tr>${previewCols.map(k=>{
     let v = r[k]; if (k==='total_belanja') v = crmFmtRupiah(v); 
     return `<td>${escHtml(v===''||v==null?'—':v)}</td>`;
   }).join('')}</tr>`).join('');
-  const blank = rows.filter(r=>!r.id_customer || !r.kota || !r.first_order).length;
+  const blank = rows.filter(r=>!r.kota || !r.first_order).length;
   const waDropped = rows.filter(r => r._waDropped).length;
   document.getElementById('crm-imp-result').innerHTML = `
     <div class="crm-imp-summary"><b>${rows.length}</b> ${t('crmImportRows')}${rows.length>30?' (preview 30)':''}. 
@@ -14009,9 +14017,9 @@ async function confirmCRMImport() {
   if (crmUsesDB()) {
     const btn = document.getElementById('crm-imp-confirm');
     if (btn) { btn.disabled = true; btn.textContent = '…'; }
-    // kirim baris apa adanya (key UI cocok dgn yang dibaca RPC: id_customer,nama,wa,…)
+    // kirim baris apa adanya (ID Customer TIDAK dikirim — RPC selalu
+    // generate sendiri per-owner, supaya tidak pernah tabrakan antar admin)
     const payload = _crmImportRows.map(r => ({
-      id_customer: r.id_customer || '',
       nama: r.nama || '', wa: r.wa || '', kota: r.kota || '', channel: r.channel || '',
       first_order: r.first_order || '', total_order: r.total_order || 0,
       total_belanja: r.total_belanja || 0, status: r.status || 'New',
