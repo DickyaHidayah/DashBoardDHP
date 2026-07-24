@@ -9,6 +9,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
 <style>
 /* ══════════════════════════════════════════════════════════
    DHP CREATIVE PORTAL  v5.3  —  Command System
@@ -2620,15 +2622,15 @@ body.light .mt-card{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
 .mt-fu-list-title{font-size:10.5px;font-weight:700;letter-spacing:.03em;margin-bottom:8px}
 .mt-fu-list-body{max-height:170px;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
 .mt-fu-list-item{font-size:11.5px;color:var(--text);padding:5px 9px;background:var(--surface2,rgba(255,255,255,.02));border-radius:6px;border:1px solid var(--border)}
-.mt-fu-list-item-action{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 6px 6px 9px}
-.mt-fu-item-info{display:flex;flex-direction:column;gap:2px;overflow:hidden;flex:1;min-width:0}
-.mt-fu-item-top{display:flex;align-items:center;gap:6px;overflow:hidden}
-.mt-fu-item-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mt-fu-item-wa{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:#7abf8e;text-decoration:none;white-space:nowrap;width:fit-content}
+.mt-fu-list-item-action{display:flex;flex-direction:column;gap:7px;padding:10px 11px}
+.mt-fu-item-info{display:flex;flex-direction:column;gap:7px;overflow:hidden;width:100%}
+.mt-fu-item-top{display:flex;align-items:center;gap:6px;overflow:hidden;min-height:16px}
+.mt-fu-item-name{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.mt-fu-item-wa{display:flex;align-items:center;justify-content:center;gap:6px;font-size:11.5px;font-weight:600;color:#ffffff;background:#25D366;text-decoration:none;white-space:nowrap;width:100%;padding:7px 10px;border-radius:7px;box-sizing:border-box;transition:filter .15s}
 .mt-fu-item-wa svg{flex-shrink:0}
-.mt-fu-item-wa:hover{text-decoration:underline}
-.mt-fu-item-wa-none{color:var(--muted)}
-.mt-fu-item-btn{padding:4px 10px!important;font-size:10px!important;flex-shrink:0}
+.mt-fu-item-wa:hover{filter:brightness(1.08);text-decoration:none}
+.mt-fu-item-wa-none{color:var(--muted);background:var(--surface2,rgba(255,255,255,.04));border:1px dashed var(--border);justify-content:center;display:flex;width:100%;padding:7px 10px;border-radius:7px;box-sizing:border-box;font-size:11px}
+.mt-fu-item-btn{width:100%!important;padding:7px 10px!important;font-size:11px!important;box-sizing:border-box}
 .mt-fu-reco-badge{font-size:8.5px;font-weight:700;letter-spacing:.03em;padding:2px 6px;border-radius:20px;white-space:nowrap;flex-shrink:0}
 .mt-fu-reco-badge.is-hot{color:#e87070;background:rgba(232,112,112,.14);border:1px solid rgba(232,112,112,.35)}
 .mt-fu-reco-badge.is-warm{color:#e8b86e;background:rgba(232,184,110,.14);border:1px solid rgba(232,184,110,.35)}
@@ -4466,6 +4468,7 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
             <div class="ps" data-i18n="myPerformanceSub">Ringkasan performamu bulan ini &amp; tren 6 bulan terakhir, lengkap dengan grafik</div>
           </div>
           <div class="ph-acts">
+            <button class="btn-sm btn-g" id="myperf-export-btn" onclick="exportMyPerfPdf()" title="Export laporan bulan ini ke PDF">📄 Export ke PDF</button>
             <button class="btn-sm btn-gold" onclick="loadMyPerformance()" title="Muat ulang">⟲ Muat Ulang</button>
           </div>
         </div>
@@ -8302,6 +8305,265 @@ async function _loadMyPerfModerator() {
   });
 }
 
+/* ═══════════════════════════════════════════════════════════
+   ㉘ EXPORT KE PDF — Laporan Performa Bulanan (semua role)
+   ─ Tersedia di halaman "Performa Saya" untuk Content Creator,
+     Host Live, Admin/B2B (follow-up), dan Moderator (tim).
+   ─ Isi laporan: header brand, ringkasan KPI bulan berjalan,
+     grafik (diambil dari canvas Chart.js yang sedang tampil),
+     dan tabel rincian detail SEMUA pekerjaan yang sudah
+     dikerjakan bulan ini (bukan cuma angka ringkasan).
+   ─ Pakai jsPDF + jspdf-autotable (dimuat via CDN di <head>).
+   ═══════════════════════════════════════════════════════════ */
+function _pdfMonthLabel() {
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const now = new Date();
+  return `${months[now.getMonth()]} ${now.getFullYear()}`;
+}
+function _pdfFileSafe(s) {
+  return String(s || '').trim().replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'Laporan';
+}
+function _pdfMonthRange() {
+  const now = new Date();
+  return {
+    first: ymdKey(new Date(now.getFullYear(), now.getMonth(), 1)),
+    last:  ymdKey(new Date(now.getFullYear(), now.getMonth() + 1, 0))
+  };
+}
+function _pdfFmtDate(d) {
+  if (!d) return '-';
+  const dt = (d instanceof Date) ? d : new Date(d);
+  if (isNaN(dt.getTime())) return String(d);
+  return dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+function _pdfFmtDateTime(d) {
+  if (!d) return '-';
+  const dt = new Date(d);
+  if (isNaN(dt.getTime())) return String(d);
+  return dt.toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+/* ── Detail bulan berjalan per role — semua job yang sudah dikerjakan ── */
+async function _pdfFetchDetailContent() {
+  if (!db || !currentUser) return [];
+  const { first, last } = _pdfMonthRange();
+  const res = await dbQ(d => d.from('content_calendar')
+    .select('content_date,slot_no,theme,progress_status,deadline_date,upload_time,progress_note')
+    .eq('creator_user_id', currentUser.id).gte('content_date', first).lte('content_date', last)
+    .order('content_date', { ascending: true }).order('slot_no', { ascending: true }));
+  return res?.data || [];
+}
+async function _pdfFetchDetailHost() {
+  if (!db || !currentUser) return [];
+  const { first, last } = _pdfMonthRange();
+  const res = await dbQ(d => d.from('live_schedule')
+    .select('schedule_date,session_no,platform,show_title,products_sold,gmv_amount,viewers_count,report_status')
+    .eq('host_user_id', currentUser.id).gte('schedule_date', first).lte('schedule_date', last)
+    .not('products_sold', 'is', null)
+    .order('schedule_date', { ascending: true }).order('session_no', { ascending: true }));
+  return res?.data || [];
+}
+async function _pdfFetchDetailFollowup() {
+  if (!db || !currentUser) return [];
+  const { first, last } = _pdfMonthRange();
+  const res = await dbQ(d => d.from('followup_logs')
+    .select('followed_up_at,has_response,heat_before,heat_after,crm_customers(full_name,wa_phone)')
+    .eq('user_id', currentUser.id).gte('followed_up_at', `${first}T00:00:00`).lte('followed_up_at', `${last}T23:59:59`)
+    .order('followed_up_at', { ascending: true }));
+  return res?.data || [];
+}
+async function _pdfFetchDetailModerator() {
+  const creatorIds = contentCreatorIds();
+  const hostIds = hostLiveIds();
+  const fuIds = Object.entries(LOCAL_USERS).filter(([, u]) => u.role === 'admin' || u.role === 'b2b_marketing').map(([id]) => id);
+  const ym = ymPeriodKey(new Date());
+  const { first, last } = _pdfMonthRange();
+
+  let ccByCreator = {};
+  if (db) {
+    const res = await dbQ(d => d.from('content_calendar').select('creator_user_id,progress_status').gte('content_date', first).lte('content_date', last));
+    (res?.data || []).forEach(r => {
+      ccByCreator[r.creator_user_id] = ccByCreator[r.creator_user_id] || { total: 0, done: 0 };
+      ccByCreator[r.creator_user_id].total++;
+      if (r.progress_status === 'done_upload') ccByCreator[r.creator_user_id].done++;
+    });
+  }
+  let hostStats = {};
+  if (db && hostIds.length) {
+    const results = await Promise.all(hostIds.map(id => dbQ(d => d.rpc('host_dashboard_stats', { p_host_id: id, p_period_ym: ym })).then(r => ({ id, r }))));
+    results.forEach(({ id, r }) => { hostStats[id] = r?.data?.[0] || {}; });
+  }
+  let fuStats = {};
+  if (db && fuIds.length) {
+    const results = await Promise.all(fuIds.map(id => dbQ(d => d.rpc('followup_monthly_daily', { p_user_id: id, p_period_ym: ym })).then(r => ({ id, r }))));
+    results.forEach(({ id, r }) => {
+      const daily = r?.data || [];
+      fuStats[id] = { total: daily.reduce((s, dd) => s + (dd.cnt || 0), 0), hit: daily.filter(dd => (dd.cnt || 0) >= followupTargetForUser(id)).length, days: daily.length };
+    });
+  }
+  return { creatorIds, ccByCreator, hostIds, hostStats, fuIds, fuStats };
+}
+
+/* ── Pastikan library jsPDF + autoTable sudah siap (dimuat statis di <head>) ── */
+function _pdfLibsReady() {
+  return !!(window.jspdf && window.jspdf.jsPDF);
+}
+
+async function exportMyPerfPdf() {
+  if (!currentUser) return;
+  const btn = document.getElementById('myperf-export-btn');
+  const btnOrigText = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Menyiapkan PDF…'; }
+  try {
+    if (!_pdfLibsReady()) { toast('Komponen PDF belum siap, coba lagi sebentar lagi'); return; }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const marginX = 40;
+    let y = 0;
+
+    const roleLabel  = rn(currentUser.role);
+    const monthLabel = _pdfMonthLabel();
+    const genDate    = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    // ── Header brand ──
+    doc.setFillColor(20, 20, 24);
+    doc.rect(0, 0, pageW, 92, 'F');
+    doc.setTextColor(201, 169, 110);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(18);
+    doc.text('DHP CREATIVE', marginX, 38);
+    doc.setTextColor(230, 230, 230); doc.setFontSize(11); doc.setFont('helvetica', 'normal');
+    doc.text('Laporan Performa Bulanan', marginX, 58);
+    doc.setFontSize(9); doc.setTextColor(190, 190, 190);
+    doc.text(`${currentUser.name}  ·  ${roleLabel}  ·  ${monthLabel}`, marginX, 76);
+    doc.setTextColor(0, 0, 0);
+    y = 116;
+
+    // ── Ringkasan KPI (diambil dari kartu yang sedang tampil di layar) ──
+    const kpiEls = Array.from(document.querySelectorAll('#myperf-view .myperf-kpi'));
+    if (kpiEls.length) {
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(30, 30, 30);
+      doc.text('Ringkasan Bulan Ini', marginX, y); y += 14;
+      const gap = 8;
+      const colW = (pageW - marginX * 2 - gap * (kpiEls.length - 1)) / kpiEls.length;
+      kpiEls.forEach((el, i) => {
+        const num = el.querySelector('.myperf-kpi-num')?.textContent?.trim() || '-';
+        const lbl = el.querySelector('.myperf-kpi-lbl')?.textContent?.trim() || '';
+        const x = marginX + i * (colW + gap);
+        doc.setDrawColor(222, 222, 222); doc.setLineWidth(0.8);
+        doc.roundedRect(x, y, colW, 48, 4, 4);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(178, 138, 68);
+        doc.text(num, x + 9, y + 21);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(7.6); doc.setTextColor(95, 95, 95);
+        doc.text(doc.splitTextToSize(lbl, colW - 16), x + 9, y + 34);
+      });
+      y += 48 + 22;
+      doc.setTextColor(0, 0, 0);
+    }
+
+    // ── Grafik (ambil langsung dari canvas Chart.js yang sedang aktif) ──
+    const trendCanvas = document.getElementById('myperf-trend-canvas');
+    const donutCanvas = document.getElementById('myperf-donut-canvas');
+    if (trendCanvas && trendCanvas.width) {
+      try {
+        const img = trendCanvas.toDataURL('image/png', 1.0);
+        const w = pageW - marginX * 2, h = w * (trendCanvas.height / trendCanvas.width) * 0.62;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(30, 30, 30);
+        doc.text('Grafik Tren', marginX, y); y += 10;
+        doc.addImage(img, 'PNG', marginX, y, w, h);
+        y += h + 20;
+      } catch (e) { console.warn('[PDF] gagal menyisipkan grafik tren:', e); }
+    }
+    if (donutCanvas && donutCanvas.width && y < pageH - 220) {
+      try {
+        const img = donutCanvas.toDataURL('image/png', 1.0);
+        const size = 140;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(30, 30, 30);
+        doc.text('Capaian Bulan Ini', marginX, y); y += 10;
+        doc.addImage(img, 'PNG', marginX, y, size, size);
+        y += size + 20;
+      } catch (e) { console.warn('[PDF] gagal menyisipkan grafik donut:', e); }
+    }
+
+    if (y > pageH - 140) { doc.addPage(); y = 40; }
+
+    // ── Rincian detail SEMUA pekerjaan bulan ini, per role ──
+    let head = [['-']], rows = [], title = 'Rincian Pekerjaan';
+    const r = currentUser.role;
+    if (can.isContent(r)) {
+      const data = await _pdfFetchDetailContent();
+      title = `Rincian Konten — ${monthLabel} (${data.length} slot dikerjakan)`;
+      head = [['Tanggal', 'Slot', 'Tema Konten', 'Status', 'Deadline', 'Jam Upload']];
+      rows = data.map(d => [
+        _pdfFmtDate(d.content_date), `Slot ${d.slot_no}`, d.theme || '-',
+        CC_PROGRESS[d.progress_status]?.label || d.progress_status || '-',
+        d.deadline_date ? _pdfFmtDate(d.deadline_date) : '-', d.upload_time || '-'
+      ]);
+    } else if (can.isHostLive(r)) {
+      const data = await _pdfFetchDetailHost();
+      title = `Rincian Sesi Live — ${monthLabel} (${data.length} sesi dilaporkan)`;
+      head = [['Tanggal', 'Sesi', 'Platform', 'Judul Show', 'Produk Terjual', 'GMV', 'Penonton', 'Status']];
+      rows = data.map(d => [
+        _pdfFmtDate(d.schedule_date), `Sesi ${d.session_no}`, d.platform || '-', d.show_title || '-',
+        d.products_sold ?? '-', crmFmtRupiah(d.gmv_amount || 0), d.viewers_count ?? '-',
+        d.report_status === 'approved' ? 'Disetujui' : d.report_status === 'rejected' ? 'Ditolak' : (d.report_status || '-')
+      ]);
+    } else if (r === 'admin' || can.isB2B(r)) {
+      const data = await _pdfFetchDetailFollowup();
+      title = `Rincian Follow-up Customer — ${monthLabel} (${data.length} follow-up tercatat)`;
+      head = [['Tanggal & Jam', 'Nama Customer', 'Nomor WA', 'Respon Customer', 'Heat Sebelum', 'Heat Sesudah']];
+      rows = data.map(d => [
+        _pdfFmtDateTime(d.followed_up_at), d.crm_customers?.full_name || '-', d.crm_customers?.wa_phone || '-',
+        d.has_response ? 'Ada respon' : 'Tidak ada respon', d.heat_before || '-', d.heat_after || '-'
+      ]);
+    } else if (can.isMod(r)) {
+      const md = await _pdfFetchDetailModerator();
+      title = `Rincian Performa Tim — ${monthLabel}`;
+      head = [['Nama', 'Role', 'Ringkasan Pekerjaan Bulan Ini']];
+      rows = [
+        ...md.creatorIds.map(id => { const s = md.ccByCreator[id] || { total: 0, done: 0 }; return [LOCAL_USERS[id]?.name || id, 'Content Creator', `${s.done}/${s.total} slot konten selesai tayang`]; }),
+        ...md.hostIds.map(id => { const s = md.hostStats[id] || {}; return [LOCAL_USERS[id]?.name || id, 'Host Live', `${crmFmtRupiah(Number(s.total_sales) || 0)} / ${crmFmtRupiah(Number(s.target_amount) || 0)} · ${s.total_sessions || 0} sesi live`]; }),
+        ...md.fuIds.map(id => { const s = md.fuStats[id] || { total: 0, hit: 0, days: 0 }; return [LOCAL_USERS[id]?.name || id, rn(getUserMeta(id).role), `${s.total} follow-up customer · ${s.hit}/${s.days} hari capai target harian`]; }),
+      ];
+    }
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(30, 30, 30);
+    doc.text(title, marginX, y); y += 6;
+
+    if (rows.length) {
+      doc.autoTable({
+        head, body: rows, startY: y + 8, margin: { left: marginX, right: marginX },
+        styles: { font: 'helvetica', fontSize: 8.3, cellPadding: 5, textColor: [40, 40, 40], overflow: 'linebreak', valign: 'middle' },
+        headStyles: { fillColor: [26, 26, 30], textColor: [230, 208, 166], fontStyle: 'bold', fontSize: 8.3 },
+        alternateRowStyles: { fillColor: [248, 246, 241] },
+        theme: 'grid'
+      });
+    } else {
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(120, 120, 120);
+      doc.text('Belum ada data pekerjaan tercatat untuk bulan ini.', marginX, y + 18);
+    }
+
+    // ── Footer nomor halaman di semua halaman ──
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(150, 150, 150);
+      doc.text(`DHP Creative — laporan dibuat ${genDate}`, marginX, pageH - 20);
+      doc.text(`Halaman ${i}/${pageCount}`, pageW - marginX - 60, pageH - 20);
+    }
+
+    doc.save(`Laporan_${_pdfFileSafe(currentUser.name)}_${_pdfFileSafe(roleLabel)}_${_pdfFileSafe(monthLabel)}.pdf`);
+    toast('Laporan PDF berhasil dibuat');
+  } catch (e) {
+    console.error('[DHP] exportMyPerfPdf gagal:', e);
+    toast('Gagal membuat PDF: ' + (e.message || e));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = btnOrigText || '📄 Export ke PDF'; }
+  }
+}
+window.exportMyPerfPdf = exportMyPerfPdf;
+
 function lsMonthNav(dir) { lsCursor.setMonth(lsCursor.getMonth() + dir); loadLsMonth(); }
 function lsGoToday() {
   lsCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
@@ -9250,6 +9512,9 @@ async function renderMtMainSection() {
                   // tidak terdeteksi sebagai nomor WA yang valid, nomornya disembunyikan
                   // sama sekali (tidak ditampilkan sebagai teks biasa).
                   const waInfo = crmFormatWaLink(c.wa);
+                  // v26: 3 baris terpisah per customer — (1) nama, (2) nomor WA
+                  // sebagai tombol hijau yang langsung buka wa.me saat diklik,
+                  // (3) tombol Update full-width di baris paling bawah.
                   return `<div class="mt-fu-list-item mt-fu-list-item-action">
                     <span class="mt-fu-item-info">
                       <span class="mt-fu-item-top">
@@ -9257,7 +9522,7 @@ async function renderMtMainSection() {
                         <span class="mt-fu-item-name">${escHtml(c.nama||'—')}</span>
                       </span>
                       ${waInfo ? `<a href="${waInfo.href}" target="_blank" rel="noopener" class="mt-fu-item-wa" onclick="event.stopPropagation()">
-                        <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 00-6 10.6L1 15l3.5-1a7 7 0 106.5-13zm4 9.9c-.2.5-1 1-1.4 1-.4 0-.9.1-2.9-.7-2.4-1-4-3.5-4.1-3.6-.1-.2-1-1.3-1-2.5s.6-1.8.8-2c.2-.2.5-.3.6-.3h.5c.2 0 .4 0 .5.4l.7 1.7c.1.2.1.3 0 .5l-.4.5c-.1.1-.2.3-.1.5.2.3.7 1.1 1.5 1.8.9.8 1.6 1 1.9 1.2.2.1.4.1.5-.1l.5-.6c.2-.2.3-.2.5-.1l1.5.7c.2.1.3.1.4.3.1.2.1.7 0 1.2z"/></svg>
+                        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 00-6 10.6L1 15l3.5-1a7 7 0 106.5-13zm4 9.9c-.2.5-1 1-1.4 1-.4 0-.9.1-2.9-.7-2.4-1-4-3.5-4.1-3.6-.1-.2-1-1.3-1-2.5s.6-1.8.8-2c.2-.2.5-.3.6-.3h.5c.2 0 .4 0 .5.4l.7 1.7c.1.2.1.3 0 .5l-.4.5c-.1.1-.2.3-.1.5.2.3.7 1.1 1.5 1.8.9.8 1.6 1 1.9 1.2.2.1.4.1.5-.1l.5-.6c.2-.2.3-.2.5-.1l1.5.7c.2.1.3.1.4.3.1.2.1.7 0 1.2z"/></svg>
                         ${escHtml(waInfo.display)}
                       </a>` : `<span class="mt-fu-item-wa mt-fu-item-wa-none">— tanpa nomor WA valid</span>`}
                     </span>
