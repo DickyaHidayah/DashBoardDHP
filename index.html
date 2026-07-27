@@ -2713,6 +2713,35 @@ body.light .adcust-table-wrap,body.light .adcust-stat{background:#ffffff;border:
 body.light .adcust-table th{background:#f7f7f8;color:#0d0d0d;font-weight:700;border-bottom:2px solid rgba(0,0,0,.1)}
 body.light .adcust-stat .acs-num{color:#0d0d0d;font-weight:800}
 
+/* ════════════ v28 — Budget Marketing (Moderator) ════════════ */
+.budget-cat-pill{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;
+  padding:4px 9px;border-radius:20px;white-space:nowrap;letter-spacing:.01em}
+.budget-cat-pill .pill-dot{width:6px;height:6px;border-radius:50%}
+.budget-total-row td{background:var(--surface2);font-weight:700;color:var(--text);border-top:2px solid var(--border-hi)}
+.budget-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.budget-pic{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text)}
+.budget-pic .role-dot{width:6px;height:6px;border-radius:50%;background:var(--gold)}
+
+/* ── Overview Tim — ringkasan lintas role (v28) ── */
+.ovt-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px}
+.ovt-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;margin-bottom:16px}
+.ovt-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.ovt-section-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--text);letter-spacing:.01em}
+.ovt-section-sub{font-size:10.5px;color:var(--text2);letter-spacing:.03em;margin-top:2px}
+.ovt-owner-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.ovt-owner-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.ovt-owner-name{font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:2px}
+.ovt-owner-role{font-size:9.5px;color:var(--text2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}
+.ovt-owner-row{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:3px}
+.ovt-owner-row b{color:var(--gold-hi);font-variant-numeric:tabular-nums}
+.ovt-theme-list{display:flex;flex-direction:column;gap:8px}
+.ovt-theme-row{display:grid;grid-template-columns:110px 1fr 40px;align-items:center;gap:10px;font-size:11.5px}
+.ovt-theme-name{color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ovt-theme-track{height:7px;border-radius:4px;background:var(--surface2);overflow:hidden}
+.ovt-theme-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-hi));border-radius:4px}
+.ovt-theme-count{text-align:right;color:var(--text2);font-variant-numeric:tabular-nums}
+body.light .ovt-owner-card{background:#f7f7f8}
+
 /* Ads Task page — card grid */
 .adtask-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
 .adtask-card{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--border-hi);
@@ -3692,6 +3721,17 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
         </span>
         <span data-i18n="modTargetNav">Target</span>
       </button>
+      <button class="nav-item mod-only" onclick="navTo('budget_marketing',this)" id="n-budget-marketing" style="display:none">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="1.5" y="3" width="13" height="10" rx="1.6" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M1.5 6.2h13" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M4 9.4h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <circle cx="11.2" cy="9.6" r="1.5" stroke="currentColor" stroke-width="1.2"/>
+          </svg>
+        </span>
+        <span data-i18n="budgetMarketingNav">Budget Marketing</span>
+      </button>
       <button class="nav-item mod-only" onclick="navTo('users',this)" id="n-users" style="display:none">
         <span class="nav-icon">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -3921,6 +3961,53 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
           <div class="mt-section-title">Target Omzet — B2B Marketing</div>
         </div>
         <div class="target-role-grid" id="mtg-b2b-grid"></div>
+      </div>
+
+      <!-- ④b BUDGET MARKETING (Moderator only) -->
+      <div class="sp" id="pg-budget_marketing">
+        <div class="ph">
+          <div class="ph-left">
+            <div class="pt">
+              Budget Marketing
+              <span class="mod-badge">♔ Moderator</span>
+            </div>
+            <div class="ps">Catat & pantau seluruh pengeluaran marketing — Software, KOL/Influencer, dan Ads/Iklan Berbayar</div>
+          </div>
+          <div class="ph-acts">
+            <button class="btn-sm btn-gold" onclick="openBudgetModal()">+ Tambah Pengeluaran</button>
+            <button class="btn-sm" onclick="loadBudgetMarketingPage()" title="Muat ulang">⟲</button>
+          </div>
+        </div>
+
+        <div class="adcust-stats" id="budget-stats"></div>
+
+        <div class="ph" style="margin:4px 0 12px;border:none;padding:0">
+          <div class="budget-filters">
+            <select class="ads-select" id="budget-month-filter" onchange="loadBudgetMarketingPage()"></select>
+            <select class="ads-select" id="budget-cat-filter" onchange="renderBudgetTable()">
+              <option value="all">Semua Kategori</option>
+              <option value="Software & Tools">Software &amp; Tools</option>
+              <option value="KOL & Influencer">KOL &amp; Influencer</option>
+              <option value="Ads / Iklan Berbayar">Ads / Iklan Berbayar</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="adcust-table-wrap">
+          <table class="adcust-table">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Kategori</th>
+                <th>Keterangan</th>
+                <th>PIC</th>
+                <th>Jumlah</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="budget-tbody"></tbody>
+          </table>
+        </div>
       </div>
 
       <!-- ⑤ USER MANAGEMENT (Moderator only) -->
@@ -6602,6 +6689,7 @@ async function initDashboard() {
   navShow('ns-admin',         isMod);
   navShow('n-team-tasks',     isMod);
   navShow('n-mod-target',     isMod);
+  navShow('n-budget-marketing', isMod);
   navShow('n-users',          isMod);
   // Settings — Sovereign only (otherwise moderator can rename their own role)
   navShow('n-settings',       isHead);
@@ -7944,14 +8032,43 @@ async function loadAllRoleDashboard() {
   const creatorIds = contentCreatorIds();
   let ccByCreator = {};
   creatorIds.forEach(id => ccByCreator[id] = { total: 0, done: 0 });
-  if (db && creatorIds.length) {
-    const res = await dbQ(d => d.from('content_calendar').select('creator_user_id,progress_status')
+  let themeCount = {};   // konten bulan ini, dikelompokkan per tema
+  let contentTotalMonth = 0;
+  if (db) {
+    const res = await dbQ(d => d.from('content_calendar').select('creator_user_id,progress_status,content_theme_tag')
       .gte('content_date', first).lte('content_date', last));
     (res?.data || []).forEach(r => {
       if (!ccByCreator[r.creator_user_id]) ccByCreator[r.creator_user_id] = { total:0, done:0 };
       ccByCreator[r.creator_user_id].total++;
       if (r.progress_status === 'done_upload') ccByCreator[r.creator_user_id].done++;
+      contentTotalMonth++;
+      const tag = (r.content_theme_tag || '').trim() || 'Belum ditandai';
+      themeCount[tag] = (themeCount[tag] || 0) + 1;
     });
+  }
+
+  // ── Ringkasan Customer & Revenue (CRM) — total keseluruhan + breakdown per pemegang akun ──
+  let crmRows = [];
+  if (db) {
+    const res = await dbQ(d => d.from('crm_customers').select('owner_id,total_spend,total_order,status'));
+    crmRows = res?.data || [];
+  }
+  const totalCustomers = crmRows.length;
+  const totalRevenue = crmRows.reduce((s, r) => s + (Number(r.total_spend) || 0), 0);
+  const revenueCustomerCount = crmRows.filter(r => (Number(r.total_spend) || 0) > 0).length;
+  let custByOwner = {};
+  crmRows.forEach(r => {
+    const oid = r.owner_id || '__unassigned__';
+    if (!custByOwner[oid]) custByOwner[oid] = { count: 0, revenue: 0 };
+    custByOwner[oid].count++;
+    custByOwner[oid].revenue += (Number(r.total_spend) || 0);
+  });
+
+  // ── Ringkasan Budget Marketing — total pengeluaran bulan berjalan ──
+  let budgetTotalMonth = 0;
+  if (db) {
+    const res = await dbQ(d => d.from('marketing_budget').select('jumlah').gte('tanggal', first).lte('tanggal', last));
+    budgetTotalMonth = (res?.data || []).reduce((s, r) => s + (Number(r.jumlah) || 0), 0);
   }
 
   // ── Host Live: pakai RPC host_dashboard_stats per host (sumber kebenaran server) ──
@@ -7975,10 +8092,20 @@ async function loadAllRoleDashboard() {
     });
   }
 
-  renderAllRoleDashboard({ creatorIds, ccByCreator, hostIds, hostStats, fuIds, fuStats });
+  renderAllRoleDashboard({
+    creatorIds, ccByCreator, hostIds, hostStats, fuIds, fuStats,
+    themeCount, contentTotalMonth,
+    totalCustomers, totalRevenue, revenueCustomerCount, custByOwner,
+    budgetTotalMonth
+  });
 }
 
-function renderAllRoleDashboard({ creatorIds, ccByCreator, hostIds, hostStats, fuIds, fuStats }) {
+function renderAllRoleDashboard({
+  creatorIds, ccByCreator, hostIds, hostStats, fuIds, fuStats,
+  themeCount = {}, contentTotalMonth = 0,
+  totalCustomers = 0, totalRevenue = 0, revenueCustomerCount = 0, custByOwner = {},
+  budgetTotalMonth = 0
+}) {
   const wrap = document.getElementById('alld-view');
   if (!wrap) return;
   const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
@@ -8034,7 +8161,56 @@ function renderAllRoleDashboard({ creatorIds, ccByCreator, hostIds, hostStats, f
       <div class="alld-row-sub">${r.sub}</div>
     </div>`).join('') : `<div style="padding:10px 4px;font-size:12px;color:var(--text2)">Belum ada data.</div>`;
 
+  // ── Ringkasan Tim: total customer, revenue, per-orang, konten & tema, budget ──
+  const ownerRows = Object.entries(custByOwner).map(([oid, s]) => ({
+    id: oid, name: oid === '__unassigned__' ? 'Belum Ditugaskan' : (LOCAL_USERS[oid]?.name || oid),
+    role: oid === '__unassigned__' ? '—' : rn(LOCAL_USERS[oid]?.role || ''),
+    count: s.count, revenue: s.revenue
+  })).sort((a, b) => b.count - a.count);
+
+  const ownerGridHtml = ownerRows.length ? ownerRows.map(o => `
+    <div class="ovt-owner-card">
+      <div class="ovt-owner-name">${escHtml(o.name)}</div>
+      <div class="ovt-owner-role">${escHtml(o.role)}</div>
+      <div class="ovt-owner-row"><span>Customer dipegang</span><b>${o.count}</b></div>
+      <div class="ovt-owner-row"><span>Revenue</span><b>${crmFmtRupiah(o.revenue)}</b></div>
+    </div>`).join('') : `<div style="padding:10px 4px;font-size:12px;color:var(--text2)">Belum ada data customer.</div>`;
+
+  const themeRows = Object.entries(themeCount).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  const themeMax = themeRows.length ? themeRows[0][1] : 0;
+  const themeListHtml = themeRows.length ? themeRows.map(([label, count]) => `
+    <div class="ovt-theme-row">
+      <div class="ovt-theme-name" title="${escHtml(label)}">${escHtml(label)}</div>
+      <div class="ovt-theme-track"><div class="ovt-theme-fill" style="width:${themeMax ? Math.round((count/themeMax)*100) : 0}%"></div></div>
+      <div class="ovt-theme-count">${count}</div>
+    </div>`).join('') : `<div style="padding:10px 4px;font-size:12px;color:var(--text2)">Belum ada konten bulan ini.</div>`;
+
+  const topTheme = themeRows[0]?.[0] || '—';
+
+  const teamOverview = `
+    <div class="ovt-summary">
+      <div class="dash-stat-card"><div class="dash-stat-num">${totalCustomers}</div><div class="dash-stat-lbl">Total Customer</div></div>
+      <div class="dash-stat-card"><div class="dash-stat-num">${crmFmtRupiah(totalRevenue)}</div><div class="dash-stat-lbl">Total Revenue</div></div>
+      <div class="dash-stat-card"><div class="dash-stat-num">${revenueCustomerCount}</div><div class="dash-stat-lbl">Customer Sudah Belanja</div></div>
+      <div class="dash-stat-card"><div class="dash-stat-num">${contentTotalMonth}</div><div class="dash-stat-lbl">Total Konten Bulan Ini</div></div>
+      <div class="dash-stat-card"><div class="dash-stat-num" style="font-size:15px;line-height:1.3">${escHtml(topTheme)}</div><div class="dash-stat-lbl">Tema Konten Terbanyak</div></div>
+      <div class="dash-stat-card"><div class="dash-stat-num">${crmFmtRupiah(budgetTotalMonth)}</div><div class="dash-stat-lbl">Budget Pengeluaran Bulan Ini</div></div>
+    </div>
+    <div class="ovt-section">
+      <div class="ovt-section-head">
+        <div><div class="ovt-section-title">Customer per PIC</div><div class="ovt-section-sub">Total seluruh waktu — berapa customer &amp; revenue yang dipegang tiap orang</div></div>
+      </div>
+      <div class="ovt-owner-grid">${ownerGridHtml}</div>
+    </div>
+    <div class="ovt-section">
+      <div class="ovt-section-head">
+        <div><div class="ovt-section-title">Tema Konten Terpopuler</div><div class="ovt-section-sub">${months[now.getMonth()]} ${now.getFullYear()} — tema yang paling banyak diproduksi</div></div>
+      </div>
+      <div class="ovt-theme-list">${themeListHtml}</div>
+    </div>`;
+
   wrap.innerHTML = `
+    ${teamOverview}
     ${summary}
     <div class="alld-section">
       <div class="alld-section-head">
@@ -13494,6 +13670,186 @@ async function renderModTargetPage() {
 }
 window.renderModTargetPage = renderModTargetPage;
 
+/* ═══════════════════════════════════════════════════════════
+   ㉔b BUDGET MARKETING (Moderator / Chief-Moderator sahaja)
+   Kategori pengeluaran: Software & Tools, KOL & Influencer,
+   Ads / Iklan Berbayar — dicatat per tanggal, PIC, dan jumlah.
+   ═══════════════════════════════════════════════════════════ */
+const BUDGET_CATEGORIES = [
+  { value:'Software & Tools',     color:'var(--blue)',  bg:'rgba(126,168,201,.14)', border:'rgba(126,168,201,.32)' },
+  { value:'KOL & Influencer',     color:'var(--amber)', bg:'rgba(232,184,110,.14)', border:'rgba(232,184,110,.32)' },
+  { value:'Ads / Iklan Berbayar', color:'var(--red)',   bg:'rgba(232,112,112,.14)', border:'rgba(232,112,112,.32)' },
+];
+function budgetCatMeta(cat) { return BUDGET_CATEGORIES.find(c => c.value === cat) || BUDGET_CATEGORIES[0]; }
+function budgetCatPill(cat) {
+  const m = budgetCatMeta(cat);
+  return `<span class="budget-cat-pill" style="background:${m.bg};color:${m.color};border:1px solid ${m.border}">
+    <span class="pill-dot" style="background:${m.color}"></span>${escHtml(cat)}</span>`;
+}
+
+let budgetCache = [];
+
+function _budgetMonthOptions(selectedYm) {
+  const now = new Date();
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  let opts = [`<option value="all">Semua Periode</option>`];
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    opts.push(`<option value="${ym}" ${ym === selectedYm ? 'selected' : ''}>${months[d.getMonth()]} ${d.getFullYear()}</option>`);
+  }
+  return opts.join('');
+}
+
+async function loadBudgetMarketingPage() {
+  if (!can.isMod(currentUser?.role)) return;
+  const sel = document.getElementById('budget-month-filter');
+  const curYm = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+  if (sel && !sel.dataset.inited) {
+    sel.innerHTML = _budgetMonthOptions(curYm);
+    sel.value = curYm;
+    sel.dataset.inited = '1';
+  }
+  const tbody = document.getElementById('budget-tbody');
+  if (tbody) tbody.innerHTML = `<tr><td colspan="6" class="tbl-empty">Memuat data…</td></tr>`;
+  if (!db) { budgetCache = []; renderBudgetTable(); return; }
+  const res = await dbQ(d => d.from('marketing_budget').select('*').order('tanggal', { ascending: false }));
+  budgetCache = res?.data || [];
+  renderBudgetTable();
+}
+window.loadBudgetMarketingPage = loadBudgetMarketingPage;
+
+function renderBudgetTable() {
+  const tbody = document.getElementById('budget-tbody');
+  const statsWrap = document.getElementById('budget-stats');
+  if (!tbody) return;
+  const ym = document.getElementById('budget-month-filter')?.value || 'all';
+  const catFilter = document.getElementById('budget-cat-filter')?.value || 'all';
+
+  let periodRows = budgetCache.slice();
+  if (ym !== 'all') periodRows = periodRows.filter(r => String(r.tanggal || '').slice(0, 7) === ym);
+
+  let rows = periodRows.slice();
+  if (catFilter !== 'all') rows = rows.filter(r => r.kategori === catFilter);
+
+  // Stat cards ikut filter periode (bukan filter kategori) supaya tetap komparatif antar-kategori
+  const total = periodRows.reduce((s, r) => s + (Number(r.jumlah) || 0), 0);
+  const byCat = {};
+  BUDGET_CATEGORIES.forEach(c => byCat[c.value] = 0);
+  periodRows.forEach(r => { byCat[r.kategori] = (byCat[r.kategori] || 0) + (Number(r.jumlah) || 0); });
+
+  if (statsWrap) {
+    statsWrap.innerHTML = `
+      <div class="adcust-stat"><div class="acs-num">${crmFmtRupiah(total)}</div><div class="acs-lbl">Total Pengeluaran</div></div>
+      ${BUDGET_CATEGORIES.map(c => `
+        <div class="adcust-stat"><div class="acs-num" style="color:${c.color}">${crmFmtRupiah(byCat[c.value] || 0)}</div><div class="acs-lbl">${escHtml(c.value)}</div></div>`).join('')}
+      <div class="adcust-stat"><div class="acs-num">${periodRows.length}</div><div class="acs-lbl">Jumlah Entri</div></div>`;
+  }
+
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="6" class="tbl-empty">Belum ada data pengeluaran untuk periode/kategori ini.</td></tr>`;
+    return;
+  }
+
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const rowsTotal = rows.reduce((s, r) => s + (Number(r.jumlah) || 0), 0);
+  tbody.innerHTML = rows.map(r => {
+    const pic = r.pic_id ? getUserMeta(r.pic_id) : null;
+    const dObj = r.tanggal ? new Date(r.tanggal + 'T00:00:00') : null;
+    const tglTxt = dObj ? `${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}` : '—';
+    return `<tr>
+      <td>${tglTxt}</td>
+      <td>${budgetCatPill(r.kategori)}</td>
+      <td>${r.keterangan ? escHtml(r.keterangan) : '<span style="color:var(--text2)">—</span>'}</td>
+      <td>${pic ? `<span class="budget-pic"><span class="role-dot"></span>${escHtml(pic.name)}</span>` : '<span style="color:var(--text2)">—</span>'}</td>
+      <td style="font-weight:600">${crmFmtRupiah(r.jumlah)}</td>
+      <td>
+        <button class="btn-sm" onclick="openBudgetModal('${r.id}')" title="Edit">✎</button>
+        <button class="btn-sm" onclick="deleteBudgetEntry('${r.id}')" title="Hapus">🗑</button>
+      </td>
+    </tr>`;
+  }).join('') + `
+    <tr class="budget-total-row">
+      <td colspan="4" style="text-align:right">Total (${rows.length} entri)</td>
+      <td>${crmFmtRupiah(rowsTotal)}</td>
+      <td></td>
+    </tr>`;
+}
+window.renderBudgetTable = renderBudgetTable;
+
+function openBudgetModal(id) {
+  if (!can.isMod(currentUser?.role)) return;
+  const row = id ? budgetCache.find(r => r.id === id) : null;
+  document.getElementById('m-title').textContent = row ? 'Edit Pengeluaran Budget' : 'Tambah Pengeluaran Budget';
+
+  const users = Object.entries(LOCAL_USERS).sort((a, b) => a[1].name.localeCompare(b[1].name));
+  const picOptions = users.map(([uid, u]) => `<option value="${uid}" ${row?.pic_id === uid ? 'selected' : ''}>${escHtml(u.name)}</option>`).join('');
+
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg"><label>Kategori Pengeluaran</label>
+      <select class="fi" id="bg-ed-kategori">
+        ${BUDGET_CATEGORIES.map(c => `<option value="${escHtml(c.value)}" ${row?.kategori === c.value ? 'selected' : ''}>${escHtml(c.value)}</option>`).join('')}
+      </select>
+    </div>
+    <div class="fg"><label>Tanggal</label>
+      <input class="fi" id="bg-ed-tanggal" type="date" value="${row?.tanggal || ymdKey(new Date())}"/>
+    </div>
+    <div class="fg"><label>Jumlah (Rp)</label>
+      <input class="fi" id="bg-ed-jumlah" type="number" min="0" step="1000" value="${row?.jumlah || ''}" placeholder="mis. 500000"/>
+    </div>
+    <div class="fg"><label>PIC (Penanggung Jawab)</label>
+      <select class="fi" id="bg-ed-pic">
+        <option value="">— pilih PIC —</option>
+        ${picOptions}
+      </select>
+    </div>
+    <div class="fg"><label>Keterangan (opsional)</label>
+      <textarea class="fi" id="bg-ed-ket" rows="3" placeholder="mis. Sewa tools editing / fee endorse KOL / boost Ads TikTok">${escHtml(row?.keterangan || '')}</textarea>
+    </div>`;
+
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-gold" onclick="saveBudgetEntry(${row ? `'${row.id}'` : 'null'})">Simpan</button>
+    <button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+window.openBudgetModal = openBudgetModal;
+
+async function saveBudgetEntry(id) {
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  const kategori = document.getElementById('bg-ed-kategori').value;
+  const tanggal  = document.getElementById('bg-ed-tanggal').value;
+  const jumlah   = crmParseInt(document.getElementById('bg-ed-jumlah').value);
+  const picId    = document.getElementById('bg-ed-pic').value;
+  const ket      = document.getElementById('bg-ed-ket').value.trim();
+
+  if (!jumlah || jumlah <= 0) { toast('Isi jumlah pengeluaran terlebih dahulu'); return; }
+
+  const rpcName = id ? 'moderator_update_budget' : 'moderator_add_budget';
+  const params = id
+    ? { p_user_id: currentUser.id, p_budget_id: id, p_tanggal: tanggal, p_kategori: kategori, p_keterangan: ket, p_jumlah: jumlah, p_pic_id: picId }
+    : { p_user_id: currentUser.id, p_tanggal: tanggal, p_kategori: kategori, p_keterangan: ket, p_jumlah: jumlah, p_pic_id: picId };
+
+  const res = await dbQ(d => d.rpc(rpcName, params));
+  if (res?.error) { toast('Gagal menyimpan: ' + res.error.message); return; }
+
+  toast(id ? 'Pengeluaran diperbarui' : 'Pengeluaran ditambahkan');
+  pushActivity(`${id ? 'Mengubah' : 'Menambahkan'} pengeluaran budget marketing: ${kategori} — ${crmFmtRupiah(jumlah)}`, 'info');
+  closeModal();
+  loadBudgetMarketingPage();
+}
+window.saveBudgetEntry = saveBudgetEntry;
+
+async function deleteBudgetEntry(id) {
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  if (!confirm('Hapus data pengeluaran ini? Tindakan ini tidak bisa dibatalkan.')) return;
+  const res = await dbQ(d => d.rpc('moderator_delete_budget', { p_user_id: currentUser.id, p_budget_id: id }));
+  if (res?.error) { toast('Gagal menghapus: ' + res.error.message); return; }
+  toast('Pengeluaran dihapus');
+  pushActivity('Menghapus 1 entri budget marketing', 'info');
+  loadBudgetMarketingPage();
+}
+window.deleteBudgetEntry = deleteBudgetEntry;
+
 async function _getPortalConfigVal(key, fallback) {
   if (db) {
     const res = await dbQ(d => d.from('portal_config').select('value').eq('key', key).maybeSingle());
@@ -15064,7 +15420,7 @@ async function submitUnlockRequest() {
 function navTo(page, btn) {
   const r = currentUser.role;
   // Moderator-only pages
-  if (['team_tasks','users','mod_target'].includes(page) && !can.isMod(r)) { toast('Moderator access required'); return; }
+  if (['team_tasks','users','mod_target','budget_marketing'].includes(page) && !can.isMod(r)) { toast('Moderator access required'); return; }
   // Manage (Ads) pages: moderator + admin/b2b (target)
   if (['ad_scheduler','ad_customers','ad_task'].includes(page) && !can.canSeeAds(r)) { toast(t('adAccessReq')); return; }
   // Manage CRM page: moderator + admin/b2b
@@ -15093,6 +15449,7 @@ function loadPageData(page) {
   if (page === 'my_performance')  loadMyPerformance();
   if (page === 'team_tasks')      renderTeamTasks();
   if (page === 'mod_target')      renderModTargetPage();
+  if (page === 'budget_marketing') loadBudgetMarketingPage();
   if (page === 'users')           renderUsers();
   if (page === 'settings')        renderSettings();
   if (page === 'presence')        renderPresencePage();
