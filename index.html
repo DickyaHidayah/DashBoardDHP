@@ -453,14 +453,17 @@ body.light .hs-switch-btn.active{color:#fff}
 .ls-attn-btn.has-alert{animation:lsAttnGlow 2.4s ease-in-out infinite}
 @keyframes lsAttnGlow{0%,100%{box-shadow:0 0 0 0 rgba(201,169,110,.28)}50%{box-shadow:0 0 0 5px rgba(201,169,110,.05),0 0 14px rgba(201,169,110,.35)}}
 
-.ls-attn-menu{position:absolute;top:calc(100% + 9px);right:0;min-width:252px;background:var(--surface);
-  border:1px solid var(--border-hi);border-radius:11px;padding:7px;z-index:80;
-  box-shadow:0 16px 38px rgba(0,0,0,.4),0 0 0 1px rgba(201,169,110,.06);
+/* v32 FIX: dulu position:absolute relatif ke .ls-attn-wrap — karena .ls-attn-wrap
+   ada di dalam .tbl-wrap yang overflow:hidden, dropdown ini ke-clip (item paling
+   bawah, mis. "Izin", jadi ketutupan & tidak bisa diklik). Sekarang position:fixed,
+   posisinya dihitung JS (positionLsAttnMenu) relatif ke viewport — lolos dari
+   overflow:hidden ancestor manapun, aman di semua ukuran layar termasuk mobile. */
+.ls-attn-menu{position:fixed;min-width:252px;max-width:min(300px,calc(100vw - 16px));background:var(--surface);
+  border:1px solid var(--border-hi);border-radius:11px;padding:7px;z-index:2500;
+  box-shadow:0 16px 38px rgba(0,0,0,.45),0 0 0 1px rgba(201,169,110,.06);
   opacity:0;transform:translateY(-8px) scale(.96);pointer-events:none;transform-origin:top right;
   transition:opacity .2s cubic-bezier(.16,1,.3,1),transform .2s cubic-bezier(.16,1,.3,1)}
 .ls-attn-menu.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
-.ls-attn-menu::before{content:'';position:absolute;top:-5px;right:18px;width:9px;height:9px;
-  background:var(--surface);border-left:1px solid var(--border-hi);border-top:1px solid var(--border-hi);transform:rotate(45deg)}
 .ls-attn-item{display:flex;align-items:flex-start;gap:10px;width:100%;padding:9px 10px;border-radius:8px;
   background:transparent;border:none;cursor:pointer;text-align:left;font-family:'Inter',sans-serif;
   color:var(--text);transition:background .14s ease,padding-left .18s cubic-bezier(.16,1,.3,1),transform .14s ease}
@@ -484,6 +487,38 @@ body.light .hs-switch-btn.active{color:#fff}
 .ls-attn-menu.open .ls-attn-item:nth-child(2){animation-delay:.03s}
 .ls-attn-menu.open .ls-attn-item:nth-child(3){animation-delay:.06s}
 .ls-attn-menu.open .ls-attn-item:nth-child(4){animation-delay:.09s}
+
+/* ══════════════════════════════════════════════════════════
+   v32 — LAPORAN SESI LIVE: blok Shopee / TikTok
+   ══════════════════════════════════════════════════════════ */
+.lsr-legacy-note{background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.3);
+  border-radius:9px;padding:10px 12px;font-size:11.5px;line-height:1.5;color:var(--text2);margin-bottom:14px}
+.lsr-legacy-note b{color:var(--gold-hi)}
+.lsr-plat-block{border:1px solid var(--border);border-radius:11px;padding:12px 12px 2px;margin-bottom:12px;background:rgba(255,255,255,.015)}
+.lsr-plat-head{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;
+  letter-spacing:.02em;color:var(--text);margin-bottom:10px;text-transform:uppercase}
+.lsr-plat-dot{width:9px;height:9px;border-radius:50%;flex:none}
+.lsr-dot-shopee{background:#ee4d2d}
+.lsr-dot-tiktok{background:linear-gradient(135deg,#25f4ee,#fe2c55)}
+.lsr-total-row{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;
+  background:rgba(201,169,110,.08);border:1px solid rgba(201,169,110,.22);border-radius:9px;
+  font-size:11.5px;color:var(--text2);margin-bottom:14px}
+.lsr-total-row b{color:var(--gold-hi);font-size:12.5px}
+
+/* v33 — Jenis Konten (Carousel / Reels / Story): picker kartu + badge */
+.cc-type-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cc-type-card{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 6px;
+  background:var(--surface);border:1.4px solid var(--border);border-radius:11px;cursor:pointer;
+  transition:border-color .16s ease,background .16s ease,transform .12s ease;color:var(--text2);
+  font-family:'Inter',sans-serif}
+.cc-type-card:hover{border-color:var(--gold);transform:translateY(-1px)}
+.cc-type-card.selected{border-color:var(--gold);background:rgba(201,169,110,.08);
+  box-shadow:0 0 0 1px var(--gold),0 0 16px rgba(201,169,110,.22)}
+.cc-type-ico{display:flex}
+.cc-type-label{font-size:11px;font-weight:600;letter-spacing:.02em;color:var(--text)}
+.cc-type-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px 2px 6px;border-radius:20px;
+  font-size:9.5px;font-weight:700;letter-spacing:.02em;white-space:nowrap;border:1px solid}
+.cc-type-badge svg{width:12px;height:12px;flex:none}
 
 /* v27: badge tema/kategori konten (Comedy, Edukasi, Storytelling, dst) */
 .cc-theme-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.03em;white-space:nowrap;background:rgba(201,169,110,.1);color:var(--gold-hi);border:1px solid rgba(201,169,110,.3)}
@@ -7331,7 +7366,10 @@ function renderCcDayTable() {
       ? (s.content_theme_tag ? `<span class="cc-theme-badge">${escHtml(s.content_theme_tag)}</span>` : `<span style="color:var(--text2)">—</span>`)
       : `<span style="color:var(--text2)">—</span>`;
     const themeTxt = s
-      ? `<div style="font-weight:600;color:var(--text)">${escHtml(s.theme || '(Tanpa judul)')}</div>
+      ? `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
+           <div style="font-weight:600;color:var(--text)">${escHtml(s.theme || '(Tanpa judul)')}</div>
+           ${s.content_type ? ccTypeBadge(s.content_type) : ''}
+         </div>
          <div style="font-size:11.5px;color:var(--text2);margin-top:2px;max-width:260px;white-space:pre-wrap">${escHtml((s.script||'').slice(0,140))}${(s.script||'').length>140?'…':''}</div>`
       : `<span style="color:var(--text2)">— slot kosong —</span>`;
 
@@ -7402,6 +7440,19 @@ function openCcSlotModal(slotNo) {
     <div class="fg"><label>Judul Konten</label>
       <input class="fi" id="cc-ed-theme" value="${escHtml(s?.theme || '')}" placeholder="mis. Tips menata linen kamar tidur"/>
     </div>
+    <div class="fg"><label>Jenis Konten</label>
+      <div class="cc-type-picker" id="cc-type-picker">
+        ${['carousel','reels','story'].map(key => {
+          const m = CC_TYPE_META[key];
+          const sel = (s?.content_type || '') === key ? 'selected' : '';
+          return `<button type="button" class="cc-type-card ${sel}" data-type="${key}" onclick="ccPickType('${key}')">
+            <span class="cc-type-ico" style="color:${m.color}">${m.icon}</span>
+            <span class="cc-type-label">${m.label}</span>
+          </button>`;
+        }).join('')}
+      </div>
+      <input type="hidden" id="cc-ed-content-type" value="${escHtml(s?.content_type || '')}"/>
+    </div>
     <div class="fg"><label>Script / Caption</label>
       <textarea class="fi" id="cc-ed-script" rows="5" placeholder="Tulis script atau poin-poin konten di sini…">${escHtml(s?.script || '')}</textarea>
     </div>
@@ -7458,6 +7509,7 @@ async function saveCcSlot(slotNo, slotId) {
   const themeTagSel = document.getElementById('cc-ed-theme-tag').value;
   const themeTag = themeTagSel === '__add_new__' ? '' : themeTagSel;
   const theme    = document.getElementById('cc-ed-theme').value.trim();
+  const contentType = document.getElementById('cc-ed-content-type').value || null;
   const script   = document.getElementById('cc-ed-script').value.trim();
   const upload   = document.getElementById('cc-ed-upload').value || null;
   const ref      = ccNormalizeLink(document.getElementById('cc-ed-ref').value.trim());
@@ -7472,6 +7524,16 @@ async function saveCcSlot(slotNo, slotId) {
     p_content_theme: themeTag || null
   }));
   if (res?.error) { toast('Gagal menyimpan: ' + res.error.message); return; }
+
+  // v33: simpan Jenis Konten (Carousel/Reels/Story) lewat RPC terpisah,
+  // dicari via kunci alami (creator+tanggal+slot) — tidak menyentuh
+  // fungsi upsert utama supaya parameter/kolom lama sama sekali tidak berubah.
+  const typeRes = await dbQ(d => d.rpc('set_content_slot_type', {
+    p_actor_id: currentUser.id, p_creator_user: ccTargetId, p_content_date: ccSelectedDate,
+    p_slot_no: slotNo, p_content_type: contentType
+  }));
+  if (typeRes?.error) { toast('Slot tersimpan, tapi jenis konten gagal disimpan: ' + typeRes.error.message); }
+
   closeModal();
   await loadCcMonth();
   toast(`Slot ${slotNo} konten ${LOCAL_USERS[ccTargetId]?.name||ccTargetId} disimpan`);
@@ -9791,9 +9853,35 @@ let lsAttnPendingStatus = null;    // 'sakit' | 'izin' | 'scheduled' — dipilih
 
 function lsAttnOutsideHandler(e) {
   const wrap = document.getElementById('ls-attn-wrap');
-  if (wrap && !wrap.contains(e.target)) closeLsAttnMenu();
+  const menu = document.getElementById('ls-attn-menu');
+  // menu sekarang position:fixed (bukan child yg diklik di dalam wrap secara visual
+  // tapi tetap child DOM-nya), jadi cek dua-duanya biar klik di dalam menu tidak nutup menu
+  if (wrap && !wrap.contains(e.target) && menu && !menu.contains(e.target)) closeLsAttnMenu();
 }
 function lsAttnEscHandler(e) { if (e.key === 'Escape') closeLsAttnMenu(); }
+function lsAttnRepositionHandler() { positionLsAttnMenu(); }
+
+/* v32 FIX: hitung posisi dropdown Kehadiran relatif ke viewport (bukan ke parent),
+   supaya tidak pernah ke-clip oleh overflow:hidden di .tbl-wrap dan tetap pas
+   nempel ke tombol walau halaman di-scroll / resize / dibuka di HP. */
+function positionLsAttnMenu() {
+  const btn  = document.getElementById('ls-attn-btn');
+  const menu = document.getElementById('ls-attn-menu');
+  if (!btn || !menu) return;
+  const r = btn.getBoundingClientRect();
+  const menuW = Math.max(menu.offsetWidth || 252, 220);
+  const menuH = menu.offsetHeight || 0;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  let left = r.right - menuW;
+  left = Math.max(8, Math.min(left, vw - menuW - 8));
+  let top = r.bottom + 9;
+  if (menuH && top + menuH > vh - 8) {
+    const above = r.top - menuH - 9;
+    top = above > 8 ? above : Math.max(8, vh - menuH - 8);
+  }
+  menu.style.left = left + 'px';
+  menu.style.top  = top + 'px';
+}
 
 function closeLsAttnMenu() {
   const menu = document.getElementById('ls-attn-menu');
@@ -9804,6 +9892,8 @@ function closeLsAttnMenu() {
   lsAttnPendingStatus = null;
   document.removeEventListener('click', lsAttnOutsideHandler, true);
   document.removeEventListener('keydown', lsAttnEscHandler, true);
+  window.removeEventListener('resize', lsAttnRepositionHandler);
+  document.querySelector('.main')?.removeEventListener('scroll', lsAttnRepositionHandler, true);
 }
 
 function toggleLsAttnMenu(e) {
@@ -9815,11 +9905,16 @@ function toggleLsAttnMenu(e) {
   lsAttnMenuMode = 'main';
   lsAttnPendingStatus = null;
   renderLsAttnMenu();
+  positionLsAttnMenu();
   menu.classList.add('open');
   btn.classList.add('is-open');
+  // reposisi 1x lagi setelah transisi buka selesai (ukuran menu final)
+  requestAnimationFrame(() => positionLsAttnMenu());
   setTimeout(() => {
     document.addEventListener('click', lsAttnOutsideHandler, true);
     document.addEventListener('keydown', lsAttnEscHandler, true);
+    window.addEventListener('resize', lsAttnRepositionHandler);
+    document.querySelector('.main')?.addEventListener('scroll', lsAttnRepositionHandler, true);
   }, 0);
 }
 
@@ -9858,6 +9953,7 @@ function renderLsAttnMenu() {
           </button>`).join('')
         : `<div class="ls-attn-empty">${wantScheduled ? 'Tidak ada sesi berstatus Sakit/Izin' : 'Belum ada sesi live yang bisa ditandai'}</div>`
       }</div>`;
+    if (menu.classList.contains('open')) requestAnimationFrame(() => positionLsAttnMenu());
     return;
   }
 
@@ -9885,6 +9981,7 @@ function renderLsAttnMenu() {
     }
   }
   menu.innerHTML = items.join('');
+  if (menu.classList.contains('open')) requestAnimationFrame(() => positionLsAttnMenu());
 }
 
 function lsAttnPickLibur() { closeLsAttnMenu(); toggleLsLibur(); }
@@ -9942,6 +10039,46 @@ function stOpenPendingReport(sessionId) {
   renderReportModal(s);
 }
 
+/* v33 — Jenis Konten: Carousel / Reels / Story.
+   Ikon vector minimalis senada dgn ikon Kehadiran (LS_ATTN_ICO) — stroke
+   tipis, currentColor, rounded caps — supaya konsisten sama gaya sistem. */
+const CC_TYPE_META = {
+  carousel: {
+    label: 'Carousel', color: 'var(--gold-hi)', bg: 'rgba(201,169,110,.1)', border: 'rgba(201,169,110,.32)',
+    icon: `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2.4" y="2.6" width="9.4" height="10.2" rx="1.8" opacity=".5"/>
+      <rect x="5.7" y="4.1" width="9.4" height="10.2" rx="1.8"/>
+      <circle cx="7.2" cy="16" r=".65" fill="currentColor" stroke="none"/>
+      <circle cx="9.4" cy="16" r=".65" fill="currentColor" stroke="none"/>
+      <circle cx="11.6" cy="16" r=".65" fill="currentColor" stroke="none"/>
+    </svg>`
+  },
+  reels: {
+    label: 'Reels', color: '#f0708c', bg: 'rgba(254,44,85,.1)', border: 'rgba(254,44,85,.32)',
+    icon: `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3.4" y="2" width="11.2" height="14" rx="2.3"/>
+      <path d="M3.4 5.7h11.2M3.4 12.3h11.2" opacity=".4"/>
+      <path d="M7.5 6.6v4.8l4.3-2.4-4.3-2.4z" fill="currentColor" stroke="none"/>
+    </svg>`
+  },
+  story: {
+    label: 'Story', color: '#b39dff', bg: 'rgba(155,120,255,.1)', border: 'rgba(155,120,255,.32)',
+    icon: `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="9" cy="9" r="6.5" stroke-dasharray="2.4 2.3"/>
+      <path d="M9 6.4v5.2M6.4 9h5.2" stroke-width="1.3"/>
+    </svg>`
+  }
+};
+function ccTypeBadge(key) {
+  const m = CC_TYPE_META[key]; if (!m) return '';
+  return `<span class="cc-type-badge" style="color:${m.color};border-color:${m.border};background:${m.bg}">${m.icon}${m.label}</span>`;
+}
+function ccPickType(key) {
+  document.getElementById('cc-ed-content-type').value = key;
+  document.querySelectorAll('#cc-type-picker .cc-type-card').forEach(el =>
+    el.classList.toggle('selected', el.dataset.type === key));
+}
+
 let _lsReportHostId = null;
 function renderReportModal(s) {
   const isMod = can.isMod(currentUser?.role);
@@ -9953,18 +10090,48 @@ function renderReportModal(s) {
   document.getElementById('m-title').textContent =
     `Laporan Sesi ${s.session_no} — ${LOCAL_USERS[s.host_user_id]?.name||s.host_user_id} · ${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
 
+  // v32: laporan sesi dipecah jadi 2 blok — Shopee & TikTok.
+  // Data lama (diisi sebelum v32) cuma punya kolom TOTAL (products_sold/
+  // gmv_amount/viewers_count), belum ada breakdown shopee_*/tiktok_* —
+  // kalau begitu tampilkan sbg info, JANGAN ditebak masuk platform mana.
+  const hasSplit = s.shopee_products_sold != null || s.tiktok_products_sold != null;
+  const isLegacy = !hasSplit && s.products_sold != null;
+  const legacyNote = isLegacy ? `
+    <div class="lsr-legacy-note">Laporan lama untuk sesi ini belum terpisah Shopee/TikTok —
+      totalnya dulu: <b>${s.products_sold} produk · Rp ${Number(s.gmv_amount||0).toLocaleString('id-ID')} · ${s.viewers_count} penonton</b>.
+      Isi ulang di bawah per platform, nilai lama tidak akan hilang sampai kamu simpan yang baru.</div>` : '';
+
   document.getElementById('m-body').innerHTML = `
-    <div class="fg"><label>Total Produk Terjual</label>
-      <input class="fi" id="lsr-products" type="number" min="0" step="1" value="${s.products_sold ?? ''}" placeholder="mis. 42"/>
+    ${legacyNote}
+    <div class="lsr-plat-block">
+      <div class="lsr-plat-head"><span class="lsr-plat-dot lsr-dot-shopee"></span>Shopee Live</div>
+      <div class="fg"><label>Produk Terjual (Shopee)</label>
+        <input class="fi lsr-num" id="lsr-shopee-products" type="number" min="0" step="1" value="${s.shopee_products_sold ?? ''}" placeholder="mis. 20" oninput="updateLsrTotal()"/>
+      </div>
+      <div class="fg"><label>GMV Shopee (Rp)</label>
+        <input class="fi lsr-num" id="lsr-shopee-gmv" type="text" inputmode="numeric"
+          value="${s.shopee_gmv_amount ? Number(s.shopee_gmv_amount).toLocaleString('id-ID') : ''}"
+          oninput="formatNominalPlain(this);updateLsrTotal()" placeholder="mis. 1.500.000"/>
+      </div>
+      <div class="fg"><label>Penonton Shopee</label>
+        <input class="fi lsr-num" id="lsr-shopee-viewers" type="number" min="0" step="1" value="${s.shopee_viewers_count ?? ''}" placeholder="mis. 400" oninput="updateLsrTotal()"/>
+      </div>
     </div>
-    <div class="fg"><label>Total GMV (Rp)</label>
-      <input class="fi" id="lsr-gmv" type="text" inputmode="numeric"
-        value="${s.gmv_amount ? Number(s.gmv_amount).toLocaleString('id-ID') : ''}"
-        oninput="formatNominalPlain(this)" placeholder="mis. 3.500.000"/>
+    <div class="lsr-plat-block">
+      <div class="lsr-plat-head"><span class="lsr-plat-dot lsr-dot-tiktok"></span>TikTok Live</div>
+      <div class="fg"><label>Produk Terjual (TikTok)</label>
+        <input class="fi lsr-num" id="lsr-tiktok-products" type="number" min="0" step="1" value="${s.tiktok_products_sold ?? ''}" placeholder="mis. 22" oninput="updateLsrTotal()"/>
+      </div>
+      <div class="fg"><label>GMV TikTok (Rp)</label>
+        <input class="fi lsr-num" id="lsr-tiktok-gmv" type="text" inputmode="numeric"
+          value="${s.tiktok_gmv_amount ? Number(s.tiktok_gmv_amount).toLocaleString('id-ID') : ''}"
+          oninput="formatNominalPlain(this);updateLsrTotal()" placeholder="mis. 2.000.000"/>
+      </div>
+      <div class="fg"><label>Penonton TikTok</label>
+        <input class="fi lsr-num" id="lsr-tiktok-viewers" type="number" min="0" step="1" value="${s.tiktok_viewers_count ?? ''}" placeholder="mis. 450" oninput="updateLsrTotal()"/>
+      </div>
     </div>
-    <div class="fg"><label>Total Penonton</label>
-      <input class="fi" id="lsr-viewers" type="number" min="0" step="1" value="${s.viewers_count ?? ''}" placeholder="mis. 850"/>
-    </div>
+    <div class="lsr-total-row" id="lsr-total-row">Total gabungan: <b id="lsr-total-summary">0 produk · Rp 0 · 0 penonton</b></div>
     <div class="fg"><label>Catatan (opsional)</label>
       <input class="fi" id="lsr-note" value="${escHtml(s.note||'')}" placeholder="mis. banyak repeat order"/>
     </div>`;
@@ -9973,6 +10140,21 @@ function renderReportModal(s) {
     <button class="btn-sm btn-gold" onclick="saveLsReport('${s.id}')">${t('save')||'Simpan'}</button>
     <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')||'Batal'}</button>`;
   document.getElementById('modal-ov').classList.add('open');
+  updateLsrTotal();
+}
+
+/* Total gabungan Shopee+TikTok, dihitung live di form Laporan Sesi (v32) */
+function updateLsrTotal() {
+  const row = document.getElementById('lsr-total-row');
+  if (!row) return;
+  const sp = parseInt(document.getElementById('lsr-shopee-products')?.value, 10) || 0;
+  const sg = crmParseInt(document.getElementById('lsr-shopee-gmv')?.value || '0') || 0;
+  const sv = parseInt(document.getElementById('lsr-shopee-viewers')?.value, 10) || 0;
+  const tp = parseInt(document.getElementById('lsr-tiktok-products')?.value, 10) || 0;
+  const tg = crmParseInt(document.getElementById('lsr-tiktok-gmv')?.value || '0') || 0;
+  const tv = parseInt(document.getElementById('lsr-tiktok-viewers')?.value, 10) || 0;
+  document.getElementById('lsr-total-summary').textContent =
+    `${sp + tp} produk · Rp ${(sg + tg).toLocaleString('id-ID')} · ${sv + tv} penonton`;
 }
 
 /* Format input angka polos (tanpa mengubah field hidden lain) — dipakai khusus input GMV laporan sesi */
@@ -9984,19 +10166,30 @@ function formatNominalPlain(el) {
 
 async function saveLsReport(sessionId) {
   if (!db) { toast('Supabase tidak aktif'); return; }
-  const products = parseInt(document.getElementById('lsr-products').value, 10);
-  const gmv      = crmParseInt(document.getElementById('lsr-gmv').value);
-  const viewers  = parseInt(document.getElementById('lsr-viewers').value, 10);
-  const note     = document.getElementById('lsr-note').value.trim();
+  const shopeeP = parseInt(document.getElementById('lsr-shopee-products').value, 10);
+  const shopeeG = crmParseInt(document.getElementById('lsr-shopee-gmv').value);
+  const shopeeV = parseInt(document.getElementById('lsr-shopee-viewers').value, 10);
+  const tiktokP = parseInt(document.getElementById('lsr-tiktok-products').value, 10);
+  const tiktokG = crmParseInt(document.getElementById('lsr-tiktok-gmv').value);
+  const tiktokV = parseInt(document.getElementById('lsr-tiktok-viewers').value, 10);
+  const note    = document.getElementById('lsr-note').value.trim();
 
-  if (isNaN(products) || products < 0) { toast('Isi total produk terjual dengan benar'); return; }
-  if (isNaN(gmv) || gmv < 0)           { toast('Isi total GMV dengan benar'); return; }
-  if (isNaN(viewers) || viewers < 0)  { toast('Isi total penonton dengan benar'); return; }
+  const nums = [shopeeP, shopeeG, shopeeV, tiktokP, tiktokG, tiktokV];
+  if (nums.some(n => isNaN(n) || n < 0)) {
+    toast('Isi semua angka Shopee & TikTok dengan benar (boleh 0, tidak boleh minus/kosong)');
+    return;
+  }
+
+  const products = shopeeP + tiktokP;
+  const gmv      = shopeeG + tiktokG;
+  const viewers  = shopeeV + tiktokV;
 
   const res = await dbQ(d => d.rpc('host_submit_live_report', {
     p_actor_id: currentUser.id, p_session_id: sessionId,
     p_products_sold: products, p_gmv_amount: gmv, p_viewers_count: viewers,
-    p_note: note || null
+    p_note: note || null,
+    p_shopee_products: shopeeP, p_shopee_gmv: shopeeG, p_shopee_viewers: shopeeV,
+    p_tiktok_products: tiktokP, p_tiktok_gmv: tiktokG, p_tiktok_viewers: tiktokV
   }));
   if (res?.error) {
     if (String(res.error.message||'').includes('LATE_LOCKED')) {
@@ -10214,8 +10407,8 @@ function openLsSessionModal(sessionId) {
     </div>
     <div class="fg"><label>Platform</label>
       <select class="fi" id="ls-ed-platform">
-        ${['TikTok Live','Shopee Live','Instagram Live','YouTube Live','Lainnya'].map(p =>
-          `<option value="${p}" ${rec?.platform===p?'selected':''}>${p}</option>`).join('')}
+        ${['TikTok','Shopee'].map(p =>
+          `<option value="${p}" ${(rec?.platform===p || (rec?.platform||'').toLowerCase().includes(p.toLowerCase()))?'selected':''}>${p}</option>`).join('')}
       </select>
     </div>
     <div class="fg"><label>Judul Show (opsional)</label>
