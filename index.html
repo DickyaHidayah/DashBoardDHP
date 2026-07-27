@@ -494,6 +494,11 @@ body.light .hs-switch-btn.active{color:#fff}
 .lsr-legacy-note{background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.3);
   border-radius:9px;padding:10px 12px;font-size:11.5px;line-height:1.5;color:var(--text2);margin-bottom:14px}
 .lsr-legacy-note b{color:var(--gold-hi)}
+.lsr-plat-note{background:rgba(126,168,201,.1);border:1px solid rgba(126,168,201,.3);
+  border-radius:9px;padding:8px 12px;font-size:11.5px;line-height:1.5;color:var(--text2);margin-bottom:12px}
+.lsr-plat-note b{color:var(--text)}
+.tbl-row-clickable{cursor:pointer;transition:background .15s}
+.tbl-row-clickable:hover{background:rgba(201,169,110,.08)}
 .lsr-plat-block{border:1px solid var(--border);border-radius:11px;padding:12px 12px 2px;margin-bottom:12px;background:rgba(255,255,255,.015)}
 .lsr-plat-head{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;
   letter-spacing:.02em;color:var(--text);margin-bottom:10px;text-transform:uppercase}
@@ -4481,7 +4486,7 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
           <span style="color:var(--text2)">Titik warna di tiap tanggal = status tiap slot. Klik tanggal untuk lihat 3 slot konten</span>
         </div>
 
-        <div class="tbl-wrap" style="margin-top:6px">
+        <div class="tbl-wrap" id="cc-day-anchor" style="margin-top:6px">
           <div class="tbl-head">
             <div class="tbl-title" id="cc-day-title">Slot Konten</div>
           </div>
@@ -4628,7 +4633,7 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
           <span style="color:var(--text2)">Klik tanggal untuk lihat detail sesi</span>
         </div>
 
-        <div class="tbl-wrap" style="margin-top:6px">
+        <div class="tbl-wrap" id="ls-day-anchor" style="margin-top:6px">
           <div class="tbl-head">
             <div class="tbl-title" id="ls-day-title">Sesi Live</div>
             <div style="display:flex;gap:8px">
@@ -7339,7 +7344,14 @@ function renderCcCalendar() {
   document.getElementById('cc-cal-grid').innerHTML = cells;
 }
 
-function ccSelectDate(ymd) { ccSelectedDate = ymd; renderCcCalendar(); renderCcDayTable(); }
+function ccSelectDate(ymd) {
+  ccSelectedDate = ymd; renderCcCalendar(); renderCcDayTable();
+  // v34: klik tanggal di kalender langsung "mengarahkan" ke tabel slot
+  // konten tanggal itu (moderator & content creator) — bukan cuma
+  // update state di belakang layar, biar kerasa kayak flow satu arah.
+  const anchor = document.getElementById('cc-day-anchor');
+  if (anchor) anchor.scrollIntoView({ behavior:'smooth', block:'start' });
+}
 
 function renderCcDayTable() {
   const tbody = document.getElementById('cc-day-tbl');
@@ -7442,7 +7454,7 @@ function openCcSlotModal(slotNo) {
     </div>
     <div class="fg"><label>Jenis Konten</label>
       <div class="cc-type-picker" id="cc-type-picker">
-        ${['carousel','reels','story'].map(key => {
+        ${['carousel','reels','story','single_post','vector'].map(key => {
           const m = CC_TYPE_META[key];
           const sel = (s?.content_type || '') === key ? 'selected' : '';
           return `<button type="button" class="cc-type-card ${sel}" data-type="${key}" onclick="ccPickType('${key}')">
@@ -7789,7 +7801,7 @@ function renderUpcomingLiveTable() {
   tbody.innerHTML = _lsUpcomingCache.length ? _lsUpcomingCache.map(s => {
     const dObj = new Date(s.schedule_date + 'T00:00:00');
     const when = `${dows[dObj.getDay()]}, ${dObj.getDate()}/${dObj.getMonth()+1} · ${(s.time_start||'').slice(0,5)}–${(s.time_end||'').slice(0,5)}`;
-    return `<tr>
+    return `<tr class="tbl-row-clickable" onclick="lsJumpToUpcoming('${s.host_user_id}','${s.schedule_date}')" title="Klik untuk lihat/isi sesi ini">
       <td style="font-weight:600;color:var(--text)">${escHtml(s.show_title || '—')}</td>
       <td>${escHtml(LOCAL_USERS[s.host_user_id]?.name || s.host_user_id)}</td>
       <td>${escHtml(s.platform || '—')}</td>
@@ -7797,6 +7809,22 @@ function renderUpcomingLiveTable() {
       <td><span class="badge ${statusClass[s.status]||'b-guest'}">${s.status}</span></td>
     </tr>`;
   }).join('') : `<tr><td colspan="5" class="tbl-empty">${t('noShowsScheduled')}</td></tr>`;
+}
+
+/* v34: klik baris di tabel "Upcoming Live Schedule" langsung mengarahkan
+   ke tanggal sesi itu di kalender Live Studio di atasnya (ganti host yang
+   dipilih dulu kalau perlu — khusus moderator), lalu scroll & auto-buka
+   laporan seperti klik tanggal langsung di kalender (lsSelectDate). */
+async function lsJumpToUpcoming(hostId, ymd) {
+  if (can.isMod(currentUser?.role) && lsTargetId !== hostId) {
+    lsTargetId = hostId; stTargetId = hostId;
+    renderHsSwitch(hostLiveIds(), hostId);
+    await loadLsMonth();
+  }
+  lsCursor = new Date(ymd + 'T00:00:00');
+  lsCursor.setDate(1);
+  await loadLsMonth();
+  lsSelectDate(ymd);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -9678,7 +9706,24 @@ function renderLsCalendar() {
   document.getElementById('ls-cal-grid').innerHTML = cells;
 }
 
-function lsSelectDate(ymd) { lsSelectedDate = ymd; renderLsCalendar(); renderLsDayTable(); }
+function lsSelectDate(ymd) {
+  lsSelectedDate = ymd; renderLsCalendar(); renderLsDayTable();
+  // v34: klik tanggal di kalender Live Studio langsung "mengarahkan" ke
+  // tabel sesi tanggal itu. Untuk Host Live yang lihat jadwalnya sendiri,
+  // kalau di tanggal itu cuma ada 1 sesi & sesinya sudah selesai tapi
+  // laporannya belum diisi, langsung buka modal Laporan Sesi-nya —
+  // biar nggak perlu cari-cari tombol lagi, langsung diarahkan isi laporan.
+  const anchor = document.getElementById('ls-day-anchor');
+  if (anchor) anchor.scrollIntoView({ behavior:'smooth', block:'start' });
+
+  if (can.isHostLive(currentUser?.role) && !can.isMod(currentUser?.role) && lsTargetId === currentUser.id) {
+    const sessions = (lsMonthCache[ymd] || []).filter(s => s.status !== 'cancelled' && s.status !== 'sakit' && s.status !== 'izin');
+    const needsReport = sessions.filter(s => s.products_sold == null && lsSessionEnded(s));
+    if (needsReport.length === 1) {
+      setTimeout(() => openLsReportModal(needsReport[0].id), 380);
+    }
+  }
+}
 
 function renderLsDayTable() {
   const tbody = document.getElementById('ls-day-tbl');
@@ -10067,6 +10112,20 @@ const CC_TYPE_META = {
       <circle cx="9" cy="9" r="6.5" stroke-dasharray="2.4 2.3"/>
       <path d="M9 6.4v5.2M6.4 9h5.2" stroke-width="1.3"/>
     </svg>`
+  },
+  single_post: {
+    label: 'Single Post', color: '#7ea8c9', bg: 'rgba(126,168,201,.1)', border: 'rgba(126,168,201,.32)',
+    icon: `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3.6" y="2.6" width="10.8" height="12.8" rx="1.8"/>
+      <path d="M6 6.4h6M6 9h6M6 11.6h3.6"/>
+    </svg>`
+  },
+  vector: {
+    label: 'Vector', color: '#7abf8e', bg: 'rgba(122,191,142,.1)', border: 'rgba(122,191,142,.32)',
+    icon: `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 13.5 8 4.5l3 5.4 2-3.4 2 7.4H3z"/>
+      <circle cx="5.6" cy="9.2" r="1" fill="currentColor" stroke="none"/>
+    </svg>`
   }
 };
 function ccTypeBadge(key) {
@@ -10080,6 +10139,21 @@ function ccPickType(key) {
 }
 
 let _lsReportHostId = null;
+/* v34: deteksi platform yang benar-benar jalan di sesi ini, dari kolom
+   `platform` yang diisi moderator saat bikin jadwal ("TikTok" / "Shopee" /
+   "TikTok & Shopee"). Dipakai supaya form Laporan Sesi cuma nampilin blok
+   platform yang relevan hari itu — kalau cuma TikTok yang live, host nggak
+   perlu (dan nggak boleh bingung) isi blok Shopee, begitu juga sebaliknya. */
+function lsPlatformFlags(s) {
+  const p = (s.platform || '').toLowerCase();
+  const hasShopee = p.includes('shopee');
+  const hasTiktok = p.includes('tiktok');
+  // Fallback: kalau platform kosong / tidak dikenali (mis. data lama),
+  // tetap tampilkan kedua blok supaya tidak ada data yang "hilang" dari form.
+  if (!hasShopee && !hasTiktok) return { shopee: true, tiktok: true };
+  return { shopee: hasShopee, tiktok: hasTiktok };
+}
+
 function renderReportModal(s) {
   const isMod = can.isMod(currentUser?.role);
   if (currentUser.id !== s.host_user_id && !isMod) { toast('Hanya host sesi ini atau moderator yang boleh mengisi'); return; }
@@ -10101,8 +10175,12 @@ function renderReportModal(s) {
       totalnya dulu: <b>${s.products_sold} produk · Rp ${Number(s.gmv_amount||0).toLocaleString('id-ID')} · ${s.viewers_count} penonton</b>.
       Isi ulang di bawah per platform, nilai lama tidak akan hilang sampai kamu simpan yang baru.</div>` : '';
 
-  document.getElementById('m-body').innerHTML = `
-    ${legacyNote}
+  // v34: hanya tampilkan blok platform yang memang jalan di sesi ini
+  // (sesuai kolom Platform yang diisi moderator saat bikin jadwal sesi).
+  const flags = lsPlatformFlags(s);
+  const platNote = `<div class="lsr-plat-note">Platform sesi ini: <b>${escHtml(s.platform || '—')}</b> — isi laporan sesuai platform yang jalan hari ini.</div>`;
+
+  const shopeeBlock = flags.shopee ? `
     <div class="lsr-plat-block">
       <div class="lsr-plat-head"><span class="lsr-plat-dot lsr-dot-shopee"></span>Shopee Live</div>
       <div class="fg"><label>Produk Terjual (Shopee)</label>
@@ -10116,7 +10194,9 @@ function renderReportModal(s) {
       <div class="fg"><label>Penonton Shopee</label>
         <input class="fi lsr-num" id="lsr-shopee-viewers" type="number" min="0" step="1" value="${s.shopee_viewers_count ?? ''}" placeholder="mis. 400" oninput="updateLsrTotal()"/>
       </div>
-    </div>
+    </div>` : '';
+
+  const tiktokBlock = flags.tiktok ? `
     <div class="lsr-plat-block">
       <div class="lsr-plat-head"><span class="lsr-plat-dot lsr-dot-tiktok"></span>TikTok Live</div>
       <div class="fg"><label>Produk Terjual (TikTok)</label>
@@ -10130,7 +10210,13 @@ function renderReportModal(s) {
       <div class="fg"><label>Penonton TikTok</label>
         <input class="fi lsr-num" id="lsr-tiktok-viewers" type="number" min="0" step="1" value="${s.tiktok_viewers_count ?? ''}" placeholder="mis. 450" oninput="updateLsrTotal()"/>
       </div>
-    </div>
+    </div>` : '';
+
+  document.getElementById('m-body').innerHTML = `
+    ${legacyNote}
+    ${platNote}
+    ${shopeeBlock}
+    ${tiktokBlock}
     <div class="lsr-total-row" id="lsr-total-row">Total gabungan: <b id="lsr-total-summary">0 produk · Rp 0 · 0 penonton</b></div>
     <div class="fg"><label>Catatan (opsional)</label>
       <input class="fi" id="lsr-note" value="${escHtml(s.note||'')}" placeholder="mis. banyak repeat order"/>
@@ -10166,17 +10252,25 @@ function formatNominalPlain(el) {
 
 async function saveLsReport(sessionId) {
   if (!db) { toast('Supabase tidak aktif'); return; }
-  const shopeeP = parseInt(document.getElementById('lsr-shopee-products').value, 10);
-  const shopeeG = crmParseInt(document.getElementById('lsr-shopee-gmv').value);
-  const shopeeV = parseInt(document.getElementById('lsr-shopee-viewers').value, 10);
-  const tiktokP = parseInt(document.getElementById('lsr-tiktok-products').value, 10);
-  const tiktokG = crmParseInt(document.getElementById('lsr-tiktok-gmv').value);
-  const tiktokV = parseInt(document.getElementById('lsr-tiktok-viewers').value, 10);
+  // v34: blok Shopee/TikTok kini kondisional (cuma tampil kalau platform sesi
+  // itu memang jalan di platform tsb) — field yang tidak dirender dianggap 0,
+  // bukan wajib diisi/divalidasi.
+  const shopeeEl = document.getElementById('lsr-shopee-products');
+  const tiktokEl = document.getElementById('lsr-tiktok-products');
+  const hasShopeeBlock = !!shopeeEl;
+  const hasTiktokBlock = !!tiktokEl;
+
+  const shopeeP = hasShopeeBlock ? parseInt(shopeeEl.value, 10) : 0;
+  const shopeeG = hasShopeeBlock ? crmParseInt(document.getElementById('lsr-shopee-gmv').value) : 0;
+  const shopeeV = hasShopeeBlock ? parseInt(document.getElementById('lsr-shopee-viewers').value, 10) : 0;
+  const tiktokP = hasTiktokBlock ? parseInt(tiktokEl.value, 10) : 0;
+  const tiktokG = hasTiktokBlock ? crmParseInt(document.getElementById('lsr-tiktok-gmv').value) : 0;
+  const tiktokV = hasTiktokBlock ? parseInt(document.getElementById('lsr-tiktok-viewers').value, 10) : 0;
   const note    = document.getElementById('lsr-note').value.trim();
 
   const nums = [shopeeP, shopeeG, shopeeV, tiktokP, tiktokG, tiktokV];
   if (nums.some(n => isNaN(n) || n < 0)) {
-    toast('Isi semua angka Shopee & TikTok dengan benar (boleh 0, tidak boleh minus/kosong)');
+    toast('Isi semua angka platform yang tampil dengan benar (boleh 0, tidak boleh minus/kosong)');
     return;
   }
 
@@ -10407,8 +10501,8 @@ function openLsSessionModal(sessionId) {
     </div>
     <div class="fg"><label>Platform</label>
       <select class="fi" id="ls-ed-platform">
-        ${['TikTok','Shopee'].map(p =>
-          `<option value="${p}" ${(rec?.platform===p || (rec?.platform||'').toLowerCase().includes(p.toLowerCase()))?'selected':''}>${p}</option>`).join('')}
+        ${['TikTok','Shopee','TikTok & Shopee'].map(p =>
+          `<option value="${p}" ${(rec?.platform===p)?'selected':''}>${p}</option>`).join('')}
       </select>
     </div>
     <div class="fg"><label>Judul Show (opsional)</label>
