@@ -8098,10 +8098,22 @@ async function loadAllRoleDashboard() {
   }
 
   // ── Ringkasan Customer & Revenue (CRM) — total keseluruhan + breakdown per pemegang akun ──
+  // v32-FIX: sebelumnya query ini tanpa .range() jadi otomatis dipotong
+  // Supabase/PostgREST maksimal 1000 baris — total customer & Customer per
+  // PIC jadi salah kalau data sudah lebih dari 1000. Sekarang loop per 1000
+  // baris sampai benar-benar habis (sama seperti fix di halaman CRM).
   let crmRows = [];
   if (db) {
-    const res = await dbQ(d => d.from('crm_customers').select('owner_id,total_spend,total_order,status'));
-    crmRows = res?.data || [];
+    const BATCH = 1000;
+    let offset = 0;
+    for (;;) {
+      const res = await dbQ(d => d.from('crm_customers').select('owner_id,total_spend,total_order,status').range(offset, offset + BATCH - 1));
+      const batch = res?.data || [];
+      crmRows = crmRows.concat(batch);
+      if (batch.length < BATCH) break;
+      offset += BATCH;
+      if (offset > 100000) break; // safety guard
+    }
   }
   const totalCustomers = crmRows.length;
   const totalRevenue = crmRows.reduce((s, r) => s + (Number(r.total_spend) || 0), 0);
@@ -8122,9 +8134,19 @@ async function loadAllRoleDashboard() {
   let budgetByCategory = {};   // { kategori: { total, count } }
   let budgetItemsMonth = [];   // daftar baris pengeluaran bulan ini, urut terbesar dulu
   if (db) {
-    const res = await dbQ(d => d.from('marketing_budget').select('tanggal,kategori,keterangan,jumlah,pic_id')
-      .gte('tanggal', first).lte('tanggal', last));
-    const bRows = res?.data || [];
+    // v32-FIX: sama seperti CRM — loop per 1000 baris supaya tidak terpotong
+    // walau jumlah transaksi budget bulan ini ternyata sangat banyak.
+    let bRows = [];
+    const BB = 1000; let boff = 0;
+    for (;;) {
+      const res = await dbQ(d => d.from('marketing_budget').select('tanggal,kategori,keterangan,jumlah,pic_id')
+        .gte('tanggal', first).lte('tanggal', last).range(boff, boff + BB - 1));
+      const batch = res?.data || [];
+      bRows = bRows.concat(batch);
+      if (batch.length < BB) break;
+      boff += BB;
+      if (boff > 100000) break;
+    }
     bRows.forEach(r => {
       const jml = Number(r.jumlah) || 0;
       budgetTotalMonth += jml;
@@ -9021,11 +9043,21 @@ async function _pdfFetchDetailHost() {
 async function _pdfFetchDetailFollowup() {
   if (!db || !currentUser) return [];
   const { first, last } = _pdfMonthRange();
-  const res = await dbQ(d => d.from('followup_logs')
-    .select('followed_up_at,has_response,heat_before,heat_after,crm_customers(full_name,wa_phone)')
-    .eq('user_id', currentUser.id).gte('followed_up_at', `${first}T00:00:00`).lte('followed_up_at', `${last}T23:59:59`)
-    .order('followed_up_at', { ascending: true }));
-  return res?.data || [];
+  // v32-FIX: 1 orang bisa follow-up sampai 50/hari × 31 hari (>1000) — loop
+  // per 1000 baris supaya laporan PDF pribadi tidak kepotong.
+  let all = []; const FB = 1000; let foff = 0;
+  for (;;) {
+    const res = await dbQ(d => d.from('followup_logs')
+      .select('followed_up_at,has_response,heat_before,heat_after,crm_customers(full_name,wa_phone)')
+      .eq('user_id', currentUser.id).gte('followed_up_at', `${first}T00:00:00`).lte('followed_up_at', `${last}T23:59:59`)
+      .order('followed_up_at', { ascending: true }).range(foff, foff + FB - 1));
+    const batch = res?.data || [];
+    all = all.concat(batch);
+    if (batch.length < FB) break;
+    foff += FB;
+    if (foff > 50000) break;
+  }
+  return all;
 }
 async function _pdfFetchDetailModerator() {
   const creatorIds = contentCreatorIds();
@@ -9860,8 +9892,18 @@ async function loadTeamTaskData() {
 
   if (crmUsesDB()) {
     try {
-      const cRes = await dbQ(d => d.from('crm_customers').select('id, owner_id'));
-      (cRes?.data || []).forEach(row => {
+      // v32-FIX: sama seperti lainnya — loop per 1000 baris supaya total
+      // customer per owner di halaman Team Task Progress tidak ke-cap 1000.
+      let cAll = []; const CB = 1000; let coff = 0;
+      for (;;) {
+        const cRes = await dbQ(d => d.from('crm_customers').select('id, owner_id').range(coff, coff + CB - 1));
+        const batch = cRes?.data || [];
+        cAll = cAll.concat(batch);
+        if (batch.length < CB) break;
+        coff += CB;
+        if (coff > 100000) break;
+      }
+      cAll.forEach(row => {
         const oid = row.owner_id || '';
         byOwnerTotal[oid] = (byOwnerTotal[oid] || 0) + 1;
       });
@@ -13534,10 +13576,26 @@ let _crmGlobalAggReady = false;
 async function crmFetchGlobalAgg() {
   if (crmUsesDB()) {
     const isMod = can.isMod(currentUser?.role);
-    let q = db.from('crm_customers').select('owner_id,total_order,total_spend,status,heat_category');
-    if (!isMod && currentUser?.id) q = q.eq('owner_id', currentUser.id);
-    const res = await dbQ(() => q);
-    crmGlobalAgg = (res?.data || []).map(r => ({
+    // v32-FIX: Supabase/PostgREST membatasi hasil SELECT maksimal 1000 baris
+    // per request kalau tidak pakai .range() — sebelumnya ini bikin total
+    // customer & persentase per PIC macet di 1.000 walau data asli 3.972+.
+    // Sekarang loop per 1000 baris sampai benar-benar habis (pola sama
+    // seperti crmFetchAllForExport, supaya SELALU sinkron & lengkap).
+    const BATCH = 1000;
+    let all = [];
+    let offset = 0;
+    for (;;) {
+      let q = db.from('crm_customers').select('owner_id,total_order,total_spend,status,heat_category');
+      if (!isMod && currentUser?.id) q = q.eq('owner_id', currentUser.id);
+      q = q.range(offset, offset + BATCH - 1);
+      const res = await dbQ(() => q);
+      const batch = res?.data || [];
+      all = all.concat(batch);
+      if (batch.length < BATCH) break;
+      offset += BATCH;
+      if (offset > 100000) break; // safety guard
+    }
+    crmGlobalAgg = all.map(r => ({
       owner_id: r.owner_id || '__unassigned__',
       total_order: Number(r.total_order) || 0,
       total_belanja: Number(r.total_spend) || 0,
@@ -14190,8 +14248,18 @@ async function loadBudgetMarketingPage() {
   const tbody = document.getElementById('budget-tbody');
   if (tbody) tbody.innerHTML = `<tr><td colspan="6" class="tbl-empty">Memuat data…</td></tr>`;
   if (!db) { budgetCache = []; renderBudgetTable(); return; }
-  const res = await dbQ(d => d.from('marketing_budget').select('*').order('tanggal', { ascending: false }));
-  budgetCache = res?.data || [];
+  // v32-FIX: loop per 1000 baris — riwayat budget bisa terus bertambah dan
+  // gampang melewati batas default 1000 baris/request dari Supabase.
+  let all = []; const BB = 1000; let off = 0;
+  for (;;) {
+    const res = await dbQ(d => d.from('marketing_budget').select('*').order('tanggal', { ascending: false }).range(off, off + BB - 1));
+    const batch = res?.data || [];
+    all = all.concat(batch);
+    if (batch.length < BB) break;
+    off += BB;
+    if (off > 100000) break;
+  }
+  budgetCache = all;
   renderBudgetTable();
 }
 window.loadBudgetMarketingPage = loadBudgetMarketingPage;
