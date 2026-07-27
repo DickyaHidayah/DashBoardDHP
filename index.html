@@ -2740,6 +2740,23 @@ body.light .adcust-stat .acs-num{color:#0d0d0d;font-weight:800}
 .ovt-theme-track{height:7px;border-radius:4px;background:var(--surface2);overflow:hidden}
 .ovt-theme-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-hi));border-radius:4px}
 .ovt-theme-count{text-align:right;color:var(--text2);font-variant-numeric:tabular-nums}
+/* ── v31: Rincian Budget Pengeluaran (Dashboard Semua Role) ── */
+.ovt-budget-cat-list{display:flex;flex-direction:column;gap:9px;margin-bottom:16px}
+.ovt-budget-cat-row{display:grid;grid-template-columns:180px 1fr 190px;align-items:center;gap:10px;font-size:11.5px}
+.ovt-budget-cat-track{height:7px;border-radius:4px;background:var(--surface2);overflow:hidden}
+.ovt-budget-cat-fill{height:100%;border-radius:4px;transition:width .6s cubic-bezier(.16,1,.3,1)}
+.ovt-budget-cat-amt{text-align:right;color:var(--text);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ovt-budget-items{display:flex;flex-direction:column;border-top:1px solid var(--border)}
+.ovt-budget-item{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:9px 2px;border-bottom:1px solid var(--border)}
+.ovt-budget-item-main{display:flex;flex-direction:column;gap:3px;min-width:0}
+.ovt-budget-item-desc{color:var(--text);font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:360px}
+.ovt-budget-item-meta{color:var(--text2);font-size:10px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.ovt-budget-item-amt{color:var(--gold-hi);font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums;flex-shrink:0}
+.ovt-budget-empty{padding:10px 4px;font-size:12px;color:var(--text2)}
+@media (max-width:640px){
+  .ovt-budget-cat-row{grid-template-columns:1fr;gap:4px}
+  .ovt-budget-item-desc{max-width:220px}
+}
 body.light .ovt-owner-card{background:#f7f7f8}
 
 /* Ads Task page — card grid */
@@ -2831,6 +2848,23 @@ body.light .adtask-empty{color:rgba(13,13,13,.38)}
 .crm-st-badge.st-reseller{color:#d98ec0;border-color:rgba(217,142,192,.5);background:rgba(217,142,192,.12)}
 .crm-st-badge.st-leads{color:var(--red);border-color:rgba(232,112,112,.5);background:rgba(232,112,112,.1)}
 .crm-row-acts{display:flex;gap:6px;white-space:nowrap}
+/* ── v30: Distribusi/persentase customer per PIC (moderator) ── */
+.crm-pic-dist{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:18px}
+.crm-pic-dist-title{font-size:11.5px;font-weight:700;color:var(--text);letter-spacing:.03em;margin-bottom:10px}
+.crm-pic-dist-rows{display:flex;flex-direction:column;gap:8px}
+.crm-pic-row{display:grid;grid-template-columns:110px 1fr 52px 74px;align-items:center;gap:10px;cursor:pointer;padding:4px 6px;border-radius:8px;transition:background var(--trans)}
+.crm-pic-row:hover{background:rgba(201,169,110,.08)}
+.crm-pic-row-active{background:rgba(201,169,110,.14)}
+.crm-pic-name{font-size:11.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crm-pic-bar-track{height:7px;border-radius:5px;background:var(--surface2);overflow:hidden;position:relative}
+.crm-pic-bar-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--gold),var(--gold-hi));transition:width var(--trans)}
+.crm-pic-pct{font-size:11px;font-weight:700;color:var(--gold-hi);text-align:right;font-variant-numeric:tabular-nums}
+.crm-pic-count{font-size:10.5px;color:var(--text2);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+body.light .crm-pic-dist{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
+body.light .crm-pic-dist-title{color:#0d0d0d}
+body.light .crm-pic-name{color:#0d0d0d}
+body.light .crm-pic-bar-track{background:#f0f0f0}
+body.light .crm-pic-row-active{background:rgba(201,169,110,.12)}
 /* ── v24: Sistem Label CRM ── */
 .crm-label-dot-btn{display:inline-flex;align-items:center;gap:6px;background:transparent;border:1px solid transparent;
   border-radius:20px;padding:4px 10px 4px 6px;cursor:pointer;transition:all var(--trans);white-space:nowrap}
@@ -4708,8 +4742,11 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
         <!-- v25: Kapasitas database customer (10.000/owner; moderator = gabungan semua) -->
         <div class="crm-capacity-bar" id="crm-capacity-bar" style="display:none"></div>
 
-        <!-- Statistik & ringkasan -->
+        <!-- Statistik & ringkasan (v30: sekarang total KESELURUHAN, bukan per-halaman) -->
         <div class="crm-stats" id="crm-stats"></div>
+
+        <!-- v30: Distribusi/persentase customer per PIC — khusus moderator -->
+        <div class="crm-pic-dist" id="crm-pic-dist" style="display:none"></div>
 
         <!-- Diagram CRM -->
         <div id="crm-diagram" class="crm-diagram-wrap"></div>
@@ -8078,10 +8115,25 @@ async function loadAllRoleDashboard() {
   });
 
   // ── Ringkasan Budget Marketing — total pengeluaran bulan berjalan ──
+  // v31: sekarang ambil baris LENGKAP (bukan cuma 'jumlah') supaya Dashboard
+  // Semua Role bisa menampilkan rincian: per kategori (Software & Tools /
+  // KOL & Influencer / Ads) dan daftar item pengeluaran (buat apa aja).
   let budgetTotalMonth = 0;
+  let budgetByCategory = {};   // { kategori: { total, count } }
+  let budgetItemsMonth = [];   // daftar baris pengeluaran bulan ini, urut terbesar dulu
   if (db) {
-    const res = await dbQ(d => d.from('marketing_budget').select('jumlah').gte('tanggal', first).lte('tanggal', last));
-    budgetTotalMonth = (res?.data || []).reduce((s, r) => s + (Number(r.jumlah) || 0), 0);
+    const res = await dbQ(d => d.from('marketing_budget').select('tanggal,kategori,keterangan,jumlah,pic_id')
+      .gte('tanggal', first).lte('tanggal', last));
+    const bRows = res?.data || [];
+    bRows.forEach(r => {
+      const jml = Number(r.jumlah) || 0;
+      budgetTotalMonth += jml;
+      const cat = r.kategori || 'Lainnya';
+      if (!budgetByCategory[cat]) budgetByCategory[cat] = { total: 0, count: 0 };
+      budgetByCategory[cat].total += jml;
+      budgetByCategory[cat].count++;
+    });
+    budgetItemsMonth = bRows.slice().sort((a,b) => (Number(b.jumlah)||0) - (Number(a.jumlah)||0));
   }
 
   // ── Host Live: pakai RPC host_dashboard_stats per host (sumber kebenaran server) ──
@@ -8109,7 +8161,7 @@ async function loadAllRoleDashboard() {
     creatorIds, ccByCreator, hostIds, hostStats, fuIds, fuStats,
     themeCount, contentTotalMonth,
     totalCustomers, totalRevenue, revenueCustomerCount, custByOwner,
-    budgetTotalMonth
+    budgetTotalMonth, budgetByCategory, budgetItemsMonth
   });
 }
 
@@ -8117,7 +8169,7 @@ function renderAllRoleDashboard({
   creatorIds, ccByCreator, hostIds, hostStats, fuIds, fuStats,
   themeCount = {}, contentTotalMonth = 0,
   totalCustomers = 0, totalRevenue = 0, revenueCustomerCount = 0, custByOwner = {},
-  budgetTotalMonth = 0
+  budgetTotalMonth = 0, budgetByCategory = {}, budgetItemsMonth = []
 }) {
   const wrap = document.getElementById('alld-view');
   if (!wrap) return;
@@ -8175,18 +8227,22 @@ function renderAllRoleDashboard({
     </div>`).join('') : `<div style="padding:10px 4px;font-size:12px;color:var(--text2)">Belum ada data.</div>`;
 
   // ── Ringkasan Tim: total customer, revenue, per-orang, konten & tema, budget ──
+  // v30: tambah persentase per PIC (harus selalu sinkron dengan totalCustomers
+  // dari tabel crm_customers yang sama — satu sumber kebenaran dgn halaman CRM)
   const ownerRows = Object.entries(custByOwner).map(([oid, s]) => ({
     id: oid, name: oid === '__unassigned__' ? 'Belum Ditugaskan' : (LOCAL_USERS[oid]?.name || oid),
     role: oid === '__unassigned__' ? '—' : rn(LOCAL_USERS[oid]?.role || ''),
-    count: s.count, revenue: s.revenue
+    count: s.count, revenue: s.revenue,
+    pct: totalCustomers ? (s.count / totalCustomers * 100) : 0
   })).sort((a, b) => b.count - a.count);
 
   const ownerGridHtml = ownerRows.length ? ownerRows.map(o => `
     <div class="ovt-owner-card">
       <div class="ovt-owner-name">${escHtml(o.name)}</div>
       <div class="ovt-owner-role">${escHtml(o.role)}</div>
-      <div class="ovt-owner-row"><span>Customer dipegang</span><b>${o.count}</b></div>
+      <div class="ovt-owner-row"><span>Customer dipegang</span><b>${o.count} <span style="color:var(--gold);font-weight:700">(${o.pct.toFixed(1)}%)</span></b></div>
       <div class="ovt-owner-row"><span>Revenue</span><b>${crmFmtRupiah(o.revenue)}</b></div>
+      <div class="ovt-theme-track" style="margin-top:6px"><div class="ovt-theme-fill" style="width:${o.pct}%"></div></div>
     </div>`).join('') : `<div style="padding:10px 4px;font-size:12px;color:var(--text2)">Belum ada data customer.</div>`;
 
   const themeRows = Object.entries(themeCount).sort((a, b) => b[1] - a[1]).slice(0, 8);
@@ -8199,6 +8255,42 @@ function renderAllRoleDashboard({
     </div>`).join('') : `<div style="padding:10px 4px;font-size:12px;color:var(--text2)">Belum ada konten bulan ini.</div>`;
 
   const topTheme = themeRows[0]?.[0] || '—';
+
+  // ── v31: Rincian Budget Pengeluaran — breakdown per kategori + daftar item ──
+  // "buat apa aja" — supaya moderator langsung lihat uang dipakai untuk apa,
+  // bukan cuma angka total. Sinkron dgn halaman Budget Marketing (tabel yg sama).
+  const budgetCatRows = Object.entries(budgetByCategory).map(([cat, s]) => ({
+    cat, total: s.total, count: s.count,
+    pct: budgetTotalMonth ? (s.total / budgetTotalMonth * 100) : 0
+  })).sort((a, b) => b.total - a.total);
+
+  const budgetCatHtml = budgetCatRows.length ? budgetCatRows.map(b => {
+    const meta = budgetCatMeta(b.cat);
+    return `
+    <div class="ovt-budget-cat-row">
+      <div class="ovt-budget-cat-name">${budgetCatPill(b.cat)}</div>
+      <div class="ovt-budget-cat-track"><div class="ovt-budget-cat-fill" style="width:${b.pct}%;background:${meta.color}"></div></div>
+      <div class="ovt-budget-cat-amt">${crmFmtRupiah(b.total)} <span style="color:var(--text2);font-weight:600">(${b.pct.toFixed(1)}% · ${b.count}x)</span></div>
+    </div>`;
+  }).join('') : `<div class="ovt-budget-empty">Belum ada pengeluaran bulan ini.</div>`;
+
+  const budgetItemsTop = budgetItemsMonth.slice(0, 12);
+  const budgetItemsHtml = budgetItemsTop.length ? budgetItemsTop.map(it => {
+    const meta = budgetCatMeta(it.kategori);
+    const picName = it.pic_id ? (getUserMeta(it.pic_id)?.name || it.pic_id) : '—';
+    const tgl = it.tanggal ? fmtDayShort(it.tanggal) : '—';
+    return `
+    <div class="ovt-budget-item">
+      <div class="ovt-budget-item-main">
+        <div class="ovt-budget-item-desc" title="${escHtml(it.keterangan || '(tanpa keterangan)')}">${escHtml(it.keterangan || '(tanpa keterangan)')}</div>
+        <div class="ovt-budget-item-meta">${budgetCatPill(it.kategori)} · ${escHtml(tgl)} · PIC: ${escHtml(picName)}</div>
+      </div>
+      <div class="ovt-budget-item-amt">${crmFmtRupiah(Number(it.jumlah) || 0)}</div>
+    </div>`;
+  }).join('') : `<div class="ovt-budget-empty">Belum ada pengeluaran bulan ini.</div>`;
+  const budgetMoreNote = budgetItemsMonth.length > budgetItemsTop.length
+    ? `<div class="ovt-budget-empty" style="text-align:center;border-top:1px solid var(--border);margin-top:4px;padding-top:10px">+ ${budgetItemsMonth.length - budgetItemsTop.length} pengeluaran lain bulan ini — lihat selengkapnya di halaman Budget Marketing</div>`
+    : '';
 
   const teamOverview = `
     <div class="ovt-summary">
@@ -8220,6 +8312,13 @@ function renderAllRoleDashboard({
         <div><div class="ovt-section-title">Tema Konten Terpopuler</div><div class="ovt-section-sub">${months[now.getMonth()]} ${now.getFullYear()} — tema yang paling banyak diproduksi</div></div>
       </div>
       <div class="ovt-theme-list">${themeListHtml}</div>
+    </div>
+    <div class="ovt-section">
+      <div class="ovt-section-head">
+        <div><div class="ovt-section-title">Rincian Budget Pengeluaran</div><div class="ovt-section-sub">${months[now.getMonth()]} ${now.getFullYear()} — total ${crmFmtRupiah(budgetTotalMonth)}, dipakai untuk apa saja</div></div>
+      </div>
+      <div class="ovt-budget-cat-list">${budgetCatHtml}</div>
+      <div class="ovt-budget-items">${budgetItemsHtml}${budgetMoreNote}</div>
     </div>`;
 
   wrap.innerHTML = `
@@ -8254,7 +8353,7 @@ function renderAllRoleDashboard({
     hostTargetSum, hostAchievedSum, hostPct, hostPendingSum,
     fuTotal, fuHitSum, fuDaysSum, fuPct,
     totalCustomers, totalRevenue, revenueCustomerCount, contentTotalMonth,
-    budgetTotalMonth, topTheme
+    budgetTotalMonth, topTheme, budgetCatRows, budgetItemsMonth
   };
 }
 let _alldLastData = null;
@@ -8313,6 +8412,7 @@ async function exportAllRoleDashboardExcel() {
       ['Total Konten Bulan Ini', d.contentTotalMonth, ''],
       ['Tema Konten Terbanyak', d.topTheme, ''],
       ['Budget Marketing Bulan Ini', d.budgetTotalMonth, ''],
+      ['Kategori Pengeluaran Terbesar', (d.budgetCatRows && d.budgetCatRows[0]) ? d.budgetCatRows[0].cat : '—', (d.budgetCatRows && d.budgetCatRows[0]) ? crmFmtRupiah(d.budgetCatRows[0].total) : ''],
     ];
     const wsSum = XLSX.utils.aoa_to_sheet(sumAoa);
     wsSum['!cols'] = [{wch:32},{wch:22},{wch:44}];
@@ -8359,14 +8459,41 @@ async function exportAllRoleDashboardExcel() {
     // ── SHEET 5 — CUSTOMER PER PIC ──
     const ownAoa = [
       ['DHP CREATIVE — CUSTOMER PER PIC'], [`Export: ${stamp}`], [],
-      ['PIC', 'Role', 'Jumlah Customer', 'Revenue'],
-      ...d.ownerRows.map(o => [o.name, o.role, o.count, o.revenue]),
+      ['PIC', 'Role', 'Jumlah Customer', '% dari Total', 'Revenue'],
+      ...d.ownerRows.map(o => [o.name, o.role, o.count, (o.pct||0)/100, o.revenue]),
     ];
     const wsOwn = XLSX.utils.aoa_to_sheet(ownAoa);
-    wsOwn['!cols'] = [{wch:22},{wch:18},{wch:16},{wch:20}];
-    wsOwn['!merges'] = [{s:{r:0,c:0},e:{r:0,c:3}}];
-    for (let r = 4; r <= ownAoa.length; r++) { const c = 'D'+r; if (wsOwn[c]) wsOwn[c].z = rp; }
+    wsOwn['!cols'] = [{wch:22},{wch:18},{wch:16},{wch:14},{wch:20}];
+    wsOwn['!merges'] = [{s:{r:0,c:0},e:{r:0,c:4}}];
+    for (let r = 4; r <= ownAoa.length; r++) { const cD = 'D'+r, cE = 'E'+r; if (wsOwn[cD]) wsOwn[cD].z = pct; if (wsOwn[cE]) wsOwn[cE].z = rp; }
     XLSX.utils.book_append_sheet(wb, wsOwn, '👥 Customer per PIC');
+
+    // ── SHEET 6 — RINCIAN BUDGET PENGELUARAN ──
+    const budgAoa = [
+      ['DHP CREATIVE — RINCIAN BUDGET PENGELUARAN'], [`Export: ${stamp}`], [`Periode: ${d.monthLabel}`], [],
+      ['Total Pengeluaran Bulan Ini', d.budgetTotalMonth], [],
+      ['═══════════════════', 'PER KATEGORI', '═══════════════════'],
+      ['Kategori', 'Jumlah', '% dari Total', 'Jumlah Transaksi'],
+      ...(d.budgetCatRows || []).map(b => [b.cat, b.total, b.pct/100, b.count]),
+      [],
+      ['═══════════════════', 'DAFTAR PENGELUARAN (buat apa aja)', '═══════════════════'],
+      ['Tanggal', 'Kategori', 'Keterangan', 'PIC', 'Jumlah'],
+      ...(d.budgetItemsMonth || []).map(it => [
+        it.tanggal || '', it.kategori || '', it.keterangan || '',
+        it.pic_id ? (getUserMeta(it.pic_id)?.name || it.pic_id) : '—',
+        Number(it.jumlah) || 0
+      ]),
+    ];
+    const wsBudg = XLSX.utils.aoa_to_sheet(budgAoa);
+    wsBudg['!cols'] = [{wch:24},{wch:22},{wch:36},{wch:18},{wch:16}];
+    wsBudg['!merges'] = [{s:{r:0,c:0},e:{r:0,c:4}}];
+    if (wsBudg['B5']) wsBudg['B5'].z = rp;
+    const catStart = 9, catEnd = catStart + (d.budgetCatRows || []).length - 1;
+    for (let r = catStart; r <= catEnd; r++) { const cB='B'+r, cC='C'+r; if (wsBudg[cB]) wsBudg[cB].z = rp; if (wsBudg[cC]) wsBudg[cC].z = pct; }
+    const itemStart = catEnd + 4;
+    const itemEnd = itemStart + (d.budgetItemsMonth || []).length - 1;
+    for (let r = itemStart; r <= itemEnd; r++) { const cE='E'+r; if (wsBudg[cE]) wsBudg[cE].z = rp; }
+    XLSX.utils.book_append_sheet(wb, wsBudg, '💰 Rincian Budget');
 
     const fname = `DHP_Dashboard_Semua_Role_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.xlsx`;
     XLSX.writeFile(wb, fname);
@@ -8477,8 +8604,15 @@ async function exportAllRoleDashboardPDF() {
       d.hostRows.map(r => [r.name, r.pct+'%', r.sub]));
     table('Follow-up — Admin & B2B Marketing', [['Nama','% Hari Capai Target','Detail']],
       d.fuRows.map(r => [r.name, r.pct+'%', r.sub]));
-    table('Customer per PIC', [['PIC','Role','Jumlah Customer','Revenue']],
-      d.ownerRows.map(o => [o.name, o.role, String(o.count), crmFmtRupiah(o.revenue)]));
+    table('Customer per PIC', [['PIC','Role','Jumlah Customer','% dari Total','Revenue']],
+      d.ownerRows.map(o => [o.name, o.role, String(o.count), (o.pct||0).toFixed(1)+'%', crmFmtRupiah(o.revenue)]));
+    table(`Rincian Budget Pengeluaran per Kategori (Total: ${crmFmtRupiah(d.budgetTotalMonth||0)})`, [['Kategori','Jumlah','% dari Total','Jumlah Transaksi']],
+      (d.budgetCatRows||[]).map(b => [b.cat, crmFmtRupiah(b.total), b.pct.toFixed(1)+'%', String(b.count)]));
+    table('Daftar Pengeluaran Bulan Ini (buat apa aja)', [['Tanggal','Kategori','Keterangan','PIC','Jumlah']],
+      (d.budgetItemsMonth||[]).map(it => [
+        it.tanggal ? fmtDayShort(it.tanggal) : '-', it.kategori || '-', it.keterangan || '(tanpa keterangan)',
+        it.pic_id ? (getUserMeta(it.pic_id)?.name || it.pic_id) : '—', crmFmtRupiah(Number(it.jumlah)||0)
+      ]));
 
     // ── Footer nomor halaman ──
     const pageCount = doc.internal.getNumberOfPages();
@@ -13387,6 +13521,43 @@ let crmTotalCount  = 0;      // total baris sesuai filter owner yang sedang akti
 let crmHasMore     = false;  // masih ada halaman berikutnya?
 let crmCapacity    = null;   // { total_customers, capacity, remaining, is_full, pct_used }
 
+// ── v30: Ringkasan GLOBAL (bukan per-halaman) — dipakai untuk kartu statistik
+//    & persentase per PIC di halaman CRM. Selalu mengambil SEMUA baris yang
+//    relevan (tanpa .range paginasi) supaya angka total selalu benar walau
+//    tabel di bawahnya dipaginasi 500/halaman. Non-moderator otomatis hanya
+//    mengambil datanya sendiri (RLS). Ini sumber kebenaran yang SAMA dengan
+//    query yang dipakai Dashboard Semua Role (loadAllRoleDashboard), jadi
+//    angka di CRM & Dashboard selalu sinkron satu sama lain.
+let crmGlobalAgg = [];        // [{owner_id,total_order,total_belanja,status,heat_category}, …] SEMUA baris
+let _crmGlobalAggReady = false;
+
+async function crmFetchGlobalAgg() {
+  if (crmUsesDB()) {
+    const isMod = can.isMod(currentUser?.role);
+    let q = db.from('crm_customers').select('owner_id,total_order,total_spend,status,heat_category');
+    if (!isMod && currentUser?.id) q = q.eq('owner_id', currentUser.id);
+    const res = await dbQ(() => q);
+    crmGlobalAgg = (res?.data || []).map(r => ({
+      owner_id: r.owner_id || '__unassigned__',
+      total_order: Number(r.total_order) || 0,
+      total_belanja: Number(r.total_spend) || 0,
+      status: r.status || 'New',
+      heat_category: r.heat_category || null
+    }));
+  } else {
+    // Fallback localStorage — dataset tidak dipaginasi, crmData sudah lengkap semua
+    crmGlobalAgg = crmData.map(c => ({
+      owner_id: c.owner_id || '__unassigned__',
+      total_order: crmParseInt(c.total_order),
+      total_belanja: crmParseMoney(c.total_belanja),
+      status: c.status || 'New',
+      heat_category: c.heat_category || null
+    }));
+  }
+  _crmGlobalAggReady = true;
+  return crmGlobalAgg;
+}
+
 function crmResetPaging() { crmPageOffset = 0; }
 
 // ── Konversi baris DB → bentuk UI (key internal) ──
@@ -13707,6 +13878,11 @@ function initCRMRealtime() {
           if (document.getElementById('pg-crm')?.classList.contains('active')) renderCRM();
           else updateCRMBadge();
         });
+        // v30: kalau moderator sedang membuka "Dashboard Semua Role", refresh juga
+        // supaya "Customer per PIC" di sana selalu sinkron realtime dengan CRM.
+        if (document.getElementById('pg-all_dashboard')?.classList.contains('active')) {
+          loadAllRoleDashboard().catch(()=>{});
+        }
       })
       .subscribe();
   } catch(e) { console.warn('[CRM] realtime gagal:', e); }
@@ -14524,6 +14700,12 @@ async function renderCRM(reload = true) {
   if (reload) {
     if (crmUsesDB()) { await loadCRM(); }
     else if (!crmData.length) { await loadCRM(); }
+    // v30: refresh ringkasan GLOBAL (semua baris, bukan cuma 500/halaman) —
+    // dipanggil bersamaan dgn loadCRM supaya statistik & persentase PIC
+    // selalu akurat, tidak terikat halaman tabel yang sedang dibuka.
+    try { await crmFetchGlobalAgg(); } catch(e) {}
+  } else if (!_crmGlobalAggReady) {
+    try { await crmFetchGlobalAgg(); } catch(e) {}
   }
   try { await loadCrmLabels(); } catch(e) {}
   // Status follow up hari ini — dipakai untuk badge kolom "Follow Up"
@@ -14629,31 +14811,80 @@ async function renderCRM(reload = true) {
   }
 
   // ── Statistik & ringkasan ──
-  // v25: "Total Customer" sekarang memakai crmTotalCount (jumlah SEBENARNYA
-  // di database sesuai filter aktif), bukan cuma jumlah baris di halaman ini
-  // (crmData). Statistik lain (omzet/order/status/heat) dihitung dari
-  // halaman yang sedang dimuat — diberi label "halaman ini" biar jelas.
+  // v30: SEMUA statistik sekarang dihitung dari crmGlobalAgg (SELURUH baris
+  // sesuai filter yang aktif — tidak lagi terbatas 500/halaman). Tidak ada
+  // lagi label "halaman ini" — semua angka di kartu ini adalah TOTAL
+  // KESELURUHAN, persis sama sumbernya dgn Dashboard Semua Role.
+  const isMod3 = can.isMod(currentUser?.role);
+  // Terapkan filter status/heat/label yang sedang aktif ke data global (bukan hanya ke halaman tabel)
+  let gRows = crmGlobalAgg.slice();
+  if (sf !== 'all') gRows = gRows.filter(c => crmNormStatus(c.status) === sf);
+  if (hfMapped !== 'all') gRows = gRows.filter(c => (c.heat_category || crmComputeHeat(c.total_order, crmNormStatus(c.status))) === hfMapped);
+  // label filter tidak tersedia di crmGlobalAgg (tidak ambil kolom label_id demi ringan) — dilewati di sini,
+  // kartu statistik tetap representatif utk status/heat/owner yg aktif.
+  // Baris global yang sesuai filter OWNER aktif (dipakai utk kartu angka utama)
+  const gOwnerRows = (isMod3 && crmOwnerFilter !== 'all') ? gRows.filter(c => c.owner_id === crmOwnerFilter) : gRows;
+
   if (statsEl) {
-    const total = crmTotalCount || crmData.length;
-    const pageLabel = crmTotalCount > crmData.length ? ' · halaman ini' : '';
-    const totalSpend = crmData.reduce((s,c)=>s+crmParseMoney(c.total_belanja),0);
-    const totalOrders = crmData.reduce((s,c)=>s+crmParseInt(c.total_order),0);
-    const avg = crmData.length ? totalSpend/crmData.length : 0;
-    const cnt = s => crmData.filter(c => crmNormStatus(c.status)===s).length;
+    const total = gOwnerRows.length;
+    const totalSpend = gOwnerRows.reduce((s,c)=>s+c.total_belanja,0);
+    const totalOrders = gOwnerRows.reduce((s,c)=>s+c.total_order,0);
+    const avg = gOwnerRows.length ? totalSpend/gOwnerRows.length : 0;
+    const cnt = s => gOwnerRows.filter(c => crmNormStatus(c.status)===s).length;
+    const heatCnt = h => gOwnerRows.filter(c => (c.heat_category || crmComputeHeat(c.total_order, crmNormStatus(c.status))) === h).length;
     statsEl.innerHTML = `
       <div class="crm-stat"><span class="cs-num">${total.toLocaleString('id-ID')}</span><span class="cs-lbl">${t('crmTotalCust')}</span></div>
-      <div class="crm-stat cs-money"><span class="cs-num">${crmFmtRupiah(totalSpend)}</span><span class="cs-lbl">${t('crmTotalSpendStat')}${pageLabel}</span></div>
-      <div class="crm-stat"><span class="cs-num">${totalOrders.toLocaleString('id-ID')}</span><span class="cs-lbl">${t('crmTotalOrdersStat')}${pageLabel}</span></div>
-      <div class="crm-stat cs-money"><span class="cs-num">${crmFmtRupiah(Math.round(avg))}</span><span class="cs-lbl">${t('crmAvgSpend')}${pageLabel}</span></div>
-      <div class="crm-stat cs-new"><span class="cs-num">${cnt('New')}</span><span class="cs-lbl">New${pageLabel}</span></div>
-      <div class="crm-stat cs-repeat"><span class="cs-num">${cnt('Repeat')}</span><span class="cs-lbl">Repeat${pageLabel}</span></div>
-      <div class="crm-stat cs-agen"><span class="cs-num">${cnt('Agen')}</span><span class="cs-lbl">Agen${pageLabel}</span></div>
-      <div class="crm-stat cs-reseller"><span class="cs-num">${cnt('Reseller')}</span><span class="cs-lbl">Reseller${pageLabel}</span></div>
-      <div class="crm-stat cs-leads"><span class="cs-num">${cnt('Leads')}</span><span class="cs-lbl">Leads${pageLabel}</span></div>
+      <div class="crm-stat cs-money"><span class="cs-num">${crmFmtRupiah(totalSpend)}</span><span class="cs-lbl">${t('crmTotalSpendStat')}</span></div>
+      <div class="crm-stat"><span class="cs-num">${totalOrders.toLocaleString('id-ID')}</span><span class="cs-lbl">${t('crmTotalOrdersStat')}</span></div>
+      <div class="crm-stat cs-money"><span class="cs-num">${crmFmtRupiah(Math.round(avg))}</span><span class="cs-lbl">${t('crmAvgSpend')}</span></div>
+      <div class="crm-stat cs-new"><span class="cs-num">${cnt('New')}</span><span class="cs-lbl">New</span></div>
+      <div class="crm-stat cs-repeat"><span class="cs-num">${cnt('Repeat')}</span><span class="cs-lbl">Repeat</span></div>
+      <div class="crm-stat cs-agen"><span class="cs-num">${cnt('Agen')}</span><span class="cs-lbl">Agen</span></div>
+      <div class="crm-stat cs-reseller"><span class="cs-num">${cnt('Reseller')}</span><span class="cs-lbl">Reseller</span></div>
+      <div class="crm-stat cs-leads"><span class="cs-num">${cnt('Leads')}</span><span class="cs-lbl">Leads</span></div>
       <div style="width:1px;background:var(--border);margin:0 4px;align-self:stretch"></div>
-      <div class="crm-stat" style="background:rgba(232,112,112,.06)"><span class="cs-num" style="color:#e87070">${crmData.filter(c=>((c.heat_category||crmComputeHeat(crmParseInt(c.total_order),crmNormStatus(c.status)))==='Hot')).length}</span><span class="cs-lbl">🔥 Panas${pageLabel}</span></div>
-      <div class="crm-stat" style="background:rgba(232,184,110,.06)"><span class="cs-num" style="color:#e8b86e">${crmData.filter(c=>((c.heat_category||crmComputeHeat(crmParseInt(c.total_order),crmNormStatus(c.status)))==='Warm')).length}</span><span class="cs-lbl">☀ Hangat${pageLabel}</span></div>
-      <div class="crm-stat" style="background:rgba(126,168,201,.06)"><span class="cs-num" style="color:#7ea8c9">${crmData.filter(c=>((c.heat_category||crmComputeHeat(crmParseInt(c.total_order),crmNormStatus(c.status)))==='Cold')).length}</span><span class="cs-lbl">❄ Dingin${pageLabel}</span></div>`;
+      <div class="crm-stat" style="background:rgba(232,112,112,.06)"><span class="cs-num" style="color:#e87070">${heatCnt('Hot')}</span><span class="cs-lbl">🔥 Panas</span></div>
+      <div class="crm-stat" style="background:rgba(232,184,110,.06)"><span class="cs-num" style="color:#e8b86e">${heatCnt('Warm')}</span><span class="cs-lbl">☀ Hangat</span></div>
+      <div class="crm-stat" style="background:rgba(126,168,201,.06)"><span class="cs-num" style="color:#7ea8c9">${heatCnt('Cold')}</span><span class="cs-lbl">❄ Dingin</span></div>`;
+  }
+
+  // ── v30: Persentase Customer per PIC — khusus moderator ──
+  // Selalu dihitung dari SELURUH data (gRows, mengikuti filter status/heat
+  // yang aktif tapi TIDAK mengikuti filter owner), supaya total persentase
+  // semua PIC selalu pas 100% dan sinkron dengan Dashboard Semua Role.
+  const picEl = document.getElementById('crm-pic-dist');
+  if (picEl) {
+    if (isMod3) {
+      const byOwner = {};
+      gRows.forEach(c => {
+        const oid = c.owner_id || '__unassigned__';
+        if (!byOwner[oid]) byOwner[oid] = { count:0, revenue:0 };
+        byOwner[oid].count++;
+        byOwner[oid].revenue += c.total_belanja;
+      });
+      const totalAll = gRows.length;
+      const picRows = Object.entries(byOwner).map(([oid,s]) => ({
+        oid,
+        name: oid === '__unassigned__' ? 'Belum Ditugaskan' : (getUserMeta(oid)?.name || oid),
+        count: s.count, revenue: s.revenue,
+        pct: totalAll ? (s.count/totalAll*100) : 0
+      })).sort((a,b) => b.count - a.count);
+      picEl.style.display = picRows.length ? '' : 'none';
+      picEl.innerHTML = picRows.length ? `
+        <div class="crm-pic-dist-title">Distribusi Customer per PIC${totalAll ? ` <span style="font-weight:400;color:var(--text2)">(dari ${totalAll.toLocaleString('id-ID')} total customer)</span>` : ''}</div>
+        <div class="crm-pic-dist-rows">
+          ${picRows.map(o => `
+            <div class="crm-pic-row${o.oid===crmOwnerFilter?' crm-pic-row-active':''}" onclick="crmOwnerFilter='${o.oid==='__unassigned__'?'all':o.oid}';document.getElementById('crm-owner-filter').value=crmOwnerFilter;crmResetPaging();renderCRM();" title="Klik untuk filter ke ${escHtml(o.name)}">
+              <span class="crm-pic-name">${escHtml(o.name)}</span>
+              <div class="crm-pic-bar-track"><div class="crm-pic-bar-fill" style="width:${o.pct}%"></div></div>
+              <span class="crm-pic-pct">${o.pct.toFixed(1)}%</span>
+              <span class="crm-pic-count">${o.count.toLocaleString('id-ID')} cust</span>
+            </div>`).join('')}
+        </div>` : '';
+    } else {
+      picEl.style.display = 'none';
+      picEl.innerHTML = '';
+    }
   }
 
   // Diagram
