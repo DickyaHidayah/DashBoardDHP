@@ -10010,20 +10010,10 @@ function renderLsAttnMenu() {
     </span></button>`);
 
   if (!isLibur) {
-    items.push(`<button class="ls-attn-item" onclick="lsAttnPickSessionStatus('sakit')">${LS_ATTN_ICO.sakit}
-      <span class="ls-attn-label-row"><span>Tandai Sesi — Sakit</span>
-      <span class="ls-attn-item-sub">Pilih 1 sesi live untuk ditandai sakit</span></span></button>`);
-    items.push(`<button class="ls-attn-item" onclick="lsAttnPickSessionStatus('izin')">${LS_ATTN_ICO.izin}
-      <span class="ls-attn-label-row"><span>Tandai Sesi — Izin</span>
-      <span class="ls-attn-item-sub">Pilih 1 sesi live untuk ditandai izin</span></span></button>`);
-
-    const hasAbsent = sessions.some(s => s.status === 'sakit' || s.status === 'izin');
-    if (hasAbsent) {
-      items.push(`<div class="ls-attn-sep"></div>`);
-      items.push(`<button class="ls-attn-item danger" onclick="lsAttnPickSessionStatus('scheduled')">${LS_ATTN_ICO.undo}
-        <span class="ls-attn-label-row"><span>Batalkan Status Sakit/Izin</span>
-        <span class="ls-attn-item-sub">Kembalikan 1 sesi ke status Terjadwal</span></span></button>`);
-    }
+    items.push(`<div class="ls-attn-sep"></div>`);
+    items.push(`<div class="ls-attn-empty" style="padding:10px 8px;font-style:normal;text-align:left">
+      Untuk menandai Sakit / Izin, klik langsung tombol <b>Sakit/Izin</b> di baris sesi yang bersangkutan pada tabel di bawah — lebih cepat, tanpa perlu pilih sesi lagi di sini.
+    </div>`);
   }
   menu.innerHTML = items.join('');
   if (menu.classList.contains('open')) requestAnimationFrame(() => positionLsAttnMenu());
