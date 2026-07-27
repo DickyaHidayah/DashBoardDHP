@@ -428,6 +428,12 @@ body.light .hs-switch-btn.active{color:#fff}
 .lsr-pill.lsr-pill-locked{color:var(--text2);border-color:var(--border)}
 .lsr-pill.lsr-pill-info{color:#7ea8c9;border-color:rgba(126,168,201,.4)}
 .lsr-pill.lsr-pill-danger{color:#e08a7d;border-color:rgba(224,138,125,.42);animation:lsrPulse 2.2s ease-in-out infinite}
+.lsr-pill.lsr-pill-editing{color:#d98ec0;border-color:rgba(217,142,192,.42);animation:lsrPulse 2.2s ease-in-out infinite}
+/* v27: badge tema/kategori konten (Comedy, Edukasi, Storytelling, dst) */
+.cc-theme-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.03em;white-space:nowrap;background:rgba(201,169,110,.1);color:var(--gold-hi);border:1px solid rgba(201,169,110,.3)}
+.cc-legend{display:flex;flex-wrap:wrap;gap:10px 16px;padding:10px 2px;font-size:11px;color:var(--text2)}
+.cc-legend span{display:inline-flex;align-items:center;gap:5px}
+.cc-legend i.cc-lg-dot{width:8px;height:8px;border-radius:50%;display:inline-block;border:1.4px solid var(--border)}
 .lsr-reject-note{font-size:11px;color:#e87070;margin-top:4px;font-style:italic}
 
 /* ── Panel "Menunggu ACC" & "Izin Telat Lapor" (moderator) ── */
@@ -4220,7 +4226,7 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
               Kalender Konten
               <span class="mod-badge" id="cc-mod-badge" style="display:none">♔ Kelola</span>
             </div>
-            <div class="ps" id="cc-page-sub">Tema, script, deadline & progress konten — 3 slot per hari</div>
+            <div class="ps" id="cc-page-sub">Tema, judul, script, deadline & progress konten — 3 slot per hari</div>
           </div>
           <div class="ph-acts" id="cc-mod-tools" style="display:none"></div>
         </div>
@@ -4256,10 +4262,9 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
           <div class="cal-grid" id="cc-cal-grid"></div>
         </div>
 
-        <div class="att-legend">
-          <span><i class="dot Hadir"></i> Ada slot diisi</span>
-          <span><i class="dot" style="background:#7abf8e"></i> Semua slot selesai</span>
-          <span style="color:var(--text2)">Klik tanggal untuk lihat 3 slot konten</span>
+        <div class="cc-legend" id="cc-legend"></div>
+        <div class="att-legend" style="margin-top:-6px">
+          <span style="color:var(--text2)">Titik warna di tiap tanggal = status tiap slot. Klik tanggal untuk lihat 3 slot konten</span>
         </div>
 
         <div class="tbl-wrap" style="margin-top:6px">
@@ -4270,7 +4275,8 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
             <table>
               <thead><tr>
                 <th style="width:56px">Slot</th>
-                <th>Tema & Script</th>
+                <th style="width:120px">Tema Konten</th>
+                <th>Judul & Script</th>
                 <th>Jam Upload</th>
                 <th>Referensi</th>
                 <th>Progress</th>
@@ -6917,22 +6923,35 @@ function renderCcDashboard() {
    Live (kalender + tabel per tanggal) supaya konsisten satu sistem.
    ═══════════════════════════════════════════════════════════ */
 const CC_SLOTS = [1, 2, 3];
+/* v27: tiap status dapat `color` sendiri — dipakai buat titik warna di
+   Kalender Konten (dot per slot) supaya "belum dikerjakan / lagi
+   dikerjakan / selesai" langsung kebaca dari warnanya, bukan cuma teks. */
 const CC_PROGRESS = {
-  belum_dikerjakan: { label: 'Belum Dikerjakan', pill: 'lsr-pill-locked',
+  belum_dikerjakan: { label: 'Belum Dikerjakan', pill: 'lsr-pill-locked', color: 'var(--muted)',
     icon: '<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3" fill="none"/>' },
-  belum_take: { label: 'Belum Take Video', pill: 'lsr-pill-info',
+  belum_take: { label: 'Belum Take Video', pill: 'lsr-pill-info', color: 'var(--blue)',
     icon: '<rect x="2" y="4.5" width="8" height="7" rx="1.3" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M10 6.5l3.4-2v7l-3.4-2" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/><line x1="2" y1="2" x2="14" y2="14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>' },
-  sudah_take: { label: 'Sudah Take', pill: 'lsr-pill-pending',
+  sudah_take: { label: 'Sudah Take', pill: 'lsr-pill-pending', color: 'var(--amber)',
     icon: '<rect x="2" y="4.5" width="8" height="7" rx="1.3" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M10 6.5l3.4-2v7l-3.4-2" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/>' },
-  revisi: { label: 'Revisi', pill: 'lsr-pill-danger',
+  editing: { label: 'Editing', pill: 'lsr-pill-editing', color: '#d98ec0',
+    icon: '<path d="M10.5 2.5l3 3-8 8H2.5v-3l8-8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/><path d="M9 4l3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>' },
+  revisi: { label: 'Revisi', pill: 'lsr-pill-danger', color: 'var(--red)',
     icon: '<path d="M13 8A5 5 0 1 1 11.2 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/><path d="M13 2.5V6h-3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' },
-  sudah_preview: { label: 'Sudah Preview', pill: 'lsr-pill-wait',
+  sudah_preview: { label: 'Sudah Preview', pill: 'lsr-pill-wait', color: 'var(--gold-hi)',
     icon: '<path d="M1.5 8S4 3.5 8 3.5 14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/><circle cx="8" cy="8" r="1.8" stroke="currentColor" stroke-width="1.3" fill="none"/>' },
-  menunggu_acc: { label: 'Menunggu ACC', pill: 'lsr-pill-wait',
+  menunggu_acc: { label: 'Menunggu ACC', pill: 'lsr-pill-wait', color: 'var(--gold)',
     icon: '<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M8 5v3.3l2.2 1.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' },
-  done_upload: { label: 'Done Upload', pill: 'lsr-pill-done',
+  done_upload: { label: 'Done Upload', pill: 'lsr-pill-done', color: 'var(--green)',
     icon: '<path d="M8 11V3.5M8 3.5L5.2 6.3M8 3.5l2.8 2.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M3 11v1.3A1.7 1.7 0 0 0 4.7 14h6.6A1.7 1.7 0 0 0 13 12.3V11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/>' },
 };
+/* Daftar tema/kategori konten (Comedy, Edukasi, Storytelling, dst) —
+   dimuat dari tabel content_theme_tags, moderator bisa menambah baru. */
+let CC_THEME_TAGS = [];
+async function loadCcThemeTags() {
+  if (!db) return;
+  const res = await dbQ(d => d.from('content_theme_tags').select('*').order('label', { ascending: true }));
+  if (res?.data) CC_THEME_TAGS = res.data;
+}
 let ccCursor       = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 let ccTargetId     = null;                 // akun content creator yang sedang dikelola/dilihat
 let ccSelectedDate = ymdKey(new Date());
@@ -6965,10 +6984,10 @@ function renderContentCalendarPanel() {
   modTools.style.display = 'none';
   actCol.style.display = (isMod || canFillOwn) ? '' : 'none';
   sub.textContent = isMod
-    ? 'Isi tema, script, deadline, jam upload & link referensi untuk tiap slot konten'
+    ? 'Isi tema, judul, script, deadline, jam upload & link referensi untuk tiap slot konten'
     : canFillOwn
-      ? 'Kamu bisa mengisi sendiri tema, script, jam upload & link referensi kontenmu, selain update progress'
-      : 'Tema, script, deadline & link referensi diisi moderator — kamu isi progress pengerjaan';
+      ? 'Kamu bisa mengisi sendiri tema, judul, script, jam upload & link referensi kontenmu, selain update progress'
+      : 'Tema, judul, script, deadline & link referensi diisi moderator — kamu isi progress pengerjaan';
 
   if (isMod && ids.length > 1) {
     switchBar.style.display = '';
@@ -6978,8 +6997,20 @@ function renderContentCalendarPanel() {
   }
 
   if (isMod) loadCcAccQueue();
+  if (!CC_THEME_TAGS.length) loadCcThemeTags();
+  renderCcLegend();
 
   loadCcMonth();
+}
+
+/* v27: legend warna status di bawah kalender — biar "belum dikerjakan /
+   lagi jalan / selesai" langsung kebaca dari warna titiknya. */
+function renderCcLegend() {
+  const el = document.getElementById('cc-legend');
+  if (!el) return;
+  const items = Object.entries(CC_PROGRESS).filter(([k]) => k !== 'menunggu_acc')
+    .map(([k, v]) => `<span><i class="cc-lg-dot" style="background:${v.color};border-color:${v.color}"></i>${v.label}</span>`).join('');
+  el.innerHTML = `<span><i class="cc-lg-dot"></i>Slot Kosong</span>${items}`;
 }
 
 function renderCcSwitch(ids, activeId) {
@@ -7093,8 +7124,11 @@ function renderCcDayTable() {
     const uploadTxt = s?.upload_time ? s.upload_time.slice(0, 5) : '—';
     const refTxt = s?.reference_link
       ? `<a href="${escHtml(s.reference_link)}" target="_blank" rel="noopener" style="color:var(--gold-hi)">Lihat ↗</a>` : '—';
+    const themeTagTxt = s
+      ? (s.content_theme_tag ? `<span class="cc-theme-badge">${escHtml(s.content_theme_tag)}</span>` : `<span style="color:var(--text2)">—</span>`)
+      : `<span style="color:var(--text2)">—</span>`;
     const themeTxt = s
-      ? `<div style="font-weight:600;color:var(--text)">${escHtml(s.theme || '(Tanpa tema)')}</div>
+      ? `<div style="font-weight:600;color:var(--text)">${escHtml(s.theme || '(Tanpa judul)')}</div>
          <div style="font-size:11.5px;color:var(--text2);margin-top:2px;max-width:260px;white-space:pre-wrap">${escHtml((s.script||'').slice(0,140))}${(s.script||'').length>140?'…':''}</div>`
       : `<span style="color:var(--text2)">— slot kosong —</span>`;
 
@@ -7123,6 +7157,7 @@ function renderCcDayTable() {
 
     return `<tr>
       <td style="font-weight:700;color:var(--gold)">${slotNo}</td>
+      <td>${themeTagTxt}</td>
       <td>${themeTxt}</td>
       <td>${uploadTxt}</td>
       <td>${refTxt}</td>
@@ -7145,8 +7180,23 @@ function openCcSlotModal(slotNo) {
   document.getElementById('m-title').textContent =
     `${s ? 'Edit' : 'Isi'} Slot ${slotNo} — ${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
 
+  const curTag = s?.content_theme_tag || '';
+  const tagOptions = CC_THEME_TAGS.map(t =>
+    `<option value="${escHtml(t.label)}" ${t.label===curTag?'selected':''}>${escHtml(t.label)}</option>`).join('');
+
   document.getElementById('m-body').innerHTML = `
     <div class="fg"><label>Tema Konten</label>
+      <select class="fi" id="cc-ed-theme-tag" onchange="ccOnThemeTagChange(this)">
+        <option value="">— pilih tema —</option>
+        ${tagOptions}
+        ${isMod ? `<option value="__add_new__">+ Tambah tema baru…</option>` : ''}
+      </select>
+      <div id="cc-ed-theme-tag-new-wrap" style="display:none;margin-top:8px;display:flex;gap:6px">
+        <input class="fi" id="cc-ed-theme-tag-new" placeholder="mis. Life Hack" style="flex:1"/>
+        <button type="button" class="btn-sm btn-gold" onclick="ccSaveNewThemeTag()">Simpan Tema</button>
+      </div>
+    </div>
+    <div class="fg"><label>Judul Konten</label>
       <input class="fi" id="cc-ed-theme" value="${escHtml(s?.theme || '')}" placeholder="mis. Tips menata linen kamar tidur"/>
     </div>
     <div class="fg"><label>Script / Caption</label>
@@ -7160,25 +7210,63 @@ function openCcSlotModal(slotNo) {
     </div>`;
 
   document.getElementById('m-foot').innerHTML = `
-    <button class="btn-sm btn-gold" onclick="saveCcSlot(${slotNo}, ${s ? JSON.stringify(s.id) : 'null'})">Simpan</button>
+    <button class="btn-sm btn-gold" onclick="saveCcSlot(${slotNo}, ${s ? `'${s.id}'` : 'null'})">Simpan</button>
     <button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button>`;
   document.getElementById('modal-ov').classList.add('open');
 }
 
+/* v27: opsi "+ Tambah tema baru…" di dropdown Tema Konten — moderator saja */
+function ccOnThemeTagChange(sel) {
+  const wrap = document.getElementById('cc-ed-theme-tag-new-wrap');
+  if (!wrap) return;
+  wrap.style.display = sel.value === '__add_new__' ? 'flex' : 'none';
+}
+
+async function ccSaveNewThemeTag() {
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  const input = document.getElementById('cc-ed-theme-tag-new');
+  const label = input.value.trim();
+  if (!label) { toast('Isi nama tema dulu'); return; }
+  const res = await dbQ(d => d.rpc('moderator_add_content_theme_tag', {
+    p_user_id: currentUser.id, p_label: label
+  }));
+  if (res?.error) { toast('Gagal menambah tema: ' + res.error.message); return; }
+  await loadCcThemeTags();
+  const sel = document.getElementById('cc-ed-theme-tag');
+  const newLabel = (res?.data && res.data[0]?.label) || (res?.data?.label) || label;
+  sel.innerHTML = `<option value="">— pilih tema —</option>` +
+    CC_THEME_TAGS.map(t => `<option value="${escHtml(t.label)}" ${t.label===newLabel?'selected':''}>${escHtml(t.label)}</option>`).join('') +
+    `<option value="__add_new__">+ Tambah tema baru…</option>`;
+  document.getElementById('cc-ed-theme-tag-new-wrap').style.display = 'none';
+  input.value = '';
+  toast(`Tema "${newLabel}" ditambahkan`);
+}
+
+/* v27: rapikan link referensi — kalau user cuma ketik "tiktok.com/..." tanpa
+   http/https, tambahkan otomatis, biar tombol "Lihat ↗" beneran kebuka
+   (kalau nggak, browser menganggapnya link relatif dan kelihatan "gagal"). */
+function ccNormalizeLink(url) {
+  if (!url) return '';
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+}
+
 async function saveCcSlot(slotNo, slotId) {
   if (!db) { toast('Supabase tidak aktif'); return; }
+  const themeTagSel = document.getElementById('cc-ed-theme-tag').value;
+  const themeTag = themeTagSel === '__add_new__' ? '' : themeTagSel;
   const theme    = document.getElementById('cc-ed-theme').value.trim();
   const script   = document.getElementById('cc-ed-script').value.trim();
   const upload   = document.getElementById('cc-ed-upload').value || null;
-  const ref      = document.getElementById('cc-ed-ref').value.trim();
-  if (!theme) { toast('Isi tema konten dulu'); return; }
+  const ref      = ccNormalizeLink(document.getElementById('cc-ed-ref').value.trim());
+  if (!theme) { toast('Isi judul konten dulu'); return; }
 
   // Deadline otomatis mengikuti tanggal slotnya sendiri (nggak perlu diisi manual —
   // konten memang harus kelar di hari yang sama dengan tanggal slotnya).
   const res = await dbQ(d => d.rpc('moderator_upsert_content_slot', {
     p_moderator_id: currentUser.id, p_creator_user: ccTargetId, p_content_date: ccSelectedDate,
     p_slot_no: slotNo, p_theme: theme, p_script: script || null,
-    p_deadline_date: ccSelectedDate, p_upload_time: upload, p_reference_link: ref || null
+    p_deadline_date: ccSelectedDate, p_upload_time: upload, p_reference_link: ref || null,
+    p_content_theme: themeTag || null
   }));
   if (res?.error) { toast('Gagal menyimpan: ' + res.error.message); return; }
   closeModal();
@@ -8494,9 +8582,9 @@ async function exportMyPerfPdf() {
     if (can.isContent(r)) {
       const data = await _pdfFetchDetailContent();
       title = `Rincian Konten — ${monthLabel} (${data.length} slot dikerjakan)`;
-      head = [['Tanggal', 'Slot', 'Tema Konten', 'Status', 'Deadline', 'Jam Upload']];
+      head = [['Tanggal', 'Slot', 'Tema', 'Judul Konten', 'Status', 'Deadline', 'Jam Upload']];
       rows = data.map(d => [
-        _pdfFmtDate(d.content_date), `Slot ${d.slot_no}`, d.theme || '-',
+        _pdfFmtDate(d.content_date), `Slot ${d.slot_no}`, d.content_theme_tag || '-', d.theme || '-',
         CC_PROGRESS[d.progress_status]?.label || d.progress_status || '-',
         d.deadline_date ? _pdfFmtDate(d.deadline_date) : '-', d.upload_time || '-'
       ]);
@@ -15968,7 +16056,7 @@ const TUT_ROLE_EXTRA = [
     title:'2. Coba Isi Slot Konten', desc:'Ini persis form yang muncul saat kamu klik "+ Isi" di sebuah slot. Coba isi field-nya sendiri di bawah ini dulu sebelum praktik ke slot beneran.',
     demo:{ button:'Simpan Slot (Demo)', successMsg:'Slot demo tersimpan — di dunia nyata, Content Creator langsung dapat notifikasi.',
       fields:[
-        { label:'Tema Konten', placeholder:'mis. Tips menata linen kamar tidur', value:'Tips menata linen kamar tidur ala Japandi' },
+        { label:'Judul Konten', placeholder:'mis. Tips menata linen kamar tidur', value:'Tips menata linen kamar tidur ala Japandi' },
         { type:'textarea', label:'Script / Caption', rows:3, placeholder:'Tulis script atau poin-poin konten…', value:'Hook: "Kamar tidur berantakan? 3 trik ini bikin rapi dalam 5 menit."' },
         [ { type:'time', label:'Jam Upload', value:'19:00' } ],
         { label:'Link Referensi (opsional)', placeholder:'https://…' },
@@ -16030,7 +16118,7 @@ const TUT_ROLE_EXTRA = [
         { label:'Catatan Progress (opsional)', placeholder:'mis. Sudah syuting, tinggal edit', value:'Sudah take, tinggal edit malam ini' },
       ] } },
   { afterId:'n-content-studio', roles:['content_creator'],
-    title:'4. Isi Kalender Konten Ada Apa Aja', desc:'Tiap slot berisi: Tema (topik konten), Script/Caption (boleh kamu sunting), Jam Upload (jadwal posting, sekaligus jadi patokan deadline karena deadline-nya otomatis di hari itu juga), Link Referensi (contoh/inspirasi dari moderator), Progress (status kerja kamu), dan Catatan Progress (opsional, buat kasih konteks ke moderator).' },
+    title:'4. Isi Kalender Konten Ada Apa Aja', desc:'Tiap slot berisi: Tema Konten (kategori — Comedy, Edukasi, Storytelling, dst; moderator bisa nambah tema baru), Judul Konten, Script/Caption (boleh kamu sunting), Jam Upload (jadwal posting, sekaligus jadi patokan deadline karena deadline-nya otomatis di hari itu juga), Link Referensi (contoh/inspirasi dari moderator), Progress (status kerja kamu, termasuk status "Editing"), dan Catatan Progress (opsional, buat kasih konteks ke moderator).' },
 
   // ══════════════════════════════════════════════════════════════
   // ── HOST LIVE ──
