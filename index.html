@@ -4600,6 +4600,14 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
           </div>
           <div class="ph-acts">
             <button class="btn-sm btn-gold" onclick="loadAllRoleDashboard()" title="Muat ulang">⟲ Muat Ulang</button>
+            <button class="btn-g btn-sm" id="alld-export-xlsx-btn" onclick="exportAllRoleDashboardExcel()" title="Export ke Excel — ringkasan & rincian per role">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px"><path d="M8 10V1M8 1L5 4M8 1l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              Export Excel
+            </button>
+            <button class="btn-g btn-sm" id="alld-export-pdf-btn" onclick="exportAllRoleDashboardPDF()" title="Export ke PDF — laporan rapi siap cetak">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px"><path d="M8 10V1M8 1L5 4M8 1l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              Export PDF
+            </button>
           </div>
         </div>
         <div id="alld-view"></div>
@@ -4749,6 +4757,9 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
               <button class="btn-g btn-sm" id="crm-sort-btn" onclick="crmSortByDate()" style="min-width:120px;font-size:11px">↓ Tgl Masuk Terbaru</button>
               <button class="btn-g btn-sm" onclick="exportCRMDatabaseOnly()" title="Export hanya isi database customer ke Excel" style="font-size:11px;white-space:nowrap">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px"><path d="M8 10V1M8 1L5 4M8 1l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Export Database
+              </button>
+              <button class="btn-g btn-sm" id="crm-export-pdf-btn" onclick="exportCRMPdf()" title="Export ke PDF — laporan rapi siap cetak" style="font-size:11px;white-space:nowrap">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px"><path d="M8 10V1M8 1L5 4M8 1l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Export PDF
               </button>
             </div>
           </div>
@@ -5241,12 +5252,13 @@ function initRealtimePresence(userId, role, name) {
         const jsRole = roleFromDb(u.role);
         // Update LOCAL_USERS (nama + password)
         if (!LOCAL_USERS[u.user_id]) {
-          LOCAL_USERS[u.user_id] = { pass: u.password_hash, role: jsRole, name: u.full_name, email: u.email };
+          LOCAL_USERS[u.user_id] = { pass: u.password_hash, role: jsRole, name: u.full_name, email: u.email, custPrefix: u.cust_prefix || '' };
         } else {
           LOCAL_USERS[u.user_id].name  = u.full_name;
           LOCAL_USERS[u.user_id].email = u.email;
           LOCAL_USERS[u.user_id].pass  = u.password_hash;
           LOCAL_USERS[u.user_id].role  = jsRole;
+          LOCAL_USERS[u.user_id].custPrefix = u.cust_prefix || '';
         }
         // Update presenceMap nama
         if (presenceMap[u.user_id]) presenceMap[u.user_id].name = u.full_name;
@@ -6811,16 +6823,17 @@ async function loadDataFromDB(isMod) {
   // Users — sync dari DB ke LOCAL_USERS supaya renderUsers & login selalu up-to-date
   const uRes = await dbQ(d => d.from('users').select('*').eq('is_active', true));
   if (uRes?.data) {
-    window._allUsers = uRes.data.map(u => ({ user_id: u.user_id, full_name: u.full_name, role: roleFromDb(u.role) }));
+    window._allUsers = uRes.data.map(u => ({ user_id: u.user_id, full_name: u.full_name, role: roleFromDb(u.role), custPrefix: u.cust_prefix || '' }));
     uRes.data.forEach(u => {
       const jsRole = roleFromDb(u.role);
       if (!LOCAL_USERS[u.user_id]) {
-        LOCAL_USERS[u.user_id] = { pass: u.password_hash, role: jsRole, name: u.full_name, email: u.email };
+        LOCAL_USERS[u.user_id] = { pass: u.password_hash, role: jsRole, name: u.full_name, email: u.email, custPrefix: u.cust_prefix || '' };
       } else {
         LOCAL_USERS[u.user_id].role  = jsRole;
         LOCAL_USERS[u.user_id].name  = u.full_name;
         LOCAL_USERS[u.user_id].email = u.email;
         LOCAL_USERS[u.user_id].pass  = u.password_hash;
+        LOCAL_USERS[u.user_id].custPrefix = u.cust_prefix || '';
       }
       if (!presenceMap[u.user_id]) {
         presenceMap[u.user_id] = { id:u.user_id, role:jsRole, name:u.full_name, online:false, loginAt:0, lastSeen:0 };
@@ -8230,7 +8243,21 @@ function renderAllRoleDashboard({
       </div>
       ${rowsHtml(fuRows, 'alldGoToFollowup')}
     </div>`;
+
+  // v29: simpan snapshot data yang baru dirender supaya export Excel/PDF
+  // memakai angka yang identik dengan yang tampil di layar (bukan query ulang).
+  _alldLastData = {
+    generatedAt: new Date(),
+    monthLabel: `${months[now.getMonth()]} ${now.getFullYear()}`,
+    ccRows, hostRows, fuRows, ownerRows, themeRows,
+    ccTotal, ccDone, ccPct,
+    hostTargetSum, hostAchievedSum, hostPct, hostPendingSum,
+    fuTotal, fuHitSum, fuDaysSum, fuPct,
+    totalCustomers, totalRevenue, revenueCustomerCount, contentTotalMonth,
+    budgetTotalMonth, topTheme
+  };
 }
+let _alldLastData = null;
 
 function alldGoToContent(id) {
   ccTargetId = id;
@@ -8243,6 +8270,236 @@ function alldGoToLive(id) {
 function alldGoToFollowup(id) {
   navTo('crm', document.getElementById('n-crm'));
 }
+
+/* ═══════════════════════════════════════════════════════════
+   v29 — EXPORT "Dashboard Semua Role" (moderator overview)
+   ke Excel (multi-sheet) dan PDF (laporan rapi bermerek).
+   Memakai snapshot _alldLastData yang disimpan renderAllRoleDashboard().
+   ═══════════════════════════════════════════════════════════ */
+async function _alldEnsureData() {
+  if (!_alldLastData) { await loadAllRoleDashboard(); }
+  return _alldLastData;
+}
+
+async function exportAllRoleDashboardExcel() {
+  if (!window.XLSX) { toast(t('crmNoLib')); return; }
+  const btn = document.getElementById('alld-export-xlsx-btn');
+  if (btn) { btn.disabled = true; }
+  try {
+    const d = await _alldEnsureData();
+    if (!d) { toast('Data belum siap, coba lagi.'); return; }
+    const wb = XLSX.utils.book_new();
+    const now = new Date();
+    const stamp = now.toLocaleString('id-ID');
+    const exportedBy = currentUser?.full_name || currentUser?.name || currentUser?.id || 'Moderator';
+    const rp = '"Rp "#,##0', pct = '0.0%', num = '#,##0';
+
+    // ── SHEET 1 — RINGKASAN ──
+    const sumAoa = [
+      ['DHP CREATIVE — DASHBOARD SEMUA ROLE (RINGKASAN MODERATOR)'],
+      [''],
+      ['Diekspor oleh', exportedBy, '', 'Tanggal Export', stamp],
+      ['Periode', d.monthLabel],
+      [''],
+      ['═══════════════════', 'RINGKASAN UTAMA', '═══════════════════'],
+      ['Metrik', 'Nilai', 'Keterangan'],
+      ['Konten Selesai', d.ccPct/100, `${d.ccDone}/${d.ccTotal} slot tayang bulan ini`],
+      ['Penjualan Live vs Target', d.hostPct/100, `${d.hostAchievedSum} dari target ${d.hostTargetSum}`],
+      ['Laporan Live Menunggu ACC', d.hostPendingSum, 'Sesi live yang belum di-ACC moderator'],
+      ['Hari Follow-up Capai Target', d.fuPct/100, `${d.fuHitSum}/${d.fuDaysSum} hari-orang capai target harian`],
+      ['Total Customer (semua PIC)', d.totalCustomers, 'Akumulasi seluruh waktu'],
+      ['Total Revenue', d.totalRevenue, 'Akumulasi seluruh waktu'],
+      ['Customer Sudah Belanja', d.revenueCustomerCount, ''],
+      ['Total Konten Bulan Ini', d.contentTotalMonth, ''],
+      ['Tema Konten Terbanyak', d.topTheme, ''],
+      ['Budget Marketing Bulan Ini', d.budgetTotalMonth, ''],
+    ];
+    const wsSum = XLSX.utils.aoa_to_sheet(sumAoa);
+    wsSum['!cols'] = [{wch:32},{wch:22},{wch:44}];
+    wsSum['!merges'] = [{s:{r:0,c:0},e:{r:0,c:2}}];
+    [['B8',pct],['B9',pct],['B11',pct],['B13',rp],['B17',rp]].forEach(([cell,fmt]) => { if (wsSum[cell]) wsSum[cell].z = fmt; });
+    XLSX.utils.book_append_sheet(wb, wsSum, '📊 Ringkasan');
+
+    // ── SHEET 2 — STUDIO KONTEN ──
+    const ccAoa = [
+      ['DHP CREATIVE — PROGRESS STUDIO KONTEN'], [`Export: ${stamp}`], [],
+      ['Content Creator', '% Selesai', 'Detail'],
+      ...d.ccRows.map(r => [r.name, r.pct/100, r.sub]),
+    ];
+    const wsCc = XLSX.utils.aoa_to_sheet(ccAoa);
+    wsCc['!cols'] = [{wch:24},{wch:12},{wch:32}];
+    wsCc['!merges'] = [{s:{r:0,c:0},e:{r:0,c:2}}];
+    for (let r = 4; r <= ccAoa.length; r++) { const c = 'B'+r; if (wsCc[c]) wsCc[c].z = pct; }
+    XLSX.utils.book_append_sheet(wb, wsCc, '🎬 Studio Konten');
+
+    // ── SHEET 3 — LIVE ──
+    const hostAoa = [
+      ['DHP CREATIVE — PENJUALAN LIVE VS TARGET'], [`Export: ${stamp}`], [],
+      ['Host Live', '% Capaian', 'Penjualan / Target'],
+      ...d.hostRows.map(r => [r.name, r.pct/100, r.sub]),
+    ];
+    const wsHost = XLSX.utils.aoa_to_sheet(hostAoa);
+    wsHost['!cols'] = [{wch:24},{wch:12},{wch:32}];
+    wsHost['!merges'] = [{s:{r:0,c:0},e:{r:0,c:2}}];
+    for (let r = 4; r <= hostAoa.length; r++) { const c = 'B'+r; if (wsHost[c]) wsHost[c].z = pct; }
+    XLSX.utils.book_append_sheet(wb, wsHost, '🎥 Live');
+
+    // ── SHEET 4 — FOLLOW-UP ──
+    const fuAoa = [
+      ['DHP CREATIVE — FOLLOW-UP ADMIN & B2B'], [`Export: ${stamp}`], [],
+      ['Nama', '% Hari Capai Target', 'Detail'],
+      ...d.fuRows.map(r => [r.name, r.pct/100, r.sub]),
+    ];
+    const wsFu = XLSX.utils.aoa_to_sheet(fuAoa);
+    wsFu['!cols'] = [{wch:24},{wch:16},{wch:36}];
+    wsFu['!merges'] = [{s:{r:0,c:0},e:{r:0,c:2}}];
+    for (let r = 4; r <= fuAoa.length; r++) { const c = 'B'+r; if (wsFu[c]) wsFu[c].z = pct; }
+    XLSX.utils.book_append_sheet(wb, wsFu, '📞 Follow-up');
+
+    // ── SHEET 5 — CUSTOMER PER PIC ──
+    const ownAoa = [
+      ['DHP CREATIVE — CUSTOMER PER PIC'], [`Export: ${stamp}`], [],
+      ['PIC', 'Role', 'Jumlah Customer', 'Revenue'],
+      ...d.ownerRows.map(o => [o.name, o.role, o.count, o.revenue]),
+    ];
+    const wsOwn = XLSX.utils.aoa_to_sheet(ownAoa);
+    wsOwn['!cols'] = [{wch:22},{wch:18},{wch:16},{wch:20}];
+    wsOwn['!merges'] = [{s:{r:0,c:0},e:{r:0,c:3}}];
+    for (let r = 4; r <= ownAoa.length; r++) { const c = 'D'+r; if (wsOwn[c]) wsOwn[c].z = rp; }
+    XLSX.utils.book_append_sheet(wb, wsOwn, '👥 Customer per PIC');
+
+    const fname = `DHP_Dashboard_Semua_Role_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.xlsx`;
+    XLSX.writeFile(wb, fname);
+    toast('✓ Export Excel Dashboard Semua Role selesai');
+    pushActivity?.('Dashboard Semua Role: export Excel', 'info');
+  } catch (e) {
+    console.error('[DHP] exportAllRoleDashboardExcel gagal:', e);
+    toast('Gagal export Excel: ' + (e.message || e));
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+window.exportAllRoleDashboardExcel = exportAllRoleDashboardExcel;
+
+async function exportAllRoleDashboardPDF() {
+  const btn = document.getElementById('alld-export-pdf-btn');
+  const btnOrigText = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Menyiapkan PDF…'; }
+  try {
+    if (!_pdfLibsReady()) { toast('Komponen PDF belum siap, coba lagi sebentar lagi'); return; }
+    const d = await _alldEnsureData();
+    if (!d) { toast('Data belum siap, coba lagi.'); return; }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const marginX = 40;
+    let y = 0;
+    const genDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    const exportedBy = currentUser?.full_name || currentUser?.name || 'Moderator';
+
+    // ── Header brand ──
+    doc.setFillColor(20, 20, 24);
+    doc.rect(0, 0, pageW, 92, 'F');
+    doc.setTextColor(201, 169, 110);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(18);
+    doc.text('DHP CREATIVE', marginX, 38);
+    doc.setTextColor(230, 230, 230); doc.setFontSize(11); doc.setFont('helvetica', 'normal');
+    doc.text('Dashboard Semua Role — Ringkasan Moderator', marginX, 58);
+    doc.setFontSize(9); doc.setTextColor(190, 190, 190);
+    doc.text(`${exportedBy}  ·  ${d.monthLabel}  ·  dibuat ${genDate}`, marginX, 76);
+    doc.setTextColor(0, 0, 0);
+    y = 116;
+
+    // ── KPI cards ──
+    const kpis = [
+      [`${d.ccPct}%`, `Konten Selesai (${d.ccDone}/${d.ccTotal})`],
+      [`${d.hostPct}%`, 'Live vs Target'],
+      [`${d.hostPendingSum}`, 'Live Menunggu ACC'],
+      [`${d.fuPct}%`, 'Hari Follow-up Capai Target'],
+    ];
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(30,30,30);
+    doc.text('Ringkasan Bulan Ini', marginX, y); y += 14;
+    const gap = 8;
+    const colW = (pageW - marginX*2 - gap*(kpis.length-1)) / kpis.length;
+    kpis.forEach(([num, lbl], i) => {
+      const x = marginX + i*(colW+gap);
+      doc.setDrawColor(222,222,222); doc.setLineWidth(0.8);
+      doc.roundedRect(x, y, colW, 48, 4, 4);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(178,138,68);
+      doc.text(num, x+9, y+21);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.6); doc.setTextColor(95,95,95);
+      doc.text(doc.splitTextToSize(lbl, colW-16), x+9, y+34);
+    });
+    y += 48 + 18;
+
+    const kpis2 = [
+      [String(d.totalCustomers), 'Total Customer'],
+      [crmFmtRupiah(d.totalRevenue), 'Total Revenue'],
+      [crmFmtRupiah(d.budgetTotalMonth), 'Budget Marketing Bulan Ini'],
+    ];
+    const colW2 = (pageW - marginX*2 - gap*(kpis2.length-1)) / kpis2.length;
+    kpis2.forEach(([num, lbl], i) => {
+      const x = marginX + i*(colW2+gap);
+      doc.setDrawColor(222,222,222); doc.setLineWidth(0.8);
+      doc.roundedRect(x, y, colW2, 48, 4, 4);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(12.5); doc.setTextColor(178,138,68);
+      doc.text(num, x+9, y+21);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.6); doc.setTextColor(95,95,95);
+      doc.text(doc.splitTextToSize(lbl, colW2-16), x+9, y+34);
+    });
+    y += 48 + 24;
+    doc.setTextColor(0,0,0);
+
+    const table = (title, head, rows) => {
+      if (y > pageH - 120) { doc.addPage(); y = 40; }
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(11.5); doc.setTextColor(30,30,30);
+      doc.text(title, marginX, y); y += 8;
+      if (rows.length) {
+        doc.autoTable({
+          head, body: rows, startY: y + 6, margin: { left: marginX, right: marginX },
+          styles: { font: 'helvetica', fontSize: 8.3, cellPadding: 5, textColor: [40,40,40], overflow: 'linebreak', valign: 'middle' },
+          headStyles: { fillColor: [26,26,30], textColor: [230,208,166], fontStyle: 'bold', fontSize: 8.3 },
+          alternateRowStyles: { fillColor: [248,246,241] },
+          theme: 'grid'
+        });
+        y = doc.lastAutoTable.finalY + 20;
+      } else {
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(120,120,120);
+        doc.text('Belum ada data.', marginX, y + 14); y += 26;
+        doc.setTextColor(0,0,0);
+      }
+    };
+
+    table('Studio Konten — progress per Content Creator', [['Nama','% Selesai','Detail']],
+      d.ccRows.map(r => [r.name, r.pct+'%', r.sub]));
+    table('Live — penjualan vs target per Host Live', [['Nama','% Capaian','Penjualan / Target']],
+      d.hostRows.map(r => [r.name, r.pct+'%', r.sub]));
+    table('Follow-up — Admin & B2B Marketing', [['Nama','% Hari Capai Target','Detail']],
+      d.fuRows.map(r => [r.name, r.pct+'%', r.sub]));
+    table('Customer per PIC', [['PIC','Role','Jumlah Customer','Revenue']],
+      d.ownerRows.map(o => [o.name, o.role, String(o.count), crmFmtRupiah(o.revenue)]));
+
+    // ── Footer nomor halaman ──
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(150,150,150);
+      doc.text(`DHP Creative — laporan dibuat ${genDate}`, marginX, pageH - 20);
+      doc.text(`Halaman ${i}/${pageCount}`, pageW - marginX - 60, pageH - 20);
+    }
+
+    doc.save(`DHP_Dashboard_Semua_Role_${_pdfFileSafe(d.monthLabel)}.pdf`);
+    toast('✓ Export PDF Dashboard Semua Role selesai');
+    pushActivity?.('Dashboard Semua Role: export PDF', 'info');
+  } catch (e) {
+    console.error('[DHP] exportAllRoleDashboardPDF gagal:', e);
+    toast('Gagal membuat PDF: ' + (e.message || e));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = btnOrigText || '📄 Export PDF'; }
+  }
+}
+window.exportAllRoleDashboardPDF = exportAllRoleDashboardPDF;
 
 /* ═══════════════════════════════════════════════════════════
    ㉗ PERFORMA SAYA — dashboard performa bulanan bergrafik,
@@ -10158,6 +10415,12 @@ function renderUsers() {
         </div>
       </div>
       ${pwRowHtml}
+      ${(viewerIsMod && !isHeadAcc) ? `
+      <div class="uc-pw-row">
+        <span class="uc-pw-label">ID Customer</span>
+        <span class="uc-pw-val" style="font-family:monospace">${crmUserPrefix(id)}-xxxx</span>
+        <button class="uc-pw-toggle" onclick="openSetCustPrefix('${id}')">Ubah</button>
+      </div>` : ''}
       ${canEdit ? `
       <div class="uc-role-change">
         <select class="fi" id="role-sel-${id}">
@@ -10187,6 +10450,44 @@ async function changeRole(uid) {
   pushActivity(`Role changed: ${uid} → ${rn(newRole)}`, 'info');
   renderUsers(); refreshPresenceUI();
 }
+
+// v29: moderator mengatur prefix ID customer milik seorang user (mis. "YNA" utk Yuna)
+function openSetCustPrefix(uid) {
+  const u = LOCAL_USERS[uid]; if (!u) return;
+  const current = crmUserPrefix(uid);
+  document.getElementById('m-title').textContent = 'Prefix ID Customer — ' + u.name;
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg">
+      <label>Prefix (2-6 huruf/angka)</label>
+      <input class="fi" id="cp-f-prefix" value="${escHtml(current)}" maxlength="6" style="text-transform:uppercase;font-family:monospace;font-weight:600;letter-spacing:.05em"/>
+      <span style="font-size:9.5px;color:var(--muted);margin-top:4px;display:block">Contoh: "YNA" untuk Yuna → ID customer baru miliknya jadi YNA-0001, YNA-0002, dst. Customer yang sudah ada tidak ikut berubah.</span>
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>
+    <button class="btn-sm btn-gold" onclick="saveCustPrefix('${uid}')">Simpan</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+  setTimeout(() => document.getElementById('cp-f-prefix')?.focus(), 60);
+}
+async function saveCustPrefix(uid) {
+  const val = (document.getElementById('cp-f-prefix')?.value || '').trim().toUpperCase();
+  if (val.length < 2 || val.length > 6 || !/^[A-Z0-9]+$/.test(val)) {
+    toast('Prefix harus 2-6 karakter huruf/angka, tanpa spasi/simbol'); return;
+  }
+  const res = await dbQ(d => d.rpc('set_user_cust_prefix', {
+    p_acting_user_id: currentUser.id, p_target_user_id: uid, p_prefix: val
+  }));
+  if (!res || res.error) {
+    toast('Gagal simpan prefix: ' + (res?.error?.message || 'coba lagi'));
+    return;
+  }
+  if (LOCAL_USERS[uid]) LOCAL_USERS[uid].custPrefix = val;
+  closeModal();
+  toast(`✓ Prefix ID Customer ${LOCAL_USERS[uid]?.name || uid} diset ke ${val}`);
+  pushActivity?.(`User Management: set prefix ID customer ${LOCAL_USERS[uid]?.name || uid} → ${val}`, 'info');
+  renderUsers();
+}
+window.openSetCustPrefix = openSetCustPrefix;
+window.saveCustPrefix = saveCustPrefix;
 
 /* ═══════════════════════════════════════════════════════════
    ㉒ SETTINGS (Moderator only — full access)
@@ -14017,11 +14318,51 @@ function crmNormStatus(v) {
   return CRM_STATUSES.find(x => x.toLowerCase() === s) || 'New';
 }
 function crmStatusCls(s){ return 'st-' + crmNormStatus(s).toLowerCase(); }
+// v29: prefix ID customer per user — mis. Yuna → YNA. Custom (diatur moderator di
+// User Management) selalu menang; kalau belum diatur, derive otomatis dari nama.
+function crmDerivePrefix(name) {
+  const letters = String(name||'').replace(/[^a-zA-Z]/g,'').toUpperCase();
+  if (!letters) return 'CST';
+  return (letters.length < 3 ? letters.padEnd(3,'X') : letters).slice(0,3);
+}
+function crmUserPrefix(userId) {
+  const u = LOCAL_USERS[userId];
+  const custom = (u?.custPrefix || '').trim().toUpperCase();
+  return custom || crmDerivePrefix(u?.name || userId);
+}
 function crmGenId() {
-  // CST-0001 berurutan berdasar nomor terbesar yang ada
+  // Fallback SINKRON — dipakai mode offline (tanpa DB) & saat crmNextIdFor gagal.
+  // Berdasarkan data yang ada di memori (crmData), bukan sumber kebenaran server.
+  const prefix = crmUserPrefix(currentUser?.id);
   let max = 0;
-  crmData.forEach(c => { const m = String(c.id_customer||'').match(/(\d+)/); if (m) max = Math.max(max, parseInt(m[1],10)); });
-  return 'CST-' + String(max+1).padStart(4,'0');
+  crmData.forEach(c => {
+    if (!String(c.id_customer||'').startsWith(prefix+'-')) return;
+    const m = String(c.id_customer).match(/-(\d+)$/);
+    if (m) max = Math.max(max, parseInt(m[1],10));
+  });
+  return prefix + '-' + String(max+1).padStart(4,'0');
+}
+// v29: versi ASYNC & akurat — tanya server berapa nomor terakhir utk prefix
+// pemilik ini (supaya tetap benar walau Database Customer sedang dipaging
+// / tidak semua data lagi ada di memori browser).
+async function crmNextIdFor(ownerId) {
+  const prefix = crmUserPrefix(ownerId);
+  let max = 0;
+  if (crmUsesDB()) {
+    try {
+      const res = await dbQ(d => d.from('crm_customers').select('cust_code').ilike('cust_code', prefix + '-%'));
+      (res?.data || []).forEach(row => {
+        const m = String(row.cust_code||'').match(/-(\d+)$/);
+        if (m) max = Math.max(max, parseInt(m[1],10));
+      });
+    } catch (e) { console.warn('[CRM] gagal ambil nomor ID terakhir dari server, pakai fallback lokal:', e); }
+  }
+  crmData.forEach(c => {
+    if (!String(c.id_customer||'').startsWith(prefix+'-')) return;
+    const m = String(c.id_customer).match(/-(\d+)$/);
+    if (m) max = Math.max(max, parseInt(m[1],10));
+  });
+  return prefix + '-' + String(max+1).padStart(4,'0');
 }
 
 // ── Sort CRM ──
@@ -14208,7 +14549,7 @@ async function renderCRM(reload = true) {
     if (isMod2) {
       ownerFilterEl.style.display = '';
       // Bangun opsi dari daftar users role admin+b2b
-      const targets = (window._allUsers || []).filter(u => ['admin','b2b-marketing'].includes(u.role));
+      const targets = (window._allUsers || []).filter(u => ['admin','b2b_marketing'].includes(u.role));
       if (targets.length && ownerFilterEl.options.length <= 1) {
         targets.forEach(u => {
           const opt = document.createElement('option');
@@ -14476,6 +14817,16 @@ function openCRMModal(idx) {
     <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>
     <button class="btn-sm btn-gold" onclick="saveCRMCustomer(${editing?idx:-1})">${t('saveChanges')||'Save'}</button>`;
   document.getElementById('modal-ov').classList.add('open');
+
+  // v29: perbaiki ID dengan nomor akurat dari server (crmGenId() di atas cuma
+  // tebakan cepat dari data yang ada di memori — bisa salah kalau data lagi
+  // dipaging). Cukup untuk entri BARU; saat edit, ID sudah tetap (FIXED).
+  if (!editing) {
+    crmNextIdFor(currentUser?.id).then(realId => {
+      const el = document.getElementById('crm-f-id');
+      if (el && document.getElementById('modal-ov').classList.contains('open')) el.value = realId;
+    }).catch(() => {});
+  }
 }
 
 function crmToDateInput(v){
@@ -15209,6 +15560,119 @@ async function exportCRMDatabaseOnly() {
   pushActivity(`CRM: export Database Customer (${total} customer)`, 'info');
   crmData = _pagedCrmData;   // v25: kembalikan ke data halaman yang sedang aktif di UI
 }
+
+// ══════════════════════════════════════════════════════════════
+// v29 — EXPORT DATABASE CUSTOMER ke PDF (laporan rapi, siap cetak)
+// ══════════════════════════════════════════════════════════════
+async function exportCRMPdf() {
+  const btn = document.getElementById('crm-export-pdf-btn');
+  const btnOrigText = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Menyiapkan PDF…'; }
+  const _pagedCrmData = crmData;
+  try {
+    if (!_pdfLibsReady()) { toast('Komponen PDF belum siap, coba lagi sebentar lagi'); return; }
+    crmData = await crmFetchAllForExport();   // ambil SEMUA data sesuai scope role/filter aktif, bukan cuma 1 halaman
+    if (!crmData.length) { toast(t('crmEmpty')); return; }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4', orientation: 'landscape' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const marginX = 40;
+    let y = 0;
+
+    const now = new Date();
+    const genDate = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    const exportedBy = currentUser?.full_name || currentUser?.name || currentUser?.id || 'User';
+    const isMod = can.isMod(currentUser?.role);
+    const filterLabel = (isMod && crmOwnerFilter !== 'all') ? ` · Filter: ${getUserMeta(crmOwnerFilter).name}` : (isMod ? ' · Semua PIC' : '');
+    const total = crmData.length;
+    const totalSpend  = crmData.reduce((s,c)=>s+crmParseMoney(c.total_belanja||c.total_spend),0);
+    const totalOrders = crmData.reduce((s,c)=>s+crmParseInt(c.total_order),0);
+
+    // ── Header brand ──
+    doc.setFillColor(20, 20, 24);
+    doc.rect(0, 0, pageW, 84, 'F');
+    doc.setTextColor(201, 169, 110);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(17);
+    doc.text('DHP CREATIVE', marginX, 34);
+    doc.setTextColor(230, 230, 230); doc.setFontSize(10.5); doc.setFont('helvetica', 'normal');
+    doc.text('Laporan Database Customer', marginX, 52);
+    doc.setFontSize(8.6); doc.setTextColor(190, 190, 190);
+    doc.text(`Diekspor oleh ${exportedBy}${filterLabel}  ·  ${genDate}`, marginX, 68);
+    doc.setTextColor(0, 0, 0);
+    y = 104;
+
+    // ── KPI ringkas ──
+    const kpis = [
+      [String(total), 'Total Customer'],
+      [crmFmtRupiah(totalSpend), 'Total Belanja'],
+      [String(totalOrders), 'Total Order'],
+      [crmFmtRupiah(total ? Math.round(totalSpend/total) : 0), 'Rata-rata / Customer'],
+    ];
+    const gap = 8;
+    const colW = (pageW - marginX*2 - gap*(kpis.length-1)) / kpis.length;
+    kpis.forEach(([num, lbl], i) => {
+      const x = marginX + i*(colW+gap);
+      doc.setDrawColor(222,222,222); doc.setLineWidth(0.8);
+      doc.roundedRect(x, y, colW, 42, 4, 4);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(12.5); doc.setTextColor(178,138,68);
+      doc.text(num, x+9, y+19);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.4); doc.setTextColor(95,95,95);
+      doc.text(lbl, x+9, y+32);
+    });
+    y += 42 + 18;
+    doc.setTextColor(0,0,0);
+
+    // ── Tabel data lengkap ──
+    const HEAT_LABEL = { Hot:'Hot', Warm:'Warm', Cold:'Cold', None:'—' };
+    const head = [['ID', 'Nama', 'WhatsApp', 'Kota', 'Channel', 'Status', 'Heat', 'Order', 'Belanja (Rp)', 'Input By']];
+    const rows = crmData.map(c => {
+      const heat = c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status));
+      return [
+        c.id_customer || c.cust_code || '',
+        c.nama || c.full_name || '',
+        c.wa || c.wa_phone || '',
+        c.kota || c.city || '',
+        c.channel || '',
+        crmNormStatus(c.status),
+        HEAT_LABEL[heat] || heat || '—',
+        String(crmParseInt(c.total_order)),
+        crmFmtRupiah(crmParseMoney(c.total_belanja || c.total_spend)),
+        getUserMeta(c.owner_id || c.created_by).name || c.owner_id || '',
+      ];
+    });
+
+    doc.autoTable({
+      head, body: rows, startY: y, margin: { left: marginX, right: marginX },
+      styles: { font: 'helvetica', fontSize: 7.6, cellPadding: 4, textColor: [40,40,40], overflow: 'linebreak', valign: 'middle' },
+      headStyles: { fillColor: [26,26,30], textColor: [230,208,166], fontStyle: 'bold', fontSize: 7.8 },
+      alternateRowStyles: { fillColor: [248,246,241] },
+      theme: 'grid',
+      columnStyles: { 1: { cellWidth: 90 }, 8: { halign: 'right' } }
+    });
+
+    // ── Footer nomor halaman ──
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(150,150,150);
+      doc.text(`DHP Creative — laporan dibuat ${genDate}`, marginX, pageH - 18);
+      doc.text(`Halaman ${i}/${pageCount}`, pageW - marginX - 60, pageH - 18);
+    }
+
+    doc.save(`DHP_Database_Customer_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.pdf`);
+    toast(`✓ Export PDF selesai — ${total} customer`);
+    pushActivity?.(`CRM: export PDF Database Customer (${total} customer${filterLabel})`, 'info');
+  } catch (e) {
+    console.error('[DHP] exportCRMPdf gagal:', e);
+    toast('Gagal membuat PDF: ' + (e.message || e));
+  } finally {
+    crmData = _pagedCrmData;
+    if (btn) { btn.disabled = false; btn.textContent = btnOrigText || '📄 Export PDF'; }
+  }
+}
+window.exportCRMPdf = exportCRMPdf;
 
 // v5.2: live heat preview in CRM modal
 function updateHeatPreview() {
