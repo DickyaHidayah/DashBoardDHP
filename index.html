@@ -429,6 +429,8 @@ body.light .hs-switch-btn.active{color:#fff}
 .lsr-pill.lsr-pill-info{color:#7ea8c9;border-color:rgba(126,168,201,.4)}
 .lsr-pill.lsr-pill-danger{color:#e08a7d;border-color:rgba(224,138,125,.42);animation:lsrPulse 2.2s ease-in-out infinite}
 .lsr-pill.lsr-pill-editing{color:#d98ec0;border-color:rgba(217,142,192,.42);animation:lsrPulse 2.2s ease-in-out infinite}
+.lsr-pill.lsr-pill-sakit{color:#d98ec0;border-color:rgba(217,142,192,.42);background:rgba(217,142,192,.06)}
+.lsr-pill.lsr-pill-izin{color:#e8b86e;border-color:rgba(232,184,110,.45);background:rgba(232,184,110,.06)}
 /* v27: badge tema/kategori konten (Comedy, Edukasi, Storytelling, dst) */
 .cc-theme-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.03em;white-space:nowrap;background:rgba(201,169,110,.1);color:var(--gold-hi);border:1px solid rgba(201,169,110,.3)}
 .cc-legend{display:flex;flex-wrap:wrap;gap:10px 16px;padding:10px 2px;font-size:11px;color:var(--text2)}
@@ -1680,6 +1682,8 @@ tbody tr:last-child td{border-bottom:none}
 .b-host_live{background:rgba(232,112,112,.1);color:var(--red);border:1px solid rgba(232,112,112,.25)}
 .b-b2b_marketing{background:rgba(126,168,201,.1);color:var(--blue);border:1px solid rgba(126,168,201,.22)}
 .b-guest{background:rgba(120,120,120,.1);color:#888;border:1px solid rgba(120,120,120,.2)}
+.b-sakit{background:rgba(217,142,192,.1);color:#d98ec0;border:1px solid rgba(217,142,192,.25)}
+.b-izin{background:rgba(232,184,110,.1);color:#e8b86e;border:1px solid rgba(232,184,110,.28)}
 .tbl-empty{text-align:center;padding:32px;color:var(--muted);font-style:italic;font-size:12px}
 
 /* ── ACTION BUTTONS ── */
@@ -7657,7 +7661,7 @@ function hsSwitchTo(mode, uid) {
 function renderUpcomingLiveTable() {
   const tbody = document.getElementById('live-schedule-tbl');
   if (!tbody) return;
-  const statusClass = { scheduled:'b-admin', rehearsal:'b-moderator', completed:'b-guest', cancelled:'b-host_live' };
+  const statusClass = { scheduled:'b-admin', rehearsal:'b-moderator', completed:'b-guest', cancelled:'b-host_live', sakit:'b-sakit', izin:'b-izin' };
   const dows = currentLang === 'id' ? DOW_ID : DOW_EN;
   tbody.innerHTML = _lsUpcomingCache.length ? _lsUpcomingCache.map(s => {
     const dObj = new Date(s.schedule_date + 'T00:00:00');
@@ -7914,7 +7918,7 @@ async function loadLiveDashboard() {
   const ym = ymPeriodKey(new Date());
 
   const rows = await Promise.all(ids.map(async id => {
-    let target = 0, achieved = 0, sessionsCount = 0, libur = 0, pending = 0, totalHours = 0;
+    let target = 0, achieved = 0, sessionsCount = 0, libur = 0, pending = 0, totalHours = 0, sakit = 0, izin = 0;
     if (db) {
       const [statRes, pendRes] = await Promise.all([
         dbQ(d => d.rpc('host_dashboard_stats', { p_host_id: id, p_period_ym: ym })),
@@ -7926,9 +7930,11 @@ async function loadLiveDashboard() {
       sessionsCount  = Number(st?.total_sessions) || 0;
       libur          = Number(st?.total_libur) || 0;
       totalHours     = Number(st?.total_hours) || 0;
+      sakit          = Number(st?.total_sakit) || 0;
+      izin           = Number(st?.total_izin) || 0;
       pending        = (pendRes?.data || []).length;
     }
-    return { id, name: LOCAL_USERS[id]?.name || id, target, achieved, sessionsCount, libur, pending, totalHours };
+    return { id, name: LOCAL_USERS[id]?.name || id, target, achieved, sessionsCount, libur, pending, totalHours, sakit, izin };
   }));
 
   renderLiveDashboard(rows);
@@ -7950,6 +7956,9 @@ function renderLiveDashboard(rows) {
   const totalAchieved = rows.reduce((s,r)=>s+r.achieved,0);
   const totalSessions = rows.reduce((s,r)=>s+r.sessionsCount,0);
   const totalPending  = rows.reduce((s,r)=>s+r.pending,0);
+  const totalHoursAll = rows.reduce((s,r)=>s+(r.totalHours||0),0);
+  const totalSakitAll = rows.reduce((s,r)=>s+(r.sakit||0),0);
+  const totalIzinAll  = rows.reduce((s,r)=>s+(r.izin||0),0);
   const overallPct    = totalTarget > 0 ? Math.min(totalAchieved/totalTarget,1) : 0;
   const achievedCount = rows.filter(r => r.target > 0 && r.achieved >= r.target).length;
 
@@ -7978,6 +7987,18 @@ function renderLiveDashboard(rows) {
         <div class="ldash-sum-val${totalPending?' ldash-sum-warn':''}">${totalPending}</div>
         <div class="ldash-sum-sub">${totalPending ? 'perlu ditindaklanjuti' : 'semua sudah lapor'}</div>
       </div>
+      <div class="ldash-sum-div"></div>
+      <div class="ldash-sum-item">
+        <div class="ldash-sum-lbl">Total Jam Live</div>
+        <div class="ldash-sum-val">${totalHoursAll.toFixed(1)}j</div>
+        <div class="ldash-sum-sub">seluruh host bulan ini</div>
+      </div>
+      <div class="ldash-sum-div"></div>
+      <div class="ldash-sum-item">
+        <div class="ldash-sum-lbl">Sakit / Izin</div>
+        <div class="ldash-sum-val${(totalSakitAll+totalIzinAll)?' ldash-sum-warn':''}">${totalSakitAll} / ${totalIzinAll}</div>
+        <div class="ldash-sum-sub">total sesi sakit &amp; izin bulan ini</div>
+      </div>
     </div>`;
 
   // ── Kartu peringkat per host — medali utk 3 teratas ──
@@ -8003,6 +8024,8 @@ function renderLiveDashboard(rows) {
         <div class="hs-cc-stat"><div class="hs-cc-stat-num">${r.totalHours.toFixed(1)}j</div><div class="hs-cc-stat-lbl">Jam Kerja</div></div>
         <div class="hs-cc-stat"><div class="hs-cc-stat-num">${r.sessionsCount}</div><div class="hs-cc-stat-lbl">Sesi Bulan Ini</div></div>
         <div class="hs-cc-stat"><div class="hs-cc-stat-num">${r.libur}</div><div class="hs-cc-stat-lbl">Libur</div></div>
+        <div class="hs-cc-stat${r.sakit ? ' hs-warn' : ''}"><div class="hs-cc-stat-num">${r.sakit}</div><div class="hs-cc-stat-lbl">Sakit</div></div>
+        <div class="hs-cc-stat${r.izin ? ' hs-warn' : ''}"><div class="hs-cc-stat-num">${r.izin}</div><div class="hs-cc-stat-lbl">Izin</div></div>
         <div class="hs-cc-stat${r.pending ? ' hs-warn' : ''}"><div class="hs-cc-stat-num">${r.pending}</div><div class="hs-cc-stat-lbl">Blm Lapor</div></div>
       </div>
     </div>`;
@@ -8032,6 +8055,8 @@ function renderLiveDashboard(rows) {
       <td>${r.totalHours.toFixed(1)} jam</td>
       <td>${r.sessionsCount}</td>
       <td>${r.libur}</td>
+      <td>${r.sakit ? `<span style="color:#d98ec0;font-weight:600">${r.sakit}</span>` : '0'}</td>
+      <td>${r.izin ? `<span style="color:#e8b86e;font-weight:600">${r.izin}</span>` : '0'}</td>
       <td>${r.pending ? `<span style="color:var(--red);font-weight:600">${r.pending}</span>` : '0'}</td>
     </tr>`).join('');
 
@@ -8055,7 +8080,7 @@ function renderLiveDashboard(rows) {
       <div class="tbl-scroll">
         <table>
           <thead><tr>
-            <th>Host</th><th>Tercapai</th><th>Target</th><th>%</th><th>Jam Kerja</th><th>Sesi</th><th>Libur</th><th>Blm Lapor</th>
+            <th>Host</th><th>Tercapai</th><th>Target</th><th>%</th><th>Jam Kerja</th><th>Sesi</th><th>Libur</th><th>Sakit</th><th>Izin</th><th>Blm Lapor</th>
           </tr></thead>
           <tbody>${tableRows}</tbody>
         </table>
@@ -8179,11 +8204,62 @@ async function loadAllRoleDashboard() {
     });
   }
 
+  // ── v29: Live — total jam live, total sakit, total izin, total batal (bulan berjalan) ──
+  let liveTotalJam = 0, liveTotalSakit = 0, liveTotalIzin = 0, liveTotalBatal = 0,
+      liveTotalSelesai = 0, liveTotalSesi = 0;
+  let liveByHost = {};   // { host_id: { jam, sakit, izin, batal, selesai, total } }
+  if (db) {
+    const res = await dbQ(d => d.from('live_schedule')
+      .select('host_user_id,status,time_start,time_end')
+      .gte('schedule_date', first).lte('schedule_date', last));
+    (res?.data || []).forEach(r => {
+      const hid = r.host_user_id;
+      if (!liveByHost[hid]) liveByHost[hid] = { jam:0, sakit:0, izin:0, batal:0, selesai:0, total:0 };
+      liveByHost[hid].total++; liveTotalSesi++;
+      if (r.status === 'completed') {
+        const [sh,sm] = (r.time_start||'0:0').split(':').map(Number);
+        const [eh,em] = (r.time_end||'0:0').split(':').map(Number);
+        const jam = Math.max(0, ((eh*60+em) - (sh*60+sm)) / 60);
+        liveByHost[hid].jam += jam; liveTotalJam += jam;
+        liveByHost[hid].selesai++;  liveTotalSelesai++;
+      } else if (r.status === 'sakit') {
+        liveByHost[hid].sakit++; liveTotalSakit++;
+      } else if (r.status === 'izin') {
+        liveByHost[hid].izin++;  liveTotalIzin++;
+      } else if (r.status === 'cancelled') {
+        liveByHost[hid].batal++; liveTotalBatal++;
+      }
+    });
+  }
+
+  // ── v29: Ads — customer masuk dari iklan, dikelompokkan per role pemegang akun ──
+  let adsCustTotal = 0, adsCustByRole = {};
+  if (db) {
+    const res = await dbQ(d => d.from('crm_customers').select('owner_id,total_spend').eq('channel_is_ads', true));
+    (res?.data || []).forEach(r => {
+      adsCustTotal++;
+      const role = r.owner_id ? (LOCAL_USERS[r.owner_id]?.role || '—') : '(belum ditugaskan)';
+      if (!adsCustByRole[role]) adsCustByRole[role] = { count:0, revenue:0 };
+      adsCustByRole[role].count++;
+      adsCustByRole[role].revenue += (Number(r.total_spend) || 0);
+    });
+  }
+
+  // ── v29: Ads — jadwal iklan bulan berjalan: hari apa, tema/iklan apa, target/kemana ──
+  let adsScheduleMonth = [];
+  if (db) {
+    const res = await dbQ(d => d.from('ad_schedule').select('ad_date,theme,category,target,status')
+      .gte('ad_date', first).lte('ad_date', last).order('ad_date', { ascending: true }));
+    adsScheduleMonth = res?.data || [];
+  }
+
   renderAllRoleDashboard({
     creatorIds, ccByCreator, hostIds, hostStats, fuIds, fuStats,
     themeCount, contentTotalMonth,
     totalCustomers, totalRevenue, revenueCustomerCount, custByOwner,
-    budgetTotalMonth, budgetByCategory, budgetItemsMonth
+    budgetTotalMonth, budgetByCategory, budgetItemsMonth,
+    liveTotalJam, liveTotalSakit, liveTotalIzin, liveTotalBatal, liveTotalSelesai, liveTotalSesi, liveByHost,
+    adsCustTotal, adsCustByRole, adsScheduleMonth
   });
 }
 
@@ -8191,7 +8267,10 @@ function renderAllRoleDashboard({
   creatorIds, ccByCreator, hostIds, hostStats, fuIds, fuStats,
   themeCount = {}, contentTotalMonth = 0,
   totalCustomers = 0, totalRevenue = 0, revenueCustomerCount = 0, custByOwner = {},
-  budgetTotalMonth = 0, budgetByCategory = {}, budgetItemsMonth = []
+  budgetTotalMonth = 0, budgetByCategory = {}, budgetItemsMonth = [],
+  liveTotalJam = 0, liveTotalSakit = 0, liveTotalIzin = 0, liveTotalBatal = 0,
+  liveTotalSelesai = 0, liveTotalSesi = 0, liveByHost = {},
+  adsCustTotal = 0, adsCustByRole = {}, adsScheduleMonth = []
 }) {
   const wrap = document.getElementById('alld-view');
   if (!wrap) return;
@@ -8314,6 +8393,49 @@ function renderAllRoleDashboard({
     ? `<div class="ovt-budget-empty" style="text-align:center;border-top:1px solid var(--border);margin-top:4px;padding-top:10px">+ ${budgetItemsMonth.length - budgetItemsTop.length} pengeluaran lain bulan ini — lihat selengkapnya di halaman Budget Marketing</div>`
     : '';
 
+  // ── v29: Live — jam kerja & kehadiran (sakit/izin/batal) per host, bulan berjalan ──
+  const liveHostRows = Object.entries(liveByHost).map(([hid, s]) => ({
+    id: hid, name: LOCAL_USERS[hid]?.name || hid,
+    jam: s.jam, sakit: s.sakit, izin: s.izin, batal: s.batal, selesai: s.selesai, total: s.total
+  })).sort((a, b) => b.jam - a.jam);
+
+  const liveHostRowsHtml = liveHostRows.length ? liveHostRows.map(r => `
+    <div class="ovt-owner-card">
+      <div class="ovt-owner-name">${escHtml(r.name)}</div>
+      <div class="ovt-owner-row"><span>Total Jam Live</span><b>${r.jam.toFixed(1)} jam</b></div>
+      <div class="ovt-owner-row"><span>Sesi Selesai</span><b>${r.selesai}</b></div>
+      <div class="ovt-owner-row"><span>Sakit</span><b style="color:#d98ec0">${r.sakit}</b></div>
+      <div class="ovt-owner-row"><span>Izin</span><b style="color:#e8b86e">${r.izin}</b></div>
+      <div class="ovt-owner-row"><span>Batal</span><b style="color:var(--red)">${r.batal}</b></div>
+    </div>`).join('') : `<div style="padding:10px 4px;font-size:12px;color:var(--text2)">Belum ada data live bulan ini.</div>`;
+
+  // ── v29: Ads — customer masuk per role pemegang akun ──
+  const adsRoleRows = Object.entries(adsCustByRole).map(([role, s]) => ({
+    role, count: s.count, revenue: s.revenue,
+    pct: adsCustTotal ? (s.count / adsCustTotal * 100) : 0
+  })).sort((a, b) => b.count - a.count);
+
+  const adsRoleHtml = adsRoleRows.length ? adsRoleRows.map(r => `
+    <div class="ovt-theme-row">
+      <div class="ovt-theme-name" title="${escHtml(rn(r.role))}">${escHtml(rn(r.role))}</div>
+      <div class="ovt-theme-track"><div class="ovt-theme-fill" style="width:${r.pct}%"></div></div>
+      <div class="ovt-theme-count">${r.count} <span style="color:var(--text2);font-weight:600">(${r.pct.toFixed(1)}% · ${crmFmtRupiah(r.revenue)})</span></div>
+    </div>`).join('') : `<div style="padding:10px 4px;font-size:12px;color:var(--text2)">Belum ada customer dari ads.</div>`;
+
+  // ── v29: Jadwal Iklan bulan ini — hari, tema/iklan apa, target/kemana ──
+  const HARI_ID = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const adsCalHtml = adsScheduleMonth.length ? adsScheduleMonth.map(a => {
+    const d = new Date(a.ad_date + 'T00:00:00');
+    const hari = HARI_ID[d.getDay()];
+    return `
+    <div class="ovt-budget-item">
+      <div class="ovt-budget-item-main">
+        <div class="ovt-budget-item-desc">${escHtml(a.theme || '(tanpa tema)')}</div>
+        <div class="ovt-budget-item-meta">${hari}, ${d.getDate()} ${months[d.getMonth()]} · ${escHtml(a.category || '—')} · Target/Kemana: ${escHtml(a.target || '—')} · ${a.status === 'published' ? 'Terbit' : 'Draft'}</div>
+      </div>
+    </div>`;
+  }).join('') : `<div class="ovt-budget-empty">Belum ada jadwal iklan bulan ini.</div>`;
+
   const teamOverview = `
     <div class="ovt-summary">
       <div class="dash-stat-card"><div class="dash-stat-num">${totalCustomers}</div><div class="dash-stat-lbl">Total Customer</div></div>
@@ -8322,12 +8444,35 @@ function renderAllRoleDashboard({
       <div class="dash-stat-card"><div class="dash-stat-num">${contentTotalMonth}</div><div class="dash-stat-lbl">Total Konten Bulan Ini</div></div>
       <div class="dash-stat-card"><div class="dash-stat-num" style="font-size:15px;line-height:1.3">${escHtml(topTheme)}</div><div class="dash-stat-lbl">Tema Konten Terbanyak</div></div>
       <div class="dash-stat-card"><div class="dash-stat-num">${crmFmtRupiah(budgetTotalMonth)}</div><div class="dash-stat-lbl">Budget Pengeluaran Bulan Ini</div></div>
+      <div class="dash-stat-card"><div class="dash-stat-num">${liveTotalJam.toFixed(1)}</div><div class="dash-stat-lbl">Total Jam Live Bulan Ini</div></div>
+      <div class="dash-stat-card"><div class="dash-stat-num">${liveTotalSelesai}</div><div class="dash-stat-lbl">Total Sesi Live Selesai</div></div>
+      <div class="dash-stat-card"><div class="dash-stat-num" style="color:#d98ec0">${liveTotalSakit}</div><div class="dash-stat-lbl">Total Sakit (Live)</div></div>
+      <div class="dash-stat-card"><div class="dash-stat-num" style="color:#e8b86e">${liveTotalIzin}</div><div class="dash-stat-lbl">Total Izin (Live)</div></div>
+      <div class="dash-stat-card"><div class="dash-stat-num">${adsCustTotal}</div><div class="dash-stat-lbl">Customer Masuk dari Ads</div></div>
     </div>
     <div class="ovt-section">
       <div class="ovt-section-head">
         <div><div class="ovt-section-title">Customer per PIC</div><div class="ovt-section-sub">Total seluruh waktu — berapa customer &amp; revenue yang dipegang tiap orang</div></div>
       </div>
       <div class="ovt-owner-grid">${ownerGridHtml}</div>
+    </div>
+    <div class="ovt-section">
+      <div class="ovt-section-head">
+        <div><div class="ovt-section-title">Live — Jam Kerja &amp; Kehadiran per Host</div><div class="ovt-section-sub">${months[now.getMonth()]} ${now.getFullYear()} — total jam live, sesi selesai, sakit, izin, dan batal per host</div></div>
+      </div>
+      <div class="ovt-owner-grid">${liveHostRowsHtml}</div>
+    </div>
+    <div class="ovt-section">
+      <div class="ovt-section-head">
+        <div><div class="ovt-section-title">Ads — Customer Masuk per Role</div><div class="ovt-section-sub">Total ${adsCustTotal} customer terdata masuk lewat iklan, dipegang oleh role apa saja</div></div>
+      </div>
+      <div class="ovt-theme-list">${adsRoleHtml}</div>
+    </div>
+    <div class="ovt-section">
+      <div class="ovt-section-head">
+        <div><div class="ovt-section-title">Jadwal Iklan Bulan Ini</div><div class="ovt-section-sub">${months[now.getMonth()]} ${now.getFullYear()} — hari, tema/iklan apa, dan target/kemana iklannya ditujukan</div></div>
+      </div>
+      <div class="ovt-budget-items">${adsCalHtml}</div>
     </div>
     <div class="ovt-section">
       <div class="ovt-section-head">
@@ -8375,7 +8520,9 @@ function renderAllRoleDashboard({
     hostTargetSum, hostAchievedSum, hostPct, hostPendingSum,
     fuTotal, fuHitSum, fuDaysSum, fuPct,
     totalCustomers, totalRevenue, revenueCustomerCount, contentTotalMonth,
-    budgetTotalMonth, topTheme, budgetCatRows, budgetItemsMonth
+    budgetTotalMonth, topTheme, budgetCatRows, budgetItemsMonth,
+    liveTotalJam, liveTotalSakit, liveTotalIzin, liveTotalBatal, liveTotalSelesai, liveTotalSesi,
+    liveHostRows, adsCustTotal, adsRoleRows, adsScheduleMonth
   };
 }
 let _alldLastData = null;
@@ -8435,6 +8582,11 @@ async function exportAllRoleDashboardExcel() {
       ['Tema Konten Terbanyak', d.topTheme, ''],
       ['Budget Marketing Bulan Ini', d.budgetTotalMonth, ''],
       ['Kategori Pengeluaran Terbesar', (d.budgetCatRows && d.budgetCatRows[0]) ? d.budgetCatRows[0].cat : '—', (d.budgetCatRows && d.budgetCatRows[0]) ? crmFmtRupiah(d.budgetCatRows[0].total) : ''],
+      ['Total Jam Live Bulan Ini', d.liveTotalJam || 0, `${d.liveTotalSelesai||0} sesi selesai dari ${d.liveTotalSesi||0} total sesi`],
+      ['Total Sakit (Live)', d.liveTotalSakit || 0, 'Jumlah sesi live ditandai sakit bulan ini'],
+      ['Total Izin (Live)', d.liveTotalIzin || 0, 'Jumlah sesi live ditandai izin bulan ini'],
+      ['Total Sesi Live Dibatalkan', d.liveTotalBatal || 0, ''],
+      ['Total Customer Masuk dari Ads', d.adsCustTotal || 0, 'crm_customers dengan channel_is_ads = true'],
     ];
     const wsSum = XLSX.utils.aoa_to_sheet(sumAoa);
     wsSum['!cols'] = [{wch:32},{wch:22},{wch:44}];
@@ -8517,6 +8669,45 @@ async function exportAllRoleDashboardExcel() {
     for (let r = itemStart; r <= itemEnd; r++) { const cE='E'+r; if (wsBudg[cE]) wsBudg[cE].z = rp; }
     XLSX.utils.book_append_sheet(wb, wsBudg, '💰 Rincian Budget');
 
+    // ── SHEET 7 — LIVE: JAM & KEHADIRAN (SAKIT/IZIN) PER HOST ──
+    const liveAbsAoa = [
+      ['DHP CREATIVE — LIVE: JAM KERJA & KEHADIRAN PER HOST'], [`Export: ${stamp}`], [`Periode: ${d.monthLabel}`], [],
+      ['Total Jam Live', d.liveTotalJam || 0, '', 'Total Sesi Selesai', d.liveTotalSelesai || 0],
+      ['Total Sakit', d.liveTotalSakit || 0, '', 'Total Izin', d.liveTotalIzin || 0],
+      ['Total Sesi Dibatalkan', d.liveTotalBatal || 0, '', 'Total Seluruh Sesi', d.liveTotalSesi || 0],
+      [],
+      ['Host', 'Total Jam Live', 'Sesi Selesai', 'Sakit', 'Izin', 'Batal', 'Total Sesi'],
+      ...(d.liveHostRows || []).map(r => [r.name, r.jam, r.selesai, r.sakit, r.izin, r.batal, r.total]),
+    ];
+    const wsLiveAbs = XLSX.utils.aoa_to_sheet(liveAbsAoa);
+    wsLiveAbs['!cols'] = [{wch:24},{wch:16},{wch:14},{wch:10},{wch:10},{wch:10},{wch:12}];
+    wsLiveAbs['!merges'] = [{s:{r:0,c:0},e:{r:0,c:6}}];
+    XLSX.utils.book_append_sheet(wb, wsLiveAbs, '🩺 Live Sakit-Izin');
+
+    // ── SHEET 8 — ADS: CUSTOMER PER ROLE & JADWAL IKLAN ──
+    const adsAoa = [
+      ['DHP CREATIVE — ADS: CUSTOMER MASUK & JADWAL IKLAN'], [`Export: ${stamp}`], [`Periode jadwal: ${d.monthLabel}`], [],
+      ['Total Customer Masuk dari Ads', d.adsCustTotal || 0], [],
+      ['═══════════════════', 'CUSTOMER ADS PER ROLE', '═══════════════════'],
+      ['Role', 'Jumlah Customer', '% dari Total', 'Revenue'],
+      ...(d.adsRoleRows || []).map(r => [r.role, r.count, (d.adsCustTotal ? r.count/d.adsCustTotal : 0), r.revenue]),
+      [],
+      ['═══════════════════', 'JADWAL IKLAN BULAN INI (hari, iklan apa, kemana)', '═══════════════════'],
+      ['Tanggal', 'Hari', 'Tema/Iklan', 'Kategori', 'Target/Kemana', 'Status'],
+      ...(d.adsScheduleMonth || []).map(a => {
+        const dt = new Date(a.ad_date + 'T00:00:00');
+        const HARI_ID = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+        return [a.ad_date, HARI_ID[dt.getDay()], a.theme || '', a.category || '', a.target || '', a.status === 'published' ? 'Terbit' : 'Draft'];
+      }),
+    ];
+    const wsAds = XLSX.utils.aoa_to_sheet(adsAoa);
+    wsAds['!cols'] = [{wch:22},{wch:16},{wch:28},{wch:14},{wch:24},{wch:12}];
+    wsAds['!merges'] = [{s:{r:0,c:0},e:{r:0,c:5}}];
+    if (wsAds['B5']) wsAds['B5'].z = num;
+    const adsRoleStart = 9, adsRoleEnd = adsRoleStart + (d.adsRoleRows || []).length - 1;
+    for (let r = adsRoleStart; r <= adsRoleEnd; r++) { const cC='C'+r, cD='D'+r; if (wsAds[cC]) wsAds[cC].z = pct; if (wsAds[cD]) wsAds[cD].z = rp; }
+    XLSX.utils.book_append_sheet(wb, wsAds, '📣 Ads & Customer');
+
     const fname = `DHP_Dashboard_Semua_Role_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.xlsx`;
     XLSX.writeFile(wb, fname);
     toast('✓ Export Excel Dashboard Semua Role selesai');
@@ -8597,6 +8788,24 @@ async function exportAllRoleDashboardPDF() {
       doc.setFont('helvetica', 'normal'); doc.setFontSize(7.6); doc.setTextColor(95,95,95);
       doc.text(doc.splitTextToSize(lbl, colW2-16), x+9, y+34);
     });
+    y += 48 + 18;
+
+    const kpis3 = [
+      [`${(d.liveTotalJam||0).toFixed(1)} j`, 'Total Jam Live Bulan Ini'],
+      [String(d.liveTotalSakit||0), 'Total Sakit (Live)'],
+      [String(d.liveTotalIzin||0), 'Total Izin (Live)'],
+      [String(d.adsCustTotal||0), 'Customer Masuk dari Ads'],
+    ];
+    const colW3 = (pageW - marginX*2 - gap*(kpis3.length-1)) / kpis3.length;
+    kpis3.forEach(([num, lbl], i) => {
+      const x = marginX + i*(colW3+gap);
+      doc.setDrawColor(222,222,222); doc.setLineWidth(0.8);
+      doc.roundedRect(x, y, colW3, 48, 4, 4);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(178,138,68);
+      doc.text(num, x+9, y+21);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.6); doc.setTextColor(95,95,95);
+      doc.text(doc.splitTextToSize(lbl, colW3-16), x+9, y+34);
+    });
     y += 48 + 24;
     doc.setTextColor(0,0,0);
 
@@ -8635,6 +8844,17 @@ async function exportAllRoleDashboardPDF() {
         it.tanggal ? fmtDayShort(it.tanggal) : '-', it.kategori || '-', it.keterangan || '(tanpa keterangan)',
         it.pic_id ? (getUserMeta(it.pic_id)?.name || it.pic_id) : '—', crmFmtRupiah(Number(it.jumlah)||0)
       ]));
+    table(`Live — Jam Kerja &amp; Kehadiran per Host (Total: ${(d.liveTotalJam||0).toFixed(1)} jam, Sakit: ${d.liveTotalSakit||0}, Izin: ${d.liveTotalIzin||0})`,
+      [['Host','Total Jam Live','Sesi Selesai','Sakit','Izin','Batal','Total Sesi']],
+      (d.liveHostRows||[]).map(r => [r.name, r.jam.toFixed(1)+' j', String(r.selesai), String(r.sakit), String(r.izin), String(r.batal), String(r.total)]));
+    table(`Ads — Customer Masuk per Role (Total: ${d.adsCustTotal||0} customer)`, [['Role','Jumlah Customer','% dari Total','Revenue']],
+      (d.adsRoleRows||[]).map(r => [rn(r.role), String(r.count), (d.adsCustTotal ? (r.count/d.adsCustTotal*100) : 0).toFixed(1)+'%', crmFmtRupiah(r.revenue)]));
+    table('Jadwal Iklan Bulan Ini — hari, tema/iklan, dan target/kemana', [['Tanggal','Hari','Tema/Iklan','Kategori','Target/Kemana','Status']],
+      (d.adsScheduleMonth||[]).map(a => {
+        const dt = new Date(a.ad_date + 'T00:00:00');
+        const HARI_ID = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+        return [fmtDayShort(a.ad_date), HARI_ID[dt.getDay()], a.theme || '-', a.category || '-', a.target || '-', a.status === 'published' ? 'Terbit' : 'Draft'];
+      }));
 
     // ── Footer nomor halaman ──
     const pageCount = doc.internal.getNumberOfPages();
@@ -9312,16 +9532,24 @@ function renderLsCalendar() {
     const isSelected = ymd === lsSelectedDate;
     const isLibur    = lsAttCache[ymd] === 'Libur';
     const sessions   = lsMonthCache[ymd] || [];
+    const sakitCount = sessions.filter(s => s.status === 'sakit').length;
+    const izinCount  = sessions.filter(s => s.status === 'izin').length;
     const cls = ['cal-cell'];
     if (isToday) cls.push('today');
     if (isSelected) cls.push('ls-selected');
     if (isLibur) cls.push('att-Libur');
+    else if (sakitCount) cls.push('att-Sakit');
+    else if (izinCount) cls.push('att-Izin');
     else if (sessions.length) cls.push('att-Hadir');
+    let dayTag = '';
+    if (isLibur) dayTag = `<div class="att-day-tag att-Libur">Libur</div>`;
+    else if (sakitCount) dayTag = `<div class="att-day-tag att-Sakit">🤒 Sakit</div>`;
+    else if (izinCount) dayTag = `<div class="att-day-tag att-Izin">📋 Izin</div>`;
+    else if (sessions.length) dayTag = `<div class="att-day-tag att-Hadir">${sessions.length} sesi</div>`;
     cells += `
       <div class="${cls.join(' ')}" onclick="lsSelectDate('${ymd}')" style="cursor:pointer">
         <div class="cal-daynum">${d}</div>
-        ${isLibur ? `<div class="att-day-tag att-Libur">Libur</div>`
-                  : sessions.length ? `<div class="att-day-tag att-Hadir">${sessions.length} sesi</div>` : ''}
+        ${dayTag}
       </div>`;
   }
   document.getElementById('ls-cal-grid').innerHTML = cells;
@@ -9357,7 +9585,7 @@ function renderLsDayTable() {
     return;
   }
 
-  const statusClass = { scheduled:'b-admin', rehearsal:'b-moderator', completed:'b-guest', cancelled:'b-host_live' };
+  const statusClass = { scheduled:'b-admin', rehearsal:'b-moderator', completed:'b-guest', cancelled:'b-host_live', sakit:'b-sakit', izin:'b-izin' };
   const canFillHost = (s) => currentUser && currentUser.id === s.host_user_id;
   tbody.innerHTML = sessions.length ? sessions.map(s => `
     <tr>
@@ -9398,6 +9626,15 @@ function lsReportDeadlinePassed(s) {
 function lsReportCell(s, isMod, canFillHost) {
   if (s.status === 'cancelled') return `<span style="color:var(--text2)">—</span>`;
 
+  if (s.status === 'sakit' || s.status === 'izin') {
+    const label = s.status === 'sakit' ? '🤒 Sakit' : '📋 Izin';
+    const pillCls = s.status === 'sakit' ? 'lsr-pill-sakit' : 'lsr-pill-izin';
+    const reasonHtml = s.absence_reason ? `<div class="lsr-reject-note">Keterangan: ${escHtml(s.absence_reason)}</div>` : '';
+    const editBtn = (canFillHost || isMod)
+      ? `<button class="lsr-edit-btn" onclick='openLsAbsenceModal(${JSON.stringify(s.id)})' title="Ubah status kehadiran">✎</button>` : '';
+    return `<span class="lsr-pill ${pillCls}">${label}</span>${editBtn}${reasonHtml}`;
+  }
+
   if (s.products_sold != null) {
     const editBtn = (canFillHost || isMod)
       ? `<button class="lsr-edit-btn" onclick='openLsReportModal(${JSON.stringify(s.id)})' title="Ubah laporan">✎</button>` : '';
@@ -9431,11 +9668,62 @@ function lsReportCell(s, isMod, canFillHost) {
       return `<button class="btn-sm btn-cancel" onclick='openLateRequestModal(${JSON.stringify(s.id)})'>🔒 Ajukan Izin Telat Lapor</button>`;
     }
     if (canFillHost || isMod) {
-      return `<button class="btn-sm btn-gold" onclick='openLsReportModal(${JSON.stringify(s.id)})'>Isi Laporan</button>`;
+      return `<button class="btn-sm btn-gold" onclick='openLsReportModal(${JSON.stringify(s.id)})'>Isi Laporan</button>
+        <button class="btn-sm btn-cancel" onclick='openLsAbsenceModal(${JSON.stringify(s.id)})' title="Tandai Sakit/Izin">Sakit/Izin</button>`;
     }
     return `<span class="lsr-pill lsr-pill-wait">◆ Menunggu Laporan</span>`;
   }
+  if (canFillHost || isMod) {
+    return `<span class="lsr-pill">Belum Waktunya</span>
+      <button class="btn-sm btn-cancel" onclick='openLsAbsenceModal(${JSON.stringify(s.id)})' title="Tandai Sakit/Izin">Sakit/Izin</button>`;
+  }
   return `<span class="lsr-pill">Belum Waktunya</span>`;
+}
+
+/* ── Tandai Sakit / Izin untuk 1 sesi live (v29) — satu tombol,
+   pilih statusnya lewat dropdown di modal. Bisa dipakai host untuk
+   sesinya sendiri, atau moderator untuk siapa saja. Dipakai juga untuk
+   membatalkan status (kembali "Terjadwal") kalau salah pilih. ── */
+function openLsAbsenceModal(sessionId) {
+  const all = Object.values(lsMonthCache).flat();
+  const s = all.find(x => x.id === sessionId);
+  if (!s) { toast('Sesi tidak ditemukan'); return; }
+  const isAbsent = s.status === 'sakit' || s.status === 'izin';
+  document.getElementById('m-title').textContent = 'Tandai Status Kehadiran Live';
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg" style="font-size:12.5px;color:var(--text2);margin-bottom:10px">
+      Sesi ${s.session_no} · ${(s.time_start||'').slice(0,5)}–${(s.time_end||'').slice(0,5)}${s.show_title ? ' · ' + escHtml(s.show_title) : ''} —
+      pilih status kalau host tidak bisa live sesuai jadwal ini.
+    </div>
+    <div class="fg"><label>Status</label>
+      <select class="fi" id="lsr-abs-status" onchange="document.getElementById('lsr-abs-reason-wrap').style.display = this.value==='scheduled' ? 'none' : ''">
+        <option value="sakit" ${s.status==='sakit'?'selected':''}>🤒 Sakit</option>
+        <option value="izin" ${s.status==='izin'?'selected':''}>📋 Izin</option>
+        ${isAbsent ? `<option value="scheduled">↩ Batalkan status, kembali ke Terjadwal</option>` : ''}
+      </select>
+    </div>
+    <div class="fg" id="lsr-abs-reason-wrap"><label>Keterangan</label>
+      <textarea class="fi" id="lsr-abs-reason" rows="3" placeholder="mis. Demam tinggi tidak bisa siaran / izin acara keluarga">${escHtml(s.absence_reason||'')}</textarea>
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-gold" onclick="submitLsAbsence('${sessionId}')">Simpan</button>
+    <button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+
+async function submitLsAbsence(sessionId) {
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  const status = document.getElementById('lsr-abs-status').value;
+  const reason = (document.getElementById('lsr-abs-reason').value || '').trim();
+  if (status !== 'scheduled' && !reason) { toast('Keterangan wajib diisi'); return; }
+  const res = await dbQ(d => d.rpc('set_live_session_absence', {
+    p_actor_id: currentUser.id, p_session_id: sessionId, p_status: status, p_reason: reason || null
+  }));
+  if (res?.error) { toast('Gagal menyimpan status: ' + res.error.message); return; }
+  closeModal();
+  toast(status === 'scheduled' ? 'Status dikembalikan ke Terjadwal' : `Status ditandai ${status==='sakit'?'Sakit':'Izin'}`);
+  pushActivity(`${currentUser.id} menandai sesi live ${sessionId} → ${status}`, status==='scheduled' ? 'info' : 'alert');
+  await loadLsMonth();
 }
 
 /* ── Modal: Host isi / Moderator koreksi laporan 1 sesi live ──
@@ -9669,12 +9957,15 @@ function renderHostDashboard(stats, daily) {
   if (!grid || !bars) return;
 
   const s = stats || { total_hours:0, total_sessions:0, approved_sessions:0, pending_sessions:0,
-                        total_libur:0, total_sales:0, target_amount:0, avg_hours_session:0, late_reports:0 };
+                        total_libur:0, total_sakit:0, total_izin:0, total_sales:0, target_amount:0,
+                        avg_hours_session:0, late_reports:0 };
 
   const cards = [
     { num: `${Number(s.total_hours||0).toFixed(1)} j`, lbl: 'Total Jam Kerja' },
     { num: s.total_sessions||0, lbl: 'Total Sesi Live' },
     { num: s.total_libur||0, lbl: 'Total Libur' },
+    { num: s.total_sakit||0, lbl: 'Total Sakit', warn: (s.total_sakit||0) > 0 },
+    { num: s.total_izin||0, lbl: 'Total Izin', warn: (s.total_izin||0) > 0 },
     { num: crmFmtRupiah(s.total_sales||0), lbl: 'Total Penjualan' },
     { num: crmFmtRupiah(s.target_amount||0), lbl: 'Target Bulan Ini' },
     { num: s.pending_sessions||0, lbl: 'Menunggu ACC', warn: (s.pending_sessions||0) > 0 },
