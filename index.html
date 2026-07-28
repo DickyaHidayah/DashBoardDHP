@@ -222,8 +222,11 @@ body.light .heat-cold .hb-icon { background:rgba(26,86,160,.14); }
 .cal-cell.ls-selected{box-shadow:inset 0 0 0 2px var(--gold)!important}
 .att-day-tag{
   margin-top:4px;font-size:9px;font-weight:700;letter-spacing:.04em;padding:1px 6px;border-radius:20px;
-  display:inline-block;line-height:1.5;
+  display:inline-flex;align-items:center;gap:3px;line-height:1.5;
 }
+/* v36: badge lingkaran vector Sakit/Izin/Libur — konsisten dgn .hb-icon (heat-badge) */
+.ls-stat-ico{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0}
+.ls-stat-ico svg{display:block}
 .att-day-tag.att-Hadir{background:rgba(122,191,142,.16);color:#7abf8e}
 .att-day-tag.att-WFH{background:rgba(126,168,201,.16);color:#7ea8c9}
 .att-day-tag.att-Izin{background:rgba(232,184,110,.16);color:#e8b86e}
@@ -2147,6 +2150,13 @@ body.light .notif-bell-btn .badge-dot{border-color:#ffffff;background:#c0392b;co
 @keyframes refresh-spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 .refresh-btn .refresh-dot{position:absolute;top:2px;right:2px;width:6px;height:6px;border-radius:50%;background:var(--green);opacity:0;transition:opacity .25s}
 .refresh-btn.just-updated .refresh-dot{opacity:1}
+/* v37: indikator MERAH kecil di tombol refresh — nyala saat ada perubahan
+   dari moderator (realtime) pada halaman/target yang SEDANG TIDAK dilihat,
+   supaya user tahu ada progres terbaru untuk dicek. Beda dari titik hijau
+   di atas (konfirmasi "baru saja refresh"), titik ini berdenyut pelan
+   supaya kelihatan tanpa mengganggu, dan otomatis hilang begitu di-refresh. */
+.refresh-btn.remote-update .refresh-dot{opacity:1;background:var(--red);width:7px;height:7px;box-shadow:0 0 0 2px var(--bg);animation:refreshDotPulse 1.5s ease-in-out infinite}
+@keyframes refreshDotPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 2px var(--bg),0 0 0 0 rgba(232,112,112,.55)}50%{transform:scale(1.15);box-shadow:0 0 0 2px var(--bg),0 0 0 4px rgba(232,112,112,0)}}
 
 /* ── SHAKE ── */
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
@@ -6901,6 +6911,12 @@ async function initDashboard() {
     catch (e) { console.warn('[DHP] CRM init gagal:', e); }
   }
 
+  // v37: Realtime Studio Konten & Live Studio — moderator selalu aktif
+  // (mengelola semua creator/host), content_creator & host_live aktif
+  // untuk data miliknya sendiri. Supaya progres terupdate tanpa refresh.
+  if (isContent || isMod) { try { initContentCalendarRealtime(); } catch (e) { console.warn('[DHP] initContentCalendarRealtime gagal:', e); } }
+  if (isLive || isMod)    { try { initLiveScheduleRealtime(); } catch (e) { console.warn('[DHP] initLiveScheduleRealtime gagal:', e); } }
+
   try { renderStats(); renderActivity(); }
   catch (e) { console.warn('[DHP] render awal gagal:', e); }
   updateClock();
@@ -7454,7 +7470,7 @@ function openCcSlotModal(slotNo) {
     </div>
     <div class="fg"><label>Jenis Konten</label>
       <div class="cc-type-picker" id="cc-type-picker">
-        ${['carousel','reels','story','single_post','vector'].map(key => {
+        ${['carousel','reels','story','single_post'].map(key => {
           const m = CC_TYPE_META[key];
           const sel = (s?.content_type || '') === key ? 'selected' : '';
           return `<button type="button" class="cc-type-card ${sel}" data-type="${key}" onclick="ccPickType('${key}')">
@@ -7835,7 +7851,8 @@ let lsCursor       = new Date(new Date().getFullYear(), new Date().getMonth(), 1
 let lsTargetId     = null;                 // akun host live yang sedang dilihat/dikelola
 let lsSelectedDate = ymdKey(new Date());   // tanggal yang sedang dibuka di tabel bawah kalender
 let lsMonthCache   = {};                   // { 'YYYY-MM-DD': [session,...] } — bulan berjalan milik lsTargetId
-let lsAttCache     = {};                   // { 'YYYY-MM-DD': status } — utk overlay Libur (dari tabel attendance)
+let lsAttCache     = {};                   // { 'YYYY-MM-DD': status } — utk overlay Libur/Sakit/Izin per HARI (dari tabel attendance)
+let lsAttNoteCache = {};                   // { 'YYYY-MM-DD': note } — keterangan Sakit/Izin per hari (dari tabel attendance)
 let _lsUpcomingCache = [];                 // dipakai bersama tabel "Upcoming Live Schedule"
 
 function renderLiveSchedulePanel() {
@@ -9630,7 +9647,7 @@ function lsGoToday() {
 }
 
 async function loadLsMonth() {
-  lsMonthCache = {}; lsAttCache = {};
+  lsMonthCache = {}; lsAttCache = {}; lsAttNoteCache = {};
   if (!lsTargetId) { renderLsCalendar(); renderLsDayTable(); return; }
   const y = lsCursor.getFullYear(), m = lsCursor.getMonth();
   const first = ymdKey(new Date(y, m, 1));
@@ -9641,13 +9658,13 @@ async function loadLsMonth() {
       dbQ(d => d.from('live_schedule').select('*')
         .eq('host_user_id', lsTargetId).gte('schedule_date', first).lte('schedule_date', last)
         .order('session_no', { ascending: true })),
-      dbQ(d => d.from('attendance').select('att_date,status')
+      dbQ(d => d.from('attendance').select('att_date,status,note')
         .eq('user_id', lsTargetId).gte('att_date', first).lte('att_date', last))
     ]);
     if (schedRes?.data) schedRes.data.forEach(s => {
       (lsMonthCache[s.schedule_date] = lsMonthCache[s.schedule_date] || []).push(s);
     });
-    if (attRes?.data) attRes.data.forEach(r => { lsAttCache[r.att_date] = r.status; });
+    if (attRes?.data) attRes.data.forEach(r => { lsAttCache[r.att_date] = r.status; lsAttNoteCache[r.att_date] = r.note || ''; });
 
     // Tandai status pengajuan izin telat lapor (v11) — dipakai lsReportCell
     const sessionIds = (schedRes?.data || []).filter(s => s.products_sold == null).map(s => s.id);
@@ -9681,7 +9698,10 @@ function renderLsCalendar() {
     const ymd = ymdKey(new Date(y, m, d));
     const isToday    = ymd === todayKey;
     const isSelected = ymd === lsSelectedDate;
-    const isLibur    = lsAttCache[ymd] === 'Libur';
+    const dayStatus  = lsAttCache[ymd];               // 'Libur' | 'Sakit' | 'Izin' — ditandai moderator langsung per hari
+    const isLibur    = dayStatus === 'Libur';
+    const isDaySakit = dayStatus === 'Sakit';
+    const isDayIzin  = dayStatus === 'Izin';
     const sessions   = lsMonthCache[ymd] || [];
     const sakitCount = sessions.filter(s => s.status === 'sakit').length;
     const izinCount  = sessions.filter(s => s.status === 'izin').length;
@@ -9689,13 +9709,15 @@ function renderLsCalendar() {
     if (isToday) cls.push('today');
     if (isSelected) cls.push('ls-selected');
     if (isLibur) cls.push('att-Libur');
-    else if (sakitCount) cls.push('att-Sakit');
-    else if (izinCount) cls.push('att-Izin');
+    else if (isDaySakit || sakitCount) cls.push('att-Sakit');
+    else if (isDayIzin || izinCount) cls.push('att-Izin');
     else if (sessions.length) cls.push('att-Hadir');
     let dayTag = '';
-    if (isLibur) dayTag = `<div class="att-day-tag att-Libur">Libur</div>`;
-    else if (sakitCount) dayTag = `<div class="att-day-tag att-Sakit">🤒 Sakit</div>`;
-    else if (izinCount) dayTag = `<div class="att-day-tag att-Izin">📋 Izin</div>`;
+    if (isLibur) dayTag = `<div class="att-day-tag att-Libur">${lsStatBadge('libur',11)}Libur</div>`;
+    else if (isDaySakit) dayTag = `<div class="att-day-tag att-Sakit">${lsStatBadge('sakit',11)}Sakit (Full Day)</div>`;
+    else if (isDayIzin) dayTag = `<div class="att-day-tag att-Izin">${lsStatBadge('izin',11)}Izin (Full Day)</div>`;
+    else if (sakitCount) dayTag = `<div class="att-day-tag att-Sakit">${lsStatBadge('sakit',11)}Sakit</div>`;
+    else if (izinCount) dayTag = `<div class="att-day-tag att-Izin">${lsStatBadge('izin',11)}Izin</div>`;
     else if (sessions.length) dayTag = `<div class="att-day-tag att-Hadir">${sessions.length} sesi</div>`;
     cells += `
       <div class="${cls.join(' ')}" onclick="lsSelectDate('${ymd}')" style="cursor:pointer">
@@ -9736,15 +9758,24 @@ function renderLsDayTable() {
   titleEl.textContent = `Sesi ${hostName} — ${days[dObj.getDay()]}, ${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
 
   const isMod = can.isMod(currentUser?.role);
-  const isLibur = lsAttCache[lsSelectedDate] === 'Libur';
+  const dayStatus = lsAttCache[lsSelectedDate];        // 'Libur' | 'Sakit' | 'Izin' — status hari penuh, ditandai moderator langsung tanpa perlu sesi
+  const isLibur = dayStatus === 'Libur';
+  const isDayAbsent = dayStatus === 'Sakit' || dayStatus === 'Izin';
   const sessions = (lsMonthCache[lsSelectedDate] || []).slice().sort((a,b) => a.session_no - b.session_no);
 
   const addBtn = document.getElementById('ls-add-btn');
   if (isMod) renderLsAttnButton(isLibur, sessions);
-  if (addBtn && isMod) addBtn.style.display = isLibur ? 'none' : '';
+  if (addBtn && isMod) addBtn.style.display = (isLibur || isDayAbsent) ? 'none' : '';
 
   if (isLibur) {
-    tbody.innerHTML = `<tr><td colspan="${isMod?7:6}" class="tbl-empty">✦ Libur — tidak ada sesi live tanggal ini</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${isMod?7:6}" class="tbl-empty">${lsStatBadge('libur',16)} Libur — tidak ada sesi live tanggal ini</td></tr>`;
+    return;
+  }
+
+  if (isDayAbsent) {
+    const label = dayStatus === 'Sakit' ? 'Sakit' : 'Izin';
+    const reasonNote = (lsAttNoteCache[lsSelectedDate] || '').trim();
+    tbody.innerHTML = `<tr><td colspan="${isMod?7:6}" class="tbl-empty">${lsStatBadge(dayStatus,16)} ${label} (Hari Ini) — host tidak live tanggal ini${reasonNote ? `<div class="lsr-reject-note" style="margin-top:6px">Keterangan: ${escHtml(reasonNote)}</div>` : ''}</td></tr>`;
     return;
   }
 
@@ -9790,12 +9821,12 @@ function lsReportCell(s, isMod, canFillHost) {
   if (s.status === 'cancelled') return `<span style="color:var(--text2)">—</span>`;
 
   if (s.status === 'sakit' || s.status === 'izin') {
-    const label = s.status === 'sakit' ? '🤒 Sakit' : '📋 Izin';
+    const label = s.status === 'sakit' ? 'Sakit' : 'Izin';
     const pillCls = s.status === 'sakit' ? 'lsr-pill-sakit' : 'lsr-pill-izin';
     const reasonHtml = s.absence_reason ? `<div class="lsr-reject-note">Keterangan: ${escHtml(s.absence_reason)}</div>` : '';
     const editBtn = (canFillHost || isMod)
       ? `<button class="lsr-edit-btn" onclick='openLsAbsenceModal(${JSON.stringify(s.id)})' title="Ubah status kehadiran">✎</button>` : '';
-    return `<span class="lsr-pill ${pillCls}">${label}</span>${editBtn}${reasonHtml}`;
+    return `<span class="lsr-pill ${pillCls}">${lsStatBadge(s.status,15)}${label}</span>${editBtn}${reasonHtml}`;
   }
 
   if (s.products_sold != null) {
@@ -9862,8 +9893,8 @@ function openLsAbsenceModal(sessionId, presetStatus) {
     </div>
     <div class="fg"><label>Status</label>
       <select class="fi" id="lsr-abs-status" onchange="document.getElementById('lsr-abs-reason-wrap').style.display = this.value==='scheduled' ? 'none' : ''">
-        <option value="sakit" ${selVal==='sakit'?'selected':''}>🤒 Sakit</option>
-        <option value="izin" ${selVal==='izin'?'selected':''}>📋 Izin</option>
+        <option value="sakit" ${selVal==='sakit'?'selected':''}>Sakit</option>
+        <option value="izin" ${selVal==='izin'?'selected':''}>Izin</option>
         ${isAbsent ? `<option value="scheduled" ${selVal==='scheduled'?'selected':''}>↩ Batalkan status, kembali ke Terjadwal</option>` : ''}
       </select>
     </div>
@@ -9884,14 +9915,46 @@ function openLsAbsenceModal(sessionId, presetStatus) {
    memanggil fungsi & RPC yang SUDAH ADA (toggleLsLibur,
    set_live_session_absence) — tidak ada perubahan/reset data.
    ══════════════════════════════════════════════════════════ */
-const LS_ATTN_ICO = {
-  libur:  `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.15" stroke-linecap="round" stroke-linejoin="round"><path d="M10.8 2.4a5.6 5.6 0 1 0 3 9.9 6.4 6.4 0 0 1-3-9.9z"/></svg>`,
-  sakit:  `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.15" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2.6a1.5 1.5 0 0 1 3 0v6a2.6 2.6 0 1 1-3 0z"/><path d="M8.5 4.4v4.6"/></svg>`,
-  izin:   `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.15" stroke-linejoin="round" stroke-linecap="round"><path d="M4.4 2h5l2.6 2.6v8a1 1 0 0 1-1 1H4.4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M9.4 2v2.6H12M5.6 8h4.8M5.6 10.4h3.2"/></svg>`,
-  undo:   `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.15" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5H2.2V3.7"/><path d="M2.4 5.7a5.4 5.4 0 1 1-.9 4.1"/></svg>`,
-  session:`<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.15" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="5.6"/><path d="M8 4.8V8l2.4 1.4"/></svg>`,
-  back:   `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg>`
+/* v36: path SVG mentah (tanpa width/height) supaya bisa dipakai di berbagai
+   ukuran — dropdown menu (15px), badge lingkaran kecil di kalender/pill
+   (gaya sama seperti .heat-badge .hb-icon yang sudah ada di sistem), dst.
+   Kurva sedikit disempurnakan biar lebih halus/elegan tapi tetap satu
+   bahasa visual dengan ikon lain (stroke tipis, currentColor, rounded). */
+const LS_STAT_SVG = {
+  libur:   `<path d="M10.9 2.3a5.7 5.7 0 1 0 2.9 10.1 6.5 6.5 0 0 1-2.9-10.1z"/>`,
+  sakit:   `<path d="M7 2.5a1.5 1.5 0 0 1 3 0v6.15a2.6 2.6 0 1 1-3 0z"/><path d="M8.5 4.3v4.5"/><circle cx="8.5" cy="10.9" r=".55" fill="currentColor" stroke="none"/>`,
+  izin:    `<path d="M4.3 2h5.2l2.6 2.6v8a1 1 0 0 1-1 1H4.3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M9.5 2v2.6h2.5M5.5 8h5M5.5 10.3h3.4"/>`,
+  undo:    `<path d="M4 5.5H2.2V3.7"/><path d="M2.4 5.7a5.4 5.4 0 1 1-.9 4.1"/>`,
+  session: `<circle cx="8" cy="8" r="5.6"/><path d="M8 4.8V8l2.4 1.4"/>`,
+  back:    `<path d="M10 3.5 5.5 8l4.5 4.5"/>`
 };
+function lsIcon(key, size) {
+  size = size || 15;
+  const strokeW = key === 'back' ? 1.6 : 1.15;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="${strokeW}" stroke-linecap="round" stroke-linejoin="round">${LS_STAT_SVG[key] || ''}</svg>`;
+}
+const LS_ATTN_ICO = {
+  libur: lsIcon('libur'), sakit: lsIcon('sakit'), izin: lsIcon('izin'),
+  undo: lsIcon('undo'), session: lsIcon('session'), back: lsIcon('back', 12)
+};
+
+/* v36: badge lingkaran elegan Sakit/Izin/Libur — gaya sama dengan
+   .heat-badge .hb-icon yang sudah ada di sistem (lingkaran warna muda,
+   ikon vector di dalamnya) — dipakai gantikan emoji 🤒/📋 di kalender,
+   pill status, dan pesan tabel supaya konsisten dgn bahasa visual sistem. */
+const LS_STAT_COLOR = {
+  sakit: { c:'#d98ec0', bg:'rgba(217,142,192,.22)' },
+  izin:  { c:'#e8b86e', bg:'rgba(232,184,110,.22)' },
+  libur: { c:'#9b8bd4', bg:'rgba(155,139,212,.22)' }
+};
+function lsStatBadge(status, size) {
+  const key = (status || '').toLowerCase();
+  const m = LS_STAT_COLOR[key];
+  if (!m) return '';
+  size = size || 14;
+  const svgSize = Math.max(6, Math.round(size * 0.62));
+  return `<span class="ls-stat-ico" style="width:${size}px;height:${size}px;color:${m.c};background:${m.bg}">${lsIcon(key, svgSize)}</span>`;
+}
 
 let lsAttnMenuMode = 'main';       // 'main' | 'sessions'
 let lsAttnPendingStatus = null;    // 'sakit' | 'izin' | 'scheduled' — dipilih dari menu utama sebelum pilih sesi
@@ -9968,7 +10031,9 @@ function toggleLsAttnMenu(e) {
 function renderLsAttnButton(isLibur, sessions) {
   const btn = document.getElementById('ls-attn-btn');
   if (!btn) return;
-  const hasAbsentToday = (sessions || []).some(s => s.status === 'sakit' || s.status === 'izin');
+  const dayStatus = lsAttCache[lsSelectedDate];
+  const isDayAbsent = dayStatus === 'Sakit' || dayStatus === 'Izin';
+  const hasAbsentToday = isDayAbsent || (sessions || []).some(s => s.status === 'sakit' || s.status === 'izin');
   btn.classList.toggle('has-alert', !!isLibur || hasAbsentToday);
   const menu = document.getElementById('ls-attn-menu');
   if (menu && menu.classList.contains('open')) { lsAttnMenuMode = 'main'; renderLsAttnMenu(); }
@@ -10002,6 +10067,10 @@ function renderLsAttnMenu() {
     return;
   }
 
+  const dayStatus  = lsAttCache[lsSelectedDate];
+  const isDaySakit = dayStatus === 'Sakit';
+  const isDayIzin  = dayStatus === 'Izin';
+
   const items = [];
   items.push(`<button class="ls-attn-item" onclick="lsAttnPickLibur()">${LS_ATTN_ICO.libur}
     <span class="ls-attn-label-row">
@@ -10011,8 +10080,33 @@ function renderLsAttnMenu() {
 
   if (!isLibur) {
     items.push(`<div class="ls-attn-sep"></div>`);
-    items.push(`<div class="ls-attn-empty" style="padding:10px 8px;font-style:normal;text-align:left">
-      Untuk menandai Sakit / Izin, klik langsung tombol <b>Sakit/Izin</b> di baris sesi yang bersangkutan pada tabel di bawah — lebih cepat, tanpa perlu pilih sesi lagi di sini.
+    if (isDaySakit) {
+      items.push(`<button class="ls-attn-item" onclick="lsAttnCancelDayAbsence()">${LS_ATTN_ICO.undo}
+        <span class="ls-attn-label-row">
+          <span>Batalkan Sakit (Hari Ini)</span>
+          <span class="ls-attn-item-sub">Kembalikan hari ini jadi hari kerja biasa</span>
+        </span></button>`);
+    } else if (isDayIzin) {
+      items.push(`<button class="ls-attn-item" onclick="lsAttnCancelDayAbsence()">${LS_ATTN_ICO.undo}
+        <span class="ls-attn-label-row">
+          <span>Batalkan Izin (Hari Ini)</span>
+          <span class="ls-attn-item-sub">Kembalikan hari ini jadi hari kerja biasa</span>
+        </span></button>`);
+    } else {
+      items.push(`<button class="ls-attn-item" onclick="lsAttnOpenDayAbsence('Sakit')">${LS_ATTN_ICO.sakit}
+        <span class="ls-attn-label-row">
+          <span>Tandai Sakit (Hari Ini)</span>
+          <span class="ls-attn-item-sub">Langsung berlaku hari ini juga, tanpa perlu tambah sesi dulu</span>
+        </span></button>`);
+      items.push(`<button class="ls-attn-item" onclick="lsAttnOpenDayAbsence('Izin')">${LS_ATTN_ICO.izin}
+        <span class="ls-attn-label-row">
+          <span>Tandai Izin (Hari Ini)</span>
+          <span class="ls-attn-item-sub">Langsung berlaku hari ini juga, tanpa perlu tambah sesi dulu</span>
+        </span></button>`);
+    }
+    items.push(`<div class="ls-attn-sep"></div>`);
+    items.push(`<div class="ls-attn-empty" style="padding:8px 8px 2px;font-style:normal;text-align:left;font-size:11px">
+      Butuh tandai Sakit/Izin cuma untuk 1 sesi tertentu (bukan seharian)? Klik tombol <b>Sakit/Izin</b> di baris sesi itu langsung pada tabel di bawah.
     </div>`);
   }
   menu.innerHTML = items.join('');
@@ -10020,6 +10114,88 @@ function renderLsAttnMenu() {
 }
 
 function lsAttnPickLibur() { closeLsAttnMenu(); toggleLsLibur(); }
+
+/* ── v35: Moderator tandai Sakit/Izin LANGSUNG untuk 1 hari penuh milik
+   host yang sedang dibuka (lsTargetId + lsSelectedDate) — TIDAK butuh ada
+   sesi live yang sudah dijadwalkan lebih dulu. Pakai tabel attendance yang
+   sama dengan fitur Libur (moderator_set_attendance / moderator_clear_attendance),
+   jadi berlaku instan per-hari itu juga, bukan menunggu sesi ditambahkan. ── */
+function lsAttnOpenDayAbsence(status) {
+  closeLsAttnMenu();
+  openLsDayAbsenceModal(status);
+}
+
+function lsAttnCancelDayAbsence() {
+  closeLsAttnMenu();
+  clearLsDayAbsence();
+}
+
+function openLsDayAbsenceModal(status) {
+  if (!can.isMod(currentUser?.role)) return;
+  if (!lsTargetId) { toast('Pilih host terlebih dahulu'); return; }
+  const hostName = LOCAL_USERS[lsTargetId]?.name || lsTargetId || '—';
+  const dObj = new Date(lsSelectedDate + 'T00:00:00');
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const label = `${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
+  const badgeHtml = lsStatBadge(status, 20);
+
+  document.getElementById('m-title').textContent = `Tandai ${status} — ${hostName}`;
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg" style="font-size:12.5px;color:var(--text2);margin-bottom:10px;display:flex;align-items:flex-start;gap:8px">
+      ${badgeHtml}
+      <span>Menandai <b style="color:var(--text)">${escHtml(hostName)}</b> ${status} untuk tanggal <b style="color:var(--text)">${label}</b> — berlaku langsung hari ini juga, tidak perlu ada sesi live yang sudah dijadwalkan lebih dulu.</span>
+    </div>
+    <div class="fg"><label>Keterangan</label>
+      <textarea class="fi" id="lsr-day-abs-reason" rows="3" placeholder="mis. Demam tinggi tidak bisa siaran / izin acara keluarga">${escHtml(lsAttNoteCache[lsSelectedDate] || '')}</textarea>
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-gold" onclick="submitLsDayAbsence('${status}')">Simpan</button>
+    <button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+
+async function submitLsDayAbsence(status) {
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  if (!lsTargetId) { toast('Pilih host terlebih dahulu'); return; }
+  const reason = (document.getElementById('lsr-day-abs-reason').value || '').trim();
+  if (!reason) { toast('Keterangan wajib diisi'); return; }
+  const hostName = LOCAL_USERS[lsTargetId]?.name || lsTargetId || '—';
+  const dObj = new Date(lsSelectedDate + 'T00:00:00');
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const label = `${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
+
+  const existing = (lsMonthCache[lsSelectedDate] || []);
+  if (existing.length && !confirm(`${hostName} sudah punya ${existing.length} sesi live terjadwal pada ${label}. Tandai ${status} tetap akan menyembunyikan sesi tersebut dari tampilan. Lanjutkan?`)) return;
+
+  const res = await dbQ(d => d.rpc('moderator_set_attendance', {
+    p_moderator_id: currentUser.id, p_target_user: lsTargetId, p_att_date: lsSelectedDate,
+    p_status: status, p_note: reason
+  }));
+  if (res?.error) { toast(`Gagal menandai ${status}: ` + res.error.message); return; }
+  closeModal();
+  toast(`${hostName} ditandai ${status} tanggal ${label}`);
+  pushActivity(`${lsTargetId} ditandai ${status} (${lsSelectedDate}) oleh moderator`, 'alert');
+  await loadLsMonth();
+}
+
+async function clearLsDayAbsence() {
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  if (!can.isMod(currentUser?.role)) return;
+  if (!lsTargetId) { toast('Pilih host terlebih dahulu'); return; }
+  const hostName = LOCAL_USERS[lsTargetId]?.name || lsTargetId || '—';
+  const dObj = new Date(lsSelectedDate + 'T00:00:00');
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const label = `${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
+  const prevStatus = lsAttCache[lsSelectedDate];
+
+  const res = await dbQ(d => d.rpc('moderator_clear_attendance', {
+    p_moderator_id: currentUser.id, p_target_user: lsTargetId, p_att_date: lsSelectedDate
+  }));
+  if (res?.error) { toast(`Gagal membatalkan ${prevStatus}: ` + res.error.message); return; }
+  toast(`${prevStatus} ${hostName} tanggal ${label} dibatalkan`);
+  pushActivity(`${prevStatus} ${lsTargetId} (${lsSelectedDate}) dibatalkan moderator`, 'info');
+  await loadLsMonth();
+}
 
 function lsAttnPickSessionStatus(status) {
   const sessions = (lsMonthCache[lsSelectedDate] || []);
@@ -12579,6 +12755,72 @@ function initAdRealtime() {
   startAdPolling(pollMs);
 }
 
+/* ═══════════════════════════════════════════════════════════
+   v37 — REALTIME: Studio Konten & Live Studio
+   Sinkron otomatis begitu moderator (atau creator/host sendiri di
+   device lain) mengubah data — TANPA perlu klik refresh manual:
+   - Kalau halaman & target yang sama sedang dibuka → data langsung
+     ditarik ulang & di-render ulang di tempat (realtime beneran).
+   - Kalau lagi buka halaman/target lain → titik MERAH kecil nyala
+     di tombol Refresh topbar, biar user tahu ada progres terbaru
+     yang belum dilihat, tanpa mengganggu apa yang lagi dikerjakan.
+   ═══════════════════════════════════════════════════════════ */
+let ccRtChannel = null;
+function initContentCalendarRealtime() {
+  if (!db) return;
+  if (ccRtChannel) { try { ccRtChannel.unsubscribe(); } catch(e){} ccRtChannel = null; }
+  const safe = (fn) => { try { fn(); } catch (e) { console.warn('[DHP] cc realtime render error:', e); } };
+  ccRtChannel = db.channel('dhp_content_calendar')
+    .on('postgres_changes', { event:'*', schema:'public', table:'content_calendar' }, payload => {
+      const row = payload.new || payload.old;
+      const creatorId = row && row.creator_user_id;
+      const isMod = can.isMod(currentUser?.role);
+      // Content Creator hanya peduli slot miliknya sendiri; Moderator peduli semua.
+      if (!isMod && creatorId && currentUser && creatorId !== currentUser.id) return;
+      if (isContentStudioPageActive() && creatorId === ccTargetId) {
+        loadCcMonth().then(() => safe(renderCcCards));
+      } else {
+        flagRemoteUpdate();
+      }
+    })
+    .on('postgres_changes', { event:'*', schema:'public', table:'content_theme_tags' }, () => {
+      loadCcThemeTags().catch(() => {});
+    })
+    .subscribe();
+}
+
+let lsRtChannel = null;
+function initLiveScheduleRealtime() {
+  if (!db) return;
+  if (lsRtChannel) { try { lsRtChannel.unsubscribe(); } catch(e){} lsRtChannel = null; }
+  const safe = (fn) => { try { fn(); } catch (e) { console.warn('[DHP] ls realtime render error:', e); } };
+  lsRtChannel = db.channel('dhp_live_schedule')
+    .on('postgres_changes', { event:'*', schema:'public', table:'live_schedule' }, payload => {
+      const row = payload.new || payload.old;
+      const hostId = row && row.host_user_id;
+      const isMod = can.isMod(currentUser?.role);
+      if (!isMod && hostId && currentUser && hostId !== currentUser.id) return;
+      if (isLiveStudioPageActive() && hostId === lsTargetId) {
+        loadLsMonth().then(() => safe(loadUpcomingLiveSchedule));
+      } else {
+        flagRemoteUpdate();
+      }
+    })
+    .on('postgres_changes', { event:'*', schema:'public', table:'attendance' }, payload => {
+      const row = payload.new || payload.old;
+      if (!row || !['Libur','Sakit','Izin'].includes(row.status)) return;   // abaikan check-in Hadir biasa
+      const targetUserId = row.user_id;
+      const isMod = can.isMod(currentUser?.role);
+      if (!isMod && targetUserId && currentUser && targetUserId !== currentUser.id) return;
+      if (isLiveStudioPageActive() && targetUserId === lsTargetId) {
+        loadLsMonth();
+      } else {
+        flagRemoteUpdate();
+      }
+    })
+    .subscribe();
+}
+
 function isAdPageActive() {
   const el = document.getElementById('pg-ad_scheduler');
   return el && el.classList.contains('active');
@@ -12586,6 +12828,28 @@ function isAdPageActive() {
 function isTaskPageActive() {
   const el = document.getElementById('pg-ad_task');
   return el && el.classList.contains('active');
+}
+function isContentStudioPageActive() {
+  const el = document.getElementById('pg-content_studio');
+  return el && el.classList.contains('active');
+}
+function isLiveStudioPageActive() {
+  const el = document.getElementById('pg-live_studio');
+  return el && el.classList.contains('active');
+}
+
+/* v37: nyalakan/matikan titik MERAH di tombol refresh global — dipakai
+   channel realtime (content_calendar, live_schedule, attendance, dst)
+   untuk memberi tahu "ada progres/perubahan baru dari moderator" tanpa
+   perlu user bolak-balik cek sendiri. Otomatis padam saat user klik
+   refresh (manualRefresh) atau saat data yang sama sudah ke-render live. */
+function flagRemoteUpdate() {
+  const btn = document.getElementById('global-refresh-btn');
+  if (btn) btn.classList.add('remote-update');
+}
+function clearRemoteUpdateFlag() {
+  const btn = document.getElementById('global-refresh-btn');
+  if (btn) btn.classList.remove('remote-update');
 }
 /* Refresh apa pun halaman ads yang sedang aktif */
 function refreshAdViews() {
@@ -17032,6 +17296,7 @@ async function manualRefresh() {
   } finally {
     if (btn) {
       btn.classList.remove('spinning');
+      btn.classList.remove('remote-update');
       btn.classList.add('just-updated');
       setTimeout(() => btn.classList.remove('just-updated'), 1500);
     }
