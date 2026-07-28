@@ -7454,7 +7454,7 @@ function renderCcDayTable() {
     const refTxt = s?.reference_link
       ? `<a href="${escHtml(s.reference_link)}" target="_blank" rel="noopener" style="color:var(--gold-hi)">Lihat ↗</a>` : '—';
     const themeTagTxt = s
-      ? (s.content_theme_tag ? `<span class="cc-theme-badge">${escHtml(s.content_theme_tag)}</span>` : `<span style="color:var(--text2)">—</span>`)
+      ? (s.content_theme ? `<span class="cc-theme-badge">${escHtml(s.content_theme)}</span>` : `<span style="color:var(--text2)">—</span>`)
       : `<span style="color:var(--text2)">—</span>`;
     const themeTxt = s
       ? `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
@@ -7512,7 +7512,7 @@ function openCcSlotModal(slotNo) {
   document.getElementById('m-title').textContent =
     `${s ? 'Edit' : 'Isi'} Slot ${slotNo} — ${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
 
-  const curTag = s?.content_theme_tag || '';
+  const curTag = s?.content_theme || '';
   const tagOptions = CC_THEME_TAGS.map(t =>
     `<option value="${escHtml(t.label)}" ${t.label===curTag?'selected':''}>${escHtml(t.label)}</option>`).join('');
 
@@ -8350,14 +8350,14 @@ async function loadAllRoleDashboard() {
   let themeCount = {};   // konten bulan ini, dikelompokkan per tema
   let contentTotalMonth = 0;
   if (db) {
-    const res = await dbQ(d => d.from('content_calendar').select('creator_user_id,progress_status,content_theme_tag')
+    const res = await dbQ(d => d.from('content_calendar').select('creator_user_id,progress_status,content_theme')
       .gte('content_date', first).lte('content_date', last));
     (res?.data || []).forEach(r => {
       if (!ccByCreator[r.creator_user_id]) ccByCreator[r.creator_user_id] = { total:0, done:0 };
       ccByCreator[r.creator_user_id].total++;
       if (r.progress_status === 'done_upload') ccByCreator[r.creator_user_id].done++;
       contentTotalMonth++;
-      const tag = (r.content_theme_tag || '').trim() || 'Belum ditandai';
+      const tag = (r.content_theme || '').trim() || 'Belum ditandai';
       themeCount[tag] = (themeCount[tag] || 0) + 1;
     });
   }
@@ -9643,7 +9643,7 @@ async function exportMyPerfPdf() {
       title = `Rincian Konten — ${monthLabel} (${data.length} slot dikerjakan)`;
       head = [['Tanggal', 'Slot', 'Tema', 'Judul Konten', 'Status', 'Deadline', 'Jam Upload']];
       rows = data.map(d => [
-        _pdfFmtDate(d.content_date), `Slot ${d.slot_no}`, d.content_theme_tag || '-', d.theme || '-',
+        _pdfFmtDate(d.content_date), `Slot ${d.slot_no}`, d.content_theme || '-', d.theme || '-',
         CC_PROGRESS[d.progress_status]?.label || d.progress_status || '-',
         d.deadline_date ? _pdfFmtDate(d.deadline_date) : '-', d.upload_time || '-'
       ]);
