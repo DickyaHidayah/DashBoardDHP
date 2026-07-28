@@ -1460,6 +1460,10 @@ body.light .sb-brand-photo{border-color:rgba(160,88,0,.35)}
     padding:11px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;
     transition:border-color var(--trans),background var(--trans)}
 .fi:focus{border-color:rgba(201,169,110,.45);background:rgba(255,255,255,.06)}
+/* v35: highlight field yang wajib diisi tapi kosong saat validasi gagal —
+   biar jelas field MANA yang bikin gagal simpan, bukan cuma toast doang */
+.fi.fi-error{border-color:#e35d5d!important;background:rgba(227,93,93,.06)!important}
+.fg label.lbl-required::after{content:" *";color:#e35d5d}
 
 /* Primary button */
 .btn-p{width:100%;padding:13px;background:linear-gradient(135deg,var(--gold-dk),var(--gold));
@@ -4504,7 +4508,7 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
             <table>
               <thead><tr>
                 <th style="width:56px">Slot</th>
-                <th style="width:120px">Tema Konten</th>
+                <th style="width:120px">Kategori</th>
                 <th>Judul & Script</th>
                 <th>Jam Upload</th>
                 <th>Referensi</th>
@@ -7513,18 +7517,19 @@ function openCcSlotModal(slotNo) {
     `<option value="${escHtml(t.label)}" ${t.label===curTag?'selected':''}>${escHtml(t.label)}</option>`).join('');
 
   document.getElementById('m-body').innerHTML = `
-    <div class="fg"><label>Tema Konten</label>
+    <div class="fg"><label>Kategori Konten <span style="color:var(--text2);font-weight:400">(opsional)</span></label>
       <select class="fi" id="cc-ed-theme-tag" onchange="ccOnThemeTagChange(this)">
-        <option value="">— pilih tema —</option>
+        <option value="">— pilih kategori —</option>
         ${tagOptions}
-        ${isMod ? `<option value="__add_new__">+ Tambah tema baru…</option>` : ''}
+        ${isMod ? `<option value="__add_new__">+ Tambah kategori baru…</option>` : ''}
       </select>
       <div id="cc-ed-theme-tag-new-wrap" style="display:none;margin-top:8px;display:flex;gap:6px">
         <input class="fi" id="cc-ed-theme-tag-new" placeholder="mis. Life Hack" style="flex:1"/>
-        <button type="button" class="btn-sm btn-gold" onclick="ccSaveNewThemeTag()">Simpan Tema</button>
+        <button type="button" class="btn-sm btn-gold" onclick="ccSaveNewThemeTag()">Simpan Kategori</button>
       </div>
+      <div style="font-size:10.5px;color:var(--text2);margin-top:4px">Ini cuma label pengelompokan. Yang WAJIB diisi supaya slot bisa tersimpan adalah "Judul Konten" di bawah ↓</div>
     </div>
-    <div class="fg"><label>Judul Konten</label>
+    <div class="fg"><label class="lbl-required">Judul Konten</label>
       <input class="fi" id="cc-ed-theme" value="${escHtml(s?.theme || '')}" placeholder="mis. Tips menata linen kamar tidur"/>
     </div>
     <div class="fg"><label>Jenis Konten</label>
@@ -7600,7 +7605,15 @@ async function saveCcSlot(slotNo, slotId) {
   const script   = document.getElementById('cc-ed-script').value.trim();
   const upload   = document.getElementById('cc-ed-upload').value || null;
   const ref      = ccNormalizeLink(document.getElementById('cc-ed-ref').value.trim());
-  if (!theme) { toast('Isi judul konten dulu'); return; }
+  const themeInput = document.getElementById('cc-ed-theme');
+  if (!theme) {
+    toast('Isi Judul Konten dulu — kategori di atas saja belum cukup untuk menyimpan slot');
+    themeInput.classList.add('fi-error');
+    themeInput.focus();
+    shake(themeInput.closest('.fg'));
+    return;
+  }
+  themeInput.classList.remove('fi-error');
 
   // Deadline otomatis mengikuti tanggal slotnya sendiri (nggak perlu diisi manual —
   // konten memang harus kelar di hari yang sama dengan tanggal slotnya).
