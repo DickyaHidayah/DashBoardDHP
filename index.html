@@ -5692,6 +5692,62 @@ function initNotifRealtime(userId) {
     .subscribe();
 }
 
+// v34: to-do harian moderator (mod_tasks) — sinkron kalau moderator yang
+// sama login di 2 device (mis. HP + laptop) supaya tugas yang dicentang/
+// dihapus di satu device langsung hilang di device lain juga.
+let modTasksChannel = null;
+function initModTasksRealtime(userId) {
+  if (!db || !userId) return;
+  if (modTasksChannel) { try { modTasksChannel.unsubscribe(); } catch (e) {} modTasksChannel = null; }
+  modTasksChannel = db.channel('dhp_mod_tasks_' + userId)
+    .on('postgres_changes', {
+      event:'*', schema:'public', table:'mod_tasks',
+      filter:'moderator_id=eq.' + userId
+    }, () => {
+      loadModTasks().then(() => {
+        renderModTasks();
+        if (document.getElementById('pg-mod_tasks')?.classList.contains('active')) {
+          renderMtMainSection().catch?.(() => {});
+        }
+      });
+    })
+    .subscribe();
+}
+
+// v34: target omzet (Host Live / Admin / B2B Marketing) — dipakai bareng
+// oleh moderator (yang mengatur target) dan si pemilik target (yang lihat
+// progress-nya). Tanpa ini, perubahan target/omzet baru kelihatan setelah
+// reload manual.
+let targetsChannel = null;
+function initTargetsRealtime() {
+  if (!db || targetsChannel) return;
+  try {
+    targetsChannel = db.channel('dhp_targets')
+      .on('postgres_changes', { event:'*', schema:'public', table:'admin_sales_target' }, () => _refreshTargetViews())
+      .on('postgres_changes', { event:'*', schema:'public', table:'b2b_sales_target' },   () => _refreshTargetViews())
+      .on('postgres_changes', { event:'*', schema:'public', table:'host_sales_target' },  () => _refreshTargetViews())
+      .on('postgres_changes', { event:'*', schema:'public', table:'host_sales_log' },     () => _refreshTargetViews())
+      .subscribe();
+  } catch(e) { console.warn('[DHP] initTargetsRealtime gagal:', e); }
+}
+function _refreshTargetViews() {
+  // Moderator: halaman "Atur Target" & "Dashboard Semua Role"
+  if (document.getElementById('pg-mod_target')?.classList.contains('active')) {
+    renderModTargetPage().catch?.(() => {});
+  }
+  if (document.getElementById('pg-all_dashboard')?.classList.contains('active')) {
+    loadAllRoleDashboard().catch(() => {});
+  }
+  // Host Live: dashboard performa miliknya sendiri
+  if (can.isHostLive(currentUser?.role) && document.getElementById('dash-stat-grid')) {
+    loadHostDashboard().catch?.(() => {});
+  }
+  if (!document.getElementById('pg-mod_target')?.classList.contains('active') &&
+      !document.getElementById('pg-all_dashboard')?.classList.contains('active')) {
+    flagRemoteUpdate();
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════
    ⑥ NATIONAL HOLIDAYS — Akurat per SKB 3 Menteri 2026
    (17 Libur Nasional + 8 Cuti Bersama). Format key: 'YYYY-MM-DD'.
@@ -6916,6 +6972,9 @@ async function initDashboard() {
   // untuk data miliknya sendiri. Supaya progres terupdate tanpa refresh.
   if (isContent || isMod) { try { initContentCalendarRealtime(); } catch (e) { console.warn('[DHP] initContentCalendarRealtime gagal:', e); } }
   if (isLive || isMod)    { try { initLiveScheduleRealtime(); } catch (e) { console.warn('[DHP] initLiveScheduleRealtime gagal:', e); } }
+  // v34: to-do moderator (per device) + target omzet (moderator + host/admin/b2b pemilik target)
+  if (isMod) { try { initModTasksRealtime(currentUser.id); } catch (e) { console.warn('[DHP] initModTasksRealtime gagal:', e); } }
+  if (isMod || isLive || canSeeAds) { try { initTargetsRealtime(); } catch (e) { console.warn('[DHP] initTargetsRealtime gagal:', e); } }
 
   try { renderStats(); renderActivity(); }
   catch (e) { console.warn('[DHP] render awal gagal:', e); }
@@ -12818,6 +12877,15 @@ function initLiveScheduleRealtime() {
         flagRemoteUpdate();
       }
     })
+    // v34: status pengajuan izin telat lapor — host perlu lihat approve/reject
+    // moderator secara realtime, bukan cuma setelah reload manual.
+    .on('postgres_changes', { event:'*', schema:'public', table:'host_report_permissions' }, () => {
+      if (isLiveStudioPageActive()) {
+        loadLsMonth();
+      } else {
+        flagRemoteUpdate();
+      }
+    })
     .subscribe();
 }
 
@@ -14971,6 +15039,13 @@ function initCRMRealtime() {
         if (document.getElementById('pg-all_dashboard')?.classList.contains('active')) {
           loadAllRoleDashboard().catch(()=>{});
         }
+      })
+      // v34: label/tag CRM dibuat & dipakai bareng-bareng lintas admin —
+      // tanpa ini, admin lain baru lihat label baru setelah reload manual.
+      .on('postgres_changes', { event:'*', schema:'public', table:'crm_labels' }, () => {
+        loadCrmLabels().then(() => {
+          if (document.getElementById('pg-crm')?.classList.contains('active')) renderCRM();
+        });
       })
       .subscribe();
   } catch(e) { console.warn('[CRM] realtime gagal:', e); }
