@@ -1212,12 +1212,6 @@ body.light .crm-stat .cs-num{ color:#0d0d0d; font-weight:800; }
 body.light .crm-stat .cs-lbl{ color:rgba(13,13,13,.55); font-weight:600; }
 body.light .crm-stat .cs-sub{ color:rgba(13,13,13,.45); }
 body.light .crm-stat.cs-money .cs-num{ color:#1a7a3e; }
-body.light .crm-st-badge{ font-weight:700; }
-body.light .crm-st-badge.st-new{ background:#f0f6ff; color:#1a56a0; border-color:rgba(26,86,160,.3); }
-body.light .crm-st-badge.st-repeat{ background:#f0fff4; color:#1a7a3e; border-color:rgba(26,122,62,.3); }
-body.light .crm-st-badge.st-agen{ background:#fffbf0; color:#a05800; border-color:rgba(160,88,0,.3); }
-body.light .crm-st-badge.st-reseller{ background:#f9eeff; color:#7a1a72; border-color:rgba(122,26,114,.3); }
-body.light .crm-st-badge.st-leads{ background:#fff0f0; color:#c0392b; border-color:rgba(192,57,43,.3); }
 body.light .crm-ico-btn{ background:#ffffff; border:1.5px solid rgba(0,0,0,.15); color:#0d0d0d; }
 body.light .crm-ico-btn:hover{ background:#f0f0f0; border-color:#0d0d0d; color:#0d0d0d; }
 body.light .crm-ico-btn.del:hover{ background:#fff0f0; border-color:#c0392b; color:#c0392b; }
@@ -1238,9 +1232,6 @@ body.light .crm-diag-bar-val{ font-weight:700; }
 
 /* ── CRM stats colored ── */
 body.light .crm-stat.cs-new .cs-num{ color:#1a56a0; }
-body.light .crm-stat.cs-repeat .cs-num{ color:#1a7a3e; }
-body.light .crm-stat.cs-agen .cs-num{ color:#a05800; }
-body.light .crm-stat.cs-reseller .cs-num{ color:#7a1a72; }
 body.light .crm-stat.cs-leads .cs-num{ color:#c0392b; }
 
 /* ── Profile modal ── */
@@ -2946,9 +2937,6 @@ body.light .adtask-empty{color:rgba(13,13,13,.38)}
 .crm-stat .cs-sub{font-size:10px;color:var(--muted)}
 .crm-stat.cs-money .cs-num{font-size:21px;color:var(--green)}
 .crm-stat.cs-new{border-color:rgba(126,168,201,.3);color:var(--blue)} .crm-stat.cs-new .cs-num{color:var(--blue)}
-.crm-stat.cs-repeat{border-color:rgba(122,191,142,.3);color:var(--green)} .crm-stat.cs-repeat .cs-num{color:var(--green)}
-.crm-stat.cs-agen{border-color:rgba(232,184,110,.3);color:var(--amber)} .crm-stat.cs-agen .cs-num{color:var(--amber)}
-.crm-stat.cs-reseller{border-color:rgba(217,142,192,.35);color:#d98ec0} .crm-stat.cs-reseller .cs-num{color:#d98ec0}
 .crm-stat.cs-leads{border-color:rgba(232,112,112,.3);color:var(--red)} .crm-stat.cs-leads .cs-num{color:var(--red)}
 .crm-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:calc(var(--r) + 2px);overflow:auto;max-height:62vh;
   box-shadow:0 1px 0 rgba(255,255,255,.02) inset}
@@ -2964,14 +2952,6 @@ body.light .adtask-empty{color:rgba(13,13,13,.38)}
 .crm-money{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--green);font-weight:600}
 .crm-note-cell{max-width:200px;font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .crm-fav{font-size:11px;color:var(--text2);white-space:nowrap}
-.crm-st-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
-  padding:4px 10px;border-radius:20px;border:1px solid;white-space:nowrap}
-.crm-st-badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
-.crm-st-badge.st-new{color:var(--blue);border-color:rgba(126,168,201,.5);background:rgba(126,168,201,.1)}
-.crm-st-badge.st-repeat{color:var(--green);border-color:rgba(122,191,142,.5);background:rgba(122,191,142,.1)}
-.crm-st-badge.st-agen{color:var(--amber);border-color:rgba(232,184,110,.5);background:rgba(232,184,110,.1)}
-.crm-st-badge.st-reseller{color:#d98ec0;border-color:rgba(217,142,192,.5);background:rgba(217,142,192,.12)}
-.crm-st-badge.st-leads{color:var(--red);border-color:rgba(232,112,112,.5);background:rgba(232,112,112,.1)}
 .crm-row-acts{display:flex;gap:6px;white-space:nowrap}
 /* ── v30: Distribusi/persentase customer per PIC (moderator) ── */
 .crm-pic-dist{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:18px}
@@ -4892,11 +4872,8 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
             </div>
             <select class="fi crm-filter" id="crm-status-filter" onchange="renderCRM(false)">
               <option value="all" data-i18n="crmAllStatus">Semua Status</option>
-              <option value="New">New</option>
-              <option value="Repeat">Repeat</option>
-              <option value="Agen">Agen</option>
-              <option value="Reseller">Reseller</option>
-              <option value="Leads">Leads</option>
+              <option value="New">New (input manual)</option>
+              <option value="Leads">Leads (dari Ads)</option>
             </select>
             <select class="fi crm-filter" id="crm-heat-filter" onchange="renderCRM(false)" title="Filter Tingkat Keaktifan" style="max-width:140px">
               <option value="all">Semua Tingkat</option>
@@ -14189,7 +14166,7 @@ async function submitLead() {
       }
       // heat_category dihitung di sisi client untuk tampilan instan
       // Sesuai crm_compute_heat di server:
-      //   Hot   = total_order ≥ 5 ATAU status Repeat/Agen/Reseller
+      //   Hot   = total_order ≥ 5
       //   Warm  = total_order 1–4
       //   Cold  = total_order = 0 (Leads baru)
       // Mapping dari lead_category ke heat:
@@ -14632,7 +14609,11 @@ const CRM_COLUMNS = [
 // antar admin (Yuna, Puji, Erni, Galih, dst). Dipakai khusus untuk
 // template download & parsing file import.
 const CRM_IMPORT_COLUMNS = CRM_COLUMNS.filter(c => c.key !== 'id_customer');
-const CRM_STATUSES = ['New','Repeat','Agen','Reseller','Leads'];
+// v37: disederhanakan — kategori Repeat/Agen/Reseller dihapus dari status.
+// Kategorisasi customer sekarang sepenuhnya lewat sistem Label warna (lihat
+// bagian ⑪-c di bawah). Status tinggal menandai ASAL customer saja:
+// 'New' = diinput manual oleh admin, 'Leads' = otomatis masuk dari Ads/Leads.
+const CRM_STATUSES = ['New','Leads'];
 
 // v5.2: heat category helpers
 const HEAT_ICONS = { Hot:'🔥', Warm:'☀️', Cold:'❄️', Closing:'🤝', None:'—' };
@@ -14642,8 +14623,7 @@ const CRM_HEAT_OPTIONS = ['Cold','Warm','Hot','Closing'];
 
 function crmComputeHeat(totalOrder, status) {
   const ord = parseInt(totalOrder,10) || 0;
-  const st  = String(status||'');
-  if (ord >= 5 || ['Repeat','Agen','Reseller'].includes(st)) return 'Hot';
+  if (ord >= 5) return 'Hot';
   if (ord >= 1 && ord <= 4) return 'Warm';
   if (ord === 0) return 'Cold';
   return 'None';
@@ -15690,9 +15670,10 @@ function crmFmtRupiah(n) {
 function crmNormStatus(v) {
   const s = String(v||'').trim().toLowerCase();
   if (!s) return 'New';
-  if (s.startsWith('rep')) return 'Repeat';
-  if (s.startsWith('age')) return 'Agen';
-  if (s.startsWith('res')) return 'Reseller';
+  // v37: data lama yang masih tersimpan sebagai Repeat/Agen/Reseller
+  // (mis. dari cache lokal/backup lama) tetap dipetakan aman ke 'New' —
+  // kategorisasinya sekarang ada di sistem Label, bukan di status lagi.
+  if (s.startsWith('rep') || s.startsWith('age') || s.startsWith('res')) return 'New';
   if (s.startsWith('lea') || s === 'lead') return 'Leads';
   if (s.startsWith('new') || s === 'baru') return 'New';
   // fallback: capitalize
@@ -15788,12 +15769,19 @@ function renderCRMDiagram(data) {
 
   const isMod = can.isMod(currentUser?.role);
 
-  // Status bar chart
-  const statColors = { New:'#7ea8c9', Repeat:'#c9a96e', Agen:'#d98ec0', Reseller:'#7abf8e', Leads:'#e87070' };
-  const statCounts = {};
-  CRM_STATUSES.forEach(s => statCounts[s] = 0);
-  data.forEach(c => { const s = crmNormStatus(c.status); statCounts[s]++; });
-  const maxSt = Math.max(...Object.values(statCounts), 1);
+  // v37: chart pertama sekarang berdasarkan Label (menggantikan Repeat/Agen/
+  // Reseller yang sudah dihapus) — menghitung customer per label yang benar-
+  // benar dipakai di data yang sedang ditampilkan (support banyak admin
+  // sekaligus untuk moderator), plus satu baris "Belum Berlabel".
+  const labelCounts = {};
+  let unlabeledCount = 0;
+  data.forEach(c => {
+    const lbl = c.label_id ? crmLabelOf(c.label_id) : null;
+    if (lbl) labelCounts[lbl.id] = (labelCounts[lbl.id] || 0) + 1;
+    else unlabeledCount++;
+  });
+  const usedLabels = Object.keys(labelCounts).map(id => crmLabelOf(id)).filter(Boolean);
+  const maxSt = Math.max(...Object.values(labelCounts), unlabeledCount, 1);
 
   // Channel distribution (top 6)
   const chCount = {};
@@ -15834,18 +15822,28 @@ function renderCRMDiagram(data) {
   el.innerHTML = `
     <div class="crm-diag-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
       <div class="crm-diag-card">
-        <div class="crm-diag-title">Status Customer</div>
+        <div class="crm-diag-title">Customer per Label</div>
         <div class="crm-diag-bars">
-          ${CRM_STATUSES.map(s => {
-            const n = statCounts[s];
+          ${usedLabels.map(l => {
+            const n = labelCounts[l.id];
             const pct = Math.round(n/maxSt*100);
             const pctTotal = data.length ? Math.round(n/data.length*100) : 0;
             return `<div class="crm-diag-bar-row">
-              <div class="crm-diag-bar-lbl" style="color:${statColors[s]}">${s}</div>
-              <div class="crm-diag-bar-track"><div class="crm-diag-bar-fill" style="width:${pct}%;background:${statColors[s]}"></div></div>
+              <div class="crm-diag-bar-lbl" style="color:${l.color}">${escHtml(l.name)}</div>
+              <div class="crm-diag-bar-track"><div class="crm-diag-bar-fill" style="width:${pct}%;background:${l.color}"></div></div>
               <div class="crm-diag-bar-val">${n} <span style="color:var(--muted);font-size:9px">(${pctTotal}%)</span></div>
             </div>`;
           }).join('')}
+          ${(function(){
+            const pct = Math.round(unlabeledCount/maxSt*100);
+            const pctTotal = data.length ? Math.round(unlabeledCount/data.length*100) : 0;
+            return `<div class="crm-diag-bar-row">
+              <div class="crm-diag-bar-lbl" style="color:var(--muted)">Belum Berlabel</div>
+              <div class="crm-diag-bar-track"><div class="crm-diag-bar-fill" style="width:${pct}%;background:var(--muted)"></div></div>
+              <div class="crm-diag-bar-val">${unlabeledCount} <span style="color:var(--muted);font-size:9px">(${pctTotal}%)</span></div>
+            </div>`;
+          })()}
+          ${!usedLabels.length ? `<div class="mt-fu-list-empty">Belum ada label dipakai. Klik "🏷️ Kelola Label" untuk membuat label pertamamu.</div>` : ''}
         </div>
       </div>
       <div class="crm-diag-card">
@@ -15869,7 +15867,7 @@ function renderCRMDiagram(data) {
         <div class="crm-diag-bars">
           ${(function() {
             var heatDefs = [
-              { key:'Hot',  color:'#e87070', label:'Panas (Hot)',  desc:'≥5 order / Repeat/Agen/Reseller' },
+              { key:'Hot',  color:'#e87070', label:'Panas (Hot)',  desc:'≥5 order (atau ditandai manual)' },
               { key:'Warm', color:'#e8b86e', label:'Hangat (Warm)', desc:'1–4 order' },
               { key:'Cold', color:'#7ea8c9', label:'Dingin (Cold)', desc:'0 order / Leads baru' }
             ];
@@ -16043,9 +16041,6 @@ async function renderCRM(reload = true) {
       <div class="crm-stat"><span class="cs-num">${totalOrders.toLocaleString('id-ID')}</span><span class="cs-lbl">${t('crmTotalOrdersStat')}</span></div>
       <div class="crm-stat cs-money"><span class="cs-num">${crmFmtRupiah(Math.round(avg))}</span><span class="cs-lbl">${t('crmAvgSpend')}</span></div>
       <div class="crm-stat cs-new"><span class="cs-num">${cnt('New')}</span><span class="cs-lbl">New</span></div>
-      <div class="crm-stat cs-repeat"><span class="cs-num">${cnt('Repeat')}</span><span class="cs-lbl">Repeat</span></div>
-      <div class="crm-stat cs-agen"><span class="cs-num">${cnt('Agen')}</span><span class="cs-lbl">Agen</span></div>
-      <div class="crm-stat cs-reseller"><span class="cs-num">${cnt('Reseller')}</span><span class="cs-lbl">Reseller</span></div>
       <div class="crm-stat cs-leads"><span class="cs-num">${cnt('Leads')}</span><span class="cs-lbl">Leads</span></div>
       <div style="width:1px;background:var(--border);margin:0 4px;align-self:stretch"></div>
       <div class="crm-stat" style="background:rgba(232,112,112,.06)"><span class="cs-num" style="color:#e87070">${heatCnt('Hot')}</span><span class="cs-lbl">🔥 Panas</span></div>
@@ -16446,7 +16441,7 @@ function downloadCRMTemplate() {
   // 2 baris contoh agar user paham format — ID Customer tidak ada di
   // sini lagi, dibuat otomatis oleh sistem saat import.
   const example = [
-    ['Budi Santoso','08123456789','Jakarta','Shopee','2024-01-15','12','3500000','Repeat','Hijab Premium','Pelanggan loyal, suka COD'],
+    ['Budi Santoso','08123456789','Jakarta','Shopee','2024-01-15','12','3500000','New','Hijab Premium','Pelanggan loyal, suka COD'],
     ['Siti Aminah','08987654321','Bandung','TikTok','2024-03-02','1','150000','New','Gamis Polos','Dari iklan TikTok'],
   ];
   const ws = XLSX.utils.aoa_to_sheet([headers, ...example]);
