@@ -99,6 +99,19 @@ body.light{background:#ffffff;color:#0d0d0d}
 }
 .heat-cold .hb-icon { background:rgba(126,168,201,.22); }
 
+/* Closing — hijau emas, deal tercapai */
+.heat-closing {
+  background:linear-gradient(135deg,rgba(122,191,142,.20),rgba(201,169,110,.10));
+  color:#7abf8e;border:1px solid rgba(122,191,142,.35);
+  box-shadow:0 0 8px rgba(122,191,142,.12);
+}
+.heat-closing .hb-icon { background:rgba(122,191,142,.22); }
+body.light .heat-closing {
+  background:linear-gradient(135deg,rgba(30,120,70,.10),rgba(30,120,70,.04));
+  color:#1e7846;border-color:rgba(30,120,70,.22);box-shadow:none;
+}
+body.light .heat-closing .hb-icon { background:rgba(30,120,70,.14); }
+
 /* None — netral */
 .heat-none {
   background:rgba(232,228,220,.04);color:var(--muted);
@@ -13636,10 +13649,13 @@ async function saveAd(thenPublish) {
         catatan:     `Auto dari Ads: ${theme} (${cat}) — ${date}`,
       };
       if (crmUsesDB()) {
+        // v36 FIX: sama seperti Add Customer manual — jangan kirim newCustId
+        // (tebakan sinkron dari crmGenId(), rawan basi/bentrok), biarkan
+        // server generate kode yang benar-benar unik.
         await dbQ(d => d.rpc('upsert_crm_customer', {
           p_id:          null,
           p_user_id:     currentUser.id,
-          p_cust_code:   newCustId,
+          p_cust_code:   null,
           p_full_name:   custName,
           p_wa_phone:    null,
           p_city:        null,
@@ -13656,7 +13672,7 @@ async function saveAd(thenPublish) {
         saveCRM && saveCRM();
       }
       pushActivity(`CRM auto-entry dari Ads: "${theme}" — ${adChannel||'—'} — ${crmFmtRupiah(adTotalSpend)}`, 'ad');
-      toast(`✓ Tersimpan ke Ads & CRM (${newCustId})`);
+      toast(`✓ Tersimpan ke Ads & CRM`);
     } catch(e) {
       console.warn('[DHP] Auto CRM dari Ads gagal:', e);
       toast(t('adSaved') + ' (CRM skip)');
@@ -14619,8 +14635,10 @@ const CRM_IMPORT_COLUMNS = CRM_COLUMNS.filter(c => c.key !== 'id_customer');
 const CRM_STATUSES = ['New','Repeat','Agen','Reseller','Leads'];
 
 // v5.2: heat category helpers
-const HEAT_ICONS = { Hot:'🔥', Warm:'☀️', Cold:'❄️', None:'—' };
-const HEAT_LABELS = { Hot:'Hot', Warm:'Warm', Cold:'Cold', None:'—' };
+const HEAT_ICONS = { Hot:'🔥', Warm:'☀️', Cold:'❄️', Closing:'🤝', None:'—' };
+const HEAT_LABELS = { Hot:'Hot', Warm:'Warm', Cold:'Cold', Closing:'Closing', None:'—' };
+// v36: 4 pilihan manual, sama seperti kategori Leads/Ads (Cold/Warm/Hot/Closing)
+const CRM_HEAT_OPTIONS = ['Cold','Warm','Hot','Closing'];
 
 function crmComputeHeat(totalOrder, status) {
   const ord = parseInt(totalOrder,10) || 0;
@@ -14638,9 +14656,10 @@ function crmHeatBadge(heat) {
   const icons = {
     Hot:  `<svg viewBox="0 0 10 10" fill="currentColor"><path d="M5 1c0 1.5-1.5 2-1.5 3.5C3.5 6 4.2 7 5 7s1.5-1 1.5-2.5C6.5 3 5 2.5 5 1zm-1.5 7.5C2.5 8.5 2 7.5 2 6.5c0 0 .5.3 1 .3s1-.3 1-.3c.5 0 1 .5 1 1.2C5 8.5 4.5 9 4 9c-.5 0-.9-.2-1.2-.5zM7 6c0 1.1-.9 2-2 2s-2-.9-2-2 .9-1.5 2-1.5S7 4.9 7 6z"/>`,
     Warm: `<svg viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="2.2"/><path d="M5 .5v1.2M5 8.3V9.5M.5 5h1.2M8.3 5H9.5M1.6 1.6l.85.85M7.55 7.55l.85.85M8.4 1.6l-.85.85M2.45 7.55l-.85.85" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>`,
-    Cold: `<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="M5 1v8M1.5 3l7 4M8.5 3l-7 4"/><circle cx="5" cy="5" r="1.2" fill="currentColor" stroke="none"/>`
+    Cold: `<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="M5 1v8M1.5 3l7 4M8.5 3l-7 4"/><circle cx="5" cy="5" r="1.2" fill="currentColor" stroke="none"/>`,
+    Closing: `<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="M1.5 5.5l2.2 2.2L8.5 3"/>`
   };
-  const labels = { Hot:'Panas', Warm:'Hangat', Cold:'Dingin' };
+  const labels = { Hot:'Panas', Warm:'Hangat', Cold:'Dingin', Closing:'Closing' };
   return `<span class="heat-badge heat-${h.toLowerCase()}" title="${h}"><span class="hb-icon">${icons[h]}</span>${labels[h]||h}</span>`;
 }
 // Sinonim header agar import tetap dikenali walau penulisan sedikit beda.
@@ -16192,6 +16211,13 @@ function openCRMModal(idx) {
   const opts = CRM_STATUSES.map(s => `<option value="${s}" ${crmNormStatus(c.status)===s?'selected':''}>${s}</option>`).join('');
   const channelOpts = ['Shopee','TikTok','Instagram','WhatsApp','Leads','Lainnya'].map(ch => `<option value="${ch}" ${(c.channel||'')=== ch?'selected':''}>${ch}</option>`).join('');
   const autoId = editing ? escHtml(c.id_customer||'') : crmGenId();
+  // v36: nilai awal Tingkat Keaktifan — tetap disarankan otomatis dari
+  // total order/status untuk data lama, tapi sekarang bisa diubah manual
+  // ke 4 pilihan yang sama seperti Leads/Ads (Cold/Warm/Hot/Closing).
+  const _initHeat = (editing && c.heat_category && c.heat_category !== 'None')
+    ? c.heat_category
+    : (crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status)) === 'None' ? 'Cold' : crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status)));
+  const heatOpts = CRM_HEAT_OPTIONS.map(h => `<option value="${h}" ${_initHeat===h?'selected':''}>${HEAT_LABELS[h]}</option>`).join('');
   document.getElementById('m-body').innerHTML = `
     <div class="fg"><label>${t('crmColId')}</label>
       <div style="position:relative">
@@ -16200,8 +16226,8 @@ function openCRMModal(idx) {
       </div>
     </div>
     <div class="fg"><label>${t('crmColName')} *</label><input class="fi" id="crm-f-nama" value="${escHtml(c.nama||'')}"/></div>
-    <div class="fg"><label>${t('crmColWA')}</label><input class="fi" id="crm-f-wa" value="${escHtml(c.wa||'')}" placeholder="08xxxxxxxxxx"/>
-      <span style="font-size:9.5px;color:var(--muted);margin-top:3px;display:block">Format Indonesia (08xxx / 62xxx / +62xxx) akan otomatis jadi link chat WhatsApp. Format lain tidak akan ditampilkan sebagai link.</span>
+    <div class="fg"><label>${t('crmColWA')}</label><input class="fi" id="crm-f-wa" value="${escHtml(c.wa||'')}" placeholder="08xxxxxxxxxx atau +62xxxxxxxxxx" oninput="crmWaPreview()"/>
+      <span id="crm-wa-preview" style="font-size:9.5px;color:var(--muted);margin-top:3px;display:block">Otomatis dirapikan jadi format +62 saat disimpan (08xxx / 62xxx / +62xxx semua diterima).</span>
     </div>
     <div class="fg"><label>${t('crmColCity')}</label><input class="fi" id="crm-f-kota" value="${escHtml(c.kota||'')}"/></div>
     <div class="fg"><label>${t('crmColChannel')}</label>
@@ -16220,12 +16246,16 @@ function openCRMModal(idx) {
       <div class="fg" style="flex:1"><label>${t('crmColTotalOrder')}</label><input class="fi" id="crm-f-torder" type="number" min="0" value="${crmParseInt(c.total_order)||''}"/></div>
       <div class="fg" style="flex:1"><label>${t('crmColTotalSpend')}</label><input class="fi" id="crm-f-tspend" type="number" min="0" value="${crmParseMoney(c.total_belanja)||''}" placeholder="Rp"/></div>
     </div>
-    <div class="fg"><label>${t('crmColStatus')}</label><select class="fi" id="crm-f-status" onchange="updateHeatPreview()">${opts}</select></div>
+    <div class="fg"><label>${t('crmColStatus')}</label><select class="fi" id="crm-f-status">${opts}</select></div>
     <div class="fg" style="margin-bottom:12px">
-      <label style="font-size:10px;color:var(--muted)">Tingkat Keaktifan (otomatis)</label>
-      <div id="heat-preview-modal" style="margin-top:4px">
-        ${crmHeatBadge(editing && c.heat_category ? c.heat_category : crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status)))}
-        <span style="font-size:9px;color:var(--muted);margin-left:8px">Dihitung otomatis dari total order & status</span>
+      <label style="display:flex;align-items:center;justify-content:space-between">
+        <span>Tingkat Keaktifan</span>
+        <a href="javascript:void(0)" onclick="crmAutoHeat()" style="font-size:9px;color:var(--gold);text-decoration:none;letter-spacing:.04em">↻ Hitung otomatis</a>
+      </label>
+      <select class="fi" id="crm-f-heat" onchange="updateHeatPreview()">${heatOpts}</select>
+      <div id="heat-preview-modal" style="margin-top:6px">
+        ${crmHeatBadge(_initHeat)}
+        <span style="font-size:9px;color:var(--muted);margin-left:8px">Sama seperti kategori Leads/Ads — pilih manual atau klik "Hitung otomatis"</span>
       </div>
     </div>
     <div class="fg"><label>${t('crmColFavProduct')}</label><input class="fi" id="crm-f-fav" value="${escHtml(c.produk_fav||'')}"/></div>
@@ -16277,16 +16307,23 @@ async function saveCRMCustomer(idx) {
     produk_fav:     document.getElementById('crm-f-fav').value.trim(),
     catatan:        document.getElementById('crm-f-note').value.trim(),
   };
-  // v5.2: compute heat_category
-  rec.heat_category = crmComputeHeat(rec.total_order, rec.status);
+  // v36: heat_category sekarang manual (select), bukan auto-hitung paksa —
+  // fallback ke auto kalau untuk alasan tertentu select-nya tidak ada.
+  const _heatEl = document.getElementById('crm-f-heat');
+  rec.heat_category = _heatEl ? _heatEl.value : crmComputeHeat(rec.total_order, rec.status);
 
   // ── Mode DB: simpan lewat RPC, lalu reload dari server ──
   if (crmUsesDB()) {
     const editing = (idx >= 0);
+    // v36 FIX: untuk customer BARU, JANGAN kirim ID tebakan dari browser —
+    // itu cuma preview visual dan bisa basi (data belum di-refresh, sedang
+    // di-paging, atau 2 entry dibuat cepat berturut-turut) → kirim null
+    // supaya server SELALU generate kode yang benar-benar unik (fix akar
+    // masalah "duplicate key ... cust_code_key" saat Save gagal).
     const res = await dbQ(d => d.rpc('upsert_crm_customer', {
       p_id:          editing ? (crmData[idx]?._uuid || null) : null,
       p_user_id:     currentUser.id,
-      p_cust_code:   rec.id_customer || null,
+      p_cust_code:   editing ? (rec.id_customer || null) : null,
       p_full_name:   rec.nama,
       p_wa_phone:    rec.wa || null,
       p_city:        rec.kota || null,
@@ -16298,6 +16335,8 @@ async function saveCRMCustomer(idx) {
       p_fav_product:    rec.produk_fav || null,
       p_admin_note:     rec.catatan || null,
       p_channel_is_ads: rec.channel_is_ads || false,  // v5.2
+      p_ads_title:      null,
+      p_heat_manual:    rec.heat_category || null,   // v36: Cold/Warm/Hot/Closing manual
     }));
     if (!res || res.error) {
       const msg = res?.error?.message || '';
@@ -17092,17 +17131,55 @@ async function exportCRMPdf() {
 window.exportCRMPdf = exportCRMPdf;
 
 // v5.2: live heat preview in CRM modal
+// v36: Tingkat Keaktifan sekarang manual (Cold/Warm/Hot/Closing, sama
+// seperti Leads/Ads) — preview cuma menampilkan pilihan yang sedang aktif.
 function updateHeatPreview() {
-  const statusEl = document.getElementById('crm-f-status');
-  const orderEl  = document.getElementById('crm-f-torder');
+  const selEl = document.getElementById('crm-f-heat');
   const previewEl = document.getElementById('heat-preview-modal');
-  if (!previewEl || !statusEl) return;
-  const ord  = parseInt(orderEl?.value || '0', 10) || 0;
-  const stat = statusEl.value || 'New';
-  const heat = crmComputeHeat(ord, stat);
-  previewEl.innerHTML = crmHeatBadge(heat) + '<span style="font-size:9px;color:var(--muted);margin-left:8px">Dihitung otomatis dari total order & status</span>';
+  if (!previewEl || !selEl) return;
+  previewEl.innerHTML = crmHeatBadge(selEl.value) + '<span style="font-size:9px;color:var(--muted);margin-left:8px">Sama seperti kategori Leads/Ads — pilih manual atau klik "Hitung otomatis"</span>';
 }
 window.updateHeatPreview = updateHeatPreview;
+
+// v36: tombol "Hitung otomatis" — isi ulang dari total order & status,
+// dipakai kalau admin mau saran cepat tapi tetap bisa diubah manual sesudahnya.
+function crmAutoHeat() {
+  const orderEl  = document.getElementById('crm-f-torder');
+  const statusEl = document.getElementById('crm-f-status');
+  const selEl    = document.getElementById('crm-f-heat');
+  if (!selEl) return;
+  const ord  = parseInt(orderEl?.value || '0', 10) || 0;
+  const stat = statusEl?.value || 'New';
+  let heat = crmComputeHeat(ord, stat);
+  if (heat === 'None') heat = 'Cold';
+  selEl.value = heat;
+  updateHeatPreview();
+}
+window.crmAutoHeat = crmAutoHeat;
+
+// v36: preview live format +62 di bawah field WA (visual saja — validasi
+// & normalisasi final tetap dilakukan server via crm_valid_wa saat Save).
+function crmWaPreview() {
+  const el = document.getElementById('crm-f-wa');
+  const hint = document.getElementById('crm-wa-preview');
+  if (!el || !hint) return;
+  const raw = el.value || '';
+  let norm = raw.replace(/[^0-9+]/g, '');
+  if (norm.startsWith('0')) norm = '+62' + norm.slice(1);
+  else if (norm.startsWith('62')) norm = '+' + norm;
+  else if (norm && !norm.startsWith('+62')) norm = '+62' + norm;
+  if (!raw.trim()) {
+    hint.textContent = 'Otomatis dirapikan jadi format +62 saat disimpan (08xxx / 62xxx / +62xxx semua diterima).';
+    hint.style.color = 'var(--muted)';
+  } else if (/^\+628[0-9]{7,12}$/.test(norm)) {
+    hint.textContent = '✓ Akan tersimpan sebagai ' + norm;
+    hint.style.color = '#7abf8e';
+  } else {
+    hint.textContent = '⚠ Format nomor tidak dikenali — akan disimpan tanpa link chat WhatsApp.';
+    hint.style.color = '#e8a840';
+  }
+}
+window.crmWaPreview = crmWaPreview;
 
 // expose ke window (dipanggil dari atribut onclick)
 window.renderCRM = renderCRM;
