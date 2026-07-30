@@ -1225,7 +1225,7 @@ body.light .crm-imp-tpl{ color:var(--blue); font-weight:700; }
 body.light .crm-imp-preview th{ background:#f7f7f8; color:#0d0d0d; }
 body.light .crm-imp-preview td{ color:#0d0d0d; }
 body.light .crm-imp-summary{ background:#f0fff4; border-color:rgba(26,122,62,.3); }
-body.light .crm-diag-card{ background:#ffffff; border:1.5px solid rgba(0,0,0,.1); }
+body.light .crm-diag-card{ background:#fafafa; border:1.5px solid rgba(0,0,0,.08); }
 body.light .crm-diag-title{ color:#0d0d0d; font-weight:700; }
 body.light .crm-diag-bar-lbl{ font-weight:600; }
 body.light .crm-diag-bar-val{ font-weight:700; }
@@ -1233,6 +1233,10 @@ body.light .crm-diag-bar-val{ font-weight:700; }
 /* ── CRM stats colored ── */
 body.light .crm-stat.cs-new .cs-num{ color:#1a56a0; }
 body.light .crm-stat.cs-leads .cs-num{ color:#c0392b; }
+body.light .crm-stat.cs-hot .cs-num{ color:#c0392b; }
+body.light .crm-stat.cs-warm .cs-num{ color:#a05800; }
+body.light .crm-stat.cs-cold .cs-num{ color:#1f527e; }
+body.light .crm-stats-group-lbl{ color:rgba(13,13,13,.5); }
 
 /* ── Profile modal ── */
 body.light .profile-info-card{ background:#f7f7f8; border:1.5px solid rgba(0,0,0,.1); }
@@ -2921,23 +2925,46 @@ body.light .atc-await{color:rgba(13,13,13,.45)}
 body.light .adtask-empty{color:rgba(13,13,13,.38)}
 
 /* ══════ CRM — DATABASE CUSTOMER ══════ */
+.crm-ico-inline{display:inline-flex;align-items:center;justify-content:center;line-height:0;flex-shrink:0}
 .crm-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .crm-search{min-width:190px}
 .crm-filter{width:auto;padding:9px 34px 9px 12px;font-size:12px}
 .crm-btn{font-size:11px;white-space:nowrap}
 .crm-btn svg{margin-right:3px}
-.crm-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+/* v38: redesain kartu statistik CRM — dikelompokkan per prioritas supaya
+   yang paling sering dipakai (tingkat keaktifan utk follow up) terlihat
+   duluan, dengan ikon vektor elegan menggantikan emoji, dan label grup
+   yang jelas supaya moderator/admin langsung paham fungsi tiap angka. */
+.crm-stats{display:flex;flex-direction:column;gap:14px;margin-bottom:18px}
+.crm-stats-group{display:flex;flex-direction:column;gap:8px}
+.crm-stats-group-lbl{display:flex;align-items:center;gap:6px;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--text2);font-weight:700;padding-left:2px}
+.crm-stats-group-lbl svg{opacity:.75;flex-shrink:0}
+.crm-stats-row{display:flex;gap:10px;flex-wrap:wrap}
 .crm-stat{flex:1;min-width:128px;background:linear-gradient(160deg,var(--surface2),rgba(0,0,0,0));border:1px solid var(--border);
-  border-radius:calc(var(--r) + 2px);padding:14px 16px;display:flex;flex-direction:column;gap:3px;
+  border-radius:calc(var(--r) + 2px);padding:13px 15px;display:flex;align-items:center;gap:11px;
   transition:transform var(--trans),border-color var(--trans),box-shadow var(--trans);position:relative;overflow:hidden}
 .crm-stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:currentColor;opacity:.35}
 .crm-stat:hover{transform:translateY(-2px);border-color:var(--border-hi);box-shadow:0 8px 20px rgba(0,0,0,.18)}
-.crm-stat .cs-num{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;line-height:1;color:var(--gold-hi);letter-spacing:.01em}
-.crm-stat .cs-lbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text2);font-weight:600}
+.crm-stat-ico{flex-shrink:0;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  background:currentColor;opacity:1}
+.crm-stat-ico svg{position:relative;color:var(--bg);opacity:1}
+.crm-stat-ico-wrap{flex-shrink:0;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  background:color-mix(in srgb, currentColor 16%, transparent)}
+.crm-stat-ico-wrap svg{color:currentColor}
+.crm-stat-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.crm-stat .cs-num{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;line-height:1;color:var(--gold-hi);letter-spacing:.01em}
+.crm-stat .cs-lbl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);font-weight:600;white-space:nowrap}
 .crm-stat .cs-sub{font-size:10px;color:var(--muted)}
-.crm-stat.cs-money .cs-num{font-size:21px;color:var(--green)}
+.crm-stat.cs-money .cs-num{font-size:19px;color:var(--green)}
 .crm-stat.cs-new{border-color:rgba(126,168,201,.3);color:var(--blue)} .crm-stat.cs-new .cs-num{color:var(--blue)}
 .crm-stat.cs-leads{border-color:rgba(232,112,112,.3);color:var(--red)} .crm-stat.cs-leads .cs-num{color:var(--red)}
+/* Kartu prioritas (tingkat keaktifan) — sedikit lebih besar & menonjol karena paling sering dicek */
+.crm-stat.cs-priority{padding:14px 16px}
+.crm-stat.cs-priority .cs-num{font-size:24px}
+.crm-stat.cs-hot{border-color:rgba(232,112,112,.35);color:#e87070}
+.crm-stat.cs-warm{border-color:rgba(232,184,110,.35);color:#e8b86e}
+.crm-stat.cs-cold{border-color:rgba(126,168,201,.35);color:#7ea8c9}
 .crm-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:calc(var(--r) + 2px);overflow:auto;max-height:62vh;
   box-shadow:0 1px 0 rgba(255,255,255,.02) inset}
 .crm-table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;min-width:1180px}
@@ -2955,11 +2982,15 @@ body.light .adtask-empty{color:rgba(13,13,13,.38)}
 .crm-row-acts{display:flex;gap:6px;white-space:nowrap}
 /* ── v30: Distribusi/persentase customer per PIC (moderator) ── */
 .crm-pic-dist{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:18px}
-.crm-pic-dist-title{font-size:11.5px;font-weight:700;color:var(--text);letter-spacing:.03em;margin-bottom:10px}
-.crm-pic-dist-rows{display:flex;flex-direction:column;gap:8px}
-.crm-pic-row{display:grid;grid-template-columns:110px 1fr 52px 74px;align-items:center;gap:10px;cursor:pointer;padding:4px 6px;border-radius:8px;transition:background var(--trans)}
+.crm-pic-dist-title{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;color:var(--text);letter-spacing:.03em;margin-bottom:12px}
+.crm-pic-dist-title svg{color:var(--gold);flex-shrink:0}
+.crm-pic-dist-rows{display:flex;flex-direction:column;gap:4px}
+.crm-pic-row{display:grid;grid-template-columns:22px 26px 1fr 1fr 52px 74px;align-items:center;gap:10px;cursor:pointer;padding:6px;border-radius:8px;transition:background var(--trans)}
 .crm-pic-row:hover{background:rgba(201,169,110,.08)}
 .crm-pic-row-active{background:rgba(201,169,110,.14)}
+.crm-pic-rank{font-size:10px;font-weight:700;color:var(--muted);text-align:center;font-variant-numeric:tabular-nums}
+.crm-pic-avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:var(--bg);flex-shrink:0;letter-spacing:0}
 .crm-pic-name{font-size:11.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .crm-pic-bar-track{height:7px;border-radius:5px;background:var(--surface2);overflow:hidden;position:relative}
 .crm-pic-bar-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--gold),var(--gold-hi));transition:width var(--trans)}
@@ -3004,6 +3035,7 @@ body.light .crm-pic-row-active{background:rgba(201,169,110,.12)}
 .crm-capacity-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
   padding:10px 14px;margin-bottom:14px}
 .crm-cap-label{font-size:11px;color:var(--text2);margin-bottom:7px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.crm-cap-label svg{color:var(--gold);flex-shrink:0;opacity:.85}
 .crm-cap-label b{color:var(--text)}
 .crm-cap-pct{color:var(--muted)}
 .crm-cap-full{color:#e87070;font-weight:700;letter-spacing:.03em}
@@ -3335,13 +3367,16 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
   background:linear-gradient(160deg,var(--surface),rgba(0,0,0,0));border:1px solid var(--border);border-radius:calc(var(--r) + 2px);
   padding:18px 22px;margin-bottom:16px;
 }
-.crm-diag-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.crm-diag-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 @media(max-width:640px){.crm-diag-grid{grid-template-columns:1fr}}
-.crm-diag-card{}
+.crm-diag-card{background:var(--surface2);border:1px solid var(--border);border-radius:calc(var(--r) + 2px);padding:14px 16px}
+body.light .crm-diag-card2{background:#fbfbfb}
 .crm-diag-title{
-  font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);
+  display:flex;align-items:center;gap:7px;
+  font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--gold);
   font-weight:700;margin-bottom:13px;padding-bottom:8px;border-bottom:1px solid var(--border);
 }
+.crm-diag-title svg{flex-shrink:0;opacity:.9}
 .crm-diag-bars{display:flex;flex-direction:column;gap:9px}
 .crm-diag-bar-row{display:grid;grid-template-columns:80px 1fr 60px;gap:8px;align-items:center}
 .crm-diag-bar-lbl{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -4891,10 +4926,10 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
             </select>
             <!-- v22: Moderator atur target omzet bulanan — hanya tampil saat filter di atas mengarah ke 1 Admin -->
             <button class="btn-g btn-sm crm-btn" id="crm-admin-target-btn" onclick="openAdminTargetModal()" title="Atur target omzet bulanan Admin ini" style="display:none">
-              🎯 <span data-i18n="crmSetAdminTarget">Atur Target Omzet</span>
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:3px"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="3.4" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r=".9" fill="currentColor"/></svg><span data-i18n="crmSetAdminTarget">Atur Target Omzet</span>
             </button>
             <button class="btn-g btn-sm crm-btn" onclick="openCrmLabelManageModal()" title="Buat / edit label warna milikmu">
-              🏷️ Kelola Label
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:3px"><path d="M8.6 1.8H2.6a.8.8 0 00-.8.8v6l7 7 6.2-6.2-7-7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="5" cy="5" r="1" fill="currentColor"/></svg>Kelola Label
             </button>
           </div>
           <div class="crm-tbl-toolbar">
@@ -13950,6 +13985,27 @@ function isValidWA(v) { return /^\+628[0-9]{7,12}$/.test(v); }
    yang wajar) akan mengembalikan null → di UI, nomor itu disembunyikan sama sekali,
    bukan ditampilkan sebagai teks biasa. Nomor yang valid dikembalikan sebagai link
    wa.me yang langsung membuka chat WhatsApp orang tsb saat diklik. */
+// v38: Ikon vektor CRM — set ikon garis tipis (elegan, senada gaya emas
+// aplikasi) untuk menggantikan emoji di seluruh tampilan CRM. Semua ikon
+// pakai stroke="currentColor" supaya otomatis ikut warna kartu/section.
+const CRM_ICONS = {
+  flame: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 1.3s-3.6 3.1-3.6 6.6a3.6 3.6 0 007.2 0c0-1-.4-1.7-.9-2.4-.2.9-.8 1.4-1.3 1.4-.7 0-1-.6-.8-1.3.3-1 .1-2.3-.6-3.1-.1.9-.5 1.6-1 2.1-.7.7-1.4 1.5-1.4 2.6a1.4 1.4 0 002.8 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  sun: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="3.1" stroke="currentColor" stroke-width="1.3"/><path d="M8 1.3v1.6M8 13.1v1.6M14.7 8h-1.6M2.9 8H1.3M12.7 3.3l-1.1 1.1M4.4 11.6l-1.1 1.1M12.7 12.7l-1.1-1.1M4.4 4.4L3.3 3.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
+  snow: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 1v14M8 1L6.3 2.7M8 1l1.7 1.7M8 15l-1.7-1.7M8 15l1.7-1.7M2 4.5l12 7M2 4.5l2.3.3M2 4.5l1-2.1M14 4.5L2 11.5M14 4.5l-2.3.3M14 4.5l-1-2.1M2 11.5l-1-2.1M2 11.5l2.3-.3M14 11.5l1-2.1M14 11.5l-2.3-.3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  users: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="5.2" r="2.2" stroke="currentColor" stroke-width="1.3"/><path d="M1.6 13.4c.5-2.4 2.3-3.8 4.4-3.8s3.9 1.4 4.4 3.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10.6 3.3c1.1.2 1.9 1.1 1.9 2.3 0 1.1-.8 2-1.9 2.3M12.2 9.7c1.7.4 3 1.7 3.4 3.7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
+  wallet: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="4" width="13" height="9.2" rx="1.8" stroke="currentColor" stroke-width="1.3"/><path d="M1.5 6.6h13" stroke="currentColor" stroke-width="1.3"/><circle cx="11.2" cy="10" r=".9" fill="currentColor"/></svg>',
+  cart: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 2h1.6l1.5 8.4h7.7l1.2-5.6H4.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.2" cy="13.6" r="1" fill="currentColor"/><circle cx="11" cy="13.6" r="1" fill="currentColor"/></svg>',
+  sparkle: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 1.5l1.2 4 4 1.2-4 1.2-1.2 4-1.2-4-4-1.2 4-1.2 1.2-4z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>',
+  target: '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="3.4" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r=".9" fill="currentColor"/></svg>',
+  tag: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.6 1.8H2.6a.8.8 0 00-.8.8v6l7 7 6.2-6.2-7-7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="5" cy="5" r="1" fill="currentColor"/></svg>',
+  person: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="5.4" r="2.6" stroke="currentColor" stroke-width="1.3"/><path d="M2.6 14c.7-3 2.8-4.6 5.4-4.6s4.7 1.6 5.4 4.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
+  layers: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 1.5l6 3.3-6 3.3-6-3.3 6-3.3z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M2 8l6 3.3 6-3.3M2 11.2l6 3.3 6-3.3" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/></svg>',
+  chart: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.6 14.4V1.6M1.6 14.4h12.8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><rect x="3.7" y="9" width="2" height="4.4" rx=".4" fill="currentColor"/><rect x="7" y="6" width="2" height="7.4" rx=".4" fill="currentColor"/><rect x="10.3" y="3.2" width="2" height="10.2" rx=".4" fill="currentColor"/></svg>',
+  database: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="8" cy="3.4" rx="5.6" ry="2" stroke="currentColor" stroke-width="1.2"/><path d="M2.4 3.4v9.2c0 1.1 2.5 2 5.6 2s5.6-.9 5.6-2V3.4" stroke="currentColor" stroke-width="1.2"/><path d="M2.4 8c0 1.1 2.5 2 5.6 2s5.6-.9 5.6-2" stroke="currentColor" stroke-width="1.2"/></svg>',
+  crown: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 12.4l-1-6.8 3.2 2.4L8 3l3.8 5 3.2-2.4-1 6.8H2z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M2.4 14h11.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>'
+};
+function crmIco(name, extra) { return `<span class="crm-ico-inline"${extra?` style="${extra}"`:''}>${CRM_ICONS[name]||''}</span>`; }
+
 function crmFormatWaLink(raw) {
   const display = String(raw || '').trim();
   if (!display) return null;
@@ -15010,7 +15066,7 @@ function renderCrmCapacityBar() {
   el.style.display = '';
   el.innerHTML = `
     <div class="crm-cap-label">
-      ${isMod ? 'Total Database (Semua Admin & B2B)' : 'Kapasitas Database Kamu'}:
+      ${crmIco('database')}${isMod ? 'Total Database (Semua Admin & B2B)' : 'Kapasitas Database Kamu'}:
       <b>${Number(crmCapacity.total_customers).toLocaleString('id-ID')}</b> / ${Number(crmCapacity.capacity).toLocaleString('id-ID')}
       ${full ? '<span class="crm-cap-full">● Database Penuh</span>' : `<span class="crm-cap-pct">(${pct}%)</span>`}
     </div>
@@ -15803,7 +15859,7 @@ function renderCRMDiagram(data) {
     const uColors = ['#c9a96e','#7ea8c9','#7abf8e','#d98ec0','#e87070','#e8b86e','#a0c4ff','#ffadad'];
     userChartHtml = `
       <div class="crm-diag-card">
-        <div class="crm-diag-title">Diinput Oleh — Per User</div>
+        <div class="crm-diag-title">${crmIco('person')}Diinput Oleh — Per User</div>
         <div class="crm-diag-bars">
           ${userEntries.map(([uid,n],i) => {
             const um = getUserMeta(uid);
@@ -15822,7 +15878,7 @@ function renderCRMDiagram(data) {
   el.innerHTML = `
     <div class="crm-diag-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
       <div class="crm-diag-card">
-        <div class="crm-diag-title">Customer per Label</div>
+        <div class="crm-diag-title">${crmIco('tag')}Customer per Label</div>
         <div class="crm-diag-bars">
           ${usedLabels.map(l => {
             const n = labelCounts[l.id];
@@ -15843,11 +15899,11 @@ function renderCRMDiagram(data) {
               <div class="crm-diag-bar-val">${unlabeledCount} <span style="color:var(--muted);font-size:9px">(${pctTotal}%)</span></div>
             </div>`;
           })()}
-          ${!usedLabels.length ? `<div class="mt-fu-list-empty">Belum ada label dipakai. Klik "🏷️ Kelola Label" untuk membuat label pertamamu.</div>` : ''}
+          ${!usedLabels.length ? `<div class="mt-fu-list-empty">Belum ada label dipakai. Klik "Kelola Label" untuk membuat label pertamamu.</div>` : ''}
         </div>
       </div>
       <div class="crm-diag-card">
-        <div class="crm-diag-title">Channel / Marketplace</div>
+        <div class="crm-diag-title">${crmIco('layers')}Channel / Marketplace</div>
         <div class="crm-diag-bars">
           ${chEntries.map(([ch,n],i) => {
             const pct = Math.round(n/maxCh*100);
@@ -15863,7 +15919,7 @@ function renderCRMDiagram(data) {
       ${userChartHtml}
       <!-- v5.3: Heat Category chart — elegant labels -->
       <div class="crm-diag-card">
-        <div class="crm-diag-title">Tingkat Keaktifan Customer</div>
+        <div class="crm-diag-title">${crmIco('flame')}Tingkat Keaktifan Customer</div>
         <div class="crm-diag-bars">
           ${(function() {
             var heatDefs = [
@@ -16035,17 +16091,56 @@ async function renderCRM(reload = true) {
     const avg = gOwnerRows.length ? totalSpend/gOwnerRows.length : 0;
     const cnt = s => gOwnerRows.filter(c => crmNormStatus(c.status)===s).length;
     const heatCnt = h => gOwnerRows.filter(c => (c.heat_category || crmComputeHeat(c.total_order, crmNormStatus(c.status))) === h).length;
+    // v38: dikelompokkan 2 baris — baris atas = "Prioritas Follow Up" (paling
+    // sering dicek harian untuk tahu siapa yang perlu dihubungi), baris bawah
+    // = ringkasan angka database secara umum. Ikon vektor menggantikan emoji.
     statsEl.innerHTML = `
-      <div class="crm-stat"><span class="cs-num">${total.toLocaleString('id-ID')}</span><span class="cs-lbl">${t('crmTotalCust')}</span></div>
-      <div class="crm-stat cs-money"><span class="cs-num">${crmFmtRupiah(totalSpend)}</span><span class="cs-lbl">${t('crmTotalSpendStat')}</span></div>
-      <div class="crm-stat"><span class="cs-num">${totalOrders.toLocaleString('id-ID')}</span><span class="cs-lbl">${t('crmTotalOrdersStat')}</span></div>
-      <div class="crm-stat cs-money"><span class="cs-num">${crmFmtRupiah(Math.round(avg))}</span><span class="cs-lbl">${t('crmAvgSpend')}</span></div>
-      <div class="crm-stat cs-new"><span class="cs-num">${cnt('New')}</span><span class="cs-lbl">New</span></div>
-      <div class="crm-stat cs-leads"><span class="cs-num">${cnt('Leads')}</span><span class="cs-lbl">Leads</span></div>
-      <div style="width:1px;background:var(--border);margin:0 4px;align-self:stretch"></div>
-      <div class="crm-stat" style="background:rgba(232,112,112,.06)"><span class="cs-num" style="color:#e87070">${heatCnt('Hot')}</span><span class="cs-lbl">🔥 Panas</span></div>
-      <div class="crm-stat" style="background:rgba(232,184,110,.06)"><span class="cs-num" style="color:#e8b86e">${heatCnt('Warm')}</span><span class="cs-lbl">☀ Hangat</span></div>
-      <div class="crm-stat" style="background:rgba(126,168,201,.06)"><span class="cs-num" style="color:#7ea8c9">${heatCnt('Cold')}</span><span class="cs-lbl">❄ Dingin</span></div>`;
+      <div class="crm-stats-group">
+        <div class="crm-stats-group-lbl">${crmIco('sparkle')} Prioritas Follow Up · Tingkat Keaktifan</div>
+        <div class="crm-stats-row">
+          <div class="crm-stat cs-priority cs-hot" title="Aktif tinggi — order ≥5 atau ditandai manual, prioritas dihubungi lebih dulu">
+            <div class="crm-stat-ico-wrap">${crmIco('flame')}</div>
+            <div class="crm-stat-txt"><span class="cs-num">${heatCnt('Hot')}</span><span class="cs-lbl">Panas (Hot)</span></div>
+          </div>
+          <div class="crm-stat cs-priority cs-warm" title="Cukup aktif — 1–4 order, potensi naik ke Panas">
+            <div class="crm-stat-ico-wrap">${crmIco('sun')}</div>
+            <div class="crm-stat-txt"><span class="cs-num">${heatCnt('Warm')}</span><span class="cs-lbl">Hangat (Warm)</span></div>
+          </div>
+          <div class="crm-stat cs-priority cs-cold" title="Belum ada order / leads baru — perlu pendekatan awal">
+            <div class="crm-stat-ico-wrap">${crmIco('snow')}</div>
+            <div class="crm-stat-txt"><span class="cs-num">${heatCnt('Cold')}</span><span class="cs-lbl">Dingin (Cold)</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="crm-stats-group">
+        <div class="crm-stats-group-lbl">${crmIco('database')} Ringkasan Database</div>
+        <div class="crm-stats-row">
+          <div class="crm-stat">
+            <div class="crm-stat-ico-wrap">${crmIco('users')}</div>
+            <div class="crm-stat-txt"><span class="cs-num">${total.toLocaleString('id-ID')}</span><span class="cs-lbl">${t('crmTotalCust')}</span></div>
+          </div>
+          <div class="crm-stat">
+            <div class="crm-stat-ico-wrap">${crmIco('cart')}</div>
+            <div class="crm-stat-txt"><span class="cs-num">${totalOrders.toLocaleString('id-ID')}</span><span class="cs-lbl">${t('crmTotalOrdersStat')}</span></div>
+          </div>
+          <div class="crm-stat cs-money">
+            <div class="crm-stat-ico-wrap">${crmIco('wallet')}</div>
+            <div class="crm-stat-txt"><span class="cs-num">${crmFmtRupiah(totalSpend)}</span><span class="cs-lbl">${t('crmTotalSpendStat')}</span></div>
+          </div>
+          <div class="crm-stat cs-money">
+            <div class="crm-stat-ico-wrap">${crmIco('wallet')}</div>
+            <div class="crm-stat-txt"><span class="cs-num">${crmFmtRupiah(Math.round(avg))}</span><span class="cs-lbl">${t('crmAvgSpend')}</span></div>
+          </div>
+          <div class="crm-stat cs-new">
+            <div class="crm-stat-ico-wrap">${crmIco('sparkle')}</div>
+            <div class="crm-stat-txt"><span class="cs-num">${cnt('New')}</span><span class="cs-lbl">New</span></div>
+          </div>
+          <div class="crm-stat cs-leads">
+            <div class="crm-stat-ico-wrap">${crmIco('target')}</div>
+            <div class="crm-stat-txt"><span class="cs-num">${cnt('Leads')}</span><span class="cs-lbl">Leads</span></div>
+          </div>
+        </div>
+      </div>`;
   }
 
   // ── v30: Persentase Customer per PIC — khusus moderator ──
@@ -16069,17 +16164,23 @@ async function renderCRM(reload = true) {
         count: s.count, revenue: s.revenue,
         pct: totalAll ? (s.count/totalAll*100) : 0
       })).sort((a,b) => b.count - a.count);
+      const picAvatarColors = ['#c9a96e','#7ea8c9','#7abf8e','#d98ec0','#e87070','#e8b86e','#a0c4ff','#b0a0e8'];
       picEl.style.display = picRows.length ? '' : 'none';
       picEl.innerHTML = picRows.length ? `
-        <div class="crm-pic-dist-title">Distribusi Customer per PIC${totalAll ? ` <span style="font-weight:400;color:var(--text2)">(dari ${totalAll.toLocaleString('id-ID')} total customer)</span>` : ''}</div>
+        <div class="crm-pic-dist-title">${crmIco('person')}Distribusi Customer per PIC${totalAll ? ` <span style="font-weight:400;color:var(--text2)">(dari ${totalAll.toLocaleString('id-ID')} total customer)</span>` : ''}</div>
         <div class="crm-pic-dist-rows">
-          ${picRows.map(o => `
-            <div class="crm-pic-row${o.oid===crmOwnerFilter?' crm-pic-row-active':''}" onclick="crmOwnerFilter='${o.oid==='__unassigned__'?'all':o.oid}';document.getElementById('crm-owner-filter').value=crmOwnerFilter;crmResetPaging();renderCRM();" title="Klik untuk filter ke ${escHtml(o.name)}">
+          ${picRows.map((o,i) => {
+            const initials = (o.name||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+            const avColor = picAvatarColors[i % picAvatarColors.length];
+            return `<div class="crm-pic-row${o.oid===crmOwnerFilter?' crm-pic-row-active':''}" onclick="crmOwnerFilter='${o.oid==='__unassigned__'?'all':o.oid}';document.getElementById('crm-owner-filter').value=crmOwnerFilter;crmResetPaging();renderCRM();" title="Klik untuk filter ke ${escHtml(o.name)}">
+              <span class="crm-pic-rank">#${i+1}</span>
+              <span class="crm-pic-avatar" style="background:${avColor}">${escHtml(initials)}</span>
               <span class="crm-pic-name">${escHtml(o.name)}</span>
-              <div class="crm-pic-bar-track"><div class="crm-pic-bar-fill" style="width:${o.pct}%"></div></div>
+              <div class="crm-pic-bar-track"><div class="crm-pic-bar-fill" style="width:${o.pct}%;background:${avColor}"></div></div>
               <span class="crm-pic-pct">${o.pct.toFixed(1)}%</span>
               <span class="crm-pic-count">${o.count.toLocaleString('id-ID')} cust</span>
-            </div>`).join('')}
+            </div>`;
+          }).join('')}
         </div>` : '';
     } else {
       picEl.style.display = 'none';
