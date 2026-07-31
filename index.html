@@ -5249,11 +5249,17 @@ const LOCAL_USERS = {
   // ─── CONTENT CREATOR ───
   erika:  { pass:'333',      role:'content_creator', name:'Erika',   email:'erika@dhp.id' },
   // ─── HOST LIVE ───
-  hana:   { pass:'780',      role:'host_live',       name:'Hana',    email:'hana@dhp.id' },
+  putri:  { pass:'780',      role:'host_live',       name:'Putri',   email:'putri@dhp.id' },
   kayla:  { pass:'098',      role:'host_live',       name:'Kayla',   email:'kayla@dhp.id' },
   // ─── B2B MARKETING ───
   galih:  { pass:'888',      role:'b2b_marketing',   name:'Galih',   email:'galih@dhp.id' },
 };
+
+// v38: proteksi permanen — buang paksa entry lama 'hana' (sudah diganti
+// 'putri') kalau sempat nyangkut di memori/cache browser dari versi lama,
+// dan cegah dia muncul lagi walau ada race-condition dari sync realtime.
+const HIDDEN_USER_IDS = ['hana'];
+HIDDEN_USER_IDS.forEach(id => { delete LOCAL_USERS[id]; });
 
 // Sovereign Moderator detection
 const HEAD_MODERATOR_ID = 'dickya';
@@ -5430,6 +5436,7 @@ function initRealtimePresence(userId, role, name) {
       .on('postgres_changes', { event:'UPDATE', schema:'public', table:'users' }, payload => {
         const u = payload.new;
         if (!u || !u.user_id) return;
+        if (HIDDEN_USER_IDS.includes(u.user_id)) { delete LOCAL_USERS[u.user_id]; return; }
         const jsRole = roleFromDb(u.role);
         // Update LOCAL_USERS (nama + password)
         if (!LOCAL_USERS[u.user_id]) {
@@ -7069,8 +7076,10 @@ async function loadDataFromDB(isMod) {
   // Users — sync dari DB ke LOCAL_USERS supaya renderUsers & login selalu up-to-date
   const uRes = await dbQ(d => d.from('users').select('*').eq('is_active', true));
   if (uRes?.data) {
-    window._allUsers = uRes.data.map(u => ({ user_id: u.user_id, full_name: u.full_name, role: roleFromDb(u.role), custPrefix: u.cust_prefix || '' }));
-    uRes.data.forEach(u => {
+    const uData = uRes.data.filter(u => !HIDDEN_USER_IDS.includes(u.user_id));
+    window._allUsers = uData.map(u => ({ user_id: u.user_id, full_name: u.full_name, role: roleFromDb(u.role), custPrefix: u.cust_prefix || '' }));
+    HIDDEN_USER_IDS.forEach(id => { delete LOCAL_USERS[id]; });
+    uData.forEach(u => {
       const jsRole = roleFromDb(u.role);
       if (!LOCAL_USERS[u.user_id]) {
         LOCAL_USERS[u.user_id] = { pass: u.password_hash, role: jsRole, name: u.full_name, email: u.email, custPrefix: u.cust_prefix || '' };
