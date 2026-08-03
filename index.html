@@ -2926,6 +2926,12 @@ body.light .adtask-empty{color:rgba(13,13,13,.38)}
 
 /* ══════ CRM — DATABASE CUSTOMER ══════ */
 .crm-ico-inline{display:inline-flex;align-items:center;justify-content:center;line-height:0;flex-shrink:0}
+.fi-rp-wrap{display:flex;align-items:stretch;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+.fi-rp-wrap:focus-within{border-color:var(--gold)}
+.fi-rp-prefix{display:flex;align-items:center;padding:0 10px;background:var(--surface2);color:var(--text2);font-size:13px;font-weight:600;border-right:1px solid var(--border)}
+.fi-rp-input{border:none!important;border-radius:0!important;flex:1;background:transparent!important}
+.fi-rp-input:focus{outline:none;box-shadow:none!important}
+body.light .fi-rp-prefix{background:#f2f2f2;color:#555}
 .crm-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .crm-search{min-width:190px}
 .crm-filter{width:auto;padding:9px 34px 9px 12px;font-size:12px}
@@ -15522,7 +15528,10 @@ function openBudgetModal(id) {
       <input class="fi" id="bg-ed-tanggal" type="date" value="${row?.tanggal || ymdKey(new Date())}"/>
     </div>
     <div class="fg"><label>Jumlah (Rp)</label>
-      <input class="fi" id="bg-ed-jumlah" type="number" min="0" step="1000" value="${row?.jumlah || ''}" placeholder="mis. 500000"/>
+      <div class="fi-rp-wrap">
+        <span class="fi-rp-prefix">Rp</span>
+        <input class="fi fi-rp-input" id="bg-ed-jumlah" type="text" inputmode="numeric" value="${row?.jumlah ? Number(row.jumlah).toLocaleString('id-ID') : ''}" placeholder="500.000" oninput="crmFormatRpInput(this)"/>
+      </div>
     </div>
     <div class="fg"><label>PIC (Penanggung Jawab)</label>
       <select class="fi" id="bg-ed-pic">
@@ -15723,6 +15732,17 @@ function crmParseMoney(v) {
   const n = parseFloat(s);
   return isNaN(n) ? 0 : n;
 }
+// v38: live-format input Rupiah — user cukup ketik angka, titik ribuan
+// otomatis muncul saat mengetik (mis. ketik "3750000" jadi "3.750.000").
+function crmFormatRpInput(el) {
+  const digits = el.value.replace(/[^0-9]/g, '');
+  const cursorFromEnd = el.value.length - el.selectionStart;
+  el.value = digits ? Number(digits).toLocaleString('id-ID') : '';
+  const pos = Math.max(0, el.value.length - cursorFromEnd);
+  try { el.setSelectionRange(pos, pos); } catch(e) {}
+}
+window.crmFormatRpInput = crmFormatRpInput;
+
 function crmParseInt(v) {
   if (v == null || v === '') return 0;
   const n = parseInt(String(v).replace(/[^0-9\-]/g,''), 10);
