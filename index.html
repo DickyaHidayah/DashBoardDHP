@@ -13067,8 +13067,10 @@ async function dhpDiagnosePopup() {
   msg += `Total iklan di DB : ${allAds.length}\n`;
   msg += `Iklan DRAFT       : ${draftAll.length}\n`;
   msg += `Total task di DB  : ${allTasks.length}\n`;
-  if (can.isMod(currentUser?.role)) {
-    msg += `\n(Anda moderator — lihat semua)\n`;
+  if (can.isMod(currentUser?.role) || can.isOwnerView(currentUser?.role)) {
+    msg += can.isOwnerView(currentUser?.role)
+      ? `\n(Anda Owner — mode lihat-semua, sama seperti moderator)\n`
+      : `\n(Anda moderator — lihat semua)\n`;
     if (draftAll.length) {
       msg += `\n⚠ Ada ${draftAll.length} iklan DRAFT (belum dipublish).\n`;
       msg += `Target TIDAK akan melihatnya sampai Anda klik PUBLISH.\n`;
