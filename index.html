@@ -2938,6 +2938,8 @@ body.light .fi-rp-prefix{background:#f2f2f2;color:#555}
 .crm-form-divider-lbl{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:700;white-space:nowrap;display:flex;align-items:center;gap:5px}
 .crm-form-divider-line{flex:1;height:1px;background:var(--border)}
 .crm-form-divider-hint{font-size:9.5px;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0}
+.owner-view-badge{display:inline-flex;align-items:center;gap:3px;font-size:8.5px;font-weight:700;letter-spacing:.06em;
+  color:#e8b86e;background:rgba(232,184,110,.14);border:1px solid rgba(232,184,110,.35);border-radius:20px;padding:1px 7px;margin-left:5px}
 .crm-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .crm-search{min-width:190px}
 .crm-filter{width:auto;padding:9px 34px 9px 12px;font-size:12px}
@@ -5209,7 +5211,8 @@ let roleNames = JSON.parse(localStorage.getItem('dhp_roleNames') || 'null') || {
   content_creator: 'Content Creator',
   host_live:       'Host Live',
   b2b_marketing:   'B2B Marketing',
-  guest:           'Guest'
+  guest:           'Guest',
+  owner:           'Owner (View Only)'
 };
 // One-time migration: replace old keys if present
 (function migrateRoleNames(){
@@ -5243,6 +5246,9 @@ const can = {
   isAdTarget:  r => r === 'admin' || r === 'b2b_marketing',
   // Siapa pun yang berhak akses halaman Ad Schedule (moderator ATAU target)
   canSeeAds:   r => r === 'head_moderator' || r === 'moderator' || r === 'admin' || r === 'b2b_marketing',
+  // v38: akun Owner — read-only, cuma boleh LIHAT beberapa halaman tertentu,
+  // tidak pernah dapat hak edit/tambah/hapus di mana pun.
+  isOwnerView: r => r === 'owner',
   any:         r => !!r,
 };
 
@@ -5265,6 +5271,8 @@ const LOCAL_USERS = {
   kayla:  { pass:'098',      role:'host_live',       name:'Kayla',   email:'kayla@dhp.id' },
   // ─── B2B MARKETING ───
   galih:  { pass:'888',      role:'b2b_marketing',   name:'Galih',   email:'galih@dhp.id' },
+  // ─── OWNER (view-only, tidak ada di database — cukup lokal) ───
+  owner:  { pass:'000',      role:'owner',           name:'Owner',   email:'owner@dhp.id' },
 };
 
 // v38: proteksi permanen — buang paksa entry lama 'hana' (sudah diganti
@@ -5272,6 +5280,18 @@ const LOCAL_USERS = {
 // dan cegah dia muncul lagi walau ada race-condition dari sync realtime.
 const HIDDEN_USER_IDS = ['hana'];
 HIDDEN_USER_IDS.forEach(id => { delete LOCAL_USERS[id]; });
+
+// v38: proteksi read-only untuk akun Owner — dipanggil di awal setiap
+// fungsi tambah/edit/hapus data di CRM, Budget Marketing, dan Studio
+// Konten supaya Owner benar-benar tidak bisa mengubah apa pun.
+function isOwnerRole() { return currentUser?.role === 'owner'; }
+function blockIfOwner(msg) {
+  if (isOwnerRole()) {
+    toast(msg || '👁 Akun Owner hanya bisa melihat data, tidak bisa mengubah/menambah/menghapus.');
+    return true;
+  }
+  return false;
+}
 
 // Sovereign Moderator detection
 const HEAD_MODERATOR_ID = 'dickya';
@@ -6974,6 +6994,31 @@ async function initDashboard() {
   navShow('ns-crm',           canSeeAds);
   navShow('n-crm',            canSeeAds);
 
+  // v38: OWNER (view-only) — override paksa di akhir: sembunyikan semua
+  // menu, lalu nyalakan cuma 6 halaman yang boleh dilihat (Studio Konten,
+  // Live Dashboard, Database Customer, Budget Marketing, Progress Tugas
+  // Tim, Dashboard Semua Role). Tidak ada CRUD di halaman manapun untuknya.
+  const isOwner = can.isOwnerView(r);
+  if (isOwner) {
+    // Matikan dulu semua yang mungkin sudah dinyalakan di atas
+    ['n-mod-tasks','n-my-performance','n-live-studio','ns-live',
+     'ns-manage','n-ad-scheduler','n-ad-customers','n-ad-task',
+     'n-mod-target','n-users','n-settings'
+    ].forEach(id => navShow(id, false));
+    // Nyalakan cuma yang diizinkan
+    navShow('ns-all-dash',        true); navShow('n-all-dashboard',    true);
+    navShow('ns-content',         true); navShow('n-content-studio',   true);
+    navShow('n-live-dashboard',   true);
+    navShow('ns-crm',             true); navShow('n-crm',              true);
+    navShow('ns-admin',           true); navShow('n-team-tasks',       true);
+    navShow('n-budget-marketing', true);
+    // Badge kecil "View Only" di kartu user sidebar
+    const rl = document.getElementById('sb-rlbl');
+    if (rl && !rl.querySelector('.owner-view-badge')) {
+      rl.insertAdjacentHTML('beforeend', ' <span class="owner-view-badge">👁 VIEW ONLY</span>');
+    }
+  }
+
   // Bell tampil untuk semua user — notif login/join terlihat oleh siapa pun.
   document.getElementById('notif-bell').style.display   = '';
 
@@ -7010,7 +7055,11 @@ async function initDashboard() {
     // supaya task baru tetap masuk lewat polling.
     try { initAdRealtime(); }
     catch (e) { console.warn('[DHP] initAdRealtime gagal:', e); }
-    // CRM — muat data awal + realtime sync antar admin
+  }
+  // CRM — muat data awal + realtime sync antar admin. Owner (view-only)
+  // juga perlu ini supaya halaman Database Customer terisi, meski dia
+  // tidak akan pernah bisa CRUD (sudah diblok di fungsi masing-masing).
+  if (canSeeAds || isOwner) {
     try { await loadCRM(); initCRMRealtime(); }
     catch (e) { console.warn('[DHP] CRM init gagal:', e); }
   }
@@ -7061,10 +7110,12 @@ async function initDashboard() {
   // admin & b2b & moderator → langsung ke Ads Schedule (sistem ads jadi pusat kerja mereka).
   // Overview dihapus total — tidak ada lagi halaman kosong untuk siapa pun.
   try {
-    const homePage = isContent      ? 'content_studio' :
+    const homePage = isOwner        ? 'all_dashboard' :
+                     isContent      ? 'content_studio' :
                      isLive         ? 'live_studio'    :
                                        'ad_scheduler';
     const homeNavBtn = document.getElementById(
+      homePage === 'all_dashboard'  ? 'n-all-dashboard'  :
       homePage === 'content_studio' ? 'n-content-studio' :
       homePage === 'live_studio'    ? 'n-live-studio'    :
                                       'n-ad-scheduler'
@@ -7073,7 +7124,8 @@ async function initDashboard() {
   } catch (e) {
     console.warn('[DHP] navigasi home gagal, fallback:', e);
     // Fallback manual: paksa tampilkan halaman kerja tanpa lewat navTo
-    const fallback = isContent ? 'content_studio'
+    const fallback = isOwner ? 'all_dashboard'
+                   : isContent ? 'content_studio'
                    : isLive ? 'live_studio'
                    : 'ad_scheduler';
     document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
@@ -7548,6 +7600,7 @@ function renderCcDayTable() {
 /* ── Moderator ATAU Content Creator (slot miliknya sendiri): isi/edit 1 slot
    konten (tema, script, deadline, jam upload, link referensi) ── */
 function openCcSlotModal(slotNo) {
+  if (blockIfOwner()) return;
   const isMod = can.isMod(currentUser?.role);
   const isOwnCreator = currentUser && can.isContent(currentUser.role) && currentUser.id === ccTargetId;
   if (!isMod && !isOwnCreator) return;
@@ -7615,6 +7668,7 @@ function ccOnThemeTagChange(sel) {
 }
 
 async function ccSaveNewThemeTag() {
+  if (blockIfOwner()) return;
   if (!db) { toast('Supabase tidak aktif'); return; }
   const input = document.getElementById('cc-ed-theme-tag-new');
   const label = input.value.trim();
@@ -7643,6 +7697,7 @@ function ccNormalizeLink(url) {
 }
 
 async function saveCcSlot(slotNo, slotId) {
+  if (blockIfOwner()) return;
   if (!db) { toast('Supabase tidak aktif'); return; }
   const themeTagSel = document.getElementById('cc-ed-theme-tag').value;
   const themeTag = themeTagSel === '__add_new__' ? '' : themeTagSel;
@@ -7687,6 +7742,7 @@ async function saveCcSlot(slotNo, slotId) {
 }
 
 async function deleteCcSlot(slotId) {
+  if (blockIfOwner()) return;
   if (!db) { toast('Supabase tidak aktif'); return; }
   const isMod = can.isMod(currentUser?.role);
   const isOwnCreator = currentUser && can.isContent(currentUser.role) && currentUser.id === ccTargetId;
@@ -7703,6 +7759,7 @@ async function deleteCcSlot(slotId) {
 /* ── Moderator ATAU Content Creator (slot miliknya sendiri): pindahkan
    slot konten yang sudah diisi ke hari (dan/atau slot) lain ── */
 function openCcMoveModal(slotId) {
+  if (blockIfOwner()) return;
   const isMod = can.isMod(currentUser?.role);
   const isOwnCreator = currentUser && currentUser.id === ccTargetId && can.isContent(currentUser.role);
   if (!isMod && !isOwnCreator) return;
@@ -7736,6 +7793,7 @@ function openCcMoveModal(slotId) {
 }
 
 async function saveCcMove(slotId) {
+  if (blockIfOwner()) return;
   if (!db) { toast('Supabase tidak aktif'); return; }
   const newDate = document.getElementById('cc-mv-date').value;
   const newSlot = parseInt(document.getElementById('cc-mv-slot').value, 10);
@@ -7792,6 +7850,7 @@ function openCcProgressModal(slotId) {
 }
 
 async function saveCcProgress(slotId) {
+  if (blockIfOwner()) return;
   if (!db) { toast('Supabase tidak aktif'); return; }
   const status = document.getElementById('cc-prog-status').value;
   const script = document.getElementById('cc-prog-script').value.trim();
@@ -7840,6 +7899,7 @@ function openCcAccModal(slotId) {
 }
 
 async function saveCcAcc(slotId, approve) {
+  if (blockIfOwner()) return;
   if (!db) { toast('Supabase tidak aktif'); return; }
   const note = (document.getElementById('cc-acc-note')?.value || '').trim();
   const res = await dbQ(d => d.rpc('moderator_review_content_progress', {
@@ -14881,6 +14941,7 @@ function crmMyLabels() {
 
 // ── Modal: kelola label milik user (buat/edit/hapus, maks 5) ──
 function openCrmLabelManageModal() {
+  if (blockIfOwner()) return;
   const mine = crmMyLabels();
   const usedColors = mine.map(l => l.color);
   const rowsHtml = mine.map(l => `
@@ -15346,6 +15407,7 @@ async function loadAdminTargetProgress(uid) {
 
 /* ── Moderator: buka modal atur target omzet untuk Admin yang lagi dipilih di filter CRM ── */
 async function openAdminTargetModal() {
+  if (blockIfOwner()) return;
   if (!can.isMod(currentUser?.role)) return;
   const uid = crmOwnerFilter;
   if (!uid || uid === 'all') { toast('Pilih 1 Admin dulu di filter di atas'); return; }
@@ -15370,6 +15432,7 @@ async function openAdminTargetModal() {
 window.openAdminTargetModal = openAdminTargetModal;
 
 async function saveAdminTarget(uid) {
+  if (blockIfOwner()) return;
   if (!db) { toast('Supabase tidak aktif'); return; }
   const amount = crmParseInt(document.getElementById('at-ed-target').value);
   const now = new Date();
@@ -15518,6 +15581,7 @@ function renderBudgetTable() {
 window.renderBudgetTable = renderBudgetTable;
 
 function openBudgetModal(id) {
+  if (blockIfOwner()) return;
   if (!can.isMod(currentUser?.role)) return;
   const row = id ? budgetCache.find(r => r.id === id) : null;
   document.getElementById('m-title').textContent = row ? 'Edit Pengeluaran Budget' : 'Tambah Pengeluaran Budget';
@@ -15558,6 +15622,7 @@ function openBudgetModal(id) {
 window.openBudgetModal = openBudgetModal;
 
 async function saveBudgetEntry(id) {
+  if (blockIfOwner()) return;
   if (!db) { toast('Supabase tidak aktif'); return; }
   const kategori = document.getElementById('bg-ed-kategori').value;
   const tanggal  = document.getElementById('bg-ed-tanggal').value;
@@ -15583,6 +15648,7 @@ async function saveBudgetEntry(id) {
 window.saveBudgetEntry = saveBudgetEntry;
 
 async function deleteBudgetEntry(id) {
+  if (blockIfOwner()) return;
   if (!db) { toast('Supabase tidak aktif'); return; }
   if (!confirm('Hapus data pengeluaran ini? Tindakan ini tidak bisa dibatalkan.')) return;
   const res = await dbQ(d => d.rpc('moderator_delete_budget', { p_user_id: currentUser.id, p_budget_id: id }));
@@ -16332,6 +16398,7 @@ async function renderCRM(reload = true) {
 
 // ── ADD / EDIT MODAL ──
 function openCRMModal(idx) {
+  if (blockIfOwner()) return;
   const editing = (typeof idx === 'number' && idx >= 0);
   const c = editing ? crmData[idx] : {};
   // v23-FIX: `isAdsEntry` dipakai di bawah tapi sebelumnya TIDAK PERNAH didefinisikan —
@@ -16396,9 +16463,9 @@ function openCRMModal(idx) {
     </div>
 
     <div class="crm-form-divider">
-      <span class="crm-form-divider-lbl">${crmIco('cart')} Riwayat Transaksi</span>
+      <span class="crm-form-divider-lbl">${crmIco('cart')} Riwayat Transaksi <span style="color:var(--muted);font-weight:600">(Opsional)</span></span>
       <span class="crm-form-divider-line"></span>
-      <span class="crm-form-divider-hint">isi kalau sudah pernah order</span>
+      <span class="crm-form-divider-hint">boleh dikosongkan kalau belum pernah order</span>
     </div>
     <div class="fg"><label>${t('crmColFirstOrder')}</label><input class="fi" id="crm-f-first" type="date" value="${crmToDateInput(c.first_order)}"/></div>
     <div style="display:flex;gap:10px">
@@ -16435,6 +16502,7 @@ function crmToDateInput(v){
 }
 
 async function saveCRMCustomer(idx) {
+  if (blockIfOwner()) return;
   const nama = document.getElementById('crm-f-nama').value.trim();
   if (!nama) { toast(t('crmFillName')); return; }
   // v36b: WA sekarang input lokal + kotak "+62" tetap — gabungkan di sini.
@@ -16532,6 +16600,7 @@ async function saveCRMCustomer(idx) {
 }
 
 async function deleteCRM(idx) {
+  if (blockIfOwner()) return;
   const c = crmData[idx]; if (!c) return;
   const ok = await uiConfirm({ title:t('deleteTitle'), message:`${t('crmDeleteConfirm')}\n\n${c.nama||c.id_customer}`, okText:t('cfmDelete'), tone:'danger', icon:'danger' });
   if (!ok) return;
@@ -17532,18 +17601,24 @@ async function submitUnlockRequest() {
    ═══════════════════════════════════════════════════════════ */
 function navTo(page, btn) {
   const r = currentUser.role;
+  const isOwnerNav = can.isOwnerView(r);
+  // v38: Owner (view-only) boleh MASUK ke 6 halaman ini tanpa dianggap
+  // moderator penuh — tapi tetap tidak bisa CRUD (sudah diblok terpisah
+  // di tiap fungsi tambah/edit/hapus).
+  const OWNER_ALLOWED_PAGES = ['team_tasks','budget_marketing','content_studio','live_dashboard','all_dashboard','crm'];
+  if (isOwnerNav && !OWNER_ALLOWED_PAGES.includes(page)) { toast('👁 Akun Owner hanya bisa lihat halaman yang diizinkan.'); return; }
   // Moderator-only pages
-  if (['team_tasks','users','mod_target','budget_marketing'].includes(page) && !can.isMod(r)) { toast('Moderator access required'); return; }
+  if (['team_tasks','users','mod_target','budget_marketing'].includes(page) && !can.isMod(r) && !isOwnerNav) { toast('Moderator access required'); return; }
   // Manage (Ads) pages: moderator + admin/b2b (target)
   if (['ad_scheduler','ad_customers','ad_task'].includes(page) && !can.canSeeAds(r)) { toast(t('adAccessReq')); return; }
   // Manage CRM page: moderator + admin/b2b
-  if (page === 'crm' && !can.canSeeAds(r)) { toast(t('adAccessReq')); return; }
+  if (page === 'crm' && !can.canSeeAds(r) && !isOwnerNav) { toast(t('adAccessReq')); return; }
   if (page === 'settings' && currentUser.id !== HEAD_MODERATOR_ID) { toast('Sovereign Moderator access required'); return; }
   // Studio pages — role-specific
-  if (page === 'content_studio' && !can.isContent(r) && !can.isMod(r)) { toast('Content Creator access required'); return; }
+  if (page === 'content_studio' && !can.isContent(r) && !can.isMod(r) && !isOwnerNav) { toast('Content Creator access required'); return; }
   if (page === 'live_studio'    && !can.isHostLive(r) && !can.isMod(r)) { toast('Host Live access required'); return; }
-  if (page === 'live_dashboard' && !can.isMod(r)) { toast('Moderator access required'); return; }
-  if (page === 'all_dashboard'  && !can.isMod(r)) { toast('Moderator access required'); return; }
+  if (page === 'live_dashboard' && !can.isMod(r) && !isOwnerNav) { toast('Moderator access required'); return; }
+  if (page === 'all_dashboard'  && !can.isMod(r) && !isOwnerNav) { toast('Moderator access required'); return; }
 
   document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
   const target = document.getElementById(`pg-${page}`); if (target) target.classList.add('active');
