@@ -2940,6 +2940,32 @@ body.light .fi-rp-prefix{background:#f2f2f2;color:#555}
 .crm-form-divider-hint{font-size:9.5px;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0}
 .owner-view-badge{display:inline-flex;align-items:center;gap:3px;font-size:8.5px;font-weight:700;letter-spacing:.06em;
   color:#e8b86e;background:rgba(232,184,110,.14);border:1px solid rgba(232,184,110,.35);border-radius:20px;padding:1px 7px;margin-left:5px}
+
+/* v39: OWNER (view-only) — sembunyikan total setiap tombol/aksi yang
+   ditandai sebagai "aksi tulis" oleh ownerApplyReadOnly(). */
+body.owner-view .owner-hidden-action{ display:none!important; }
+
+/* v39: OWNER (view-only) — tampilan dibuat lebih besar, lega, dan kontras
+   supaya nyaman dibaca (akun ini dipakai orang tua). Hanya berlaku untuk
+   akun Owner, tidak mengubah tampilan role lain. */
+body.owner-view{ font-size:15.5px; }
+body.owner-view .topbar, body.owner-view .sidebar{ font-size:1em; }
+body.owner-view .nav-item{ padding:12px 14px!important; font-size:14px!important; font-weight:600; }
+body.owner-view .nav-item svg{ width:19px; height:19px; }
+body.owner-view .sp-head h1, body.owner-view .page-title{ font-size:1.28em!important; }
+body.owner-view .stat-num, body.owner-view .crm-stat b{ font-size:1.12em!important; }
+body.owner-view table{ font-size:1.05em!important; }
+body.owner-view th, body.owner-view td{ padding-top:12px!important; padding-bottom:12px!important; }
+body.owner-view .crm-stat, body.owner-view .ovt-owner-card, body.owner-view .card{ padding:16px 18px!important; }
+body.owner-view .owner-view-badge{ font-size:11px; padding:3px 11px; font-weight:800; }
+/* Banner penjelas di atas setiap halaman, supaya jelas ini mode "lihat saja" */
+body.owner-view .owner-readonly-banner{
+  display:flex; align-items:center; gap:8px; background:rgba(232,184,110,.12);
+  border:1px solid rgba(232,184,110,.35); color:var(--gold-hi,#e8b86e);
+  border-radius:12px; padding:10px 16px; font-size:13px; font-weight:600;
+  margin-bottom:16px;
+}
+.owner-readonly-banner{ display:none; }
 .crm-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .crm-search{min-width:190px}
 .crm-filter{width:auto;padding:9px 34px 9px 12px;font-size:12px}
@@ -4026,6 +4052,13 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
 
     <!-- CONTENT -->
     <div class="content">
+
+      <!-- v39: Banner penjelas khusus akun Owner (view-only) — muncul di atas
+           halaman apapun yang sedang dibuka, dikendalikan lewat body.owner-view -->
+      <div class="owner-readonly-banner">
+        <span style="font-size:17px">👁</span>
+        <span>Mode Lihat Saja — semua data di bawah ini <b>selalu real-time</b>, tapi tidak ada yang bisa ditambah/diubah/dihapus dari akun ini.</span>
+      </div>
 
       <!-- ①b MY TASKS — catatan pekerjaan pribadi, deadline & notifikasi -->
       <div class="sp active" id="pg-mod_tasks">
@@ -5292,6 +5325,85 @@ function blockIfOwner(msg) {
   }
   return false;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   v39: OWNER READ-ONLY ENGINE — perlindungan terpusat, berlaku
+   di SEMUA halaman (bukan cuma yang sudah dikasih blockIfOwner()
+   manual). Dua lapis:
+   1) ownerApplyReadOnly()   → sapu DOM, sembunyikan visual semua
+      tombol/aksi yang sifatnya tambah/ubah/hapus/kirim/dst.
+   2) ownerGlobalClickGuard  → jaga-jaga terakhir: kalaupun ada
+      tombol yang lolos dari sapuan (mis. baru dirender realtime),
+      klik ke fungsi tulis tetap dibatalkan + toast peringatan.
+   Nama fungsi yang PASTI aman dilihat (bukan aksi tulis) sengaja
+   TIDAK kena filter: navigasi, filter/sort/paging, export, refresh,
+   ganti tema/bahasa, buka detail/recap.
+   ═══════════════════════════════════════════════════════════ */
+const OWNER_WRITE_KEYWORDS = [
+  'save','delete','remove','submit','publish','approve','reject','decide',
+  'complete','assign','clear','add','create','update','confirm','reset',
+  'changerole','edit','open','pick','select','target','import','upload',
+  'mark','_confirm','_save','cancel','request'
+];
+// Fungsi yang namanya kebetulan mengandung kata kunci di atas TAPI
+// sebenarnya cuma untuk MELIHAT — jangan diblokir.
+const OWNER_WRITE_EXCEPTIONS = ['openrecapmodal','openmyprofile','lsselectdate','navto'];
+function ownerActionFnName(onclickAttr) {
+  const s = (onclickAttr || '').trim().toLowerCase();
+  const m = s.match(/^[a-z_][a-z0-9_]*/);
+  return m ? m[0] : s;
+}
+function ownerIsWriteAction(onclickAttr) {
+  const fn = ownerActionFnName(onclickAttr);
+  if (!fn || OWNER_WRITE_EXCEPTIONS.includes(fn)) return false;
+  return OWNER_WRITE_KEYWORDS.some(kw => fn.includes(kw));
+}
+function ownerApplyReadOnly(root) {
+  if (!isOwnerRole()) return;
+  const scope = root || document;
+  scope.querySelectorAll('[onclick]').forEach(el => {
+    if (ownerIsWriteAction(el.getAttribute('onclick'))) {
+      el.classList.add('owner-hidden-action');
+    }
+  });
+  // Form input/textarea/select di dalam modal add/edit yang masih sempat
+  // ter-render (jaga-jaga) ikut dikunci supaya tidak bisa diisi.
+  scope.querySelectorAll('.modal input, .modal select, .modal textarea').forEach(el => {
+    if (!el.dataset.ownerLocked) { el.dataset.ownerLocked = '1'; el.setAttribute('readonly', 'readonly'); el.disabled = true; }
+  });
+}
+// Sapu ulang otomatis tiap kali konten dashboard berubah (data realtime
+// masuk, halaman baru dirender, dll) — supaya Owner tidak pernah melihat
+// tombol tulis yang "lolos" karena baru muncul setelah sapuan awal.
+let _ownerSweepRAF = null;
+function ownerScheduleSweep() {
+  if (!isOwnerRole()) return;
+  if (_ownerSweepRAF) return;
+  _ownerSweepRAF = requestAnimationFrame(() => { _ownerSweepRAF = null; try { ownerApplyReadOnly(); } catch(e){} });
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const dashEl = document.getElementById('dash');
+  if (!dashEl || !window.MutationObserver) return;
+  const mo = new MutationObserver(() => ownerScheduleSweep());
+  mo.observe(dashEl, { childList: true, subtree: true });
+});
+// Lapis terakhir: cegat klik ke fungsi tulis apapun, di manapun, kapanpun.
+document.addEventListener('click', function(e) {
+  if (!isOwnerRole()) return;
+  let el = e.target;
+  while (el && el !== document) {
+    const oc = el.getAttribute && el.getAttribute('onclick');
+    if (oc) {
+      if (ownerIsWriteAction(oc)) {
+        e.preventDefault(); e.stopPropagation();
+        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+        blockIfOwner();
+      }
+      return;
+    }
+    el = el.parentElement;
+  }
+}, true);
 
 // Sovereign Moderator detection
 const HEAD_MODERATOR_ID = 'dickya';
@@ -6913,6 +7025,7 @@ function handleLogout() {
   currentUser = null;
   document.body.classList.remove('is-mod');
   document.body.classList.remove('is-head-mod');
+  document.body.classList.remove('owner-view');
   document.body.className = document.body.className.replace(/\brole-theme-\S+/g, '').trim();
   ['_clockIv','_rtIv'].forEach(k => { if (window[k]) { clearInterval(window[k]); window[k] = null; } });
   document.getElementById('pres-fab').classList.remove('visible');
@@ -6957,66 +7070,66 @@ async function initDashboard() {
   const isContent = can.isContent(r);
   const isLive   = can.isHostLive(r);
   const isB2B    = can.isB2B(r);
+  // v39: Owner (view-only) — sekarang diperlakukan setara moderator untuk
+  // KEPERLUAN MELIHAT (nav + data realtime), kecuali Settings. Semua
+  // tombol tambah/ubah/hapus tetap diblokir total lewat ownerApplyReadOnly()
+  // + ownerGlobalClickGuard (lihat dekat definisi blockIfOwner()).
+  const isOwner  = can.isOwnerView(r);
+  const modOrOwner = isMod || isOwner;
 
   // ─── Default nav visibility ───
   const navShow = (id, on) => { const el = document.getElementById(id); if (el) el.style.display = on ? '' : 'none'; };
 
   // Studio section — dipisah per role: Content Creator & Host Live tidak digabung
   // Moderator BISA masuk Studio Konten untuk kelola kalender/isi tema-script tiap Content Creator.
-  navShow('ns-content',       isContent || isMod);
-  navShow('n-content-studio', isContent || isMod);
-  navShow('ns-live',          isLive || isMod);
-  navShow('n-live-studio',    isLive || isMod);
-  navShow('n-live-dashboard', isMod);   // Live Dashboard (perbandingan seluruh host) — khusus moderator
-  navShow('ns-all-dash',      isMod);   // Overview Tim — Dashboard Semua Role, khusus moderator
-  navShow('n-all-dashboard',  isMod);
+  navShow('ns-content',       isContent || modOrOwner);
+  navShow('n-content-studio', isContent || modOrOwner);
+  navShow('ns-live',          isLive || modOrOwner);
+  navShow('n-live-studio',    isLive || modOrOwner);
+  navShow('n-live-dashboard', modOrOwner);   // Live Dashboard (perbandingan seluruh host)
+  navShow('ns-all-dash',      modOrOwner);   // Overview Tim — Dashboard Semua Role
+  navShow('n-all-dashboard',  modOrOwner);
   navShow('n-mod-tasks',      true);    // Tugas Saya — tersedia untuk semua role
   navShow('n-my-performance', true);    // Performa Saya — dashboard bulanan bergrafik, tersedia untuk semua role
 
-  // Administration (Moderator+)
-  navShow('ns-admin',         isMod);
-  navShow('n-team-tasks',     isMod);
-  navShow('n-mod-target',     isMod);
-  navShow('n-budget-marketing', isMod);
-  navShow('n-users',          isMod);
-  // Settings — Sovereign only (otherwise moderator can rename their own role)
+  // Administration (Moderator + Owner-view)
+  navShow('ns-admin',         modOrOwner);
+  navShow('n-team-tasks',     modOrOwner);
+  navShow('n-mod-target',     modOrOwner);
+  navShow('n-budget-marketing', modOrOwner);
+  navShow('n-users',          modOrOwner);
+  // Settings — Sovereign only (config aplikasi, bukan data; tetap tertutup
+  // untuk Owner supaya dia tidak bisa mengganti nama role/branding, dll).
   navShow('n-settings',       isHead);
 
   // Manage Ads — Ads Schedule / Ads Customers / Ads Task
   // moderator (kelola penuh) + admin/b2b (lihat task, isi leads, lihat customers)
-  const canSeeAds = can.canSeeAds(r);
+  // + owner (lihat semua, view only)
+  const canSeeAds = can.canSeeAds(r) || isOwner;
   navShow('ns-manage',        canSeeAds);
   navShow('n-ad-scheduler',   canSeeAds);
   navShow('n-ad-customers',   canSeeAds);
   navShow('n-ad-task',        canSeeAds);
 
-  // Manage CRM — Database Customer (moderator + admin + b2b)
+  // Manage CRM — Database Customer (moderator + admin + b2b + owner)
   navShow('ns-crm',           canSeeAds);
   navShow('n-crm',            canSeeAds);
 
-  // v38: OWNER (view-only) — override paksa di akhir: sembunyikan semua
-  // menu, lalu nyalakan cuma 6 halaman yang boleh dilihat (Studio Konten,
-  // Live Dashboard, Database Customer, Budget Marketing, Progress Tugas
-  // Tim, Dashboard Semua Role). Tidak ada CRUD di halaman manapun untuknya.
-  const isOwner = can.isOwnerView(r);
+  // v39: OWNER (view-only) — sekarang mendapat akses navigasi PENUH setara
+  // moderator (semua menu di atas sudah pakai modOrOwner/canSeeAds), kecuali
+  // Settings. Yang membedakan Owner dari moderator murni cuma satu hal:
+  // tidak ada satupun tombol tambah/ubah/hapus yang bisa dia jalankan —
+  // itu ditangani terpusat oleh ownerApplyReadOnly() + ownerGlobalClickGuard.
   if (isOwner) {
-    // Matikan dulu semua yang mungkin sudah dinyalakan di atas
-    ['n-mod-tasks','n-my-performance','n-live-studio','ns-live',
-     'ns-manage','n-ad-scheduler','n-ad-customers','n-ad-task',
-     'n-mod-target','n-users','n-settings'
-    ].forEach(id => navShow(id, false));
-    // Nyalakan cuma yang diizinkan
-    navShow('ns-all-dash',        true); navShow('n-all-dashboard',    true);
-    navShow('ns-content',         true); navShow('n-content-studio',   true);
-    navShow('n-live-dashboard',   true);
-    navShow('ns-crm',             true); navShow('n-crm',              true);
-    navShow('ns-admin',           true); navShow('n-team-tasks',       true);
-    navShow('n-budget-marketing', true);
+    document.body.classList.add('owner-view');
     // Badge kecil "View Only" di kartu user sidebar
     const rl = document.getElementById('sb-rlbl');
     if (rl && !rl.querySelector('.owner-view-badge')) {
       rl.insertAdjacentHTML('beforeend', ' <span class="owner-view-badge">👁 VIEW ONLY</span>');
     }
+    setTimeout(() => { try { ownerApplyReadOnly(); } catch(e) { console.warn('[DHP] ownerApplyReadOnly gagal:', e); } }, 60);
+  } else {
+    document.body.classList.remove('owner-view');
   }
 
   // Bell tampil untuk semua user — notif login/join terlihat oleh siapa pun.
@@ -17602,21 +17715,21 @@ async function submitUnlockRequest() {
 function navTo(page, btn) {
   const r = currentUser.role;
   const isOwnerNav = can.isOwnerView(r);
-  // v38: Owner (view-only) boleh MASUK ke 6 halaman ini tanpa dianggap
-  // moderator penuh — tapi tetap tidak bisa CRUD (sudah diblok terpisah
-  // di tiap fungsi tambah/edit/hapus).
-  const OWNER_ALLOWED_PAGES = ['team_tasks','budget_marketing','content_studio','live_dashboard','all_dashboard','crm'];
-  if (isOwnerNav && !OWNER_ALLOWED_PAGES.includes(page)) { toast('👁 Akun Owner hanya bisa lihat halaman yang diizinkan.'); return; }
+  // v39: Owner (view-only) sekarang bisa MASUK ke semua halaman yang bisa
+  // dilihat moderator (kecuali Settings) — persis seperti moderator. Yang
+  // membedakan cuma satu hal: tidak ada tombol tambah/ubah/hapus yang bisa
+  // dia jalankan di halaman manapun (diblokir terpusat, lihat blockIfOwner,
+  // ownerApplyReadOnly & ownerGlobalClickGuard).
   // Moderator-only pages
   if (['team_tasks','users','mod_target','budget_marketing'].includes(page) && !can.isMod(r) && !isOwnerNav) { toast('Moderator access required'); return; }
-  // Manage (Ads) pages: moderator + admin/b2b (target)
-  if (['ad_scheduler','ad_customers','ad_task'].includes(page) && !can.canSeeAds(r)) { toast(t('adAccessReq')); return; }
-  // Manage CRM page: moderator + admin/b2b
+  // Manage (Ads) pages: moderator + admin/b2b (target) + owner (view only)
+  if (['ad_scheduler','ad_customers','ad_task'].includes(page) && !can.canSeeAds(r) && !isOwnerNav) { toast(t('adAccessReq')); return; }
+  // Manage CRM page: moderator + admin/b2b + owner (view only)
   if (page === 'crm' && !can.canSeeAds(r) && !isOwnerNav) { toast(t('adAccessReq')); return; }
   if (page === 'settings' && currentUser.id !== HEAD_MODERATOR_ID) { toast('Sovereign Moderator access required'); return; }
   // Studio pages — role-specific
   if (page === 'content_studio' && !can.isContent(r) && !can.isMod(r) && !isOwnerNav) { toast('Content Creator access required'); return; }
-  if (page === 'live_studio'    && !can.isHostLive(r) && !can.isMod(r)) { toast('Host Live access required'); return; }
+  if (page === 'live_studio'    && !can.isHostLive(r) && !can.isMod(r) && !isOwnerNav) { toast('Host Live access required'); return; }
   if (page === 'live_dashboard' && !can.isMod(r) && !isOwnerNav) { toast('Moderator access required'); return; }
   if (page === 'all_dashboard'  && !can.isMod(r) && !isOwnerNav) { toast('Moderator access required'); return; }
 
@@ -17625,6 +17738,8 @@ function navTo(page, btn) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if (btn) btn.classList.add('active');
   loadPageData(page);
+  // Owner (view-only): sapu ulang tombol tambah/ubah/hapus di halaman baru
+  if (isOwnerNav) setTimeout(() => { try { ownerApplyReadOnly(); } catch(e) {} }, 60);
   // Auto-close drawer on mobile after navigating
   navClose();
 }
