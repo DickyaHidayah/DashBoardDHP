@@ -2932,6 +2932,12 @@ body.light .adtask-empty{color:rgba(13,13,13,.38)}
 .fi-rp-input{border:none!important;border-radius:0!important;flex:1;background:transparent!important}
 .fi-rp-input:focus{outline:none;box-shadow:none!important}
 body.light .fi-rp-prefix{background:#f2f2f2;color:#555}
+/* v38: pembagi section di form Add/Edit Customer — supaya alurnya jelas
+   mana data inti (selalu diisi) vs data transaksi (tergantung heat) */
+.crm-form-divider{display:flex;align-items:center;gap:8px;margin:16px 0 10px;padding-top:2px}
+.crm-form-divider-lbl{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:700;white-space:nowrap;display:flex;align-items:center;gap:5px}
+.crm-form-divider-line{flex:1;height:1px;background:var(--border)}
+.crm-form-divider-hint{font-size:9.5px;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0}
 .crm-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .crm-search{min-width:190px}
 .crm-filter{width:auto;padding:9px 34px 9px 12px;font-size:12px}
@@ -13522,6 +13528,7 @@ function openAdModal(ymd, id) {
             <option value="TikTok" ${a&&a.channel==='TikTok'?'selected':''}>TikTok</option>
             <option value="Instagram" ${a&&a.channel==='Instagram'?'selected':''}>Instagram</option>
             <option value="WhatsApp" ${a&&a.channel==='WhatsApp'?'selected':''}>WhatsApp</option>
+            <option value="Canvasing" ${a&&a.channel==='Canvasing'?'selected':''}>Canvasing</option>
             <option value="Lainnya" ${a&&a.channel==='Lainnya'?'selected':''}>Lainnya</option>
           </select>
         </div>
@@ -16254,7 +16261,7 @@ async function renderCRM(reload = true) {
     // v5.2: channel_is_ads → tampilkan ikon kunci (tidak bisa diubah manual)
     const chRaw = (c.channel||'').trim();
     const isLeadsCh = c.channel_is_ads || chRaw.startsWith('Leads ·') || chRaw.toLowerCase() === 'leads';
-    const chColorMap = {'Shopee':'#e87070','TikTok':'#7ea8c9','Instagram':'#d98ec0','WhatsApp':'#7abf8e','Tokopedia':'#e8b86e','Live':'#d98ec0'};
+    const chColorMap = {'Shopee':'#e87070','TikTok':'#7ea8c9','Instagram':'#d98ec0','WhatsApp':'#7abf8e','Canvasing':'#b08d57','Tokopedia':'#e8b86e','Live':'#d98ec0'};
     const chBaseColor = isLeadsCh ? '#7abf8e' : (Object.keys(chColorMap).find(k => chRaw.includes(k)) ? chColorMap[Object.keys(chColorMap).find(k => chRaw.includes(k))] : '#c9a96e');
     const lockIcon = isLeadsCh
       ? `<span class="crm-ads-lock" title="Channel dari Ads — otomatis">
@@ -16334,7 +16341,7 @@ function openCRMModal(idx) {
   const isAdsEntry = editing && !!c.channel_is_ads;
   document.getElementById('m-title').textContent = editing ? t('crmEditCustomer') : t('crmAddCustomer');
   const opts = CRM_STATUSES.map(s => `<option value="${s}" ${crmNormStatus(c.status)===s?'selected':''}>${s}</option>`).join('');
-  const channelOpts = ['Shopee','TikTok','Instagram','WhatsApp','Leads','Lainnya'].map(ch => `<option value="${ch}" ${(c.channel||'')=== ch?'selected':''}>${ch}</option>`).join('');
+  const channelOpts = ['Shopee','TikTok','Instagram','WhatsApp','Canvasing','Leads','Lainnya'].map(ch => `<option value="${ch}" ${(c.channel||'')=== ch?'selected':''}>${ch}</option>`).join('');
   const autoId = editing ? escHtml(c.id_customer||'') : crmGenId();
   // v36: nilai awal Tingkat Keaktifan — tetap disarankan otomatis dari
   // total order/status untuk data lama, tapi sekarang bisa diubah manual
@@ -16370,13 +16377,13 @@ function openCRMModal(idx) {
         : '<select class="fi" id="crm-f-channel"><option value="">— Pilih Channel —</option>' + channelOpts + '</select>'
       }
     </div>
-    <div class="fg"><label>${t('crmColFirstOrder')}</label><input class="fi" id="crm-f-first" type="date" value="${crmToDateInput(c.first_order)}"/></div>
-    <div style="display:flex;gap:10px">
-      <div class="fg" style="flex:1"><label>${t('crmColTotalOrder')}</label><input class="fi" id="crm-f-torder" type="number" min="0" value="${crmParseInt(c.total_order)||''}"/></div>
-      <div class="fg" style="flex:1"><label>${t('crmColTotalSpend')}</label><input class="fi" id="crm-f-tspend" type="number" min="0" value="${crmParseMoney(c.total_belanja)||''}" placeholder="Rp"/></div>
-    </div>
     <div class="fg"><label>${t('crmColStatus')}</label><select class="fi" id="crm-f-status">${opts}</select></div>
-    <div class="fg" style="margin-bottom:12px">
+
+    <div class="crm-form-divider">
+      <span class="crm-form-divider-lbl">${crmIco('flame')} Klasifikasi</span>
+      <span class="crm-form-divider-line"></span>
+    </div>
+    <div class="fg" style="margin-bottom:2px">
       <label style="display:flex;align-items:center;justify-content:space-between">
         <span>Tingkat Keaktifan</span>
         <a href="javascript:void(0)" onclick="crmAutoHeat()" style="font-size:9px;color:var(--gold);text-decoration:none;letter-spacing:.04em">↻ Hitung otomatis</a>
@@ -16384,10 +16391,22 @@ function openCRMModal(idx) {
       <select class="fi" id="crm-f-heat" onchange="updateHeatPreview()">${heatOpts}</select>
       <div id="heat-preview-modal" style="margin-top:6px">
         ${crmHeatBadge(_initHeat)}
-        <span style="font-size:9px;color:var(--muted);margin-left:8px">Sama seperti kategori Leads/Ads — pilih manual atau klik "Hitung otomatis"</span>
+        <span style="font-size:9px;color:var(--muted);margin-left:8px">Pilih manual, atau klik "Hitung otomatis" setelah isi data order di bawah</span>
       </div>
     </div>
+
+    <div class="crm-form-divider">
+      <span class="crm-form-divider-lbl">${crmIco('cart')} Riwayat Transaksi</span>
+      <span class="crm-form-divider-line"></span>
+      <span class="crm-form-divider-hint">isi kalau sudah pernah order</span>
+    </div>
+    <div class="fg"><label>${t('crmColFirstOrder')}</label><input class="fi" id="crm-f-first" type="date" value="${crmToDateInput(c.first_order)}"/></div>
+    <div style="display:flex;gap:10px">
+      <div class="fg" style="flex:1"><label>${t('crmColTotalOrder')}</label><input class="fi" id="crm-f-torder" type="number" min="0" value="${crmParseInt(c.total_order)||''}"/></div>
+      <div class="fg" style="flex:1"><label>${t('crmColTotalSpend')}</label><input class="fi" id="crm-f-tspend" type="number" min="0" value="${crmParseMoney(c.total_belanja)||''}" placeholder="Rp"/></div>
+    </div>
     <div class="fg"><label>${t('crmColFavProduct')}</label><input class="fi" id="crm-f-fav" value="${escHtml(c.produk_fav||'')}"/></div>
+
     <div class="fg"><label>${t('crmColNote')}</label><textarea class="fi" id="crm-f-note" rows="2">${escHtml(c.catatan||'')}</textarea></div>`;
   document.getElementById('m-foot').innerHTML = `
     <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>
