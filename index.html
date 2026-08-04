@@ -2964,18 +2964,11 @@ body.light .fi-rp-prefix{background:#f2f2f2;color:#555}
    ditandai sebagai "aksi tulis" oleh ownerApplyReadOnly(). */
 body.owner-view .owner-hidden-action{ display:none!important; }
 
-/* v39: OWNER (view-only) — tampilan dibuat lebih besar, lega, dan kontras
-   supaya nyaman dibaca (akun ini dipakai orang tua). Hanya berlaku untuk
-   akun Owner, tidak mengubah tampilan role lain. */
-body.owner-view{ font-size:15.5px; }
-body.owner-view .topbar, body.owner-view .sidebar{ font-size:1em; }
-body.owner-view .nav-item{ padding:12px 14px!important; font-size:14px!important; font-weight:600; }
-body.owner-view .nav-item svg{ width:19px; height:19px; }
-body.owner-view .sp-head h1, body.owner-view .page-title{ font-size:1.28em!important; }
-body.owner-view .stat-num, body.owner-view .crm-stat b{ font-size:1.12em!important; }
-body.owner-view table{ font-size:1.05em!important; }
-body.owner-view th, body.owner-view td{ padding-top:12px!important; padding-bottom:12px!important; }
-body.owner-view .crm-stat, body.owner-view .ovt-owner-card, body.owner-view .card{ padding:16px 18px!important; }
+/* v41: Owner sekarang punya banyak halaman kerja tim (Content Studio,
+   Live Studio, Ads Schedule, CRM, dll) yang sama dengan yang dilihat
+   moderator/admin — jadi ukuran font & padding disamakan dengan role
+   lain (override pembesaran font v39 dihapus) supaya tampilannya
+   konsisten, bukan "kelihatan beda sendiri". */
 body.owner-view .owner-view-badge{ font-size:11px; padding:3px 11px; font-weight:800; }
 /* Banner penjelas di atas setiap halaman, supaya jelas ini mode "lihat saja" */
 body.owner-view .owner-readonly-banner{
@@ -6341,6 +6334,7 @@ const i18n = {
     unlockDesc:'This task is locked because the ad date has passed. Send a request and the moderator can reopen it for 24 hours.',
     unlockReasonLabel:'Reason (optional)',
     unlockReasonPh:'e.g. I was on leave and missed the input window…',
+    budgetMarketingNav:'Budget Marketing',
   },
   id: {
     brandTagline:'Desain · Warisan · Kehadiran', signIn:'Masuk',
@@ -6603,6 +6597,7 @@ const i18n = {
     unlockDesc:'Task ini terkunci karena tanggal iklan sudah lewat. Kirim permintaan, moderator bisa membuka kembali selama 24 jam.',
     unlockReasonLabel:'Alasan (opsional)',
     unlockReasonPh:'cth. Saya sedang cuti dan terlewat jendela input…',
+    budgetMarketingNav:'Budget Marketing',
   }
 };
 const t = k => i18n[currentLang][k] || i18n.en[k] || k;
@@ -13417,7 +13412,8 @@ function adGoToday() {
    Moderator  : semua iklan (draft + published).
    Admin/B2B  : hanya iklan PUBLISHED yang menargetkan dirinya. */
 function visibleAds() {
-  if (can.isMod(currentUser?.role)) return ads;
+  // v41: Owner (view-only) melihat SEMUA jadwal iklan, sama seperti moderator.
+  if (can.isMod(currentUser?.role) || can.isOwnerView(currentUser?.role)) return ads;
   const me = currentUser ? currentUser.id : null;
   if (!me) return [];
   return ads.filter(a =>
@@ -13429,6 +13425,8 @@ function visibleAds() {
 /* ── Calendar grid ── */
 function renderCalendar() {
   const isMod  = can.isMod(currentUser?.role);
+  const isOwnerNav = can.isOwnerView(currentUser?.role);
+  const isModView = isMod || isOwnerNav; // v41: Owner lihat status LIVE/DRAFT & isi hari sama seperti moderator (read-only)
   const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
   const dows   = currentLang === 'id' ? DOW_ID : DOW_EN;
   const y = adCursor.getFullYear(), m = adCursor.getMonth();
@@ -13461,20 +13459,20 @@ function renderCalendar() {
     if (isSun) cls.push('is-sun');
     if (isHol) cls.push('is-holiday');
     if (isToday) cls.push('today');
-    if (!isMod && dayAds.length) cls.push('has-mytask');
+    if (!isModView && dayAds.length) cls.push('has-mytask');
 
     let chips = '';
     dayAds.slice(0, 3).forEach(a => {
       const isPub = a.status === 'published';
-      // Moderator: tampilkan status jelas (LIVE/DRAFT). Target: hanya lihat yang published.
-      const tag = isMod
+      // Moderator & Owner (view-only): tampilkan status jelas (LIVE/DRAFT). Target: hanya lihat yang published.
+      const tag = isModView
         ? (isPub ? `<span class="chip-state live">LIVE</span>` : `<span class="chip-state draft">DRAFT</span>`)
         : `<span class="chip-pub"></span>`;
-      chips += `<div class="cal-ad-chip cat-${a.category}${isMod&&!isPub?' is-draft':''}" title="${escHtml(a.theme)}${isMod?(isPub?' — sudah dipublish':' — BELUM dipublish (klik untuk publish)'):''}">${tag}<span style="overflow:hidden;text-overflow:ellipsis">${escHtml(a.theme)}</span></div>`;
+      chips += `<div class="cal-ad-chip cat-${a.category}${isModView&&!isPub?' is-draft':''}" title="${escHtml(a.theme)}${isModView?(isPub?' — sudah dipublish':' — belum dipublish'):''}">${tag}<span style="overflow:hidden;text-overflow:ellipsis">${escHtml(a.theme)}</span></div>`;
     });
     if (dayAds.length > 3) chips += `<div class="cal-more">+${dayAds.length-3}</div>`;
 
-    // Hint: moderator → "+", target → ikon task/leads (hanya bila ada task hari itu)
+    // Hint: moderator → "+" (bisa tambah), Owner/target → ikon lihat saja (hanya bila ada task hari itu)
     const hint = isMod
       ? `<div class="cal-add-hint">+</div>`
       : (dayAds.length ? `<div class="cal-task-hint" title="${t('viewTask')}">●</div>` : '');
@@ -13508,6 +13506,7 @@ function renderAdTable() {
   if (!list.length) { tbody.innerHTML = `<tr><td colspan="6" class="tbl-empty">${t('noAdsThisMonth')}</td></tr>`; return; }
 
   const isMod = can.isMod(currentUser?.role);
+  const isModView = isMod || can.isOwnerView(currentUser?.role); // v41: Owner lihat kolom "Target" seperti moderator (read-only)
   tbody.innerHTML = list.map(a => {
     const dObj = new Date(a.date + 'T00:00:00');
     const red = isRedDate(dObj);
@@ -13549,7 +13548,7 @@ function renderAdTable() {
       </td>
       <td style="font-weight:600;color:var(--text)">${escHtml(a.theme)}</td>
       <td><span class="cat-badge cat-${a.category}">${a.category}</span></td>
-      <td style="font-size:11px">${isMod ? (escHtml(targetNames(a.target)) || '<span style="color:var(--muted)">—</span>') : (leadCount ? `${leadCount} ${t('leadsCount')}` : '<span style="color:var(--muted)">—</span>')}</td>
+      <td style="font-size:11px">${isModView ? (escHtml(targetNames(a.target)) || '<span style="color:var(--muted)">—</span>') : (leadCount ? `${leadCount} ${t('leadsCount')}` : '<span style="color:var(--muted)">—</span>')}</td>
       <td><span class="ad-status-badge ${a.status}"><span class="dot"></span>${a.status==='published'?t('published'):t('draft')}</span></td>
       <td>${actionCell}</td>
     </tr>`;
@@ -13565,6 +13564,7 @@ function openDayModal(ymd) {
     : ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const hol = holidayName(ymd);
   const isMod = can.isMod(currentUser?.role);
+  const isModView = isMod || can.isOwnerView(currentUser?.role); // v41: Owner lihat detail hari selengkap moderator (read-only)
 
   document.getElementById('m-title').textContent =
     `${days[dObj.getDay()]}, ${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
@@ -13576,7 +13576,7 @@ function openDayModal(ymd) {
       <span>${escHtml(hol)}</span></div>`;
   }
 
-  if (isMod) {
+  if (isModView) {
     bodyHtml += renderDayModalMod(ymd);
   } else {
     bodyHtml += renderDayModalTarget(ymd);
@@ -15066,7 +15066,7 @@ let _crmGlobalAggReady = false;
 
 async function crmFetchGlobalAgg() {
   if (crmUsesDB()) {
-    const isMod = can.isMod(currentUser?.role);
+    const isMod = can.viewAll(currentUser?.role); // v41: Moderator + Owner (view-only) lihat SEMUA baris
     // v32-FIX: Supabase/PostgREST membatasi hasil SELECT maksimal 1000 baris
     // per request kalau tidak pakai .range() — sebelumnya ini bikin total
     // customer & persentase per PIC macet di 1.000 walau data asli 3.972+.
@@ -16351,10 +16351,10 @@ async function renderCRM(reload = true) {
     pb.style.color = isMod ? 'var(--gold)' : (ROLE_COLORS[currentUser.role] || '#888');
   }
 
-  // Owner filter dropdown — hanya moderator
+  // Owner filter dropdown — moderator + Owner (view-only)
   const ownerFilterEl = document.getElementById('crm-owner-filter');
   const targetBtnEl = document.getElementById('crm-admin-target-btn');
-  const isMod2 = can.isMod(currentUser?.role);
+  const isMod2 = can.viewAll(currentUser?.role); // v41: termasuk Owner — boleh filter per PIC (tombol "Atur Target" tetap disapu read-only)
   if (ownerFilterEl) {
     if (isMod2) {
       ownerFilterEl.style.display = '';
@@ -16443,7 +16443,7 @@ async function renderCRM(reload = true) {
   // sesuai filter yang aktif — tidak lagi terbatas 500/halaman). Tidak ada
   // lagi label "halaman ini" — semua angka di kartu ini adalah TOTAL
   // KESELURUHAN, persis sama sumbernya dgn Dashboard Semua Role.
-  const isMod3 = can.isMod(currentUser?.role);
+  const isMod3 = can.viewAll(currentUser?.role); // v41: termasuk Owner (view-only) — boleh lihat breakdown per PIC
   // Terapkan filter status/heat/label yang sedang aktif ke data global (bukan hanya ke halaman tabel)
   let gRows = crmGlobalAgg.slice();
   if (sf !== 'all') gRows = gRows.filter(c => crmNormStatus(c.status) === sf);
