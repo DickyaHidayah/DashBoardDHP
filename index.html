@@ -2850,6 +2850,10 @@ body.light .adcust-stat .acs-num{color:#0d0d0d;font-weight:800}
 .ovt-section-sub{font-size:10.5px;color:var(--text2);letter-spacing:.03em;margin-top:2px}
 .ovt-owner-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
 .ovt-owner-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.ovt-jobdesk-card{border-left:3px solid var(--gold,#e8b86e)}
+.ovt-jobdesk-desc{font-size:11.5px;color:var(--text2);line-height:1.5;margin:6px 0 10px}
+.ovt-jobdesk-metric-lbl{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:2px}
+.ovt-jobdesk-metric{font-size:13px;font-weight:700;color:var(--gold-hi,#e8b86e);line-height:1.4}
 .ovt-owner-name{font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:2px}
 .ovt-owner-role{font-size:9.5px;color:var(--text2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}
 .ovt-owner-row{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:3px}
@@ -7070,58 +7074,73 @@ async function initDashboard() {
   const isContent = can.isContent(r);
   const isLive   = can.isHostLive(r);
   const isB2B    = can.isB2B(r);
-  // v39: Owner (view-only) — sekarang diperlakukan setara moderator untuk
-  // KEPERLUAN MELIHAT (nav + data realtime), kecuali Settings. Semua
-  // tombol tambah/ubah/hapus tetap diblokir total lewat ownerApplyReadOnly()
-  // + ownerGlobalClickGuard (lihat dekat definisi blockIfOwner()).
+  // v40: Owner (view-only) TIDAK LAGI diberi akses ke semua halaman kerja
+  // moderator (itu bikin bingung & terkesan cuma "moderator versi kunci").
+  // Owner sekarang punya SATU halaman khusus miliknya sendiri: Laporan Tim
+  // (Dashboard Semua Role, halaman 'all_dashboard') — satu tempat rapi yang
+  // merangkum semua: budget, rencana konten, jadwal iklan per hari, dan
+  // job desk + total kerja tiap role, semuanya real-time.
   const isOwner  = can.isOwnerView(r);
-  const modOrOwner = isMod || isOwner;
 
   // ─── Default nav visibility ───
   const navShow = (id, on) => { const el = document.getElementById(id); if (el) el.style.display = on ? '' : 'none'; };
 
   // Studio section — dipisah per role: Content Creator & Host Live tidak digabung
   // Moderator BISA masuk Studio Konten untuk kelola kalender/isi tema-script tiap Content Creator.
-  navShow('ns-content',       isContent || modOrOwner);
-  navShow('n-content-studio', isContent || modOrOwner);
-  navShow('ns-live',          isLive || modOrOwner);
-  navShow('n-live-studio',    isLive || modOrOwner);
-  navShow('n-live-dashboard', modOrOwner);   // Live Dashboard (perbandingan seluruh host)
-  navShow('ns-all-dash',      modOrOwner);   // Overview Tim — Dashboard Semua Role
-  navShow('n-all-dashboard',  modOrOwner);
-  navShow('n-mod-tasks',      true);    // Tugas Saya — tersedia untuk semua role
-  navShow('n-my-performance', true);    // Performa Saya — dashboard bulanan bergrafik, tersedia untuk semua role
+  navShow('ns-content',       isContent || isMod);
+  navShow('n-content-studio', isContent || isMod);
+  navShow('ns-live',          isLive || isMod);
+  navShow('n-live-studio',    isLive || isMod);
+  navShow('n-live-dashboard', isMod);   // Live Dashboard (perbandingan seluruh host) — khusus moderator
+  navShow('ns-all-dash',      isMod || isOwner);   // Overview Tim — Dashboard Semua Role
+  navShow('n-all-dashboard',  isMod || isOwner);
+  navShow('n-mod-tasks',      true && !isOwner);    // Tugas Saya — tidak relevan untuk Owner (tidak punya tugas pribadi)
+  navShow('n-my-performance', true && !isOwner);    // Performa Saya — idem
 
-  // Administration (Moderator + Owner-view)
-  navShow('ns-admin',         modOrOwner);
-  navShow('n-team-tasks',     modOrOwner);
-  navShow('n-mod-target',     modOrOwner);
-  navShow('n-budget-marketing', modOrOwner);
-  navShow('n-users',          modOrOwner);
-  // Settings — Sovereign only (config aplikasi, bukan data; tetap tertutup
-  // untuk Owner supaya dia tidak bisa mengganti nama role/branding, dll).
+  // Administration (Moderator only — Owner TIDAK dapat halaman kerja mentah ini)
+  navShow('ns-admin',         isMod);
+  navShow('n-team-tasks',     isMod);
+  navShow('n-mod-target',     isMod);
+  navShow('n-budget-marketing', isMod);
+  navShow('n-users',          isMod);
+  // Settings — Sovereign only
   navShow('n-settings',       isHead);
 
-  // Manage Ads — Ads Schedule / Ads Customers / Ads Task
-  // moderator (kelola penuh) + admin/b2b (lihat task, isi leads, lihat customers)
-  // + owner (lihat semua, view only)
-  const canSeeAds = can.canSeeAds(r) || isOwner;
+  // Manage Ads — Ads Schedule / Ads Customers / Ads Task (Moderator/Admin/B2B only)
+  const canSeeAds = can.canSeeAds(r);
   navShow('ns-manage',        canSeeAds);
   navShow('n-ad-scheduler',   canSeeAds);
   navShow('n-ad-customers',   canSeeAds);
   navShow('n-ad-task',        canSeeAds);
 
-  // Manage CRM — Database Customer (moderator + admin + b2b + owner)
+  // Manage CRM — Database Customer (Moderator/Admin/B2B only — bukan Owner;
+  // ringkasan customer & revenue per PIC sudah tersedia di Laporan Tim Owner)
   navShow('ns-crm',           canSeeAds);
   navShow('n-crm',            canSeeAds);
 
-  // v39: OWNER (view-only) — sekarang mendapat akses navigasi PENUH setara
-  // moderator (semua menu di atas sudah pakai modOrOwner/canSeeAds), kecuali
-  // Settings. Yang membedakan Owner dari moderator murni cuma satu hal:
-  // tidak ada satupun tombol tambah/ubah/hapus yang bisa dia jalankan —
-  // itu ditangani terpusat oleh ownerApplyReadOnly() + ownerGlobalClickGuard.
+  // v40: OWNER (view-only) — satu-satunya halaman yang dia lihat adalah
+  // Laporan Tim (all_dashboard), diberi label & ikon berbeda supaya jelas
+  // ini BUKAN halaman kerja moderator, tapi laporan ringkas miliknya sendiri.
   if (isOwner) {
     document.body.classList.add('owner-view');
+    const secLbl = document.getElementById('ns-all-dash');
+    if (secLbl) {
+      const secName = secLbl.querySelector('.sec-name'); if (secName) secName.textContent = 'Laporan Tim';
+      const secScope = secLbl.querySelector('.sec-scope'); if (secScope) secScope.textContent = 'Owner · Real-time';
+    }
+    const navBtn = document.getElementById('n-all-dashboard');
+    if (navBtn) { const lbl = navBtn.querySelector('span:last-child'); if (lbl) lbl.textContent = 'Laporan Performa Tim'; }
+    // Judul & badge halaman disesuaikan supaya jelas ini laporan Owner,
+    // bukan halaman kerja "Dashboard Semua Role" milik moderator.
+    const phTitle = document.querySelector('#pg-all_dashboard .pt');
+    if (phTitle) {
+      phTitle.innerHTML = `Laporan Performa Tim
+        <span class="role-pill" style="background:rgba(232,184,110,.14);color:#e8b86e;border:1px solid rgba(232,184,110,.35)">
+          <span class="pill-dot" style="background:#e8b86e"></span> Owner · Real-time
+        </span>`;
+    }
+    const phSub = document.querySelector('#pg-all_dashboard .ps');
+    if (phSub) phSub.textContent = 'Semua data tim dalam satu layar: budget, rencana konten, jadwal iklan, dan job desk + total kerja tiap role — selalu up to date.';
     // Badge kecil "View Only" di kartu user sidebar
     const rl = document.getElementById('sb-rlbl');
     if (rl && !rl.querySelector('.owner-view-badge')) {
@@ -8554,7 +8573,7 @@ function renderLiveDashboard(rows) {
    ═══════════════════════════════════════════════════════════ */
 async function loadAllRoleDashboard() {
   const wrap = document.getElementById('alld-view');
-  if (!wrap || !currentUser || !can.isMod(currentUser.role)) return;
+  if (!wrap || !currentUser || (!can.isMod(currentUser.role) && !can.isOwnerView(currentUser.role))) return;
   wrap.innerHTML = `<div class="ldash-loading">Memuat dashboard seluruh role…</div>`;
 
   const now = new Date();
@@ -8779,7 +8798,7 @@ function renderAllRoleDashboard({
   }).sort((a,b) => b.pct - a.pct);
 
   const rowsHtml = (rows, onClickFn) => rows.length ? rows.map(r => `
-    <div class="alld-row" onclick="${onClickFn}('${r.id}')">
+    <div class="alld-row"${isOwnerRole() ? '' : ` onclick="${onClickFn}('${r.id}')"`}>
       <div class="alld-row-name">${escHtml(r.name)}</div>
       <div class="alld-row-bar-track"><div class="alld-row-bar-fill${r.over?' alld-over':''}" style="width:${r.pct}%"></div></div>
       <div class="alld-row-pct">${r.pct}%</div>
@@ -8895,6 +8914,37 @@ function renderAllRoleDashboard({
     </div>`;
   }).join('') : `<div class="ovt-budget-empty">Belum ada jadwal iklan bulan ini.</div>`;
 
+  // ── v40: Job Desk & Total Kerja per Role — ringkasan khusus untuk Owner,
+  // supaya dalam satu lirikan langsung paham siapa mengerjakan apa dan
+  // berapa yang sudah selesai bulan ini, tanpa perlu buka halaman lain.
+  const roleMembers = {};
+  Object.entries(LOCAL_USERS).forEach(([, u]) => {
+    if (u.role === 'guest' || u.role === 'owner') return;
+    (roleMembers[u.role] = roleMembers[u.role] || []).push(u.name);
+  });
+  const jobDeskCards = [
+    { label: 'Moderator', desc: 'Memimpin & mengawasi seluruh tim — approval, target, dan keputusan operasional.',
+      members: (roleMembers.head_moderator||[]).concat(roleMembers.moderator||[]),
+      metric: 'Mengawasi seluruh performa tim di halaman ini' },
+    { label: 'Admin &amp; B2B Marketing', desc: 'Follow-up leads/customer, input transaksi, closing penjualan &amp; kerja sama B2B/reseller.',
+      members: (roleMembers.admin||[]).concat(roleMembers.b2b_marketing||[]),
+      metric: `${fuTotal} follow-up bulan ini · ${fuHitSum}/${fuDaysSum} hari capai target` },
+    { label: 'Content Creator', desc: 'Membuat &amp; menjadwalkan konten sesuai kalender dan tema yang ditentukan.',
+      members: roleMembers.content_creator||[],
+      metric: `${contentTotalMonth} konten bulan ini · ${ccDone}/${ccTotal} sudah tayang` },
+    { label: 'Host Live', desc: 'Live jualan TikTok sesuai jadwal &amp; mengejar target penjualan bulanan.',
+      members: roleMembers.host_live||[],
+      metric: `${liveTotalSesi} sesi · ${liveTotalSelesai} selesai · ${liveTotalJam.toFixed(1)} jam live` }
+  ];
+  const jobDeskHtml = jobDeskCards.map(c => `
+    <div class="ovt-owner-card ovt-jobdesk-card">
+      <div class="ovt-owner-name">${escHtml(c.label)}</div>
+      <div class="ovt-owner-role">${c.members.length} orang${c.members.length ? ': ' + escHtml(c.members.join(', ')) : ''}</div>
+      <div class="ovt-jobdesk-desc">${c.desc}</div>
+      <div class="ovt-jobdesk-metric-lbl">Total dikerjakan bulan ini</div>
+      <div class="ovt-jobdesk-metric">${c.metric}</div>
+    </div>`).join('');
+
   const teamOverview = `
     <div class="ovt-summary">
       <div class="dash-stat-card"><div class="dash-stat-num">${totalCustomers}</div><div class="dash-stat-lbl">Total Customer</div></div>
@@ -8908,6 +8958,12 @@ function renderAllRoleDashboard({
       <div class="dash-stat-card"><div class="dash-stat-num" style="color:#d98ec0">${liveTotalSakit}</div><div class="dash-stat-lbl">Total Sakit (Live)</div></div>
       <div class="dash-stat-card"><div class="dash-stat-num" style="color:#e8b86e">${liveTotalIzin}</div><div class="dash-stat-lbl">Total Izin (Live)</div></div>
       <div class="dash-stat-card"><div class="dash-stat-num">${adsCustTotal}</div><div class="dash-stat-lbl">Customer Masuk dari Ads</div></div>
+    </div>
+    <div class="ovt-section">
+      <div class="ovt-section-head">
+        <div><div class="ovt-section-title">Job Desk &amp; Total Kerja Tim</div><div class="ovt-section-sub">${months[now.getMonth()]} ${now.getFullYear()} — siapa mengerjakan apa, dan berapa yang sudah diselesaikan</div></div>
+      </div>
+      <div class="ovt-owner-grid">${jobDeskHtml}</div>
     </div>
     <div class="ovt-section">
       <div class="ovt-section-head">
@@ -17715,22 +17771,24 @@ async function submitUnlockRequest() {
 function navTo(page, btn) {
   const r = currentUser.role;
   const isOwnerNav = can.isOwnerView(r);
-  // v39: Owner (view-only) sekarang bisa MASUK ke semua halaman yang bisa
-  // dilihat moderator (kecuali Settings) — persis seperti moderator. Yang
-  // membedakan cuma satu hal: tidak ada tombol tambah/ubah/hapus yang bisa
-  // dia jalankan di halaman manapun (diblokir terpusat, lihat blockIfOwner,
-  // ownerApplyReadOnly & ownerGlobalClickGuard).
+  // v40: Owner (view-only) HANYA punya satu halaman: Laporan Tim
+  // (all_dashboard) — tidak diberi akses ke halaman kerja mentah moderator
+  // lainnya, supaya tidak bingung/terkesan sama seperti moderator.
+  if (isOwnerNav && page !== 'all_dashboard') {
+    toast('👁 Akun Owner hanya bisa melihat halaman Laporan Tim.');
+    return;
+  }
   // Moderator-only pages
-  if (['team_tasks','users','mod_target','budget_marketing'].includes(page) && !can.isMod(r) && !isOwnerNav) { toast('Moderator access required'); return; }
-  // Manage (Ads) pages: moderator + admin/b2b (target) + owner (view only)
-  if (['ad_scheduler','ad_customers','ad_task'].includes(page) && !can.canSeeAds(r) && !isOwnerNav) { toast(t('adAccessReq')); return; }
-  // Manage CRM page: moderator + admin/b2b + owner (view only)
-  if (page === 'crm' && !can.canSeeAds(r) && !isOwnerNav) { toast(t('adAccessReq')); return; }
+  if (['team_tasks','users','mod_target','budget_marketing'].includes(page) && !can.isMod(r)) { toast('Moderator access required'); return; }
+  // Manage (Ads) pages: moderator + admin/b2b (target)
+  if (['ad_scheduler','ad_customers','ad_task'].includes(page) && !can.canSeeAds(r)) { toast(t('adAccessReq')); return; }
+  // Manage CRM page: moderator + admin/b2b
+  if (page === 'crm' && !can.canSeeAds(r)) { toast(t('adAccessReq')); return; }
   if (page === 'settings' && currentUser.id !== HEAD_MODERATOR_ID) { toast('Sovereign Moderator access required'); return; }
   // Studio pages — role-specific
-  if (page === 'content_studio' && !can.isContent(r) && !can.isMod(r) && !isOwnerNav) { toast('Content Creator access required'); return; }
-  if (page === 'live_studio'    && !can.isHostLive(r) && !can.isMod(r) && !isOwnerNav) { toast('Host Live access required'); return; }
-  if (page === 'live_dashboard' && !can.isMod(r) && !isOwnerNav) { toast('Moderator access required'); return; }
+  if (page === 'content_studio' && !can.isContent(r) && !can.isMod(r)) { toast('Content Creator access required'); return; }
+  if (page === 'live_studio'    && !can.isHostLive(r) && !can.isMod(r)) { toast('Host Live access required'); return; }
+  if (page === 'live_dashboard' && !can.isMod(r)) { toast('Moderator access required'); return; }
   if (page === 'all_dashboard'  && !can.isMod(r) && !isOwnerNav) { toast('Moderator access required'); return; }
 
   document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
