@@ -2747,7 +2747,8 @@ body.light .mt-card{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
 .mt-fu-lists{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
 .mt-fu-list-title{font-size:10.5px;font-weight:700;letter-spacing:.03em;margin-bottom:8px}
 .mt-fu-list-body{max-height:170px;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
-.mt-fu-list-item{font-size:11.5px;color:var(--text);padding:5px 9px;background:var(--surface2,rgba(255,255,255,.02));border-radius:6px;border:1px solid var(--border)}
+.mt-fu-list-item{font-size:11.5px;color:var(--text);padding:5px 9px;background:var(--surface2,rgba(255,255,255,.02));border-radius:6px;border:1px solid var(--border);transition:border-color .15s,background .15s}
+.mt-fu-list-item-action:hover{border-color:var(--border-hi)}
 .mt-fu-list-item-action{display:flex;flex-direction:column;gap:7px;padding:10px 11px}
 .mt-fu-item-info{display:flex;flex-direction:column;gap:7px;overflow:hidden;width:100%}
 .mt-fu-item-top{display:flex;align-items:center;gap:6px;overflow:hidden;min-height:16px}
@@ -2761,6 +2762,20 @@ body.light .mt-card{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
 .mt-fu-reco-badge.is-hot{color:#e87070;background:rgba(232,112,112,.14);border:1px solid rgba(232,112,112,.35)}
 .mt-fu-reco-badge.is-warm{color:#e8b86e;background:rgba(232,184,110,.14);border:1px solid rgba(232,184,110,.35)}
 .mt-fu-list-empty{font-size:11px;color:var(--muted);padding:6px 2px}
+/* v39: header kolom "Belum di-follow up" — judul + toolbar (search & refresh),
+   dibikin minimalis: outline tipis, tanpa shadow berat, transisi halus. */
+.mt-fu-col-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.mt-fu-toolbar{display:flex;align-items:center;gap:6px}
+.mt-fu-search-wrap{display:flex;align-items:center;gap:5px;padding:0 8px;height:26px;border:1px solid var(--border);border-radius:20px;background:transparent;transition:border-color .15s}
+.mt-fu-search-wrap:focus-within{border-color:var(--gold)}
+.mt-fu-search-wrap svg{color:var(--muted);flex-shrink:0}
+.mt-fu-search-input{border:none;background:transparent;outline:none;font-size:11px;color:var(--text);width:118px;font-family:inherit}
+.mt-fu-search-input::placeholder{color:var(--muted)}
+.mt-fu-refresh-btn{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:border-color .15s,color .15s,transform .15s}
+.mt-fu-refresh-btn:hover{border-color:var(--gold);color:var(--gold)}
+.mt-fu-refresh-btn svg{transition:transform .5s ease}
+.mt-fu-refresh-btn.is-spinning svg{transform:rotate(360deg)}
+@media (max-width:640px){.mt-fu-col-head{align-items:flex-start}.mt-fu-search-input{width:88px}}
 @media (max-width:640px){.mt-fu-lists{grid-template-columns:1fr}}
 .target-role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
 .target-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;transition:border-color var(--trans)}
@@ -11431,6 +11446,71 @@ function mtShuffle(arr) {
   return a;
 }
 
+/* v39: kolom "Belum di-follow up" — search + tombol refresh (acak ulang urutan)
+   tanpa perlu render ulang seluruh kartu My Task (biar fokus input pencarian
+   tidak hilang tiap ngetik). State disimpan terpisah dari render utama. */
+let _mtFuMine = [];
+let _mtFuOrder = null;
+let _mtFuSearchQ = '';
+
+function _mtFuHeatOf(c) { return c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status)); }
+
+function mtFuBuildOrder() {
+  const pending = _mtFuMine.filter(c => !followupDoneTodayIds.has(_followupCustKey(c)));
+  const recommended = mtShuffle(pending.filter(c => ['Hot','Warm'].includes(_mtFuHeatOf(c))));
+  const rest = mtShuffle(pending.filter(c => !['Hot','Warm'].includes(_mtFuHeatOf(c))));
+  _mtFuOrder = [...recommended, ...rest];
+}
+
+function _mtFuItemHtml(c) {
+  const idx = crmData.indexOf(c);
+  const heat = _mtFuHeatOf(c);
+  const isReco = ['Hot','Warm'].includes(heat);
+  // v25: nomor WA divalidasi lewat crmFormatWaLink — kalau formatnya
+  // tidak terdeteksi sebagai nomor WA yang valid, nomornya disembunyikan
+  // sama sekali (tidak ditampilkan sebagai teks biasa).
+  const waInfo = crmFormatWaLink(c.wa);
+  return `<div class="mt-fu-list-item mt-fu-list-item-action">
+    <span class="mt-fu-item-info">
+      <span class="mt-fu-item-top">
+        ${isReco ? `<span class="mt-fu-reco-badge ${heat==='Hot'?'is-hot':'is-warm'}">${heat==='Hot'?'🔥':'☀'} Prioritas</span>` : ''}
+        <span class="mt-fu-item-name">${escHtml(c.nama||'—')}</span>
+      </span>
+      ${waInfo ? `<a href="${waInfo.href}" target="_blank" rel="noopener" class="mt-fu-item-wa" onclick="event.stopPropagation()">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 00-6 10.6L1 15l3.5-1a7 7 0 106.5-13zm4 9.9c-.2.5-1 1-1.4 1-.4 0-.9.1-2.9-.7-2.4-1-4-3.5-4.1-3.6-.1-.2-1-1.3-1-2.5s.6-1.8.8-2c.2-.2.5-.3.6-.3h.5c.2 0 .4 0 .5.4l.7 1.7c.1.2.1.3 0 .5l-.4.5c-.1.1-.2.3-.1.5.2.3.7 1.1 1.5 1.8.9.8 1.6 1 1.9 1.2.2.1.4.1.5-.1l.5-.6c.2-.2.3-.2.5-.1l1.5.7c.2.1.3.1.4.3.1.2.1.7 0 1.2z"/></svg>
+        ${escHtml(waInfo.display)}
+      </a>` : `<span class="mt-fu-item-wa mt-fu-item-wa-none">— tanpa nomor WA valid</span>`}
+    </span>
+    <button class="btn-g btn-sm mt-fu-item-btn" onclick="markFollowedUp(${idx})">Update</button>
+  </div>`;
+}
+
+function mtFuPendingHtml() {
+  if (!_mtFuOrder) mtFuBuildOrder();
+  let list = _mtFuOrder;
+  if (_mtFuSearchQ) {
+    const q = _mtFuSearchQ;
+    list = list.filter(c => (c.nama||'').toLowerCase().includes(q) || (c.wa||'').toLowerCase().includes(q) || (c.kota||'').toLowerCase().includes(q));
+  }
+  if (!list.length) return `<div class="mt-fu-list-empty">${_mtFuSearchQ ? 'Tidak ada hasil untuk pencarian ini.' : 'Semua sudah di-follow up 🎉'}</div>`;
+  return list.slice(0,30).map(_mtFuItemHtml).join('');
+}
+
+function mtFuRenderPendingBody() {
+  const bodyEl = document.getElementById('mt-fu-pending-body');
+  if (bodyEl) bodyEl.innerHTML = mtFuPendingHtml();
+}
+
+const mtFuDebouncedSearch = debounce((v) => { _mtFuSearchQ = (v||'').toLowerCase().trim(); mtFuRenderPendingBody(); }, 200);
+
+function mtFuReshuffle() {
+  const btn = document.getElementById('mt-fu-refresh-btn');
+  if (btn) btn.classList.add('is-spinning');
+  _mtFuOrder = null;
+  mtFuRenderPendingBody();
+  if (btn) setTimeout(() => btn.classList.remove('is-spinning'), 500);
+}
+
 /* ── (A) TUGAS UTAMA — task bawaan sesuai role, auto-tracked ── */
 async function renderMtMainSection() {
   const el = document.getElementById('mt-main-section');
@@ -11479,42 +11559,22 @@ async function renderMtMainSection() {
             </div>
           </div>
           <div class="mt-fu-list-col">
-            <div class="mt-fu-list-title" style="color:var(--amber)">○ Belum di-follow up (${pendingCount})</div>
-            <div class="mt-fu-list-body">
+            <div class="mt-fu-col-head">
+              <div class="mt-fu-list-title" style="color:var(--amber);margin-bottom:0">○ Belum di-follow up (${pendingCount})</div>
+              <div class="mt-fu-toolbar">
+                <div class="mt-fu-search-wrap">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                  <input type="text" id="mt-fu-search" class="mt-fu-search-input" placeholder="Cari nama / WA / kota…" oninput="mtFuDebouncedSearch(this.value)"/>
+                </div>
+                <button type="button" id="mt-fu-refresh-btn" class="mt-fu-refresh-btn" title="Acak ulang urutan" onclick="mtFuReshuffle()">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="mt-fu-list-body" id="mt-fu-pending-body">
               ${(function(){
-                // v24: daftar yang belum di-follow up — acak urutannya (tidak perlu sequential),
-                // tapi yang Hot/Warm ditampilkan lebih dulu sebagai rekomendasi prioritas hari ini.
-                const pending = mine.filter(c => !followupDoneTodayIds.has(_followupCustKey(c)));
-                const heatOf = c => c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status));
-                const recommended = mtShuffle(pending.filter(c => ['Hot','Warm'].includes(heatOf(c))));
-                const rest = mtShuffle(pending.filter(c => !['Hot','Warm'].includes(heatOf(c))));
-                const ordered = [...recommended, ...rest];
-                if (!ordered.length) return `<div class="mt-fu-list-empty">Semua sudah di-follow up 🎉</div>`;
-                return ordered.slice(0,30).map(c => {
-                  const idx = crmData.indexOf(c);
-                  const heat = heatOf(c);
-                  const isReco = ['Hot','Warm'].includes(heat);
-                  // v25: nomor WA divalidasi lewat crmFormatWaLink — kalau formatnya
-                  // tidak terdeteksi sebagai nomor WA yang valid, nomornya disembunyikan
-                  // sama sekali (tidak ditampilkan sebagai teks biasa).
-                  const waInfo = crmFormatWaLink(c.wa);
-                  // v26: 3 baris terpisah per customer — (1) nama, (2) nomor WA
-                  // sebagai tombol hijau yang langsung buka wa.me saat diklik,
-                  // (3) tombol Update full-width di baris paling bawah.
-                  return `<div class="mt-fu-list-item mt-fu-list-item-action">
-                    <span class="mt-fu-item-info">
-                      <span class="mt-fu-item-top">
-                        ${isReco ? `<span class="mt-fu-reco-badge ${heat==='Hot'?'is-hot':'is-warm'}">${heat==='Hot'?'🔥':'☀'} Prioritas</span>` : ''}
-                        <span class="mt-fu-item-name">${escHtml(c.nama||'—')}</span>
-                      </span>
-                      ${waInfo ? `<a href="${waInfo.href}" target="_blank" rel="noopener" class="mt-fu-item-wa" onclick="event.stopPropagation()">
-                        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 00-6 10.6L1 15l3.5-1a7 7 0 106.5-13zm4 9.9c-.2.5-1 1-1.4 1-.4 0-.9.1-2.9-.7-2.4-1-4-3.5-4.1-3.6-.1-.2-1-1.3-1-2.5s.6-1.8.8-2c.2-.2.5-.3.6-.3h.5c.2 0 .4 0 .5.4l.7 1.7c.1.2.1.3 0 .5l-.4.5c-.1.1-.2.3-.1.5.2.3.7 1.1 1.5 1.8.9.8 1.6 1 1.9 1.2.2.1.4.1.5-.1l.5-.6c.2-.2.3-.2.5-.1l1.5.7c.2.1.3.1.4.3.1.2.1.7 0 1.2z"/></svg>
-                        ${escHtml(waInfo.display)}
-                      </a>` : `<span class="mt-fu-item-wa mt-fu-item-wa-none">— tanpa nomor WA valid</span>`}
-                    </span>
-                    <button class="btn-g btn-sm mt-fu-item-btn" onclick="markFollowedUp(${idx})">Update</button>
-                  </div>`;
-                }).join('');
+                _mtFuMine = mine; _mtFuOrder = null; _mtFuSearchQ = '';
+                return mtFuPendingHtml();
               })()}
             </div>
           </div>
