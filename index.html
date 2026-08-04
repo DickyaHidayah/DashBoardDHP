@@ -5301,6 +5301,12 @@ const can = {
   // v38: akun Owner — read-only, cuma boleh LIHAT beberapa halaman tertentu,
   // tidak pernah dapat hak edit/tambah/hapus di mana pun.
   isOwnerView: r => r === 'owner',
+  // v41: dipakai di titik-titik yang menentukan CAKUPAN DATA yang ditampilkan
+  // (bukan hak edit) — Owner disamakan dengan Moderator supaya dia melihat
+  // data SELURUH tim (semua Content Creator/Host Live/Admin), bukan cuma
+  // satu orang. Tetap read-only karena tombol tulis disapu terpisah oleh
+  // ownerApplyReadOnly()/blockIfOwner().
+  viewAll:     r => ['head_moderator','moderator'].includes(r) || r === 'owner',
   any:         r => !!r,
 };
 
@@ -7089,12 +7095,14 @@ async function initDashboard() {
   const isContent = can.isContent(r);
   const isLive   = can.isHostLive(r);
   const isB2B    = can.isB2B(r);
-  // v40: Owner (view-only) TIDAK LAGI diberi akses ke semua halaman kerja
-  // moderator (itu bikin bingung & terkesan cuma "moderator versi kunci").
-  // Owner sekarang punya SATU halaman khusus miliknya sendiri: Laporan Tim
-  // (Dashboard Semua Role, halaman 'all_dashboard') — satu tempat rapi yang
-  // merangkum semua: budget, rencana konten, jadwal iklan per hari, dan
-  // job desk + total kerja tiap role, semuanya real-time.
+  // v41: Owner (view-only) sekarang diberi akses LIHAT ke halaman inti tim —
+  // Laporan Performa Tim, Content Studio, Live Studio, Live Dashboard,
+  // Ads Schedule, Manage Customer CRM, dan Budget Marketing — supaya bisa
+  // memantau update tim tanpa perlu jadi moderator. Owner TETAP tidak
+  // pernah dapat hak tambah/ubah/hapus di mana pun (disapu terpisah oleh
+  // ownerApplyReadOnly()/blockIfOwner()), dan TIDAK dapat halaman kerja
+  // mentah lain (Progress Tugas Tim, Target, Users, Settings, Ads
+  // Customers/Task, Tugas Saya, Performa Saya).
   const isOwner  = can.isOwnerView(r);
 
   // ─── Default nav visibility ───
@@ -7102,36 +7110,38 @@ async function initDashboard() {
 
   // Studio section — dipisah per role: Content Creator & Host Live tidak digabung
   // Moderator BISA masuk Studio Konten untuk kelola kalender/isi tema-script tiap Content Creator.
-  navShow('ns-content',       isContent || isMod);
-  navShow('n-content-studio', isContent || isMod);
-  navShow('ns-live',          isLive || isMod);
-  navShow('n-live-studio',    isLive || isMod);
-  navShow('n-live-dashboard', isMod);   // Live Dashboard (perbandingan seluruh host) — khusus moderator
+  navShow('ns-content',       isContent || isMod || isOwner);
+  navShow('n-content-studio', isContent || isMod || isOwner);
+  navShow('ns-live',          isLive || isMod || isOwner);
+  navShow('n-live-studio',    isLive || isMod || isOwner);
+  navShow('n-live-dashboard', isMod || isOwner);   // Live Dashboard (perbandingan seluruh host)
   navShow('ns-all-dash',      isMod || isOwner);   // Overview Tim — Dashboard Semua Role
   navShow('n-all-dashboard',  isMod || isOwner);
   navShow('n-mod-tasks',      true && !isOwner);    // Tugas Saya — tidak relevan untuk Owner (tidak punya tugas pribadi)
   navShow('n-my-performance', true && !isOwner);    // Performa Saya — idem
 
-  // Administration (Moderator only — Owner TIDAK dapat halaman kerja mentah ini)
-  navShow('ns-admin',         isMod);
+  // Administration — Progress Tugas/Target/Users tetap khusus Moderator.
+  // Budget Marketing dibuka untuk Owner (view-only) sesuai permintaan.
+  navShow('ns-admin',         isMod || isOwner);
   navShow('n-team-tasks',     isMod);
   navShow('n-mod-target',     isMod);
-  navShow('n-budget-marketing', isMod);
+  navShow('n-budget-marketing', isMod || isOwner);
   navShow('n-users',          isMod);
   // Settings — Sovereign only
   navShow('n-settings',       isHead);
 
-  // Manage Ads — Ads Schedule / Ads Customers / Ads Task (Moderator/Admin/B2B only)
+  // Manage Ads — Ads Schedule dibuka untuk Owner (view-only). Ads Customers
+  // & Ads Task tetap khusus Moderator/Admin/B2B (halaman kerja operasional).
   const canSeeAds = can.canSeeAds(r);
-  navShow('ns-manage',        canSeeAds);
-  navShow('n-ad-scheduler',   canSeeAds);
+  navShow('ns-manage',        canSeeAds || isOwner);
+  navShow('n-ad-scheduler',   canSeeAds || isOwner);
   navShow('n-ad-customers',   canSeeAds);
   navShow('n-ad-task',        canSeeAds);
 
-  // Manage CRM — Database Customer (Moderator/Admin/B2B only — bukan Owner;
-  // ringkasan customer & revenue per PIC sudah tersedia di Laporan Tim Owner)
-  navShow('ns-crm',           canSeeAds);
-  navShow('n-crm',            canSeeAds);
+  // Manage CRM — Database Customer, dibuka untuk Owner (view-only, melihat
+  // seluruh data customer tim).
+  navShow('ns-crm',           canSeeAds || isOwner);
+  navShow('n-crm',            canSeeAds || isOwner);
 
   // v40: OWNER (view-only) — satu-satunya halaman yang dia lihat adalah
   // Laporan Tim (all_dashboard), diberi label & ikon berbeda supaya jelas
@@ -7531,6 +7541,7 @@ function contentCreatorIds() {
 function renderContentCalendarPanel() {
   if (!currentUser) return;
   const isMod = can.isMod(currentUser.role);
+  const isOwnerNav = can.isOwnerView(currentUser.role);
   const ids = contentCreatorIds();
   if (!ccTargetId || !ids.includes(ccTargetId)) {
     ccTargetId = can.isContent(currentUser.role) ? currentUser.id : (ids[0] || null);
@@ -7552,11 +7563,14 @@ function renderContentCalendarPanel() {
   actCol.style.display = (isMod || canFillOwn) ? '' : 'none';
   sub.textContent = isMod
     ? 'Isi tema, judul, script, deadline, jam upload & link referensi untuk tiap slot konten'
-    : canFillOwn
-      ? 'Kamu bisa mengisi sendiri tema, judul, script, jam upload & link referensi kontenmu, selain update progress'
-      : 'Tema, judul, script, deadline & link referensi diisi moderator — kamu isi progress pengerjaan';
+    : isOwnerNav
+      ? 'Lihat kalender konten & progress tiap Content Creator (view-only)'
+      : canFillOwn
+        ? 'Kamu bisa mengisi sendiri tema, judul, script, jam upload & link referensi kontenmu, selain update progress'
+        : 'Tema, judul, script, deadline & link referensi diisi moderator — kamu isi progress pengerjaan';
 
-  if (isMod && ids.length > 1) {
+  // v41: Owner (view-only) juga boleh pindah-pindah lihat tiap Content Creator.
+  if ((isMod || isOwnerNav) && ids.length > 1) {
     switchBar.style.display = '';
     renderCcSwitch(ids, ccTargetId);
   } else {
@@ -8102,7 +8116,7 @@ let hsMode = 'single';   // dipertahankan utk kompatibilitas kode lain
 
 function renderLiveStudio() {
   if (!currentUser) return;
-  const isMod = can.isMod(currentUser.role);
+  const isMod = can.isMod(currentUser.role) || can.isOwnerView(currentUser.role); // v41: Owner (view-only) juga bisa pindah lihat tiap Host Live
   const bar = document.getElementById('hs-switch-bar');
 
   if (isMod) {
@@ -15317,9 +15331,9 @@ async function assignCrmLabel(idx, labelId) {
 async function loadCRM() {
   if (crmUsesDB()) {
     _crmLoading = true;
-    const isMod = can.isMod(currentUser?.role);
+    const isMod = can.viewAll(currentUser?.role); // Moderator + Owner (view-only) melihat SEMUA data customer
     let q = db.from('crm_customers').select('*', { count: 'exact' });
-    // Non-moderator hanya melihat data yang mereka sendiri input
+    // Non-moderator (dan non-Owner) hanya melihat data yang mereka sendiri input
     if (!isMod && currentUser?.id) {
       q = q.eq('owner_id', currentUser.id);
     }
@@ -15746,7 +15760,7 @@ function _budgetMonthOptions(selectedYm) {
 }
 
 async function loadBudgetMarketingPage() {
-  if (!can.isMod(currentUser?.role)) return;
+  if (!can.isMod(currentUser?.role) && !can.isOwnerView(currentUser?.role)) return;
   const sel = document.getElementById('budget-month-filter');
   const curYm = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
   if (sel && !sel.dataset.inited) {
@@ -17861,24 +17875,29 @@ async function submitUnlockRequest() {
 function navTo(page, btn) {
   const r = currentUser.role;
   const isOwnerNav = can.isOwnerView(r);
-  // v40: Owner (view-only) HANYA punya satu halaman: Laporan Tim
-  // (all_dashboard) — tidak diberi akses ke halaman kerja mentah moderator
-  // lainnya, supaya tidak bingung/terkesan sama seperti moderator.
-  if (isOwnerNav && page !== 'all_dashboard') {
-    toast('👁 Akun Owner hanya bisa melihat halaman Laporan Tim.');
+  // v41: Owner (view-only) diberi akses LIHAT ke halaman inti tim: Laporan
+  // Performa Tim, Content Studio, Live Studio, Live Dashboard, Ads
+  // Schedule, Manage Customer CRM, dan Budget Marketing. Di luar daftar
+  // ini (halaman kerja mentah moderator seperti Progress Tugas Tim,
+  // Target, Users, Settings, Ads Customers/Task) tetap terkunci.
+  const OWNER_ALLOWED_PAGES = ['all_dashboard','content_studio','live_studio','live_dashboard','ad_scheduler','crm','budget_marketing'];
+  if (isOwnerNav && !OWNER_ALLOWED_PAGES.includes(page)) {
+    toast('👁 Akun Owner hanya bisa melihat halaman: Laporan Tim, Content Studio, Live Studio, Live Dashboard, Ads Schedule, Manage CRM & Budget Marketing.');
     return;
   }
-  // Moderator-only pages
-  if (['team_tasks','users','mod_target','budget_marketing'].includes(page) && !can.isMod(r)) { toast('Moderator access required'); return; }
-  // Manage (Ads) pages: moderator + admin/b2b (target)
-  if (['ad_scheduler','ad_customers','ad_task'].includes(page) && !can.canSeeAds(r)) { toast(t('adAccessReq')); return; }
-  // Manage CRM page: moderator + admin/b2b
-  if (page === 'crm' && !can.canSeeAds(r)) { toast(t('adAccessReq')); return; }
+  // Moderator-only pages (Budget Marketing juga dibuka untuk Owner, view-only)
+  if (['team_tasks','users','mod_target'].includes(page) && !can.isMod(r)) { toast('Moderator access required'); return; }
+  if (page === 'budget_marketing' && !can.isMod(r) && !isOwnerNav) { toast('Moderator access required'); return; }
+  // Manage (Ads) pages: moderator + admin/b2b (target). Ad Schedule juga dibuka untuk Owner (view-only).
+  if (page === 'ad_scheduler' && !can.canSeeAds(r) && !isOwnerNav) { toast(t('adAccessReq')); return; }
+  if (['ad_customers','ad_task'].includes(page) && !can.canSeeAds(r)) { toast(t('adAccessReq')); return; }
+  // Manage CRM page: moderator + admin/b2b + Owner (view-only)
+  if (page === 'crm' && !can.canSeeAds(r) && !isOwnerNav) { toast(t('adAccessReq')); return; }
   if (page === 'settings' && currentUser.id !== HEAD_MODERATOR_ID) { toast('Sovereign Moderator access required'); return; }
-  // Studio pages — role-specific
-  if (page === 'content_studio' && !can.isContent(r) && !can.isMod(r)) { toast('Content Creator access required'); return; }
-  if (page === 'live_studio'    && !can.isHostLive(r) && !can.isMod(r)) { toast('Host Live access required'); return; }
-  if (page === 'live_dashboard' && !can.isMod(r)) { toast('Moderator access required'); return; }
+  // Studio pages — role-specific (+ Owner view-only)
+  if (page === 'content_studio' && !can.isContent(r) && !can.isMod(r) && !isOwnerNav) { toast('Content Creator access required'); return; }
+  if (page === 'live_studio'    && !can.isHostLive(r) && !can.isMod(r) && !isOwnerNav) { toast('Host Live access required'); return; }
+  if (page === 'live_dashboard' && !can.isMod(r) && !isOwnerNav) { toast('Moderator access required'); return; }
   if (page === 'all_dashboard'  && !can.isMod(r) && !isOwnerNav) { toast('Moderator access required'); return; }
 
   document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
