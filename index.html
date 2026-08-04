@@ -2883,6 +2883,82 @@ body.light .adcust-stat .acs-num{color:#0d0d0d;font-weight:800}
 }
 body.light .ovt-owner-card{background:#f7f7f8}
 
+/* ═══════════════════════════════════════════════════════════
+   v41: OWNER DASHBOARD ("Laporan Performa Tim") — laporan khusus
+   view-only untuk Owner, terpisah total dari tampilan Moderator.
+   Font lebih besar & lega (target: mudah dibaca orang yang lebih
+   tua), tersusun rapi per section dengan ikon & judul jelas.
+   ═══════════════════════════════════════════════════════════ */
+.odash-updated{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;color:var(--text2);
+  margin-bottom:20px;padding:10px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:999px;width:fit-content}
+.odash-updated b{color:var(--gold-hi)}
+.odash-live-dot{width:7px;height:7px;border-radius:50%;background:var(--green,#7abf8e);box-shadow:0 0 0 3px rgba(122,191,142,.2);flex-shrink:0}
+
+.odash-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:26px}
+.odash-kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 22px;position:relative;overflow:hidden}
+.odash-kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold-hi))}
+.odash-kpi-num{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;color:var(--gold-hi);line-height:1.15;font-variant-numeric:tabular-nums}
+.odash-kpi-lbl{font-size:13px;color:var(--text2);margin-top:8px;font-weight:600;letter-spacing:.01em;line-height:1.4}
+
+.odash-section{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:26px 26px 24px;margin-bottom:20px}
+.odash-section-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.odash-section-icon{width:42px;height:42px;border-radius:12px;background:rgba(201,169,110,.12);display:flex;align-items:center;justify-content:center;
+  font-size:20px;flex-shrink:0}
+.odash-section-title{font-family:'Cormorant Garamond',serif;font-size:23px;font-weight:700;color:var(--text);letter-spacing:.01em}
+.odash-section-sub{font-size:12.5px;color:var(--text2);margin-top:3px;line-height:1.5}
+
+.odash-person-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:14px}
+.odash-person-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
+.odash-person-card.odash-jobdesk{border-left:4px solid var(--gold)}
+.odash-person-name{font-size:16.5px;font-weight:700;color:var(--text);margin-bottom:3px}
+.odash-person-role{font-size:11.5px;color:var(--gold-hi);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:12px}
+.odash-person-desc{font-size:13px;color:var(--text2);line-height:1.55;margin-bottom:12px}
+.odash-person-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:13.5px;color:var(--text2);padding:5px 0}
+.odash-person-row b{color:var(--text);font-weight:700;font-variant-numeric:tabular-nums}
+.odash-metric-lbl{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:3px}
+.odash-metric{font-size:14.5px;font-weight:700;color:var(--gold-hi);line-height:1.5}
+.odash-bar-track{height:11px;border-radius:6px;background:var(--border);overflow:hidden;margin:10px 0 6px}
+.odash-bar-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--gold),var(--gold-hi));transition:width .6s cubic-bezier(.16,1,.3,1)}
+.odash-bar-fill.odash-over{background:linear-gradient(90deg,var(--green,#7abf8e),#8fd4a4)}
+.odash-bar-foot{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--text2)}
+.odash-bar-pct{font-weight:800;color:var(--gold-hi);font-size:15px}
+
+.odash-table-wrap{overflow-x:auto}
+.odash-table{width:100%;border-collapse:collapse;font-size:14px;min-width:480px}
+.odash-table th{text-align:left;padding:11px 14px;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);
+  border-bottom:2px solid var(--border);white-space:nowrap}
+.odash-table td{padding:13px 14px;border-bottom:1px solid var(--border);color:var(--text);font-size:14px}
+.odash-table tr:last-child td{border-bottom:none}
+.odash-table tr:hover td{background:rgba(201,169,110,.05)}
+.odash-table td.odash-num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.odash-table td.odash-gold{color:var(--gold-hi)}
+
+.odash-list{display:flex;flex-direction:column}
+.odash-list-item{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:14px 2px;border-bottom:1px solid var(--border)}
+.odash-list-item:last-child{border-bottom:none}
+.odash-list-main{font-weight:700;font-size:14.5px;color:var(--text);line-height:1.4}
+.odash-list-meta{font-size:12.5px;color:var(--text2);margin-top:4px;line-height:1.5}
+.odash-list-amt{font-weight:800;color:var(--gold-hi);font-size:15px;white-space:nowrap;flex-shrink:0}
+.odash-day-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--gold-hi);
+  background:rgba(201,169,110,.12);border:1px solid var(--border-hi);border-radius:999px;padding:3px 10px;margin-right:8px}
+
+.odash-theme-row{display:grid;grid-template-columns:150px 1fr 40px;align-items:center;gap:12px;font-size:13.5px;padding:6px 0}
+.odash-theme-name{color:var(--text);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.odash-theme-track{height:9px;border-radius:5px;background:var(--surface3,var(--surface2));overflow:hidden}
+.odash-theme-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-hi));border-radius:5px}
+.odash-theme-count{text-align:right;color:var(--text2);font-weight:700;font-variant-numeric:tabular-nums}
+
+.odash-empty{padding:22px;text-align:center;color:var(--text2);font-size:13.5px;background:var(--surface2);border-radius:12px;border:1px dashed var(--border-hi)}
+
+@media (max-width:640px){
+  .odash-section{padding:20px 16px}
+  .odash-section-head{gap:10px}
+  .odash-section-icon{width:36px;height:36px;font-size:17px}
+  .odash-section-title{font-size:19px}
+  .odash-theme-row{grid-template-columns:110px 1fr 34px;gap:8px}
+  .odash-table{min-width:420px}
+}
+
 /* Ads Task page — card grid */
 .adtask-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
 .adtask-card{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--border-hi);
@@ -8587,8 +8663,9 @@ async function loadAllRoleDashboard() {
   creatorIds.forEach(id => ccByCreator[id] = { total: 0, done: 0 });
   let themeCount = {};   // konten bulan ini, dikelompokkan per tema
   let contentTotalMonth = 0;
+  let contentScheduleMonth = [];
   if (db) {
-    const res = await dbQ(d => d.from('content_calendar').select('creator_user_id,progress_status,content_theme')
+    const res = await dbQ(d => d.from('content_calendar').select('creator_user_id,progress_status,content_theme,content_date')
       .gte('content_date', first).lte('content_date', last));
     (res?.data || []).forEach(r => {
       if (!ccByCreator[r.creator_user_id]) ccByCreator[r.creator_user_id] = { total:0, done:0 };
@@ -8598,6 +8675,7 @@ async function loadAllRoleDashboard() {
       const tag = (r.content_theme || '').trim() || 'Belum ditandai';
       themeCount[tag] = (themeCount[tag] || 0) + 1;
     });
+    contentScheduleMonth = (res?.data || []).slice().sort((a,b) => String(a.content_date).localeCompare(String(b.content_date)));
   }
 
   // ── Ringkasan Customer & Revenue (CRM) — total keseluruhan + breakdown per pemegang akun ──
@@ -8731,14 +8809,19 @@ async function loadAllRoleDashboard() {
     adsScheduleMonth = res?.data || [];
   }
 
-  renderAllRoleDashboard({
+  const payload = {
     creatorIds, ccByCreator, hostIds, hostStats, fuIds, fuStats,
-    themeCount, contentTotalMonth,
+    themeCount, contentTotalMonth, contentScheduleMonth,
     totalCustomers, totalRevenue, revenueCustomerCount, custByOwner,
     budgetTotalMonth, budgetByCategory, budgetItemsMonth,
     liveTotalJam, liveTotalSakit, liveTotalIzin, liveTotalBatal, liveTotalSelesai, liveTotalSesi, liveByHost,
     adsCustTotal, adsCustByRole, adsScheduleMonth
-  });
+  };
+  if (isOwnerRole()) {
+    renderOwnerDashboard(payload);
+  } else {
+    renderAllRoleDashboard(payload);
+  }
 }
 
 function renderAllRoleDashboard({
@@ -9041,6 +9124,343 @@ function renderAllRoleDashboard({
   };
 }
 let _alldLastData = null;
+
+/* ═══════════════════════════════════════════════════════════
+   v41 — OWNER DASHBOARD ("Laporan Performa Tim")
+   Laporan view-only khusus Owner: layout & CSS terpisah dari
+   Dashboard Semua Role milik Moderator (pakai class odash, bukan ovt/alld),
+   font lebih besar, tersusun per section supaya mudah dibaca dan
+   tidak membingungkan. Memakai data realtime yang sama dengan
+   loadAllRoleDashboard() — jadi angkanya selalu sinkron.
+   ═══════════════════════════════════════════════════════════ */
+function renderOwnerDashboard({
+  creatorIds, ccByCreator, hostIds, hostStats, fuIds, fuStats,
+  themeCount = {}, contentTotalMonth = 0, contentScheduleMonth = [],
+  totalCustomers = 0, totalRevenue = 0, revenueCustomerCount = 0, custByOwner = {},
+  budgetTotalMonth = 0, budgetByCategory = {}, budgetItemsMonth = [],
+  liveTotalJam = 0, liveTotalSakit = 0, liveTotalIzin = 0, liveTotalBatal = 0,
+  liveTotalSelesai = 0, liveTotalSesi = 0, liveByHost = {},
+  adsCustTotal = 0, adsCustByRole = {}, adsScheduleMonth = []
+}) {
+  const wrap = document.getElementById('alld-view');
+  if (!wrap) return;
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const now = new Date();
+  const monthLabel = `${months[now.getMonth()]} ${now.getFullYear()}`;
+  const HARI_ID = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+
+  // ── Ringkasan agregat ──
+  const ccTotal = creatorIds.reduce((s,id) => s + (ccByCreator[id]?.total||0), 0);
+  const ccDone  = creatorIds.reduce((s,id) => s + (ccByCreator[id]?.done||0), 0);
+  const ccPct   = ccTotal ? Math.round((ccDone/ccTotal)*100) : 0;
+
+  const hostTargetSum = hostIds.reduce((s,id) => s + (Number(hostStats[id]?.target_amount)||0), 0);
+  const hostAchievedSum = hostIds.reduce((s,id) => s + (Number(hostStats[id]?.total_sales)||0), 0);
+  const hostPct = hostTargetSum ? Math.round((hostAchievedSum/hostTargetSum)*100) : 0;
+
+  const fuTotal = fuIds.reduce((s,id) => s + (fuStats[id]?.total||0), 0);
+  const fuHitSum = fuIds.reduce((s,id) => s + (fuStats[id]?.hit||0), 0);
+  const fuDaysSum = fuIds.reduce((s,id) => s + (fuStats[id]?.days||0), 0);
+  const fuPct = fuDaysSum ? Math.round((fuHitSum/fuDaysSum)*100) : 0;
+
+  const ccRows = creatorIds.map(id => {
+    const s = ccByCreator[id] || { total:0, done:0 };
+    const pct = s.total ? Math.round((s.done/s.total)*100) : 0;
+    return { id, name: LOCAL_USERS[id]?.name || id, pct, sub: `${s.done}/${s.total} slot tayang`, over: s.total>0 && s.done===s.total };
+  }).sort((a,b) => b.pct - a.pct);
+
+  const hostRows = hostIds.map(id => {
+    const st = hostStats[id];
+    const target = Number(st?.target_amount)||0, achieved = Number(st?.total_sales)||0;
+    const pct = target ? Math.min(100, Math.round((achieved/target)*100)) : 0;
+    return { id, name: LOCAL_USERS[id]?.name || id, pct, sub: `${crmFmtRupiah(achieved)} / ${crmFmtRupiah(target)}`, over: target>0 && achieved>=target };
+  }).sort((a,b) => b.pct - a.pct);
+
+  const fuRows = fuIds.map(id => {
+    const s = fuStats[id] || { total:0, hit:0, days:0 };
+    const pct = s.days ? Math.round((s.hit/s.days)*100) : 0;
+    return { id, name: LOCAL_USERS[id]?.name || id, pct, sub: `${s.hit}/${s.days} hari capai target · ${s.total} follow-up`, over: s.days>0 && s.hit===s.days };
+  }).sort((a,b) => b.pct - a.pct);
+
+  const barCardHtml = (rows, roleLbl) => rows.length ? rows.map(r => `
+    <div class="odash-person-card">
+      <div class="odash-person-name">${escHtml(r.name)}</div>
+      <div class="odash-person-role">${roleLbl}</div>
+      <div class="odash-bar-track"><div class="odash-bar-fill${r.over?' odash-over':''}" style="width:${r.pct}%"></div></div>
+      <div class="odash-bar-foot"><span>${escHtml(r.sub)}</span><span class="odash-bar-pct">${r.pct}%</span></div>
+    </div>`).join('') : `<div class="odash-empty">Belum ada data bulan ini.</div>`;
+
+  const ownerRows = Object.entries(custByOwner).map(([oid, s]) => ({
+    id: oid, name: oid === '__unassigned__' ? 'Belum Ditugaskan' : (LOCAL_USERS[oid]?.name || oid),
+    role: oid === '__unassigned__' ? '—' : rn(LOCAL_USERS[oid]?.role || ''),
+    count: s.count, revenue: s.revenue,
+    pct: totalCustomers ? (s.count / totalCustomers * 100) : 0
+  })).sort((a, b) => b.count - a.count);
+
+  const crmTableHtml = ownerRows.length ? `
+    <div class="odash-table-wrap"><table class="odash-table">
+      <thead><tr><th>Nama</th><th>Role</th><th style="text-align:right">Customer</th><th style="text-align:right">% Total</th><th style="text-align:right">Revenue</th></tr></thead>
+      <tbody>${ownerRows.map(o => `
+        <tr>
+          <td style="font-weight:700">${escHtml(o.name)}</td>
+          <td style="color:var(--text2)">${escHtml(o.role)}</td>
+          <td class="odash-num">${o.count}</td>
+          <td class="odash-num odash-gold">${o.pct.toFixed(1)}%</td>
+          <td class="odash-num odash-gold">${crmFmtRupiah(o.revenue)}</td>
+        </tr>`).join('')}</tbody>
+    </table></div>` : `<div class="odash-empty">Belum ada data customer.</div>`;
+
+  const themeRows = Object.entries(themeCount).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  const themeMax = themeRows.length ? themeRows[0][1] : 0;
+  const themeListHtml = themeRows.length ? themeRows.map(([label, count]) => `
+    <div class="odash-theme-row">
+      <div class="odash-theme-name" title="${escHtml(label)}">${escHtml(label)}</div>
+      <div class="odash-theme-track"><div class="odash-theme-fill" style="width:${themeMax ? Math.round((count/themeMax)*100) : 0}%"></div></div>
+      <div class="odash-theme-count">${count}</div>
+    </div>`).join('') : `<div class="odash-empty">Belum ada konten bulan ini.</div>`;
+  const topTheme = themeRows[0]?.[0] || '—';
+
+  // ── Rencana Konten Bulan Ini — jadwal per tanggal ──
+  const contentScheduleHtml = contentScheduleMonth.length ? contentScheduleMonth.map(c => {
+    const d = new Date(c.content_date + 'T00:00:00');
+    const hari = HARI_ID[d.getDay()];
+    const prog = CC_PROGRESS[c.progress_status] || CC_PROGRESS.belum_dikerjakan;
+    const creatorName = LOCAL_USERS[c.creator_user_id]?.name || c.creator_user_id || '—';
+    return `
+    <div class="odash-list-item">
+      <div style="min-width:0">
+        <div class="odash-list-main">${escHtml((c.content_theme || '').trim() || '(tanpa tema)')}</div>
+        <div class="odash-list-meta"><span class="odash-day-badge">${hari}, ${d.getDate()} ${months[d.getMonth()]}</span>Creator: ${escHtml(creatorName)} · <span style="color:${prog.color}">${prog.label}</span></div>
+      </div>
+    </div>`;
+  }).join('') : `<div class="odash-empty">Belum ada rencana konten bulan ini.</div>`;
+
+  // ── Rincian Budget Pengeluaran ──
+  const budgetCatRows = Object.entries(budgetByCategory).map(([cat, s]) => ({
+    cat, total: s.total, count: s.count,
+    pct: budgetTotalMonth ? (s.total / budgetTotalMonth * 100) : 0
+  })).sort((a, b) => b.total - a.total);
+
+  const budgetCatHtml = budgetCatRows.length ? budgetCatRows.map(b => {
+    const meta = budgetCatMeta(b.cat);
+    return `
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;font-size:13.5px">
+        <span>${budgetCatPill(b.cat)}</span>
+        <b style="color:var(--gold-hi)">${crmFmtRupiah(b.total)} <span style="color:var(--text2);font-weight:600">(${b.pct.toFixed(1)}% · ${b.count}x)</span></b>
+      </div>
+      <div class="odash-theme-track"><div class="odash-theme-fill" style="width:${b.pct}%;background:${meta.color}"></div></div>
+    </div>`;
+  }).join('') : `<div class="odash-empty">Belum ada pengeluaran bulan ini.</div>`;
+
+  const budgetItemsTop = budgetItemsMonth.slice(0, 12);
+  const budgetItemsHtml = budgetItemsTop.length ? `<div class="odash-list">${budgetItemsTop.map(it => {
+    const picName = it.pic_id ? (getUserMeta(it.pic_id)?.name || it.pic_id) : '—';
+    const tgl = it.tanggal ? fmtDayShort(it.tanggal) : '—';
+    return `
+    <div class="odash-list-item">
+      <div style="min-width:0">
+        <div class="odash-list-main" title="${escHtml(it.keterangan || '(tanpa keterangan)')}">${escHtml(it.keterangan || '(tanpa keterangan)')}</div>
+        <div class="odash-list-meta">${budgetCatPill(it.kategori)} · ${escHtml(tgl)} · PIC: ${escHtml(picName)}</div>
+      </div>
+      <div class="odash-list-amt">${crmFmtRupiah(Number(it.jumlah) || 0)}</div>
+    </div>`;
+  }).join('')}</div>` : `<div class="odash-empty">Belum ada pengeluaran bulan ini.</div>`;
+  const budgetMoreNote = budgetItemsMonth.length > budgetItemsTop.length
+    ? `<div class="odash-empty" style="margin-top:10px">+ ${budgetItemsMonth.length - budgetItemsTop.length} pengeluaran lain bulan ini — lihat rincian lengkap lewat Export Excel/PDF di atas</div>`
+    : '';
+
+  // ── Live — jam kerja & kehadiran per host ──
+  const liveHostRows = Object.entries(liveByHost).map(([hid, s]) => ({
+    id: hid, name: LOCAL_USERS[hid]?.name || hid,
+    jam: s.jam, sakit: s.sakit, izin: s.izin, batal: s.batal, selesai: s.selesai, total: s.total
+  })).sort((a, b) => b.jam - a.jam);
+
+  const liveHostHtml = liveHostRows.length ? liveHostRows.map(r => `
+    <div class="odash-person-card">
+      <div class="odash-person-name">${escHtml(r.name)}</div>
+      <div class="odash-person-role">Host Live</div>
+      <div class="odash-person-row"><span>Total Jam Live</span><b>${r.jam.toFixed(1)} jam</b></div>
+      <div class="odash-person-row"><span>Sesi Selesai</span><b>${r.selesai} / ${r.total}</b></div>
+      <div class="odash-person-row"><span>Sakit</span><b style="color:#d98ec0">${r.sakit}</b></div>
+      <div class="odash-person-row"><span>Izin</span><b style="color:#e8b86e">${r.izin}</b></div>
+      <div class="odash-person-row"><span>Batal</span><b style="color:var(--red)">${r.batal}</b></div>
+    </div>`).join('') : `<div class="odash-empty">Belum ada data live bulan ini.</div>`;
+
+  // ── Ads — customer masuk per role & jadwal iklan ──
+  const adsRoleRows = Object.entries(adsCustByRole).map(([role, s]) => ({
+    role, count: s.count, revenue: s.revenue,
+    pct: adsCustTotal ? (s.count / adsCustTotal * 100) : 0
+  })).sort((a, b) => b.count - a.count);
+
+  const adsRoleHtml = adsRoleRows.length ? adsRoleRows.map(r => `
+    <div class="odash-theme-row">
+      <div class="odash-theme-name" title="${escHtml(rn(r.role))}">${escHtml(rn(r.role))}</div>
+      <div class="odash-theme-track"><div class="odash-theme-fill" style="width:${r.pct}%"></div></div>
+      <div class="odash-theme-count">${r.count} <span style="color:var(--text2);font-weight:600">(${r.pct.toFixed(1)}%)</span></div>
+    </div>`).join('') : `<div class="odash-empty">Belum ada customer dari ads.</div>`;
+
+  const adsCalHtml = adsScheduleMonth.length ? `<div class="odash-list">${adsScheduleMonth.map(a => {
+    const d = new Date(a.ad_date + 'T00:00:00');
+    const hari = HARI_ID[d.getDay()];
+    return `
+    <div class="odash-list-item">
+      <div style="min-width:0">
+        <div class="odash-list-main">${escHtml(a.theme || '(tanpa tema)')}</div>
+        <div class="odash-list-meta"><span class="odash-day-badge">${hari}, ${d.getDate()} ${months[d.getMonth()]}</span>${escHtml(a.category || '—')} · Target/Kemana: ${escHtml(a.target || '—')} · ${a.status === 'published' ? 'Terbit' : 'Draft'}</div>
+      </div>
+    </div>`;
+  }).join('')}</div>` : `<div class="odash-empty">Belum ada jadwal iklan bulan ini.</div>`;
+
+  // ── Job Desk & Total Kerja per Role ──
+  const roleMembers = {};
+  Object.entries(LOCAL_USERS).forEach(([, u]) => {
+    if (u.role === 'guest' || u.role === 'owner') return;
+    (roleMembers[u.role] = roleMembers[u.role] || []).push(u.name);
+  });
+  const jobDeskCards = [
+    { label: 'Moderator', desc: 'Memimpin & mengawasi seluruh tim — approval, target, dan keputusan operasional.',
+      members: (roleMembers.head_moderator||[]).concat(roleMembers.moderator||[]),
+      metric: 'Mengawasi seluruh performa tim di laporan ini' },
+    { label: 'Admin & B2B Marketing', desc: 'Follow-up leads/customer, input transaksi, closing penjualan & kerja sama B2B/reseller.',
+      members: (roleMembers.admin||[]).concat(roleMembers.b2b_marketing||[]),
+      metric: `${fuTotal} follow-up bulan ini · ${fuHitSum}/${fuDaysSum} hari capai target` },
+    { label: 'Content Creator', desc: 'Membuat & menjadwalkan konten sesuai kalender dan tema yang ditentukan.',
+      members: roleMembers.content_creator||[],
+      metric: `${contentTotalMonth} konten bulan ini · ${ccDone}/${ccTotal} sudah tayang` },
+    { label: 'Host Live', desc: 'Live jualan TikTok sesuai jadwal & mengejar target penjualan bulanan.',
+      members: roleMembers.host_live||[],
+      metric: `${liveTotalSesi} sesi · ${liveTotalSelesai} selesai · ${liveTotalJam.toFixed(1)} jam live` }
+  ];
+  const jobDeskHtml = jobDeskCards.map(c => `
+    <div class="odash-person-card odash-jobdesk">
+      <div class="odash-person-name">${escHtml(c.label)}</div>
+      <div class="odash-person-role">${c.members.length} orang${c.members.length ? ': ' + escHtml(c.members.join(', ')) : ''}</div>
+      <div class="odash-person-desc">${c.desc}</div>
+      <div class="odash-metric-lbl">Total Dikerjakan Bulan Ini</div>
+      <div class="odash-metric">${c.metric}</div>
+    </div>`).join('');
+
+  wrap.innerHTML = `
+    <div class="odash-updated"><span class="odash-live-dot"></span>Data realtime — diperbarui otomatis · terakhir dimuat <b>${now.toLocaleString('id-ID', {hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'})}</b></div>
+
+    <div class="odash-kpi-grid">
+      <div class="odash-kpi-card"><div class="odash-kpi-num">${totalCustomers}</div><div class="odash-kpi-lbl">Total Customer (semua waktu)</div></div>
+      <div class="odash-kpi-card"><div class="odash-kpi-num" style="font-size:24px">${crmFmtRupiah(totalRevenue)}</div><div class="odash-kpi-lbl">Total Revenue (semua waktu)</div></div>
+      <div class="odash-kpi-card"><div class="odash-kpi-num">${revenueCustomerCount}</div><div class="odash-kpi-lbl">Customer Sudah Belanja</div></div>
+      <div class="odash-kpi-card"><div class="odash-kpi-num">${crmFmtRupiah(budgetTotalMonth)}</div><div class="odash-kpi-lbl">Budget Marketing — ${monthLabel}</div></div>
+      <div class="odash-kpi-card"><div class="odash-kpi-num">${contentTotalMonth}</div><div class="odash-kpi-lbl">Konten Bulan Ini (${ccDone} tayang)</div></div>
+      <div class="odash-kpi-card"><div class="odash-kpi-num">${liveTotalJam.toFixed(1)}</div><div class="odash-kpi-lbl">Jam Live Bulan Ini (${liveTotalSelesai} sesi selesai)</div></div>
+      <div class="odash-kpi-card"><div class="odash-kpi-num">${crmFmtRupiah(hostAchievedSum)}</div><div class="odash-kpi-lbl">Penjualan Live vs Target ${hostTargetSum ? crmFmtRupiah(hostTargetSum) : ''} (${hostPct}%)</div></div>
+      <div class="odash-kpi-card"><div class="odash-kpi-num">${adsCustTotal}</div><div class="odash-kpi-lbl">Customer Masuk dari Ads</div></div>
+    </div>
+
+    <div class="odash-section">
+      <div class="odash-section-head">
+        <div class="odash-section-icon">🗂️</div>
+        <div><div class="odash-section-title">Job Desk &amp; Total Kerja Tim</div><div class="odash-section-sub">${monthLabel} — siapa mengerjakan apa, dan berapa yang sudah diselesaikan tiap role</div></div>
+      </div>
+      <div class="odash-person-grid">${jobDeskHtml}</div>
+    </div>
+
+    <div class="odash-section">
+      <div class="odash-section-head">
+        <div class="odash-section-icon">🎬</div>
+        <div><div class="odash-section-title">Studio Konten</div><div class="odash-section-sub">${monthLabel} — progress tiap Content Creator (${ccDone}/${ccTotal} slot tayang, ${ccPct}%)</div></div>
+      </div>
+      <div class="odash-person-grid">${barCardHtml(ccRows, 'Content Creator')}</div>
+    </div>
+
+    <div class="odash-section">
+      <div class="odash-section-head">
+        <div class="odash-section-icon">📅</div>
+        <div><div class="odash-section-title">Rencana Konten Bulan Ini</div><div class="odash-section-sub">${monthLabel} — jadwal tayang per tanggal, tema, dan penanggung jawab</div></div>
+      </div>
+      <div class="odash-list">${contentScheduleHtml}</div>
+    </div>
+
+    <div class="odash-section">
+      <div class="odash-section-head">
+        <div class="odash-section-icon">🎥</div>
+        <div><div class="odash-section-title">Live — Jam Kerja &amp; Kehadiran</div><div class="odash-section-sub">${monthLabel} — total jam live, sesi selesai, sakit, izin, dan batal per host</div></div>
+      </div>
+      <div class="odash-person-grid">${liveHostHtml}</div>
+    </div>
+
+    <div class="odash-section">
+      <div class="odash-section-head">
+        <div class="odash-section-icon">📈</div>
+        <div><div class="odash-section-title">Live — Penjualan vs Target</div><div class="odash-section-sub">${monthLabel} — capaian penjualan tiap Host Live dibanding target bulanan</div></div>
+      </div>
+      <div class="odash-person-grid">${barCardHtml(hostRows, 'Host Live')}</div>
+    </div>
+
+    <div class="odash-section">
+      <div class="odash-section-head">
+        <div class="odash-section-icon">📞</div>
+        <div><div class="odash-section-title">Follow-up (Admin &amp; B2B)</div><div class="odash-section-sub">${monthLabel} — hari capai target follow-up harian per orang</div></div>
+      </div>
+      <div class="odash-person-grid">${barCardHtml(fuRows, 'Admin / B2B')}</div>
+    </div>
+
+    <div class="odash-section">
+      <div class="odash-section-head">
+        <div class="odash-section-icon">👥</div>
+        <div><div class="odash-section-title">CRM — Customer per PIC</div><div class="odash-section-sub">Ringkasan sederhana: total customer &amp; revenue yang dipegang tiap orang, semua waktu</div></div>
+      </div>
+      ${crmTableHtml}
+    </div>
+
+    <div class="odash-section">
+      <div class="odash-section-head">
+        <div class="odash-section-icon">📣</div>
+        <div><div class="odash-section-title">Ads — Customer Masuk per Role</div><div class="odash-section-sub">Total ${adsCustTotal} customer terdata masuk lewat iklan, dipegang oleh role apa saja</div></div>
+      </div>
+      <div class="odash-theme-list" style="display:flex;flex-direction:column;gap:8px">${adsRoleHtml}</div>
+    </div>
+
+    <div class="odash-section">
+      <div class="odash-section-head">
+        <div class="odash-section-icon">🗓️</div>
+        <div><div class="odash-section-title">Jadwal Iklan Bulan Ini</div><div class="odash-section-sub">${monthLabel} — hari, tema/iklan apa, dan target/kemana iklannya ditujukan</div></div>
+      </div>
+      ${adsCalHtml}
+    </div>
+
+    <div class="odash-section">
+      <div class="odash-section-head">
+        <div class="odash-section-icon">🏷️</div>
+        <div><div class="odash-section-title">Tema Konten Terpopuler</div><div class="odash-section-sub">${monthLabel} — tema paling banyak diproduksi (terbanyak: ${escHtml(topTheme)})</div></div>
+      </div>
+      <div class="odash-theme-list" style="display:flex;flex-direction:column;gap:8px">${themeListHtml}</div>
+    </div>
+
+    <div class="odash-section">
+      <div class="odash-section-head">
+        <div class="odash-section-icon">💰</div>
+        <div><div class="odash-section-title">Rincian Budget Pengeluaran</div><div class="odash-section-sub">${monthLabel} — total ${crmFmtRupiah(budgetTotalMonth)}, dipakai untuk apa saja</div></div>
+      </div>
+      ${budgetCatHtml}
+      ${budgetItemsHtml}
+      ${budgetMoreNote}
+    </div>`;
+
+  // Simpan snapshot supaya Export Excel/PDF (tombol yang sama dgn Moderator)
+  // tetap memakai angka identik dengan yang tampil di layar Owner.
+  const budgetCatRowsForExport = budgetCatRows;
+  _alldLastData = {
+    generatedAt: new Date(),
+    monthLabel,
+    ccRows, hostRows, fuRows, ownerRows, themeRows,
+    ccTotal, ccDone, ccPct,
+    hostTargetSum, hostAchievedSum, hostPct, hostPendingSum: 0,
+    fuTotal, fuHitSum, fuDaysSum, fuPct,
+    totalCustomers, totalRevenue, revenueCustomerCount, contentTotalMonth,
+    budgetTotalMonth, topTheme, budgetCatRows: budgetCatRowsForExport, budgetItemsMonth,
+    liveTotalJam, liveTotalSakit, liveTotalIzin, liveTotalBatal, liveTotalSelesai, liveTotalSesi,
+    liveHostRows, adsCustTotal, adsRoleRows, adsScheduleMonth
+  };
+}
 
 function alldGoToContent(id) {
   ccTargetId = id;
