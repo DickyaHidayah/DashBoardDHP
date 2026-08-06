@@ -4718,6 +4718,14 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
             <button class="ads-nav-btn" onclick="lsMonthNav(1)" aria-label="Next">›</button>
           </div>
           <button class="btn-gold btn-sm ads-today-btn" onclick="lsGoToday()">Bulan Ini</button>
+          <div class="ls-export-tools" style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn-g btn-sm" id="ls-export-xlsx-btn" onclick="exportLsScheduleExcel()" title="Export jadwal live bulan ini ke Excel — sesi &amp; hari libur, rapi siap dibagikan">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px"><rect x="1.6" y="2" width="12.8" height="10.6" rx="1.4" stroke="currentColor" stroke-width="1.2"/><path d="M1.6 5.4h12.8M5.6 2v10.6M9.7 2v10.6" stroke="currentColor" stroke-width="1"/></svg>Export Excel
+            </button>
+            <button class="btn-g btn-sm" id="ls-export-pdf-btn" onclick="exportLsSchedulePDF()" title="Export jadwal live bulan ini ke PDF — siap cetak">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px"><path d="M4 1.6h5.2L12.4 4.8V13.4a1 1 0 01-1 1H4a1 1 0 01-1-1V2.6a1 1 0 011-1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M9.2 1.6V4.8H12.4" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M4.6 8h5.2M4.6 10.2h5.2M4.6 5.8h2.4" stroke="currentColor" stroke-width="1"/></svg>Export PDF
+            </button>
+          </div>
         </div>
 
         <div class="cal-wrap">
@@ -8223,6 +8231,215 @@ function renderLiveSchedulePanel() {
     if (can.isHostLive(currentUser.role) && currentUser.id === lsTargetId) maybeShowTodayReminder();
   }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   v42 — EXPORT JADWAL LIVE STUDIO (per akun Host Live) ke Excel & PDF
+   Memakai data bulan berjalan yang sudah dimuat di lsMonthCache /
+   lsAttCache (host/moderator yang sedang aktif lewat hs-switch →
+   lsTargetId, bulan yang sedang dibuka → lsCursor). Menampilkan
+   sesi live per hari SEKALIGUS hari libur/sakit/izin dalam satu
+   tabel rapi, per tanggal urut sepanjang bulan.
+   ═══════════════════════════════════════════════════════════ */
+const LS_STATUS_LABEL = { scheduled:'Terjadwal', rehearsal:'Rehearsal', completed:'Selesai', cancelled:'Batal', sakit:'Sakit', izin:'Izin' };
+
+function _lsExportRows() {
+  const y = lsCursor.getFullYear(), m = lsCursor.getMonth();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const dows = currentLang === 'id' ? DOW_ID : DOW_EN;
+  const rows = [];
+  const totals = { totalSesi:0, totalSelesai:0, totalLibur:0, totalSakit:0, totalIzin:0, totalBatal:0 };
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateObj = new Date(y, m, d);
+    const ymd = ymdKey(dateObj);
+    const hari = dows[dateObj.getDay()];
+    const dayStatus = lsAttCache[ymd]; // 'Libur' | 'Sakit' | 'Izin' — override full-day
+    const sessions = (lsMonthCache[ymd] || []).slice().sort((a,b) => a.session_no - b.session_no);
+
+    if (dayStatus === 'Libur') {
+      totals.totalLibur++;
+      rows.push({ ymd, hari, sesi:'—', jam:'—', platform:'—', show:'—', status:'Libur', catatan: lsAttNoteCache[ymd] || '', isOff:true });
+      continue;
+    }
+    if ((dayStatus === 'Sakit' || dayStatus === 'Izin') && !sessions.length) {
+      if (dayStatus === 'Sakit') totals.totalSakit++; else totals.totalIzin++;
+      rows.push({ ymd, hari, sesi:'—', jam:'—', platform:'—', show:'—', status:`${dayStatus} (Full Day)`, catatan: lsAttNoteCache[ymd] || '', isOff:true });
+      continue;
+    }
+    if (!sessions.length) continue; // hari kosong tanpa sesi & tanpa libur — tidak perlu tampil, biar ringkas
+
+    sessions.forEach(s => {
+      totals.totalSesi++;
+      if (s.status === 'completed') totals.totalSelesai++;
+      else if (s.status === 'sakit') totals.totalSakit++;
+      else if (s.status === 'izin') totals.totalIzin++;
+      else if (s.status === 'cancelled') totals.totalBatal++;
+      rows.push({
+        ymd, hari,
+        sesi: `Sesi ${s.session_no}`,
+        jam: `${(s.time_start||'').slice(0,5)}–${(s.time_end||'').slice(0,5)}`,
+        platform: s.platform || '—',
+        show: s.show_title || '—',
+        status: LS_STATUS_LABEL[s.status] || s.status,
+        catatan: s.note || '',
+        isOff:false
+      });
+    });
+  }
+  return { rows, totals };
+}
+
+function exportLsScheduleExcel() {
+  if (!window.XLSX) { toast(t('crmNoLib')); return; }
+  if (!lsTargetId) { toast('Pilih akun host live dulu'); return; }
+  const btn = document.getElementById('ls-export-xlsx-btn');
+  if (btn) btn.disabled = true;
+  try {
+    const hostName = LOCAL_USERS[lsTargetId]?.name || lsTargetId;
+    const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+    const monthLabel = `${months[lsCursor.getMonth()]} ${lsCursor.getFullYear()}`;
+    const { rows, totals } = _lsExportRows();
+    const exportedBy = currentUser?.full_name || currentUser?.name || currentUser?.id || '—';
+    const stamp = new Date().toLocaleString('id-ID');
+
+    const aoa = [
+      ['DHP CREATIVE — JADWAL LIVE STUDIO'],
+      [''],
+      ['Akun Host Live', hostName, '', 'Periode', monthLabel],
+      ['Diekspor oleh', exportedBy, '', 'Tanggal Export', stamp],
+      [''],
+      ['Total Sesi', totals.totalSesi, '', 'Sesi Selesai', totals.totalSelesai, '', 'Sesi Batal', totals.totalBatal],
+      ['Total Libur', totals.totalLibur, '', 'Total Sakit', totals.totalSakit, '', 'Total Izin', totals.totalIzin],
+      [''],
+      ['Tanggal', 'Hari', 'Sesi', 'Jam', 'Platform', 'Show', 'Status', 'Catatan'],
+      ...rows.map(r => [fmtDayShort(r.ymd), r.hari, r.sesi, r.jam, r.platform, r.show, r.status, r.catatan || '—'])
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = [{wch:12},{wch:10},{wch:9},{wch:13},{wch:11},{wch:24},{wch:17},{wch:28}];
+    ws['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:7} }];
+    ws['!freeze'] = { xSplit: 0, ySplit: 9 };
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Jadwal Live');
+    const fname = `Jadwal_Live_${String(hostName).replace(/\s+/g,'_')}_${lsCursor.getFullYear()}${String(lsCursor.getMonth()+1).padStart(2,'0')}.xlsx`;
+    XLSX.writeFile(wb, fname);
+    toast('✓ Export Excel Jadwal Live selesai');
+    pushActivity?.(`Jadwal Live ${hostName}: export Excel (${monthLabel})`, 'info');
+  } catch (e) {
+    console.error('[DHP] exportLsScheduleExcel gagal:', e);
+    toast('Gagal export Excel: ' + (e.message || e));
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+window.exportLsScheduleExcel = exportLsScheduleExcel;
+
+async function exportLsSchedulePDF() {
+  if (!_pdfLibsReady()) { toast('Komponen PDF belum siap, coba lagi sebentar lagi'); return; }
+  if (!lsTargetId) { toast('Pilih akun host live dulu'); return; }
+  const btn = document.getElementById('ls-export-pdf-btn');
+  const origHTML = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Menyiapkan PDF…'; }
+  try {
+    const hostName = LOCAL_USERS[lsTargetId]?.name || lsTargetId;
+    const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+    const monthLabel = `${months[lsCursor.getMonth()]} ${lsCursor.getFullYear()}`;
+    const { rows, totals } = _lsExportRows();
+    const exportedBy = currentUser?.full_name || currentUser?.name || currentUser?.id || 'Moderator';
+    const genDate = new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit:'pt', format:'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const marginX = 40;
+    let y = 0;
+
+    // ── Header brand (gelap + aksen emas, konsisten dengan tema sistem) ──
+    doc.setFillColor(20, 20, 24);
+    doc.rect(0, 0, pageW, 92, 'F');
+    doc.setTextColor(201, 169, 110);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(18);
+    doc.text('DHP CREATIVE', marginX, 38);
+    doc.setTextColor(230, 230, 230); doc.setFontSize(11); doc.setFont('helvetica', 'normal');
+    doc.text(`Jadwal Live Studio — ${hostName}`, marginX, 58);
+    doc.setFontSize(9); doc.setTextColor(190, 190, 190);
+    doc.text(`${monthLabel}  ·  diekspor oleh ${exportedBy}  ·  dibuat ${genDate}`, marginX, 76);
+    doc.setTextColor(0, 0, 0);
+    y = 116;
+
+    // ── Kartu ringkasan ──
+    const kpis = [
+      [String(totals.totalSesi), 'Total Sesi'],
+      [String(totals.totalSelesai), 'Sesi Selesai'],
+      [String(totals.totalLibur), 'Total Libur'],
+      [String(totals.totalSakit), 'Total Sakit'],
+      [String(totals.totalIzin), 'Total Izin'],
+    ];
+    const gap = 8;
+    const colW = (pageW - marginX*2 - gap*(kpis.length-1)) / kpis.length;
+    kpis.forEach(([num, lbl], i) => {
+      const x = marginX + i*(colW+gap);
+      doc.setDrawColor(222,222,222); doc.setLineWidth(0.8);
+      doc.roundedRect(x, y, colW, 48, 4, 4);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(178,138,68);
+      doc.text(num, x+9, y+24);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.6); doc.setTextColor(95,95,95);
+      doc.text(doc.splitTextToSize(lbl, colW-16), x+9, y+38);
+    });
+    y += 48 + 24;
+    doc.setTextColor(0,0,0);
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11.5); doc.setTextColor(30,30,30);
+    doc.text('Detail Jadwal Sesi & Hari Libur', marginX, y); y += 8;
+
+    if (rows.length) {
+      doc.autoTable({
+        head: [['Tanggal','Hari','Sesi','Jam','Platform','Show','Status','Catatan']],
+        body: rows.map(r => [fmtDayShort(r.ymd), r.hari, r.sesi, r.jam, r.platform, r.show, r.status, r.catatan || '—']),
+        startY: y + 6, margin: { left: marginX, right: marginX },
+        styles: { font:'helvetica', fontSize: 8.2, cellPadding: 5, textColor: [40,40,40], overflow:'linebreak', valign:'middle', lineColor:[214,206,188], lineWidth:0.6 },
+        headStyles: { fillColor: [26,26,30], textColor: [230,208,166], fontStyle:'bold', fontSize: 8.3 },
+        alternateRowStyles: { fillColor: [248,246,241] },
+        theme: 'grid',
+        didParseCell: (data) => {
+          if (data.section === 'body' && data.column.index === 6) {
+            const v = String(data.cell.raw || '');
+            if (v.startsWith('Libur')) { data.cell.styles.textColor = [140,100,20]; data.cell.styles.fontStyle = 'bold'; data.cell.styles.fillColor = [250,242,224]; }
+            else if (v.startsWith('Sakit')) { data.cell.styles.textColor = [176,64,64]; data.cell.styles.fontStyle = 'bold'; }
+            else if (v.startsWith('Izin')) { data.cell.styles.textColor = [178,138,68]; data.cell.styles.fontStyle = 'bold'; }
+            else if (v.startsWith('Selesai')) { data.cell.styles.textColor = [70,140,90]; }
+            else if (v.startsWith('Batal')) { data.cell.styles.textColor = [150,150,150]; }
+          }
+        }
+      });
+      y = doc.lastAutoTable.finalY + 20;
+    } else {
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(120,120,120);
+      doc.text('Belum ada sesi live atau hari libur tercatat bulan ini.', marginX, y + 14);
+      doc.setTextColor(0,0,0);
+    }
+
+    // ── Footer nomor halaman ──
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(150,150,150);
+      doc.text(`DHP Creative — Jadwal Live ${hostName}, dibuat ${genDate}`, marginX, pageH - 20);
+      doc.text(`Halaman ${i}/${pageCount}`, pageW - marginX - 60, pageH - 20);
+    }
+
+    doc.save(`Jadwal_Live_${String(hostName).replace(/\s+/g,'_')}_${lsCursor.getFullYear()}${String(lsCursor.getMonth()+1).padStart(2,'0')}.pdf`);
+    toast('✓ Export PDF Jadwal Live selesai');
+    pushActivity?.(`Jadwal Live ${hostName}: export PDF (${monthLabel})`, 'info');
+  } catch (e) {
+    console.error('[DHP] exportLsSchedulePDF gagal:', e);
+    toast('Gagal membuat PDF: ' + (e.message || e));
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = origHTML || 'Export PDF'; }
+  }
+}
+window.exportLsSchedulePDF = exportLsSchedulePDF;
 
 /* ── Moderator: banner sesi yang jam-nya sudah lewat tapi belum ada laporan (semua host) ── */
 async function loadLsPendingBanner() {
