@@ -8709,29 +8709,86 @@ async function loadLiveDashboard() {
   if (!ids.length) { wrap.innerHTML = `<div class="tbl-wrap"><div class="tbl-empty" style="padding:28px">Belum ada Host Live terdaftar.</div></div>`; return; }
 
   wrap.innerHTML = `<div class="ldash-loading">Memuat data seluruh host…</div>`;
-  const ym = ymPeriodKey(new Date());
+  const now = new Date();
+  const ym = ymPeriodKey(now);
+  const first = ymdKey(new Date(now.getFullYear(), now.getMonth(), 1));
+  const last  = ymdKey(new Date(now.getFullYear(), now.getMonth() + 1, 0));
 
-  const rows = await Promise.all(ids.map(async id => {
-    let target = 0, achieved = 0, sessionsCount = 0, libur = 0, pending = 0, totalHours = 0, sakit = 0, izin = 0;
-    if (db) {
-      const [statRes, pendRes] = await Promise.all([
-        dbQ(d => d.rpc('host_dashboard_stats', { p_host_id: id, p_period_ym: ym })),
-        dbQ(d => d.from('v_live_sessions_pending').select('id').eq('host_user_id', id))
-      ]);
-      const st = statRes?.data?.[0];
-      target        = Number(st?.target_amount) || 0;
-      achieved       = Number(st?.total_sales) || 0;
-      sessionsCount  = Number(st?.total_sessions) || 0;
-      libur          = Number(st?.total_libur) || 0;
-      totalHours     = Number(st?.total_hours) || 0;
-      sakit          = Number(st?.total_sakit) || 0;
-      izin           = Number(st?.total_izin) || 0;
-      pending        = (pendRes?.data || []).length;
-    }
-    return { id, name: LOCAL_USERS[id]?.name || id, target, achieved, sessionsCount, libur, pending, totalHours, sakit, izin };
-  }));
+  const [rowsBase, platRes] = await Promise.all([
+    Promise.all(ids.map(async id => {
+      let target = 0, achieved = 0, sessionsCount = 0, libur = 0, pending = 0, totalHours = 0, sakit = 0, izin = 0;
+      if (db) {
+        const [statRes, pendRes] = await Promise.all([
+          dbQ(d => d.rpc('host_dashboard_stats', { p_host_id: id, p_period_ym: ym })),
+          dbQ(d => d.from('v_live_sessions_pending').select('id').eq('host_user_id', id))
+        ]);
+        const st = statRes?.data?.[0];
+        target        = Number(st?.target_amount) || 0;
+        achieved       = Number(st?.total_sales) || 0;
+        sessionsCount  = Number(st?.total_sessions) || 0;
+        libur          = Number(st?.total_libur) || 0;
+        totalHours     = Number(st?.total_hours) || 0;
+        sakit          = Number(st?.total_sakit) || 0;
+        izin           = Number(st?.total_izin) || 0;
+        pending        = (pendRes?.data || []).length;
+      }
+      return { id, name: LOCAL_USERS[id]?.name || id, target, achieved, sessionsCount, libur, pending, totalHours, sakit, izin };
+    })),
+    // v44: 1 query borongan buat semua host — dasar perhitungan "Performa per
+    // Platform" (Shopee vs TikTok), dipisah dari total gabungan. Pakai kolom
+    // shopee_*/tiktok_* yang sudah ada di live_schedule, tidak perlu RPC baru.
+    db ? dbQ(d => d.from('live_schedule')
+        .select('host_user_id,gmv_amount,viewers_count,products_sold,shopee_gmv_amount,shopee_viewers_count,shopee_products_sold,tiktok_gmv_amount,tiktok_viewers_count,tiktok_products_sold')
+        .in('host_user_id', ids).gte('schedule_date', first).lte('schedule_date', last))
+      : Promise.resolve(null)
+  ]);
+
+  const platformByHost = _ldashAggregatePlatform(platRes?.data || [], ids);
+  const rows = rowsBase.map(r => ({ ...r, ...(platformByHost[r.id] || {}) }));
 
   renderLiveDashboard(rows);
+}
+
+/* v44: hitung total per platform (Shopee/TikTok) untuk tiap host dari baris
+   live_schedule mentah bulan berjalan — sesi tanpa laporan diabaikan, sesi
+   lama yang belum diisi rincian per-platform masuk "unsplit" (tetap dihitung
+   di total gabungan tabel/summary, tapi tidak dipaksakan ke salah satu platform). */
+function _ldashAggregatePlatform(sessions, ids) {
+  const perHost = {};
+  ids.forEach(id => { perHost[id] = { shopeeGmv:0, shopeeViewers:0, shopeeProducts:0, tiktokGmv:0, tiktokViewers:0, tiktokProducts:0, unsplitGmv:0, unsplitViewers:0 }; });
+  (sessions || []).forEach(s => {
+    if (s.products_sold == null && s.gmv_amount == null && s.viewers_count == null) return;
+    const bucket = perHost[s.host_user_id]; if (!bucket) return;
+    const hasSplit = s.shopee_products_sold != null || s.tiktok_products_sold != null
+                   || s.shopee_gmv_amount != null || s.tiktok_gmv_amount != null;
+    if (hasSplit) {
+      bucket.shopeeGmv += Number(s.shopee_gmv_amount || 0);
+      bucket.shopeeViewers += Number(s.shopee_viewers_count || 0);
+      bucket.shopeeProducts += Number(s.shopee_products_sold || 0);
+      bucket.tiktokGmv += Number(s.tiktok_gmv_amount || 0);
+      bucket.tiktokViewers += Number(s.tiktok_viewers_count || 0);
+      bucket.tiktokProducts += Number(s.tiktok_products_sold || 0);
+    } else {
+      bucket.unsplitGmv += Number(s.gmv_amount || 0);
+      bucket.unsplitViewers += Number(s.viewers_count || 0);
+    }
+  });
+  return perHost;
+}
+
+function _ldashFmtShort(n) {
+  n = Number(n) || 0;
+  const sign = n < 0 ? '-' : ''; n = Math.abs(n);
+  if (n >= 1e9) return sign + (n/1e9).toFixed(n>=1e10?0:1).replace(/\.0$/,'') + 'M';
+  if (n >= 1e6) return sign + (n/1e6).toFixed(n>=1e7?0:1).replace(/\.0$/,'') + 'jt';
+  if (n >= 1e3) return sign + (n/1e3).toFixed(0) + 'rb';
+  return sign + String(n);
+}
+
+let _ldashCharts = {};
+function _ldashDestroyCharts() {
+  Object.values(_ldashCharts).forEach(c => { try { c.destroy(); } catch(e) {} });
+  _ldashCharts = {};
 }
 
 function renderLiveDashboard(rows) {
@@ -8743,7 +8800,6 @@ function renderLiveDashboard(rows) {
   const pctOf = r => r.target > 0 ? r.achieved / r.target : (r.achieved > 0 ? 1 : 0);
   const ranked = [...rows].sort((a,b) => pctOf(b) - pctOf(a) || b.achieved - a.achieved);
   const bestPct = rows.length ? Math.max(...rows.map(pctOf)) : 0;
-  const maxScale = Math.max(1, ...rows.map(r => Math.max(r.target, r.achieved)));
 
   // ── Ringkasan agregat (mewah + informatif) ──
   const totalTarget   = rows.reduce((s,r)=>s+r.target,0);
@@ -8825,20 +8881,14 @@ function renderLiveDashboard(rows) {
     </div>`;
   }).join('');
 
-  const chartRows = ranked.map(r => {
-    const widthPct  = Math.round((r.achieved / maxScale) * 100);
-    const targetPct = r.target > 0 ? Math.min(Math.round((r.target / maxScale) * 100), 100) : null;
-    const over = r.target > 0 && r.achieved >= r.target;
-    return `
-    <div class="hs-chart-row">
-      <div class="hs-chart-name">${escHtml(r.name)}</div>
-      <div class="hs-chart-track">
-        <div class="hs-chart-fill${over ? ' hs-over' : ''}" style="width:${widthPct}%"></div>
-        ${targetPct !== null ? `<div class="hs-chart-target-mark" style="left:${targetPct}%"></div>` : ''}
-      </div>
-      <div class="hs-chart-val"><b>${crmFmtRupiah(r.achieved)}</b></div>
-    </div>`;
-  }).join('');
+  // ── v44: total per platform, seluruh host — dasar chart & kartu "bedain" Shopee/TikTok ──
+  const totalShopeeGmv     = rows.reduce((s,r)=>s+(r.shopeeGmv||0),0);
+  const totalTiktokGmv     = rows.reduce((s,r)=>s+(r.tiktokGmv||0),0);
+  const totalShopeeViewers = rows.reduce((s,r)=>s+(r.shopeeViewers||0),0);
+  const totalTiktokViewers = rows.reduce((s,r)=>s+(r.tiktokViewers||0),0);
+  const totalUnsplitGmv    = rows.reduce((s,r)=>s+(r.unsplitGmv||0),0);
+  const platformGmvTotal   = totalShopeeGmv + totalTiktokGmv;
+  const shopeeSharePct     = platformGmvTotal > 0 ? Math.round(totalShopeeGmv/platformGmvTotal*100) : 0;
 
   const tableRows = ranked.map((r,i) => `
     <tr>
@@ -8846,6 +8896,8 @@ function renderLiveDashboard(rows) {
       <td>${crmFmtRupiah(r.achieved)}</td>
       <td>${crmFmtRupiah(r.target)}</td>
       <td>${r.target > 0 ? Math.round(pctOf(r) * 100) + '%' : '—'}</td>
+      <td><span class="lsp-dot lsp-dot-shopee" style="display:inline-block;margin-right:5px"></span>${crmFmtRupiah(r.shopeeGmv||0)}</td>
+      <td><span class="lsp-dot lsp-dot-tiktok" style="display:inline-block;margin-right:5px"></span>${crmFmtRupiah(r.tiktokGmv||0)}</td>
       <td>${r.totalHours.toFixed(1)} jam</td>
       <td>${r.sessionsCount}</td>
       <td>${r.libur}</td>
@@ -8864,22 +8916,115 @@ function renderLiveDashboard(rows) {
 
     <div class="hs-compare-grid">${cards}</div>
 
-    <div class="hs-chart-wrap">
-      <div class="hs-chart-title">Pencapaian Penjualan vs Target</div>
-      ${chartRows}
+    <div class="myperf-card" style="margin-bottom:18px">
+      <div class="myperf-card-title">Pencapaian Penjualan vs Target</div>
+      <div class="myperf-card-sub">Realisasi dibanding target tiap host, bulan ini</div>
+      <div class="myperf-canvas-wrap"><canvas id="ldash-target-canvas"></canvas></div>
     </div>
+
+    <div class="ph" style="margin-top:4px">
+      <div class="ph-left">
+        <div class="pt">Performa per Platform <span style="font-weight:400;color:var(--text2);font-size:12px">— Shopee vs TikTok</span></div>
+        <div class="ps">Pendapatan &amp; penonton dipisah per platform, seluruh host, bulan ini</div>
+      </div>
+    </div>
+    <div class="lsp-summary" style="margin-bottom:14px">
+      <div class="lsp-summary-card">
+        <div class="lsp-summary-ico" style="background:rgba(238,77,45,.12);color:#ee4d2d">${LSP_ICON_COIN}</div>
+        <div><div class="lsp-summary-num">${crmFmtRupiah(totalShopeeGmv)}</div><div class="lsp-summary-lbl">Pendapatan Shopee</div></div>
+      </div>
+      <div class="lsp-summary-card">
+        <div class="lsp-summary-ico" style="background:rgba(254,44,85,.12);color:#fe2c55">${LSP_ICON_COIN}</div>
+        <div><div class="lsp-summary-num">${crmFmtRupiah(totalTiktokGmv)}</div><div class="lsp-summary-lbl">Pendapatan TikTok</div></div>
+      </div>
+      <div class="lsp-summary-card">
+        <div class="lsp-summary-ico">${LSP_ICON_EYE}</div>
+        <div><div class="lsp-summary-num">${(totalShopeeViewers+totalTiktokViewers).toLocaleString('id-ID')}</div><div class="lsp-summary-lbl">Total Penonton — Semua Platform</div></div>
+      </div>
+    </div>
+    <div class="myperf-charts">
+      <div class="myperf-card">
+        <div class="myperf-card-title">Pendapatan per Host per Platform</div>
+        <div class="myperf-card-sub">Shopee vs TikTok, tiap host dibandingkan berdampingan</div>
+        <div class="myperf-canvas-wrap"><canvas id="ldash-platform-bar-canvas"></canvas></div>
+      </div>
+      <div class="myperf-card">
+        <div class="myperf-card-title">Komposisi Pendapatan</div>
+        <div class="myperf-card-sub">Porsi Shopee vs TikTok, seluruh host</div>
+        <div class="myperf-canvas-wrap donut"><canvas id="ldash-platform-donut-canvas"></canvas></div>
+      </div>
+    </div>
+    ${totalUnsplitGmv > 0 ? `<div class="lsp-empty-note" style="margin:-4px 0 18px">⚠ ${crmFmtRupiah(totalUnsplitGmv)} dari laporan lama yang belum diisi rincian per platform — belum masuk ke chart Shopee/TikTok di atas, tapi tetap terhitung di total pencapaian &amp; tabel gabungan.</div>` : ''}
 
     <div class="tbl-wrap">
       <div class="tbl-head"><div class="tbl-title">Ringkasan Perbandingan</div></div>
       <div class="tbl-scroll">
         <table>
           <thead><tr>
-            <th>Host</th><th>Tercapai</th><th>Target</th><th>%</th><th>Jam Kerja</th><th>Sesi</th><th>Libur</th><th>Sakit</th><th>Izin</th><th>Blm Lapor</th>
+            <th>Host</th><th>Tercapai</th><th>Target</th><th>%</th><th>Shopee</th><th>TikTok</th><th>Jam Kerja</th><th>Sesi</th><th>Libur</th><th>Sakit</th><th>Izin</th><th>Blm Lapor</th>
           </tr></thead>
           <tbody>${tableRows}</tbody>
         </table>
       </div>
     </div>`;
+
+  // ── Render chart Chart.js: elegan, warna konsisten tema gold + brand platform ──
+  _ldashDestroyCharts();
+  const c = _myPerfChartColors();
+
+  const targetEl = document.getElementById('ldash-target-canvas');
+  if (targetEl) {
+    _ldashCharts.target = new Chart(targetEl.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: ranked.map(r => r.name),
+        datasets: [
+          { label: 'Realisasi', data: ranked.map(r => r.achieved), backgroundColor: c.gold, borderRadius: 6, barPercentage: .62 },
+          { label: 'Target',    data: ranked.map(r => r.target),   backgroundColor: c.border, borderRadius: 6, barPercentage: .62 },
+        ]
+      },
+      options: {
+        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: c.text2, font: { size: 10 }, boxWidth: 10, boxHeight: 10 } },
+          tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${crmFmtRupiah(ctx.parsed.x)}` } }
+        },
+        scales: {
+          x: { ticks: { color: c.text2, font: { size: 9.5 }, callback: v => _ldashFmtShort(v) }, grid: { color: c.border }, beginAtZero: true },
+          y: { ticks: { color: c.text2, font: { size: 10.5 } }, grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  const platBarEl = document.getElementById('ldash-platform-bar-canvas');
+  if (platBarEl) {
+    _ldashCharts.platformBar = new Chart(platBarEl.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: ranked.map(r => r.name),
+        datasets: [
+          { label: 'Shopee', data: ranked.map(r => r.shopeeGmv||0), backgroundColor: '#ee4d2d', borderRadius: 6 },
+          { label: 'TikTok', data: ranked.map(r => r.tiktokGmv||0), backgroundColor: '#fe2c55', borderRadius: 6 },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: c.text2, font: { size: 10 }, boxWidth: 10, boxHeight: 10 } },
+          tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${crmFmtRupiah(ctx.parsed.y)}` } }
+        },
+        scales: {
+          x: { ticks: { color: c.text2, font: { size: 9.5 } }, grid: { display: false } },
+          y: { ticks: { color: c.text2, font: { size: 9.5 }, callback: v => _ldashFmtShort(v) }, grid: { color: c.border }, beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  _ldashCharts.platformDonut = _myPerfMakeDonut('ldash-platform-donut-canvas',
+    { labels: ['Shopee', 'TikTok'], values: [totalShopeeGmv, totalTiktokGmv] },
+    ['#ee4d2d', '#fe2c55'], shopeeSharePct + '%', 'Shopee', c);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -13595,6 +13740,11 @@ function initLiveScheduleRealtime() {
       if (!isMod && hostId && currentUser && hostId !== currentUser.id) return;
       if (isLiveStudioPageActive() && hostId === lsTargetId) {
         loadLsMonth().then(() => safe(loadUpcomingLiveSchedule));
+      } else if (isLiveDashboardPageActive() && isMod) {
+        // v44: Live Dashboard (perbandingan seluruh host + Performa per
+        // Platform) ikut realtime — sesi/laporan baru dari host manapun
+        // langsung memperbarui chart tanpa perlu refresh manual.
+        safe(loadLiveDashboard);
       } else {
         flagRemoteUpdate();
       }
@@ -13637,6 +13787,10 @@ function isContentStudioPageActive() {
 }
 function isLiveStudioPageActive() {
   const el = document.getElementById('pg-live_studio');
+  return el && el.classList.contains('active');
+}
+function isLiveDashboardPageActive() {
+  const el = document.getElementById('pg-live_dashboard');
   return el && el.classList.contains('active');
 }
 
