@@ -607,11 +607,21 @@ body.light .hs-switch-btn.active{color:#fff}
 .lsp-card:hover{border-color:var(--border-hi)}
 .lsp-card.lsp-shopee{border-left-color:#ee4d2d}
 .lsp-card.lsp-tiktok{border-left-color:#fe2c55}
-.lsp-card-head{display:flex;align-items:center;gap:9px;margin-bottom:14px}
+.lsp-card-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .lsp-dot{width:11px;height:11px;border-radius:50%;flex:none}
 .lsp-dot-shopee{background:#ee4d2d}
 .lsp-dot-tiktok{background:linear-gradient(135deg,#25f4ee,#fe2c55)}
 .lsp-card-name{font-size:12.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text)}
+
+/* ── Badge logo platform (Shopee / TikTok) — vector, warna khas tiap
+     platform, dipakai konsisten di kartu, tabel, dan form laporan sesi ── */
+.plat-badge{display:inline-flex;align-items:center;justify-content:center;border-radius:8px;flex:none}
+.plat-badge svg{width:62%;height:62%}
+.plat-badge.plat-shopee{background:rgba(238,77,45,.14);color:#ee4d2d}
+.plat-badge.plat-tiktok{background:linear-gradient(135deg,rgba(37,244,238,.16),rgba(254,44,85,.16));color:#fe2c55}
+.plat-badge-lg{width:36px;height:36px;border-radius:10px}
+.plat-badge-md{width:24px;height:24px}
+.plat-badge-sm{width:17px;height:17px;border-radius:5px}
 .lsp-card-stats{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .lsp-stat-num{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--gold-hi);letter-spacing:.01em}
 .lsp-stat-lbl{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-top:3px}
@@ -4859,6 +4869,12 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
           </div>
           <div class="ph-acts">
             <button class="btn-sm btn-gold" onclick="loadLiveDashboard()" title="Muat ulang">⟲ Muat Ulang</button>
+            <button class="btn-g btn-sm" id="ldash-export-xlsx-btn" onclick="exportLiveDashboardExcel()" title="Export ke Excel — ringkasan, perbandingan host &amp; performa per platform">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px"><rect x="1.6" y="2" width="12.8" height="10.6" rx="1.4" stroke="currentColor" stroke-width="1.2"/><path d="M1.6 5.4h12.8M5.6 2v10.6M9.7 2v10.6" stroke="currentColor" stroke-width="1"/></svg>Export Excel
+            </button>
+            <button class="btn-g btn-sm" id="ldash-export-pdf-btn" onclick="exportLiveDashboardPDF()" title="Export ke PDF — laporan rapi siap cetak">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px"><path d="M4 1.6h5.2L12.4 4.8V13.4a1 1 0 01-1 1H4a1 1 0 01-1-1V2.6a1 1 0 011-1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M9.2 1.6V4.8H12.4" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M4.6 8h5.2M4.6 10.2h5.2M4.6 5.8h2.4" stroke="currentColor" stroke-width="1"/></svg>Export PDF
+            </button>
           </div>
         </div>
         <div id="ldash-view"></div>
@@ -8896,8 +8912,8 @@ function renderLiveDashboard(rows) {
       <td>${crmFmtRupiah(r.achieved)}</td>
       <td>${crmFmtRupiah(r.target)}</td>
       <td>${r.target > 0 ? Math.round(pctOf(r) * 100) + '%' : '—'}</td>
-      <td><span class="lsp-dot lsp-dot-shopee" style="display:inline-block;margin-right:5px"></span>${crmFmtRupiah(r.shopeeGmv||0)}</td>
-      <td><span class="lsp-dot lsp-dot-tiktok" style="display:inline-block;margin-right:5px"></span>${crmFmtRupiah(r.tiktokGmv||0)}</td>
+      <td><span style="display:inline-flex;align-items:center;gap:6px">${platBadge('shopee','sm')}${crmFmtRupiah(r.shopeeGmv||0)}</span></td>
+      <td><span style="display:inline-flex;align-items:center;gap:6px">${platBadge('tiktok','sm')}${crmFmtRupiah(r.tiktokGmv||0)}</span></td>
       <td>${r.totalHours.toFixed(1)} jam</td>
       <td>${r.sessionsCount}</td>
       <td>${r.libur}</td>
@@ -8930,11 +8946,11 @@ function renderLiveDashboard(rows) {
     </div>
     <div class="lsp-summary" style="margin-bottom:14px">
       <div class="lsp-summary-card">
-        <div class="lsp-summary-ico" style="background:rgba(238,77,45,.12);color:#ee4d2d">${LSP_ICON_COIN}</div>
+        ${platBadge('shopee','lg')}
         <div><div class="lsp-summary-num">${crmFmtRupiah(totalShopeeGmv)}</div><div class="lsp-summary-lbl">Pendapatan Shopee</div></div>
       </div>
       <div class="lsp-summary-card">
-        <div class="lsp-summary-ico" style="background:rgba(254,44,85,.12);color:#fe2c55">${LSP_ICON_COIN}</div>
+        ${platBadge('tiktok','lg')}
         <div><div class="lsp-summary-num">${crmFmtRupiah(totalTiktokGmv)}</div><div class="lsp-summary-lbl">Pendapatan TikTok</div></div>
       </div>
       <div class="lsp-summary-card">
@@ -9025,7 +9041,239 @@ function renderLiveDashboard(rows) {
   _ldashCharts.platformDonut = _myPerfMakeDonut('ldash-platform-donut-canvas',
     { labels: ['Shopee', 'TikTok'], values: [totalShopeeGmv, totalTiktokGmv] },
     ['#ee4d2d', '#fe2c55'], shopeeSharePct + '%', 'Shopee', c);
+
+  // v45: simpan snapshot data yang baru dirender supaya export Excel/PDF
+  // memakai angka yang identik dengan yang tampil di layar (bukan query ulang).
+  _ldashLastData = {
+    generatedAt: new Date(),
+    monthLabel: `${months[now.getMonth()]} ${now.getFullYear()}`,
+    ranked, rows,
+    totalTarget, totalAchieved, totalSessions, totalPending, totalHoursAll,
+    totalSakitAll, totalIzinAll, overallPct, achievedCount,
+    totalShopeeGmv, totalTiktokGmv, totalShopeeViewers, totalTiktokViewers,
+    totalUnsplitGmv, shopeeSharePct
+  };
 }
+let _ldashLastData = null;
+
+/* ═══════════════════════════════════════════════════════════
+   v45 — EXPORT "Live Dashboard" (perbandingan seluruh Host Live)
+   ke Excel (multi-sheet) dan PDF (laporan rapi bermerek), sama
+   gaya dengan export Dashboard Semua Role. Memakai snapshot
+   _ldashLastData yang disimpan renderLiveDashboard().
+   ═══════════════════════════════════════════════════════════ */
+async function _ldashEnsureData() {
+  if (!_ldashLastData) { await loadLiveDashboard(); }
+  return _ldashLastData;
+}
+
+async function exportLiveDashboardExcel() {
+  if (!window.XLSX) { toast(t('crmNoLib')); return; }
+  const btn = document.getElementById('ldash-export-xlsx-btn');
+  if (btn) btn.disabled = true;
+  try {
+    const d = await _ldashEnsureData();
+    if (!d) { toast('Data belum siap, coba lagi.'); return; }
+    const wb = XLSX.utils.book_new();
+    const now = new Date();
+    const stamp = now.toLocaleString('id-ID');
+    const exportedBy = currentUser?.full_name || currentUser?.name || currentUser?.id || 'Moderator';
+    const rp = '"Rp "#,##0', pct = '0.0%', num = '#,##0';
+
+    // ── SHEET 1 — RINGKASAN ──
+    const sumAoa = [
+      ['DHP CREATIVE — LIVE DASHBOARD (PERBANDINGAN SELURUH HOST)'],
+      [''],
+      ['Diekspor oleh', exportedBy, '', 'Tanggal Export', stamp],
+      ['Periode', d.monthLabel],
+      [''],
+      ['═══════════════════', 'RINGKASAN UTAMA', '═══════════════════'],
+      ['Metrik', 'Nilai', 'Keterangan'],
+      ['Total Pencapaian', d.totalAchieved, `dari target ${crmFmtRupiah(d.totalTarget)}`],
+      ['Progress Gabungan', d.overallPct, `${d.totalTarget>0?Math.round(d.overallPct*100):0}% dari target seluruh host`],
+      ['Host Capai Target', d.achievedCount, `dari ${d.rows.length} host live`],
+      ['Total Sesi Bulan Ini', d.totalSessions, ''],
+      ['Laporan Menunggu ACC', d.totalPending, d.totalPending ? 'perlu ditindaklanjuti' : 'semua sudah lapor'],
+      ['Total Jam Live', d.totalHoursAll, 'seluruh host bulan ini'],
+      ['Total Sakit', d.totalSakitAll, ''],
+      ['Total Izin', d.totalIzinAll, ''],
+      [''],
+      ['═══════════════════', 'PERFORMA PER PLATFORM', '═══════════════════'],
+      ['Pendapatan Shopee', d.totalShopeeGmv, `${d.shopeeSharePct}% dari total pendapatan platform`],
+      ['Pendapatan TikTok', d.totalTiktokGmv, `${100-d.shopeeSharePct}% dari total pendapatan platform`],
+      ['Total Penonton — Semua Platform', d.totalShopeeViewers + d.totalTiktokViewers, ''],
+      ['Belum Terpisah Per Platform', d.totalUnsplitGmv, 'laporan lama yang belum diisi rincian Shopee/TikTok'],
+    ];
+    const wsSum = XLSX.utils.aoa_to_sheet(sumAoa);
+    wsSum['!cols'] = [{wch:32},{wch:22},{wch:46}];
+    wsSum['!merges'] = [{s:{r:0,c:0},e:{r:0,c:2}}];
+    [['B8',rp],['B9',pct],['B13',num],['B17',rp],['B18',rp],['B19',num],['B20',rp]].forEach(([cell,fmt]) => { if (wsSum[cell]) wsSum[cell].z = fmt; });
+    XLSX.utils.book_append_sheet(wb, wsSum, '📊 Ringkasan');
+
+    // ── SHEET 2 — PERBANDINGAN HOST ──
+    const hostAoa = [
+      ['DHP CREATIVE — PERBANDINGAN HOST LIVE'], [`Export: ${stamp}`], [`Periode: ${d.monthLabel}`], [],
+      ['Host', 'Tercapai', 'Target', '% Capaian', 'Pendapatan Shopee', 'Pendapatan TikTok', 'Jam Kerja', 'Sesi', 'Libur', 'Sakit', 'Izin', 'Blm Lapor'],
+      ...d.ranked.map(r => [
+        r.name, r.achieved, r.target, r.target > 0 ? r.achieved/r.target : 0,
+        r.shopeeGmv||0, r.tiktokGmv||0, r.totalHours, r.sessionsCount, r.libur, r.sakit, r.izin, r.pending
+      ]),
+    ];
+    const wsHost = XLSX.utils.aoa_to_sheet(hostAoa);
+    wsHost['!cols'] = [{wch:20},{wch:16},{wch:16},{wch:11},{wch:18},{wch:18},{wch:11},{wch:8},{wch:8},{wch:8},{wch:8},{wch:10}];
+    wsHost['!merges'] = [{s:{r:0,c:0},e:{r:0,c:11}}];
+    for (let r = 6; r <= hostAoa.length; r++) {
+      ['B','C','E','F'].forEach(col => { const c = col+r; if (wsHost[c]) wsHost[c].z = rp; });
+      const dCell = 'D'+r; if (wsHost[dCell]) wsHost[dCell].z = pct;
+    }
+    XLSX.utils.book_append_sheet(wb, wsHost, '🎥 Perbandingan Host');
+
+    // ── SHEET 3 — PERFORMA PER PLATFORM ──
+    const platAoa = [
+      ['DHP CREATIVE — PERFORMA PER PLATFORM (SHOPEE VS TIKTOK)'], [`Export: ${stamp}`], [`Periode: ${d.monthLabel}`], [],
+      ['Platform', 'Pendapatan', '% dari Total', 'Penonton'],
+      ['Shopee', d.totalShopeeGmv, d.shopeeSharePct/100, d.totalShopeeViewers],
+      ['TikTok', d.totalTiktokGmv, (100-d.shopeeSharePct)/100, d.totalTiktokViewers],
+      [],
+      ['Host', 'Pendapatan Shopee', 'Pendapatan TikTok'],
+      ...d.ranked.map(r => [r.name, r.shopeeGmv||0, r.tiktokGmv||0]),
+    ];
+    const wsPlat = XLSX.utils.aoa_to_sheet(platAoa);
+    wsPlat['!cols'] = [{wch:22},{wch:20},{wch:14},{wch:16}];
+    wsPlat['!merges'] = [{s:{r:0,c:0},e:{r:0,c:3}}];
+    ['B6','B7'].forEach(c => { if (wsPlat[c]) wsPlat[c].z = rp; });
+    ['C6','C7'].forEach(c => { if (wsPlat[c]) wsPlat[c].z = pct; });
+    for (let r = 10; r <= platAoa.length; r++) { ['B','C'].forEach(col => { const c = col+r; if (wsPlat[c]) wsPlat[c].z = rp; }); }
+    XLSX.utils.book_append_sheet(wb, wsPlat, '🛍 Performa Platform');
+
+    const fname = `DHP_Live_Dashboard_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.xlsx`;
+    XLSX.writeFile(wb, fname);
+    toast('✓ Export Excel Live Dashboard selesai');
+    pushActivity?.('Live Dashboard: export Excel', 'info');
+  } catch (e) {
+    console.error('[DHP] exportLiveDashboardExcel gagal:', e);
+    toast('Gagal export Excel: ' + (e.message || e));
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+window.exportLiveDashboardExcel = exportLiveDashboardExcel;
+
+async function exportLiveDashboardPDF() {
+  const btn = document.getElementById('ldash-export-pdf-btn');
+  const btnOrigHTML = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Menyiapkan PDF…'; }
+  try {
+    if (!_pdfLibsReady()) { toast('Komponen PDF belum siap, coba lagi sebentar lagi'); return; }
+    const d = await _ldashEnsureData();
+    if (!d) { toast('Data belum siap, coba lagi.'); return; }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const marginX = 40;
+    let y = 0;
+    const genDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    const exportedBy = currentUser?.full_name || currentUser?.name || 'Moderator';
+
+    // ── Header brand ──
+    doc.setFillColor(20, 20, 24);
+    doc.rect(0, 0, pageW, 92, 'F');
+    doc.setTextColor(201, 169, 110);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(18);
+    doc.text('DHP CREATIVE', marginX, 38);
+    doc.setTextColor(230, 230, 230); doc.setFontSize(11); doc.setFont('helvetica', 'normal');
+    doc.text('Live Dashboard — Perbandingan Seluruh Host Live', marginX, 58);
+    doc.setFontSize(9); doc.setTextColor(190, 190, 190);
+    doc.text(`${exportedBy}  ·  ${d.monthLabel}  ·  dibuat ${genDate}`, marginX, 76);
+    doc.setTextColor(0, 0, 0);
+    y = 116;
+
+    // ── KPI cards — ringkasan utama ──
+    const kpiCard = (kpis, startY) => {
+      const gap = 8;
+      const colW = (pageW - marginX*2 - gap*(kpis.length-1)) / kpis.length;
+      kpis.forEach(([num, lbl], i) => {
+        const x = marginX + i*(colW+gap);
+        doc.setDrawColor(222,222,222); doc.setLineWidth(0.8);
+        doc.roundedRect(x, startY, colW, 48, 4, 4);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(12.5); doc.setTextColor(178,138,68);
+        doc.text(String(num), x+9, startY+21);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(7.6); doc.setTextColor(95,95,95);
+        doc.text(doc.splitTextToSize(lbl, colW-16), x+9, startY+34);
+      });
+      return startY + 48 + 18;
+    };
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(30,30,30);
+    doc.text('Ringkasan Bulan Ini', marginX, y); y += 14;
+    y = kpiCard([
+      [crmFmtRupiah(d.totalAchieved), `Total Pencapaian (target ${crmFmtRupiah(d.totalTarget)})`],
+      [`${d.totalTarget>0?Math.round(d.overallPct*100):0}%`, 'Progress Gabungan'],
+      [`${d.achievedCount}/${d.rows.length}`, 'Host Capai Target'],
+      [String(d.totalPending), 'Laporan Menunggu ACC'],
+    ], y);
+    y = kpiCard([
+      [`${d.totalHoursAll.toFixed(1)} j`, 'Total Jam Live Bulan Ini'],
+      [String(d.totalSakitAll), 'Total Sakit'],
+      [String(d.totalIzinAll), 'Total Izin'],
+      [String(d.totalSessions), 'Total Sesi Bulan Ini'],
+    ], y);
+    y = kpiCard([
+      [crmFmtRupiah(d.totalShopeeGmv), `Pendapatan Shopee (${d.shopeeSharePct}%)`],
+      [crmFmtRupiah(d.totalTiktokGmv), `Pendapatan TikTok (${100-d.shopeeSharePct}%)`],
+      [(d.totalShopeeViewers+d.totalTiktokViewers).toLocaleString('id-ID'), 'Total Penonton — Semua Platform'],
+    ], y);
+    y += 6;
+    doc.setTextColor(0,0,0);
+
+    if (y > pageH - 140) { doc.addPage(); y = 40; }
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11.5); doc.setTextColor(30,30,30);
+    doc.text('Perbandingan Host Live', marginX, y); y += 8;
+    doc.autoTable({
+      head: [['Host','Tercapai','Target','%','Shopee','TikTok','Jam Kerja','Sesi','Libur','Sakit','Izin','Blm Lapor']],
+      body: d.ranked.map(r => [
+        r.name, crmFmtRupiah(r.achieved), crmFmtRupiah(r.target),
+        r.target>0 ? Math.round(r.achieved/r.target*100)+'%' : '—',
+        crmFmtRupiah(r.shopeeGmv||0), crmFmtRupiah(r.tiktokGmv||0),
+        r.totalHours.toFixed(1)+' j', String(r.sessionsCount), String(r.libur), String(r.sakit), String(r.izin), String(r.pending)
+      ]),
+      startY: y + 6, margin: { left: marginX, right: marginX },
+      styles: { font: 'helvetica', fontSize: 7.6, cellPadding: 4.5, textColor: [40,40,40], overflow: 'linebreak', valign: 'middle' },
+      headStyles: { fillColor: [26,26,30], textColor: [230,208,166], fontStyle: 'bold', fontSize: 7.6 },
+      alternateRowStyles: { fillColor: [248,246,241] },
+      theme: 'grid'
+    });
+    y = doc.lastAutoTable.finalY + 22;
+
+    if (d.totalUnsplitGmv > 0) {
+      if (y > pageH - 60) { doc.addPage(); y = 40; }
+      doc.setFont('helvetica', 'italic'); doc.setFontSize(8.5); doc.setTextColor(140,120,90);
+      doc.text(doc.splitTextToSize(`Catatan: ${crmFmtRupiah(d.totalUnsplitGmv)} dari laporan lama belum diisi rincian per platform, jadi belum masuk ke angka Shopee/TikTok di atas — tetap terhitung di Total Pencapaian.`, pageW - marginX*2), marginX, y);
+      y += 26;
+      doc.setTextColor(0,0,0);
+    }
+
+    // ── Footer nomor halaman ──
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(150,150,150);
+      doc.text(`DHP Creative — laporan dibuat ${genDate}`, marginX, pageH - 20);
+      doc.text(`Halaman ${i}/${pageCount}`, pageW - marginX - 60, pageH - 20);
+    }
+
+    doc.save(`DHP_Live_Dashboard_${_pdfFileSafe(d.monthLabel)}.pdf`);
+    toast('✓ Export PDF Live Dashboard selesai');
+    pushActivity?.('Live Dashboard: export PDF', 'info');
+  } catch (e) {
+    console.error('[DHP] exportLiveDashboardPDF gagal:', e);
+    toast('Gagal membuat PDF: ' + (e.message || e));
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = btnOrigHTML || 'Export PDF'; }
+  }
+}
+window.exportLiveDashboardPDF = exportLiveDashboardPDF;
 
 /* ═══════════════════════════════════════════════════════════
    DASHBOARD SEMUA ROLE (moderator overview) — agregat progress
@@ -10502,6 +10750,17 @@ const LSP_ICON_EYE = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none
 const LSP_ICON_COIN = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.4"/><path d="M8 4.6v6.8M6.1 6.2c0-.9.85-1.6 1.9-1.6s1.9.6 1.9 1.4c0 1.9-3.8 1.1-3.8 3 0 .8.85 1.4 1.9 1.4s1.9-.7 1.9-1.6"/></svg>';
 const LSP_ICON_PLAY = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.4"/><path d="M6.4 5.2l4.6 2.8-4.6 2.8z" stroke-linejoin="round"/></svg>';
 
+/* v45 — LOGO VEKTOR PLATFORM (Shopee & TikTok), dipakai lewat platBadge()
+   supaya konsisten di seluruh dashboard: warna khas tiap platform (oranye
+   Shopee vs gradasi cyan-pink TikTok), bukan cuma titik warna generik. */
+const LSP_ICON_SHOPEE = '<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.7 5.15V4.3a3.3 3.3 0 016.6 0v.85" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M3.05 5.15h9.9l.68 8.1a1.45 1.45 0 01-1.45 1.57H3.82a1.45 1.45 0 01-1.45-1.57l.68-8.1z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M5.7 7.6c0 1.27 1.03 2.3 2.3 2.3s2.3-1.03 2.3-2.3" stroke="currentColor" stroke-width="1.15" stroke-linecap="round"/></svg>';
+const LSP_ICON_TIKTOK = '<svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M11.55 1.3c.32 1.66 1.32 2.78 3.05 2.95v2.16c-1.1.07-2.13-.27-3.05-.93v4.5a4.05 4.05 0 11-3.5-4.02v2.22a1.85 1.85 0 101.46 1.81V1.3h2.04z"/></svg>';
+const PLAT_ICONS = { shopee: LSP_ICON_SHOPEE, tiktok: LSP_ICON_TIKTOK };
+function platBadge(key, size) {
+  const icon = PLAT_ICONS[key] || '';
+  return `<span class="plat-badge plat-${key} plat-badge-${size||'md'}">${icon}</span>`;
+}
+
 function renderLsPlatformPerf() {
   const gridEl = document.getElementById('lsp-grid');
   const sumEl  = document.getElementById('lsp-summary');
@@ -10553,9 +10812,9 @@ function renderLsPlatformPerf() {
     return;
   }
 
-  const cardHtml = (key, label, dotClass, gmv, viewers, products) => `
+  const cardHtml = (key, label, gmv, viewers, products) => `
     <div class="lsp-card lsp-${key}">
-      <div class="lsp-card-head"><span class="lsp-dot ${dotClass}"></span><span class="lsp-card-name">${label}</span></div>
+      <div class="lsp-card-head">${platBadge(key,'md')}<span class="lsp-card-name">${label}</span></div>
       <div class="lsp-card-stats">
         <div><div class="lsp-stat-num">${viewers.toLocaleString('id-ID')}</div><div class="lsp-stat-lbl">Total Penonton</div></div>
         <div><div class="lsp-stat-num">${crmFmtRupiah(gmv)}</div><div class="lsp-stat-lbl">Total Pendapatan</div></div>
@@ -10563,8 +10822,8 @@ function renderLsPlatformPerf() {
       <div class="lsp-card-sub">${products.toLocaleString('id-ID')} produk terjual bulan ini</div>
     </div>`;
 
-  let html = cardHtml('shopee', 'Shopee', 'lsp-dot-shopee', shopeeGmv, shopeeViewers, shopeeProducts)
-           + cardHtml('tiktok', 'TikTok', 'lsp-dot-tiktok', tiktokGmv, tiktokViewers, tiktokProducts);
+  let html = cardHtml('shopee', 'Shopee', shopeeGmv, shopeeViewers, shopeeProducts)
+           + cardHtml('tiktok', 'TikTok', tiktokGmv, tiktokViewers, tiktokProducts);
 
   if (unsplitCount > 0) {
     html += `<div class="lsp-empty-note" style="grid-column:1/-1">⚠ ${unsplitCount} sesi bulan ini dilaporkan tanpa rincian per platform (total ${crmFmtRupiah(unsplitGmv)} · ${unsplitViewers.toLocaleString('id-ID')} penonton belum masuk ke kartu Shopee/TikTok di atas).</div>`;
@@ -11239,7 +11498,7 @@ function renderReportModal(s) {
 
   const shopeeBlock = flags.shopee ? `
     <div class="lsr-plat-block">
-      <div class="lsr-plat-head"><span class="lsr-plat-dot lsr-dot-shopee"></span>Shopee Live</div>
+      <div class="lsr-plat-head">${platBadge('shopee','sm')}Shopee Live</div>
       <div class="fg"><label>Produk Terjual (Shopee)</label>
         <input class="fi lsr-num" id="lsr-shopee-products" type="number" min="0" step="1" value="${s.shopee_products_sold ?? ''}" placeholder="mis. 20" oninput="updateLsrTotal()"/>
       </div>
@@ -11255,7 +11514,7 @@ function renderReportModal(s) {
 
   const tiktokBlock = flags.tiktok ? `
     <div class="lsr-plat-block">
-      <div class="lsr-plat-head"><span class="lsr-plat-dot lsr-dot-tiktok"></span>TikTok Live</div>
+      <div class="lsr-plat-head">${platBadge('tiktok','sm')}TikTok Live</div>
       <div class="fg"><label>Produk Terjual (TikTok)</label>
         <input class="fi lsr-num" id="lsr-tiktok-products" type="number" min="0" step="1" value="${s.tiktok_products_sold ?? ''}" placeholder="mis. 22" oninput="updateLsrTotal()"/>
       </div>
