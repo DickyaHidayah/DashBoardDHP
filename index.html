@@ -8763,8 +8763,46 @@ async function loadLiveDashboard() {
 
   const platformByHost = _ldashAggregatePlatform(platRes?.data || [], ids);
   const rows = rowsBase.map(r => ({ ...r, ...(platformByHost[r.id] || {}) }));
+  const dailyRows = _ldashDailyBreakdown(platRes?.data || [], ids);
 
-  renderLiveDashboard(rows);
+  renderLiveDashboard(rows, dailyRows);
+}
+
+/* v46: rincian PER HARI per host — dasar tabel "Rincian Harian" di export
+   Excel/PDF, supaya kelihatan tiap host dapat berapa tiap harinya, bukan
+   cuma total sebulan. Sumber data sama dengan yang dipakai agregat bulanan
+   di atas (live_schedule), jadi tidak perlu query tambahan. */
+function _ldashDailyBreakdown(sessions, ids) {
+  const map = {};
+  (sessions || []).forEach(s => {
+    if (s.products_sold == null && s.gmv_amount == null && s.viewers_count == null) return;
+    if (!s.schedule_date || !ids.includes(s.host_user_id)) return;
+    const key = s.schedule_date + '|' + s.host_user_id;
+    if (!map[key]) {
+      map[key] = {
+        date: s.schedule_date, hostId: s.host_user_id, hostName: LOCAL_USERS[s.host_user_id]?.name || s.host_user_id,
+        shopeeGmv: 0, shopeeViewers: 0, shopeeProducts: 0,
+        tiktokGmv: 0, tiktokViewers: 0, tiktokProducts: 0,
+        unsplitGmv: 0, totalGmv: 0
+      };
+    }
+    const row = map[key];
+    const hasSplit = s.shopee_products_sold != null || s.tiktok_products_sold != null
+                   || s.shopee_gmv_amount != null || s.tiktok_gmv_amount != null;
+    if (hasSplit) {
+      row.shopeeGmv += Number(s.shopee_gmv_amount || 0);
+      row.shopeeViewers += Number(s.shopee_viewers_count || 0);
+      row.shopeeProducts += Number(s.shopee_products_sold || 0);
+      row.tiktokGmv += Number(s.tiktok_gmv_amount || 0);
+      row.tiktokViewers += Number(s.tiktok_viewers_count || 0);
+      row.tiktokProducts += Number(s.tiktok_products_sold || 0);
+      row.totalGmv += Number(s.shopee_gmv_amount || 0) + Number(s.tiktok_gmv_amount || 0);
+    } else {
+      row.unsplitGmv += Number(s.gmv_amount || 0);
+      row.totalGmv += Number(s.gmv_amount || 0);
+    }
+  });
+  return Object.values(map).sort((a, b) => a.date === b.date ? a.hostName.localeCompare(b.hostName) : a.date.localeCompare(b.date));
 }
 
 /* v44: hitung total per platform (Shopee/TikTok) untuk tiap host dari baris
@@ -8812,7 +8850,7 @@ function _ldashDestroyCharts() {
   _ldashCharts = {};
 }
 
-function renderLiveDashboard(rows) {
+function renderLiveDashboard(rows, dailyRows) {
   const wrap = document.getElementById('ldash-view');
   if (!wrap) return;
   const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
@@ -9073,7 +9111,7 @@ function renderLiveDashboard(rows) {
   _ldashLastData = {
     generatedAt: new Date(),
     monthLabel: `${months[now.getMonth()]} ${now.getFullYear()}`,
-    ranked, rows,
+    ranked, rows, dailyRows: dailyRows || [],
     totalTarget, totalAchieved, totalSessions, totalPending, totalHoursAll,
     totalSakitAll, totalIzinAll, overallPct, achievedCount, totalHariMasukAll,
     totalShopeeGmv, totalTiktokGmv, totalShopeeViewers, totalTiktokViewers,
@@ -9186,6 +9224,25 @@ async function exportLiveDashboardExcel() {
       ['C','D','F','G'].forEach(col => { const c = col+r; if (wsPlat[c]) wsPlat[c].z = num; });
     }
     XLSX.utils.book_append_sheet(wb, wsPlat, '🛍 Performa Platform');
+
+    // ── SHEET 4 — DETAIL HARIAN (tiap host, tiap hari, dapat berapa) ──
+    const dailyAoa = [
+      ['DHP CREATIVE — DETAIL HARIAN PENDAPATAN PER HOST'], [`Export: ${stamp}`], [`Periode: ${d.monthLabel}`], [],
+      ['Tanggal', 'Host', 'Pendapatan Shopee', 'Penonton Shopee', 'Produk Shopee', 'Pendapatan TikTok', 'Penonton TikTok', 'Produk TikTok', 'Total Pendapatan'],
+      ...(d.dailyRows||[]).map(r => [
+        _pdfFmtDate(r.date), r.hostName, r.shopeeGmv||0, r.shopeeViewers||0, r.shopeeProducts||0,
+        r.tiktokGmv||0, r.tiktokViewers||0, r.tiktokProducts||0, r.totalGmv||0
+      ]),
+    ];
+    if ((d.dailyRows||[]).length === 0) dailyAoa.push(['— Belum ada laporan harian bulan ini —']);
+    const wsDaily = XLSX.utils.aoa_to_sheet(dailyAoa);
+    wsDaily['!cols'] = [{wch:14},{wch:20},{wch:17},{wch:15},{wch:13},{wch:17},{wch:15},{wch:13},{wch:17}];
+    wsDaily['!merges'] = [{s:{r:0,c:0},e:{r:0,c:8}}];
+    for (let r = 6; r <= dailyAoa.length; r++) {
+      ['C','F','I'].forEach(col => { const c = col+r; if (wsDaily[c]) wsDaily[c].z = rp; });
+      ['D','E','G','H'].forEach(col => { const c = col+r; if (wsDaily[c]) wsDaily[c].z = num; });
+    }
+    XLSX.utils.book_append_sheet(wb, wsDaily, '📅 Detail Harian');
 
     const fname = `DHP_Live_Dashboard_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.xlsx`;
     XLSX.writeFile(wb, fname);
@@ -9366,6 +9423,35 @@ async function exportLiveDashboardPDF() {
           y += size + 20;
         } catch (e) { console.warn('[PDF] gagal menyisipkan grafik donut:', e); }
       }
+    }
+
+    // ── Rincian Harian — tiap host, tiap hari, dapat berapa ──
+    if ((d.dailyRows || []).length) {
+      doc.addPage();
+      doc.setFillColor(20, 20, 24);
+      doc.rect(0, 0, pageW, 50, 'F');
+      doc.setTextColor(201, 169, 110); doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+      doc.text('Rincian Harian per Host', marginX, 32);
+      doc.setTextColor(0, 0, 0);
+      y = 66;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(90,90,90);
+      doc.text('Pendapatan tiap host, dipecah per hari, seluruh bulan berjalan.', marginX, y); y += 10;
+      doc.autoTable({
+        head: [['Tanggal','Host','Shopee','Penonton SP','TikTok','Penonton TT','Total Hari Itu']],
+        body: d.dailyRows.map(r => [
+          _pdfFmtDate(r.date), r.hostName,
+          crmFmtRupiah(r.shopeeGmv||0), (r.shopeeViewers||0).toLocaleString('id-ID'),
+          crmFmtRupiah(r.tiktokGmv||0), (r.tiktokViewers||0).toLocaleString('id-ID'),
+          crmFmtRupiah(r.totalGmv||0)
+        ]),
+        startY: y + 4, margin: { left: marginX, right: marginX },
+        styles: { font: 'helvetica', fontSize: 7.6, cellPadding: 4, textColor: [40,40,40], overflow: 'linebreak', valign: 'middle' },
+        headStyles: { fillColor: [26,26,30], textColor: [230,208,166], fontStyle: 'bold', fontSize: 7.6 },
+        alternateRowStyles: { fillColor: [248,246,241] },
+        columnStyles: { 2: { textColor: [178,80,40] }, 4: { textColor: [20,140,140] }, 6: { fontStyle: 'bold' } },
+        theme: 'grid'
+      });
+      y = doc.lastAutoTable.finalY + 16;
     }
 
     // ── Footer nomor halaman ──
