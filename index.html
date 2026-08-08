@@ -618,7 +618,9 @@ body.light .hs-switch-btn.active{color:#fff}
 .plat-badge{display:inline-flex;align-items:center;justify-content:center;border-radius:8px;flex:none}
 .plat-badge svg{width:64%;height:64%}
 .plat-badge.plat-shopee{background:rgba(238,77,45,.16);color:#ee4d2d;border:1px solid rgba(238,77,45,.22)}
-.plat-badge.plat-tiktok{background:linear-gradient(135deg,#0c0c10,#1c1c22);border:1px solid rgba(255,255,255,.08)}
+.plat-badge.plat-tiktok{background:linear-gradient(135deg,#2a2a32,#3c3c46);border:1px solid rgba(255,255,255,.16);box-shadow:0 0 0 1px rgba(37,244,238,.1) inset}
+body.light .plat-badge.plat-shopee{background:rgba(238,77,45,.1);border-color:rgba(238,77,45,.28)}
+body.light .plat-badge.plat-tiktok{background:linear-gradient(135deg,#0c0c10,#1c1c22);border-color:rgba(0,0,0,.1);box-shadow:none}
 .plat-badge-lg{width:36px;height:36px;border-radius:10px}
 .plat-badge-md{width:24px;height:24px}
 .plat-badge-sm{width:17px;height:17px;border-radius:5px}
@@ -8754,7 +8756,7 @@ async function loadLiveDashboard() {
     // Platform" (Shopee vs TikTok), dipisah dari total gabungan. Pakai kolom
     // shopee_*/tiktok_* yang sudah ada di live_schedule, tidak perlu RPC baru.
     db ? dbQ(d => d.from('live_schedule')
-        .select('host_user_id,gmv_amount,viewers_count,products_sold,shopee_gmv_amount,shopee_viewers_count,shopee_products_sold,tiktok_gmv_amount,tiktok_viewers_count,tiktok_products_sold')
+        .select('host_user_id,schedule_date,gmv_amount,viewers_count,products_sold,shopee_gmv_amount,shopee_viewers_count,shopee_products_sold,tiktok_gmv_amount,tiktok_viewers_count,tiktok_products_sold')
         .in('host_user_id', ids).gte('schedule_date', first).lte('schedule_date', last))
       : Promise.resolve(null)
   ]);
@@ -8771,10 +8773,12 @@ async function loadLiveDashboard() {
    di total gabungan tabel/summary, tapi tidak dipaksakan ke salah satu platform). */
 function _ldashAggregatePlatform(sessions, ids) {
   const perHost = {};
-  ids.forEach(id => { perHost[id] = { shopeeGmv:0, shopeeViewers:0, shopeeProducts:0, tiktokGmv:0, tiktokViewers:0, tiktokProducts:0, unsplitGmv:0, unsplitViewers:0 }; });
+  const dateSets = {};
+  ids.forEach(id => { perHost[id] = { shopeeGmv:0, shopeeViewers:0, shopeeProducts:0, tiktokGmv:0, tiktokViewers:0, tiktokProducts:0, unsplitGmv:0, unsplitViewers:0, hariMasuk:0 }; dateSets[id] = new Set(); });
   (sessions || []).forEach(s => {
     if (s.products_sold == null && s.gmv_amount == null && s.viewers_count == null) return;
     const bucket = perHost[s.host_user_id]; if (!bucket) return;
+    if (s.schedule_date && dateSets[s.host_user_id]) dateSets[s.host_user_id].add(s.schedule_date);
     const hasSplit = s.shopee_products_sold != null || s.tiktok_products_sold != null
                    || s.shopee_gmv_amount != null || s.tiktok_gmv_amount != null;
     if (hasSplit) {
@@ -8789,6 +8793,7 @@ function _ldashAggregatePlatform(sessions, ids) {
       bucket.unsplitViewers += Number(s.viewers_count || 0);
     }
   });
+  ids.forEach(id => { perHost[id].hariMasuk = dateSets[id].size; });
   return perHost;
 }
 
@@ -8889,6 +8894,7 @@ function renderLiveDashboard(rows) {
       <div class="hs-cc-stats">
         <div class="hs-cc-stat"><div class="hs-cc-stat-num">${r.totalHours.toFixed(1)}j</div><div class="hs-cc-stat-lbl">Jam Kerja</div></div>
         <div class="hs-cc-stat"><div class="hs-cc-stat-num">${r.sessionsCount}</div><div class="hs-cc-stat-lbl">Sesi Bulan Ini</div></div>
+        <div class="hs-cc-stat"><div class="hs-cc-stat-num">${r.hariMasuk || 0}</div><div class="hs-cc-stat-lbl">Hari Masuk</div></div>
         <div class="hs-cc-stat"><div class="hs-cc-stat-num">${r.libur}</div><div class="hs-cc-stat-lbl">Libur</div></div>
         <div class="hs-cc-stat${r.sakit ? ' hs-warn' : ''}"><div class="hs-cc-stat-num">${r.sakit}</div><div class="hs-cc-stat-lbl">Sakit</div></div>
         <div class="hs-cc-stat${r.izin ? ' hs-warn' : ''}"><div class="hs-cc-stat-num">${r.izin}</div><div class="hs-cc-stat-lbl">Izin</div></div>
@@ -8904,6 +8910,7 @@ function renderLiveDashboard(rows) {
   const totalTiktokViewers  = rows.reduce((s,r)=>s+(r.tiktokViewers||0),0);
   const totalShopeeProducts = rows.reduce((s,r)=>s+(r.shopeeProducts||0),0);
   const totalTiktokProducts = rows.reduce((s,r)=>s+(r.tiktokProducts||0),0);
+  const totalHariMasukAll   = rows.reduce((s,r)=>s+(r.hariMasuk||0),0);
   const totalUnsplitGmv     = rows.reduce((s,r)=>s+(r.unsplitGmv||0),0);
   const platformGmvTotal    = totalShopeeGmv + totalTiktokGmv;
   const shopeeSharePct      = platformGmvTotal > 0 ? Math.round(totalShopeeGmv/platformGmvTotal*100) : 0;
@@ -8920,6 +8927,7 @@ function renderLiveDashboard(rows) {
       <td>${(r.tiktokViewers||0).toLocaleString('id-ID')}</td>
       <td>${r.totalHours.toFixed(1)} jam</td>
       <td>${r.sessionsCount}</td>
+      <td>${r.hariMasuk || 0} hari</td>
       <td>${r.libur}</td>
       <td>${r.sakit ? `<span style="color:#d98ec0;font-weight:600">${r.sakit}</span>` : '0'}</td>
       <td>${r.izin ? `<span style="color:#e8b86e;font-weight:600">${r.izin}</span>` : '0'}</td>
@@ -8995,7 +9003,7 @@ function renderLiveDashboard(rows) {
       <div class="tbl-scroll">
         <table>
           <thead><tr>
-            <th>Host</th><th>Tercapai</th><th>Target</th><th>%</th><th>Pendapatan Shopee</th><th>Penonton Shopee</th><th>Pendapatan TikTok</th><th>Penonton TikTok</th><th>Jam Kerja</th><th>Sesi</th><th>Libur</th><th>Sakit</th><th>Izin</th><th>Blm Lapor</th>
+            <th>Host</th><th>Tercapai</th><th>Target</th><th>%</th><th>Pendapatan Shopee</th><th>Penonton Shopee</th><th>Pendapatan TikTok</th><th>Penonton TikTok</th><th>Jam Kerja</th><th>Sesi</th><th>Hari Masuk</th><th>Libur</th><th>Sakit</th><th>Izin</th><th>Blm Lapor</th>
           </tr></thead>
           <tbody>${tableRows}</tbody>
         </table>
@@ -9067,7 +9075,7 @@ function renderLiveDashboard(rows) {
     monthLabel: `${months[now.getMonth()]} ${now.getFullYear()}`,
     ranked, rows,
     totalTarget, totalAchieved, totalSessions, totalPending, totalHoursAll,
-    totalSakitAll, totalIzinAll, overallPct, achievedCount,
+    totalSakitAll, totalIzinAll, overallPct, achievedCount, totalHariMasukAll,
     totalShopeeGmv, totalTiktokGmv, totalShopeeViewers, totalTiktokViewers,
     totalShopeeProducts, totalTiktokProducts, totalUnsplitGmv, shopeeSharePct
   };
@@ -9111,6 +9119,7 @@ async function exportLiveDashboardExcel() {
       ['Progress Gabungan', d.overallPct, `${d.totalTarget>0?Math.round(d.overallPct*100):0}% dari target seluruh host`],
       ['Host Capai Target', d.achievedCount, `dari ${d.rows.length} host live`],
       ['Total Sesi Bulan Ini', d.totalSessions, ''],
+      ['Total Hari Masuk (Live)', d.totalHariMasukAll, 'akumulasi seluruh host'],
       ['Laporan Menunggu ACC', d.totalPending, d.totalPending ? 'perlu ditindaklanjuti' : 'semua sudah lapor'],
       ['Total Jam Live', d.totalHoursAll, 'seluruh host bulan ini'],
       ['Total Sakit', d.totalSakitAll, ''],
@@ -9129,27 +9138,28 @@ async function exportLiveDashboardExcel() {
     const wsSum = XLSX.utils.aoa_to_sheet(sumAoa);
     wsSum['!cols'] = [{wch:32},{wch:22},{wch:46}];
     wsSum['!merges'] = [{s:{r:0,c:0},e:{r:0,c:2}}];
-    [['B8',rp],['B9',pct],['B13',num],['B17',rp],['B18',num],['B19',num],['B20',rp],['B21',num],['B22',num],['B23',num],['B24',rp]]
+    [['B8',rp],['B9',pct],['B10',num],['B11',num],['B12',num],['B13',num],['B14',num],['B15',num],['B16',num],
+     ['B19',rp],['B20',num],['B21',num],['B22',rp],['B23',num],['B24',num],['B25',num],['B26',rp]]
       .forEach(([cell,fmt]) => { if (wsSum[cell]) wsSum[cell].z = fmt; });
     XLSX.utils.book_append_sheet(wb, wsSum, '📊 Ringkasan');
 
     // ── SHEET 2 — PERBANDINGAN HOST ──
     const hostAoa = [
       ['DHP CREATIVE — PERBANDINGAN HOST LIVE'], [`Export: ${stamp}`], [`Periode: ${d.monthLabel}`], [],
-      ['Host', 'Tercapai', 'Target', '% Capaian', 'Pendapatan Shopee', 'Penonton Shopee', 'Produk Shopee', 'Pendapatan TikTok', 'Penonton TikTok', 'Produk TikTok', 'Jam Kerja', 'Sesi', 'Libur', 'Sakit', 'Izin', 'Blm Lapor'],
+      ['Host', 'Tercapai', 'Target', '% Capaian', 'Pendapatan Shopee', 'Penonton Shopee', 'Produk Shopee', 'Pendapatan TikTok', 'Penonton TikTok', 'Produk TikTok', 'Jam Kerja', 'Sesi', 'Hari Masuk', 'Libur', 'Sakit', 'Izin', 'Blm Lapor'],
       ...d.ranked.map(r => [
         r.name, r.achieved, r.target, r.target > 0 ? r.achieved/r.target : 0,
         r.shopeeGmv||0, r.shopeeViewers||0, r.shopeeProducts||0,
         r.tiktokGmv||0, r.tiktokViewers||0, r.tiktokProducts||0,
-        r.totalHours, r.sessionsCount, r.libur, r.sakit, r.izin, r.pending
+        r.totalHours, r.sessionsCount, r.hariMasuk||0, r.libur, r.sakit, r.izin, r.pending
       ]),
     ];
     const wsHost = XLSX.utils.aoa_to_sheet(hostAoa);
-    wsHost['!cols'] = [{wch:20},{wch:16},{wch:16},{wch:11},{wch:17},{wch:15},{wch:13},{wch:17},{wch:15},{wch:13},{wch:11},{wch:8},{wch:8},{wch:8},{wch:8},{wch:10}];
-    wsHost['!merges'] = [{s:{r:0,c:0},e:{r:0,c:15}}];
+    wsHost['!cols'] = [{wch:20},{wch:16},{wch:16},{wch:11},{wch:17},{wch:15},{wch:13},{wch:17},{wch:15},{wch:13},{wch:11},{wch:8},{wch:11},{wch:8},{wch:8},{wch:8},{wch:10}];
+    wsHost['!merges'] = [{s:{r:0,c:0},e:{r:0,c:16}}];
     for (let r = 6; r <= hostAoa.length; r++) {
       ['B','C','E','H'].forEach(col => { const c = col+r; if (wsHost[c]) wsHost[c].z = rp; });
-      ['F','G','I','J'].forEach(col => { const c = col+r; if (wsHost[c]) wsHost[c].z = num; });
+      ['F','G','I','J','M'].forEach(col => { const c = col+r; if (wsHost[c]) wsHost[c].z = num; });
       const dCell = 'D'+r; if (wsHost[dCell]) wsHost[dCell].z = pct;
     }
     XLSX.utils.book_append_sheet(wb, wsHost, '🎥 Perbandingan Host');
@@ -9266,13 +9276,13 @@ async function exportLiveDashboardPDF() {
 
     if (y > pageH - 140) { doc.addPage(); y = 40; }
     doc.setFont('helvetica', 'bold'); doc.setFontSize(11.5); doc.setTextColor(30,30,30);
-    doc.text('Perbandingan Host Live — Pencapaian &amp; Kehadiran', marginX, y); y += 8;
+    doc.text('Perbandingan Host Live — Pencapaian & Kehadiran', marginX, y); y += 8;
     doc.autoTable({
-      head: [['Host','Tercapai','Target','%','Jam Kerja','Sesi','Libur','Sakit','Izin','Blm Lapor']],
+      head: [['Host','Tercapai','Target','%','Jam Kerja','Sesi','Hari Masuk','Libur','Sakit','Izin','Blm Lapor']],
       body: d.ranked.map(r => [
         r.name, crmFmtRupiah(r.achieved), crmFmtRupiah(r.target),
         r.target>0 ? Math.round(r.achieved/r.target*100)+'%' : '—',
-        r.totalHours.toFixed(1)+' j', String(r.sessionsCount), String(r.libur), String(r.sakit), String(r.izin), String(r.pending)
+        r.totalHours.toFixed(1)+' j', String(r.sessionsCount), String(r.hariMasuk||0)+' hr', String(r.libur), String(r.sakit), String(r.izin), String(r.pending)
       ]),
       startY: y + 6, margin: { left: marginX, right: marginX },
       styles: { font: 'helvetica', fontSize: 8, cellPadding: 4.5, textColor: [40,40,40], overflow: 'linebreak', valign: 'middle' },
@@ -9306,6 +9316,56 @@ async function exportLiveDashboardPDF() {
       doc.text(doc.splitTextToSize(`Catatan: ${crmFmtRupiah(d.totalUnsplitGmv)} dari laporan lama belum diisi rincian per platform, jadi belum masuk ke angka Shopee/TikTok di atas — tetap terhitung di Total Pencapaian.`, pageW - marginX*2), marginX, y);
       y += 26;
       doc.setTextColor(0,0,0);
+    }
+
+    // ── Grafik & Diagram (ambil langsung dari canvas Chart.js yang sedang
+    //    tampil di layar Live Dashboard) — halaman baru biar lega & rapi ──
+    const targetCanvas  = document.getElementById('ldash-target-canvas');
+    const platBarCanvas = document.getElementById('ldash-platform-bar-canvas');
+    const donutCanvas   = document.getElementById('ldash-platform-donut-canvas');
+    if ((targetCanvas && targetCanvas.width) || (platBarCanvas && platBarCanvas.width) || (donutCanvas && donutCanvas.width)) {
+      doc.addPage();
+      doc.setFillColor(20, 20, 24);
+      doc.rect(0, 0, pageW, 50, 'F');
+      doc.setTextColor(201, 169, 110); doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+      doc.text('Grafik & Diagram', marginX, 32);
+      doc.setTextColor(0, 0, 0);
+      y = 74;
+
+      if (targetCanvas && targetCanvas.width) {
+        try {
+          const img = targetCanvas.toDataURL('image/png', 1.0);
+          const w = pageW - marginX * 2, h = w * (targetCanvas.height / targetCanvas.width);
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(30, 30, 30);
+          doc.text('Pencapaian Penjualan vs Target', marginX, y); y += 10;
+          doc.addImage(img, 'PNG', marginX, y, w, h);
+          y += h + 26;
+        } catch (e) { console.warn('[PDF] gagal menyisipkan grafik target:', e); }
+      }
+
+      if (platBarCanvas && platBarCanvas.width) {
+        if (y > pageH - 200) { doc.addPage(); y = 40; }
+        try {
+          const img = platBarCanvas.toDataURL('image/png', 1.0);
+          const w = pageW - marginX * 2, h = w * (platBarCanvas.height / platBarCanvas.width);
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(30, 30, 30);
+          doc.text('Pendapatan per Host per Platform', marginX, y); y += 10;
+          doc.addImage(img, 'PNG', marginX, y, w, h);
+          y += h + 26;
+        } catch (e) { console.warn('[PDF] gagal menyisipkan grafik platform:', e); }
+      }
+
+      if (donutCanvas && donutCanvas.width) {
+        if (y > pageH - 200) { doc.addPage(); y = 40; }
+        try {
+          const img = donutCanvas.toDataURL('image/png', 1.0);
+          const size = 180;
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(30, 30, 30);
+          doc.text('Komposisi Pendapatan Shopee vs TikTok', marginX, y); y += 10;
+          doc.addImage(img, 'PNG', marginX, y, size, size);
+          y += size + 20;
+        } catch (e) { console.warn('[PDF] gagal menyisipkan grafik donut:', e); }
+      }
     }
 
     // ── Footer nomor halaman ──
