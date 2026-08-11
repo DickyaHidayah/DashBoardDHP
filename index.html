@@ -3635,6 +3635,74 @@ body:not(.light) .theme-toggle .tt-moon{opacity:1}
 .theme-toggle.tt-sm .tt-sun{left:5px}
 .theme-toggle.tt-sm .tt-moon{right:5px}
 body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
+/* ══════════════════════════════════════════════════════════
+   KOL & AFFILIATE MODULE
+   ══════════════════════════════════════════════════════════ */
+.kol-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.kol-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;
+  display:flex;flex-direction:column;gap:12px;transition:border-color var(--trans),transform var(--trans)}
+.kol-card:hover{border-color:var(--border-hi);transform:translateY(-1px)}
+.kol-card-head{display:flex;align-items:flex-start;gap:10px}
+.kol-avatar{width:38px;height:38px;border-radius:50%;background:rgba(201,169,110,.12);border:1px solid rgba(201,169,110,.3);
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--gold-hi);flex-shrink:0}
+.kol-name-wrap{flex:1;min-width:0}
+.kol-name{font-size:13.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kol-cat-badge{display:inline-block;margin-top:2px;font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;
+  padding:2px 7px;border-radius:20px;font-weight:700;background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.25);color:var(--gold)}
+.kol-card-acts{display:flex;gap:4px;flex-shrink:0}
+.kol-card-acts .btn-sm{padding:5px 8px;font-size:9px}
+
+.kol-plat-rows{display:flex;flex-direction:column;gap:6px}
+.kol-plat-row{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 9px}
+.kol-plat-row .plat-badge{width:22px;height:22px}
+.kol-plat-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.kol-plat-handle{font-size:10.5px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kol-plat-followers{font-size:12.5px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
+.kol-tier-badge{font-size:8.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;padding:3px 8px;border-radius:20px;flex-shrink:0}
+.kol-tier-nano{background:rgba(126,168,201,.14);color:var(--blue);border:1px solid rgba(126,168,201,.35)}
+.kol-tier-micro{background:rgba(122,191,142,.14);color:var(--green);border:1px solid rgba(122,191,142,.35)}
+.kol-tier-macro{background:rgba(232,184,110,.14);color:var(--amber);border:1px solid rgba(232,184,110,.35)}
+.kol-tier-mega{background:rgba(232,112,112,.14);color:var(--red);border:1px solid rgba(232,112,112,.35)}
+.kol-tier-none{background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--border)}
+
+.kol-stepper{display:flex;align-items:center;gap:0}
+.kol-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative}
+.kol-step-dot{width:9px;height:9px;border-radius:50%;background:var(--bg3);border:1.5px solid var(--border);z-index:1}
+.kol-step.done .kol-step-dot{background:var(--gold);border-color:var(--gold)}
+.kol-step.current .kol-step-dot{background:var(--gold-hi);border-color:var(--gold-hi);box-shadow:0 0 0 3px rgba(201,169,110,.2)}
+.kol-step-line{position:absolute;top:4px;left:-50%;width:100%;height:1.5px;background:var(--border);z-index:0}
+.kol-step:first-child .kol-step-line{display:none}
+.kol-step.done .kol-step-line,.kol-step.current .kol-step-line{background:var(--gold)}
+.kol-step-lbl{font-size:7.5px;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);text-align:center;line-height:1.2}
+.kol-step.done .kol-step-lbl,.kol-step.current .kol-step-lbl{color:var(--gold)}
+.kol-step.cancelled .kol-step-dot{background:var(--red);border-color:var(--red)}
+
+.kol-fin-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.kol-fin-box{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 9px;text-align:center}
+.kol-fin-lbl{font-size:8px;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);margin-bottom:2px}
+.kol-fin-val{font-size:12px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
+.kol-fin-val.roi-pos{color:var(--green)}
+.kol-fin-val.roi-neg{color:var(--red)}
+
+.kol-note{font-size:10.5px;color:var(--text2);line-height:1.5;background:var(--bg3);border-radius:8px;padding:8px 10px;border:1px solid var(--border)}
+.kol-card-foot{display:flex;gap:6px;flex-wrap:wrap}
+.kol-status-pill{font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:20px}
+.kol-status-aktif{background:rgba(122,191,142,.14);color:var(--green);border:1px solid rgba(122,191,142,.35)}
+.kol-status-selesai{background:rgba(201,169,110,.14);color:var(--gold);border:1px solid rgba(201,169,110,.35)}
+.kol-status-batal{background:rgba(232,112,112,.14);color:var(--red);border:1px solid rgba(232,112,112,.35)}
+
+.kol-er-preview{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.kol-er-box{background:var(--bg3);border:1px solid var(--border-hi);border-radius:8px;padding:10px;text-align:center}
+.kol-er-box .kol-er-num{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:var(--gold-hi);line-height:1}
+.kol-er-box .kol-er-lbl{font-size:8.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--text2);margin-top:3px}
+.kol-report-item{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.kol-report-item .kri-l{flex:1;min-width:0}
+.kol-report-item .kri-plat{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--gold);font-weight:700}
+.kol-report-item .kri-nums{font-size:10.5px;color:var(--text2);margin-top:3px}
+.kol-report-item .kri-er{font-size:15px;font-weight:700;color:var(--gold-hi);font-variant-numeric:tabular-nums}
+body.light .kol-card{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
+body.light .kol-plat-row,body.light .kol-fin-box,body.light .kol-note,body.light .kol-report-item{background:#f7f7f8}
+body.light .kol-fin-val{color:#0d0d0d}
 </style>
 </head>
 <body class="light">
@@ -4001,6 +4069,17 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
         </span>
         <span data-i18n="budgetMarketingNav">Budget Marketing</span>
       </button>
+      <button class="nav-item mod-only" onclick="navTo('kol_affiliate',this)" id="n-kol-affiliate" style="display:none">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="5.4" cy="5.1" r="2.4" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M1.4 13.4c0-2.3 1.8-3.9 4-3.9s4 1.6 4 3.9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <path d="M10.6 3.1l.9 1.9 2.1.3-1.5 1.5.35 2.1-1.85-1-1.85 1 .35-2.1-1.5-1.5 2.1-.3z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/>
+            <path d="M10 10.2c1.9.1 3.4 1.5 3.6 3.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span data-i18n="kolAffiliateNav">KOL &amp; Affiliate</span>
+      </button>
       <button class="nav-item mod-only" onclick="navTo('users',this)" id="n-users" style="display:none">
         <span class="nav-icon">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -4284,6 +4363,55 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
             <tbody id="budget-tbody"></tbody>
           </table>
         </div>
+      </div>
+
+      <!-- ④b KOL & AFFILIATE MANAGEMENT (Moderator only) -->
+      <div class="sp" id="pg-kol_affiliate">
+        <div class="ph">
+          <div class="ph-left">
+            <div class="pt">
+              KOL &amp; Affiliate
+              <span class="mod-badge">♔ Moderator</span>
+            </div>
+            <div class="ps">Kelola talent KOL/Affiliate, tier followers, progress kerjasama, hingga performa &amp; ROI per konten</div>
+          </div>
+          <div class="ph-acts">
+            <button class="btn-sm btn-gold" onclick="openKolModal()">+ Tambah KOL/Affiliate</button>
+            <button class="btn-sm" onclick="loadKolAffiliatePage()" title="Muat ulang">⟲</button>
+          </div>
+        </div>
+
+        <div class="adcust-stats" id="kol-stats"></div>
+
+        <div class="ph" style="margin:4px 0 12px;border:none;padding:0">
+          <div class="budget-filters">
+            <input class="search-box" id="kol-search" placeholder="Cari nama KOL/Affiliate..." oninput="renderKolAffiliate()"/>
+            <select class="ads-select" id="kol-cat-filter" onchange="renderKolAffiliate()">
+              <option value="all">Semua Kategori</option>
+              <option value="KOL">KOL</option>
+              <option value="Affiliate">Affiliate</option>
+              <option value="Both">KOL &amp; Affiliate</option>
+            </select>
+            <select class="ads-select" id="kol-tier-filter" onchange="renderKolAffiliate()">
+              <option value="all">Semua Tier</option>
+              <option value="Nano">Nano</option>
+              <option value="Micro">Micro</option>
+              <option value="Macro">Macro</option>
+              <option value="Mega">Mega</option>
+            </select>
+            <select class="ads-select" id="kol-status-filter" onchange="renderKolAffiliate()">
+              <option value="all">Semua Status</option>
+              <option value="Nego">Nego / Deal</option>
+              <option value="Produk Dikirim">Produk Dikirim</option>
+              <option value="Diupload">Konten Diupload</option>
+              <option value="Report Masuk">Report Masuk</option>
+              <option value="Selesai">Selesai</option>
+              <option value="Batal">Batal</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="kol-grid" id="kol-grid"></div>
       </div>
 
       <!-- ⑤ USER MANAGEMENT (Moderator only) -->
@@ -7177,6 +7305,7 @@ async function initDashboard() {
   navShow('n-team-tasks',     isMod);
   navShow('n-mod-target',     isMod);
   navShow('n-budget-marketing', isMod || isOwner);
+  navShow('n-kol-affiliate',  isMod);
   navShow('n-users',          isMod);
   // Settings — Sovereign only
   navShow('n-settings',       isHead);
@@ -16946,6 +17075,498 @@ async function deleteBudgetEntry(id) {
 }
 window.deleteBudgetEntry = deleteBudgetEntry;
 
+/* ═══════════════════════════════════════════════════════════
+   KOL & AFFILIATE MODULE  (v46 — dibuka untuk Sovereign/Moderator)
+   Kelola talent KOL/Affiliate: profil + link TikTok/Instagram + followers
+   ⇒ tier otomatis (Nano/Micro/Macro/Mega), progress kerjasama (stepper),
+   modal/HPP & total penjualan ⇒ ROI otomatis, serta form report performa
+   (views/likes/comments/shares) ⇒ Engagement Rate otomatis pakai rumus
+   yang lazim dipakai agency KOL/Affiliate di Indonesia:
+     ER (by Followers) = (Likes+Komentar+Share) / Followers  × 100%
+     ER (by Views)      = (Likes+Komentar+Share) / Views      × 100%
+   ═══════════════════════════════════════════════════════════ */
+const KOL_TIER_DEFS = [
+  { key:'Mega',  min:1000000, cls:'kol-tier-mega',  color:'#e87070' },
+  { key:'Macro', min:100000,  cls:'kol-tier-macro', color:'#e8b86e' },
+  { key:'Micro', min:10000,   cls:'kol-tier-micro', color:'#7abf8e' },
+  { key:'Nano',  min:1000,    cls:'kol-tier-nano',  color:'#7ea8c9' },
+];
+function kolComputeTier(followers) {
+  const n = Number(followers) || 0;
+  for (const tdef of KOL_TIER_DEFS) if (n >= tdef.min) return tdef.key;
+  return null; // di bawah 1.000 followers = belum bertier
+}
+function kolTierBadgeHtml(tier) {
+  if (!tier) return `<span class="kol-tier-badge kol-tier-none">Belum Bertier</span>`;
+  const def = KOL_TIER_DEFS.find(d => d.key === tier);
+  return `<span class="kol-tier-badge ${def ? def.cls : 'kol-tier-none'}">${tier}</span>`;
+}
+const KOL_STAGES = [
+  { key:'Nego',           lbl:'Nego/Deal' },
+  { key:'Produk Dikirim', lbl:'Produk' },
+  { key:'Diupload',       lbl:'Upload' },
+  { key:'Report Masuk',   lbl:'Report' },
+  { key:'Selesai',        lbl:'Selesai' },
+];
+function kolOverallStatus(progress) {
+  if (progress === 'Batal') return 'Batal';
+  if (progress === 'Selesai') return 'Selesai';
+  return 'Aktif';
+}
+function kolStepperHtml(progress) {
+  if (progress === 'Batal') {
+    return `<div class="kol-stepper">${KOL_STAGES.map((s,i) => `
+      <div class="kol-step cancelled">${i>0?'<div class="kol-step-line"></div>':''}<div class="kol-step-dot"></div><div class="kol-step-lbl">${s.lbl}</div></div>`).join('')}</div>
+      <div style="text-align:center;font-size:9px;color:var(--red);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-top:2px">✕ Kerjasama Dibatalkan</div>`;
+  }
+  const curIdx = KOL_STAGES.findIndex(s => s.key === progress);
+  return `<div class="kol-stepper">${KOL_STAGES.map((s,i) => {
+    const state = i < curIdx ? 'done' : (i === curIdx ? 'current' : '');
+    return `<div class="kol-step ${state}">${i>0?'<div class="kol-step-line"></div>':''}<div class="kol-step-dot"></div><div class="kol-step-lbl">${s.lbl}</div></div>`;
+  }).join('')}</div>`;
+}
+function kolRoi(modal, sales) {
+  const m = Number(modal) || 0, s = Number(sales) || 0;
+  if (m <= 0) return null;
+  return ((s - m) / m) * 100;
+}
+function kolInitials(name) {
+  return (name || '?').trim().split(/\s+/).slice(0,2).map(w => w[0]).join('').toUpperCase();
+}
+
+let kolCache = [];
+let kolReportsCache = [];
+
+async function loadKolAffiliatePage() {
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  const res = await dbQ(d => d.from('kol_affiliates').select('*').order('created_at', { ascending:false }));
+  kolCache = res?.data || [];
+  renderKolAffiliate();
+}
+window.loadKolAffiliatePage = loadKolAffiliatePage;
+
+function renderKolAffiliate() {
+  const grid = document.getElementById('kol-grid');
+  const statsWrap = document.getElementById('kol-stats');
+  if (!grid) return;
+
+  const q      = (document.getElementById('kol-search')?.value || '').trim().toLowerCase();
+  const catF   = document.getElementById('kol-cat-filter')?.value || 'all';
+  const tierF  = document.getElementById('kol-tier-filter')?.value || 'all';
+  const statF  = document.getElementById('kol-status-filter')?.value || 'all';
+
+  let rows = kolCache.slice();
+  if (q) rows = rows.filter(r => (r.name || '').toLowerCase().includes(q));
+  if (catF !== 'all') rows = rows.filter(r => r.category === catF);
+  if (tierF !== 'all') rows = rows.filter(r => r.tiktok_tier === tierF || r.instagram_tier === tierF);
+  if (statF !== 'all') rows = rows.filter(r => (r.progress_status || 'Nego') === statF);
+
+  // Stats — dihitung dari SELURUH data (bukan hasil filter) supaya konsisten
+  const totalAll   = kolCache.length;
+  const aktifCount = kolCache.filter(r => kolOverallStatus(r.progress_status) === 'Aktif').length;
+  const totalModal = kolCache.reduce((s,r) => s + (Number(r.hpp_modal) || 0), 0);
+  const totalSales = kolCache.reduce((s,r) => s + (Number(r.total_sales) || 0), 0);
+  const roiRows     = kolCache.filter(r => Number(r.hpp_modal) > 0);
+  const avgRoi = roiRows.length ? roiRows.reduce((s,r) => s + kolRoi(r.hpp_modal, r.total_sales), 0) / roiRows.length : null;
+
+  if (statsWrap) {
+    statsWrap.innerHTML = `
+      <div class="adcust-stat"><div class="acs-num">${totalAll}</div><div class="acs-lbl">Total KOL/Affiliate</div></div>
+      <div class="adcust-stat"><div class="acs-num" style="color:var(--green)">${aktifCount}</div><div class="acs-lbl">Kerjasama Aktif</div></div>
+      <div class="adcust-stat"><div class="acs-num">${crmFmtRupiah(totalModal)}</div><div class="acs-lbl">Total Modal/HPP</div></div>
+      <div class="adcust-stat"><div class="acs-num" style="color:var(--gold-hi)">${crmFmtRupiah(totalSales)}</div><div class="acs-lbl">Total Penjualan</div></div>
+      <div class="adcust-stat"><div class="acs-num" style="color:${avgRoi==null?'var(--muted)':(avgRoi>=0?'var(--green)':'var(--red)')}">${avgRoi==null?'—':(avgRoi>=0?'+':'')+avgRoi.toFixed(1)+'%'}</div><div class="acs-lbl">Rata-rata ROI</div></div>`;
+  }
+
+  if (!rows.length) {
+    grid.innerHTML = `<div class="tbl-empty" style="grid-column:1/-1">Belum ada data KOL/Affiliate. Klik "+ Tambah KOL/Affiliate" untuk mulai.</div>`;
+    return;
+  }
+
+  grid.innerHTML = rows.map(r => {
+    const roi = kolRoi(r.hpp_modal, r.total_sales);
+    const overall = kolOverallStatus(r.progress_status);
+    const statusCls = overall === 'Aktif' ? 'kol-status-aktif' : (overall === 'Selesai' ? 'kol-status-selesai' : 'kol-status-batal');
+    const catLbl = r.category === 'Both' ? 'KOL & Affiliate' : (r.category || 'KOL');
+
+    const platRows = [];
+    if (r.tiktok_username || r.tiktok_followers) {
+      platRows.push(`<div class="kol-plat-row">
+        ${platBadge('tiktok','sm')}
+        <div class="kol-plat-meta">
+          <div class="kol-plat-handle">${r.tiktok_link ? `<a href="${escHtml(r.tiktok_link)}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">@${escHtml(r.tiktok_username||'')}</a>` : '@'+escHtml(r.tiktok_username||'—')}</div>
+          <div class="kol-plat-followers">${(Number(r.tiktok_followers)||0).toLocaleString('id-ID')} followers</div>
+        </div>
+        ${kolTierBadgeHtml(r.tiktok_tier)}
+      </div>`);
+    }
+    if (r.instagram_username || r.instagram_followers) {
+      platRows.push(`<div class="kol-plat-row">
+        <span class="plat-badge plat-badge-sm" style="background:linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7);display:inline-flex;align-items:center;justify-content:center">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="4" stroke="#fff" stroke-width="1.3"/><circle cx="8" cy="8" r="3.1" stroke="#fff" stroke-width="1.3"/><circle cx="11.6" cy="4.4" r="0.9" fill="#fff"/></svg>
+        </span>
+        <div class="kol-plat-meta">
+          <div class="kol-plat-handle">${r.instagram_link ? `<a href="${escHtml(r.instagram_link)}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">@${escHtml(r.instagram_username||'')}</a>` : '@'+escHtml(r.instagram_username||'—')}</div>
+          <div class="kol-plat-followers">${(Number(r.instagram_followers)||0).toLocaleString('id-ID')} followers</div>
+        </div>
+        ${kolTierBadgeHtml(r.instagram_tier)}
+      </div>`);
+    }
+
+    return `<div class="kol-card">
+      <div class="kol-card-head">
+        <div class="kol-avatar">${escHtml(kolInitials(r.name))}</div>
+        <div class="kol-name-wrap">
+          <div class="kol-name">${escHtml(r.name)}</div>
+          <span class="kol-cat-badge">${escHtml(catLbl)}</span>
+        </div>
+        <div class="kol-card-acts">
+          <button class="btn-sm" onclick="openKolReportModal('${r.id}')" title="Report Performa">📊</button>
+          <button class="btn-sm" onclick="openKolModal('${r.id}')" title="Edit">✎</button>
+          <button class="btn-sm" onclick="deleteKolEntry('${r.id}')" title="Hapus">🗑</button>
+        </div>
+      </div>
+
+      <div class="kol-plat-rows">${platRows.join('') || '<div style="font-size:10.5px;color:var(--muted)">Belum ada link platform diisi</div>'}</div>
+
+      ${kolStepperHtml(r.progress_status || 'Nego')}
+
+      <div class="kol-fin-row">
+        <div class="kol-fin-box"><div class="kol-fin-lbl">Modal/HPP</div><div class="kol-fin-val">${crmFmtRupiah(r.hpp_modal||0)}</div></div>
+        <div class="kol-fin-box"><div class="kol-fin-lbl">Penjualan</div><div class="kol-fin-val">${crmFmtRupiah(r.total_sales||0)}</div></div>
+        <div class="kol-fin-box"><div class="kol-fin-lbl">ROI</div><div class="kol-fin-val ${roi==null?'':(roi>=0?'roi-pos':'roi-neg')}">${roi==null?'—':(roi>=0?'+':'')+roi.toFixed(1)+'%'}</div></div>
+      </div>
+
+      ${r.note ? `<div class="kol-note">${escHtml(r.note)}</div>` : ''}
+
+      <div class="kol-card-foot">
+        <span class="kol-status-pill ${statusCls}">${overall}</span>
+        ${r.tiktok_video_link ? `<a href="${escHtml(r.tiktok_video_link)}" target="_blank" rel="noopener" class="btn-sm" style="text-decoration:none">▶ Video TikTok</a>` : ''}
+        ${r.instagram_video_link ? `<a href="${escHtml(r.instagram_video_link)}" target="_blank" rel="noopener" class="btn-sm" style="text-decoration:none">▶ Video Instagram</a>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+window.renderKolAffiliate = renderKolAffiliate;
+
+// Live tier-preview saat mengetik jumlah followers di form
+function kolPreviewTier(platform) {
+  const inp = document.getElementById(`kol-ed-${platform}-followers`);
+  const out = document.getElementById(`kol-tier-preview-${platform}`);
+  if (!inp || !out) return;
+  const tier = kolComputeTier(inp.value);
+  out.innerHTML = kolTierBadgeHtml(tier);
+}
+window.kolPreviewTier = kolPreviewTier;
+
+function openKolModal(id) {
+  if (!can.isMod(currentUser?.role)) return;
+  const row = id ? kolCache.find(r => r.id === id) : null;
+  document.getElementById('m-title').textContent = row ? 'Edit KOL/Affiliate' : 'Tambah KOL/Affiliate';
+
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg"><label>Nama KOL/Affiliate</label>
+      <input class="fi" id="kol-ed-name" type="text" value="${escHtml(row?.name || '')}" placeholder="mis. Nadia Beauty"/>
+    </div>
+    <div class="fg"><label>Kategori Kerjasama</label>
+      <select class="fi" id="kol-ed-category">
+        <option value="KOL" ${row?.category==='KOL'?'selected':''}>KOL (Endorse/Konten)</option>
+        <option value="Affiliate" ${row?.category==='Affiliate'?'selected':''}>Affiliate (Komisi Penjualan)</option>
+        <option value="Both" ${row?.category==='Both'?'selected':''}>KOL &amp; Affiliate</option>
+      </select>
+    </div>
+
+    <div style="border-top:1px solid var(--border);margin:14px 0 12px;padding-top:12px">
+      <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px">TikTok</div>
+      <div class="fg"><label>Username TikTok</label>
+        <input class="fi" id="kol-ed-tiktok-username" type="text" value="${escHtml(row?.tiktok_username || '')}" placeholder="tanpa @"/>
+      </div>
+      <div class="fg"><label>Link Profil TikTok</label>
+        <input class="fi" id="kol-ed-tiktok-link" type="text" value="${escHtml(row?.tiktok_link || '')}" placeholder="https://tiktok.com/@..."/>
+      </div>
+      <div class="fg"><label>Jumlah Followers TikTok</label>
+        <input class="fi" id="kol-ed-tiktok-followers" type="number" min="0" value="${row?.tiktok_followers ?? ''}" placeholder="0" oninput="kolPreviewTier('tiktok')"/>
+        <div style="margin-top:6px" id="kol-tier-preview-tiktok">${kolTierBadgeHtml(row?.tiktok_tier || kolComputeTier(row?.tiktok_followers))}</div>
+      </div>
+      <div class="fg"><label>Link Video/Konten TikTok (setelah upload)</label>
+        <input class="fi" id="kol-ed-tiktok-video" type="text" value="${escHtml(row?.tiktok_video_link || '')}" placeholder="https://tiktok.com/@.../video/..."/>
+      </div>
+    </div>
+
+    <div style="border-top:1px solid var(--border);margin:14px 0 12px;padding-top:12px">
+      <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px">Instagram</div>
+      <div class="fg"><label>Username Instagram</label>
+        <input class="fi" id="kol-ed-instagram-username" type="text" value="${escHtml(row?.instagram_username || '')}" placeholder="tanpa @"/>
+      </div>
+      <div class="fg"><label>Link Profil Instagram</label>
+        <input class="fi" id="kol-ed-instagram-link" type="text" value="${escHtml(row?.instagram_link || '')}" placeholder="https://instagram.com/..."/>
+      </div>
+      <div class="fg"><label>Jumlah Followers Instagram</label>
+        <input class="fi" id="kol-ed-instagram-followers" type="number" min="0" value="${row?.instagram_followers ?? ''}" placeholder="0" oninput="kolPreviewTier('instagram')"/>
+        <div style="margin-top:6px" id="kol-tier-preview-instagram">${kolTierBadgeHtml(row?.instagram_tier || kolComputeTier(row?.instagram_followers))}</div>
+      </div>
+      <div class="fg"><label>Link Video/Konten Instagram (setelah upload)</label>
+        <input class="fi" id="kol-ed-instagram-video" type="text" value="${escHtml(row?.instagram_video_link || '')}" placeholder="https://instagram.com/reel/..."/>
+      </div>
+    </div>
+
+    <div style="border-top:1px solid var(--border);margin:14px 0 12px;padding-top:12px">
+      <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px">Progress &amp; Keuangan</div>
+      <div class="fg"><label>Progress Kerjasama</label>
+        <select class="fi" id="kol-ed-progress">
+          ${KOL_STAGES.map(s => `<option value="${s.key}" ${(row?.progress_status||'Nego')===s.key?'selected':''}>${s.lbl}</option>`).join('')}
+          <option value="Batal" ${row?.progress_status==='Batal'?'selected':''}>Batal</option>
+        </select>
+      </div>
+      <div class="fg"><label>Modal/HPP Dikeluarkan (Rp)</label>
+        <div class="fi-rp-wrap"><span class="fi-rp-prefix">Rp</span>
+          <input class="fi fi-rp-input" id="kol-ed-modal" type="text" inputmode="numeric" value="${row?.hpp_modal ? Number(row.hpp_modal).toLocaleString('id-ID') : ''}" placeholder="mis. biaya produk sample + fee" oninput="crmFormatRpInput(this)"/>
+        </div>
+      </div>
+      <div class="fg"><label>Total Penjualan Terjadi (Rp)</label>
+        <div class="fi-rp-wrap"><span class="fi-rp-prefix">Rp</span>
+          <input class="fi fi-rp-input" id="kol-ed-sales" type="text" inputmode="numeric" value="${row?.total_sales ? Number(row.total_sales).toLocaleString('id-ID') : ''}" placeholder="0" oninput="crmFormatRpInput(this)"/>
+        </div>
+      </div>
+      <div class="fg"><label>Catatan / Note</label>
+        <textarea class="fi" id="kol-ed-note" rows="3" placeholder="mis. deal fee, syarat konten, kendala, dll">${escHtml(row?.note || '')}</textarea>
+      </div>
+    </div>`;
+
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-gold" onclick="saveKolEntry(${row ? `'${row.id}'` : 'null'})">Simpan</button>
+    <button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+window.openKolModal = openKolModal;
+
+async function saveKolEntry(id) {
+  if (!can.isMod(currentUser?.role)) return;
+  if (!db) { toast('Supabase tidak aktif'); return; }
+
+  const name = document.getElementById('kol-ed-name').value.trim();
+  if (!name) { toast('Isi nama KOL/Affiliate terlebih dahulu'); return; }
+
+  const tiktokFollowers    = crmParseInt(document.getElementById('kol-ed-tiktok-followers').value) || null;
+  const instagramFollowers = crmParseInt(document.getElementById('kol-ed-instagram-followers').value) || null;
+
+  const payload = {
+    name,
+    category: document.getElementById('kol-ed-category').value,
+    tiktok_username: document.getElementById('kol-ed-tiktok-username').value.trim() || null,
+    tiktok_link: document.getElementById('kol-ed-tiktok-link').value.trim() || null,
+    tiktok_followers: tiktokFollowers,
+    tiktok_tier: kolComputeTier(tiktokFollowers),
+    tiktok_video_link: document.getElementById('kol-ed-tiktok-video').value.trim() || null,
+    instagram_username: document.getElementById('kol-ed-instagram-username').value.trim() || null,
+    instagram_link: document.getElementById('kol-ed-instagram-link').value.trim() || null,
+    instagram_followers: instagramFollowers,
+    instagram_tier: kolComputeTier(instagramFollowers),
+    instagram_video_link: document.getElementById('kol-ed-instagram-video').value.trim() || null,
+    progress_status: document.getElementById('kol-ed-progress').value,
+    hpp_modal: crmParseInt(document.getElementById('kol-ed-modal').value) || 0,
+    total_sales: crmParseInt(document.getElementById('kol-ed-sales').value) || 0,
+    note: document.getElementById('kol-ed-note').value.trim() || null,
+    updated_by: currentUser.id,
+    updated_at: new Date().toISOString(),
+  };
+  payload.roi_percent = payload.hpp_modal > 0 ? ((payload.total_sales - payload.hpp_modal) / payload.hpp_modal) * 100 : null;
+
+  let res;
+  if (id) {
+    res = await dbQ(d => d.from('kol_affiliates').update(payload).eq('id', id));
+  } else {
+    payload.created_by = currentUser.id;
+    res = await dbQ(d => d.from('kol_affiliates').insert(payload));
+  }
+  if (res?.error) { toast('Gagal menyimpan: ' + res.error.message); return; }
+
+  toast(id ? 'Data KOL/Affiliate diperbarui' : 'KOL/Affiliate baru ditambahkan');
+  pushActivity(`${id ? 'Mengubah' : 'Menambahkan'} data KOL/Affiliate: ${name}`, 'info');
+  closeModal();
+  loadKolAffiliatePage();
+}
+window.saveKolEntry = saveKolEntry;
+
+async function deleteKolEntry(id) {
+  if (!can.isMod(currentUser?.role)) return;
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  const ok = await uiConfirm({ title:'Hapus KOL/Affiliate?', message:'Seluruh data profil & report performa terkait akan ikut terhapus. Tindakan ini tidak bisa dibatalkan.', icon:'warn', okText:'Hapus', cancelText:'Batal' });
+  if (!ok) return;
+  await dbQ(d => d.from('kol_affiliate_reports').delete().eq('kol_id', id));
+  const res = await dbQ(d => d.from('kol_affiliates').delete().eq('id', id));
+  if (res?.error) { toast('Gagal menghapus: ' + res.error.message); return; }
+  toast('Data KOL/Affiliate dihapus');
+  pushActivity('Menghapus 1 data KOL/Affiliate', 'info');
+  loadKolAffiliatePage();
+}
+window.deleteKolEntry = deleteKolEntry;
+
+/* ── Report Performa & Engagement Rate ── */
+function kolComputeER(likes, comments, shares, followers, views) {
+  const eng = (Number(likes)||0) + (Number(comments)||0) + (Number(shares)||0);
+  const fol = Number(followers) || 0;
+  const vw  = Number(views) || 0;
+  return {
+    erFollowers: fol > 0 ? (eng / fol) * 100 : null,
+    erViews:     vw  > 0 ? (eng / vw)  * 100 : null,
+  };
+}
+function kolReportLivePreview() {
+  const out = document.getElementById('kol-er-preview-box');
+  if (!out) return;
+  const followers = document.getElementById('kol-rep-followers')?.value;
+  const views    = document.getElementById('kol-rep-views')?.value;
+  const likes    = document.getElementById('kol-rep-likes')?.value;
+  const comments = document.getElementById('kol-rep-comments')?.value;
+  const shares   = document.getElementById('kol-rep-shares')?.value;
+  const { erFollowers, erViews } = kolComputeER(likes, comments, shares, followers, views);
+  out.innerHTML = `
+    <div class="kol-er-box"><div class="kol-er-num">${erFollowers==null?'—':erFollowers.toFixed(2)+'%'}</div><div class="kol-er-lbl">ER by Followers</div></div>
+    <div class="kol-er-box"><div class="kol-er-num">${erViews==null?'—':erViews.toFixed(2)+'%'}</div><div class="kol-er-lbl">ER by Views</div></div>`;
+}
+window.kolReportLivePreview = kolReportLivePreview;
+
+async function openKolReportModal(kolId) {
+  if (!can.isMod(currentUser?.role)) return;
+  const kol = kolCache.find(r => r.id === kolId);
+  if (!kol) return;
+
+  document.getElementById('m-title').textContent = `Report Performa — ${kol.name}`;
+
+  const repRes = await dbQ(d => d.from('kol_affiliate_reports').select('*').eq('kol_id', kolId).order('report_date', { ascending:false }));
+  kolReportsCache = repRes?.data || [];
+
+  const platOptions = [];
+  if (kol.tiktok_username || kol.tiktok_followers) platOptions.push({ v:'tiktok', l:'TikTok', followers:kol.tiktok_followers, link:kol.tiktok_video_link });
+  if (kol.instagram_username || kol.instagram_followers) platOptions.push({ v:'instagram', l:'Instagram', followers:kol.instagram_followers, link:kol.instagram_video_link });
+
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg"><label>Platform</label>
+      <select class="fi" id="kol-rep-platform" onchange="kolReportPlatformChange()">
+        ${platOptions.map(p => `<option value="${p.v}">${p.l}</option>`).join('') || '<option value="tiktok">TikTok</option>'}
+      </select>
+    </div>
+    <div class="fg"><label>Link Konten yang Direport</label>
+      <input class="fi" id="kol-rep-link" type="text" value="${escHtml(platOptions[0]?.link || '')}" placeholder="https://..."/>
+    </div>
+    <div class="fg"><label>Tanggal Report</label>
+      <input class="fi" id="kol-rep-date" type="date" value="${ymdKey(new Date())}"/>
+    </div>
+    <div class="fg"><label>Total Followers (saat report)</label>
+      <input class="fi" id="kol-rep-followers" type="number" min="0" value="${platOptions[0]?.followers || ''}" oninput="kolReportLivePreview()"/>
+    </div>
+    <div class="fg"><label>Jumlah Views</label>
+      <input class="fi" id="kol-rep-views" type="number" min="0" placeholder="0" oninput="kolReportLivePreview()"/>
+    </div>
+    <div class="fg"><label>Jumlah Likes</label>
+      <input class="fi" id="kol-rep-likes" type="number" min="0" placeholder="0" oninput="kolReportLivePreview()"/>
+    </div>
+    <div class="fg"><label>Jumlah Komentar</label>
+      <input class="fi" id="kol-rep-comments" type="number" min="0" placeholder="0" oninput="kolReportLivePreview()"/>
+    </div>
+    <div class="fg"><label>Jumlah Share/Repost</label>
+      <input class="fi" id="kol-rep-shares" type="number" min="0" placeholder="0" oninput="kolReportLivePreview()"/>
+    </div>
+    <div class="fg"><label>Jumlah Save (opsional)</label>
+      <input class="fi" id="kol-rep-saves" type="number" min="0" placeholder="0"/>
+    </div>
+    <div class="kol-er-preview" id="kol-er-preview-box"></div>
+    <div class="fg" style="margin-top:14px"><label>Catatan Report</label>
+      <textarea class="fi" id="kol-rep-note" rows="2" placeholder="opsional"></textarea>
+    </div>
+
+    ${kolReportsCache.length ? `
+    <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:12px">
+      <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px">Riwayat Report (${kolReportsCache.length})</div>
+      ${kolReportsCache.map(rp => `
+        <div class="kol-report-item">
+          <div class="kri-l">
+            <div class="kri-plat">${rp.platform === 'tiktok' ? 'TikTok' : 'Instagram'} · ${rp.report_date || ''}</div>
+            <div class="kri-nums">👁 ${(rp.views||0).toLocaleString('id-ID')} · ❤ ${(rp.likes||0).toLocaleString('id-ID')} · 💬 ${(rp.comments||0).toLocaleString('id-ID')} · ↗ ${(rp.shares||0).toLocaleString('id-ID')}</div>
+          </div>
+          <div class="kri-er">${rp.er_followers!=null ? rp.er_followers.toFixed(2)+'%' : '—'}</div>
+          <button class="btn-sm" onclick="deleteKolReport('${rp.id}','${kolId}')" title="Hapus">🗑</button>
+        </div>`).join('')}
+    </div>` : ''}`;
+
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-gold" onclick="saveKolReport('${kolId}')">Simpan Report</button>
+    <button class="btn-sm btn-cancel" onclick="closeModal()">Tutup</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+  kolReportLivePreview();
+
+  window._kolReportPlatOptions = platOptions;
+}
+window.openKolReportModal = openKolReportModal;
+
+function kolReportPlatformChange() {
+  const plat = document.getElementById('kol-rep-platform')?.value;
+  const opt = (window._kolReportPlatOptions || []).find(p => p.v === plat);
+  if (opt) {
+    document.getElementById('kol-rep-followers').value = opt.followers || '';
+    document.getElementById('kol-rep-link').value = opt.link || '';
+    kolReportLivePreview();
+  }
+}
+window.kolReportPlatformChange = kolReportPlatformChange;
+
+async function saveKolReport(kolId) {
+  if (!can.isMod(currentUser?.role)) return;
+  if (!db) { toast('Supabase tidak aktif'); return; }
+
+  const followers = crmParseInt(document.getElementById('kol-rep-followers').value) || 0;
+  const views    = crmParseInt(document.getElementById('kol-rep-views').value) || 0;
+  const likes    = crmParseInt(document.getElementById('kol-rep-likes').value) || 0;
+  const comments = crmParseInt(document.getElementById('kol-rep-comments').value) || 0;
+  const shares   = crmParseInt(document.getElementById('kol-rep-shares').value) || 0;
+  const saves    = crmParseInt(document.getElementById('kol-rep-saves').value) || 0;
+
+  if (!followers && !views) { toast('Isi minimal total followers atau views untuk menghitung Engagement Rate'); return; }
+
+  const { erFollowers, erViews } = kolComputeER(likes, comments, shares, followers, views);
+
+  const payload = {
+    kol_id: kolId,
+    platform: document.getElementById('kol-rep-platform').value,
+    content_link: document.getElementById('kol-rep-link').value.trim() || null,
+    report_date: document.getElementById('kol-rep-date').value || ymdKey(new Date()),
+    followers_snapshot: followers || null,
+    views: views || null,
+    likes, comments, shares,
+    saves: saves || null,
+    er_followers: erFollowers,
+    er_views: erViews,
+    note: document.getElementById('kol-rep-note').value.trim() || null,
+    created_by: currentUser.id,
+  };
+
+  const res = await dbQ(d => d.from('kol_affiliate_reports').insert(payload));
+  if (res?.error) { toast('Gagal menyimpan report: ' + res.error.message); return; }
+
+  // v46: setelah report masuk, otomatis majukan progress ke "Report Masuk"
+  // kalau kerjasama masih di tahap sebelumnya (Nego/Produk/Upload).
+  const kol = kolCache.find(r => r.id === kolId);
+  if (kol && ['Nego','Produk Dikirim','Diupload'].includes(kol.progress_status || 'Nego')) {
+    await dbQ(d => d.from('kol_affiliates').update({ progress_status:'Report Masuk', updated_by:currentUser.id, updated_at:new Date().toISOString() }).eq('id', kolId));
+  }
+
+  toast('Report performa disimpan');
+  pushActivity(`Menambahkan report performa KOL/Affiliate: ${kol?.name || ''} (ER ${erFollowers!=null?erFollowers.toFixed(1)+'%':'-'})`, 'info');
+  await loadKolAffiliatePage();
+  openKolReportModal(kolId);
+}
+window.saveKolReport = saveKolReport;
+
+async function deleteKolReport(reportId, kolId) {
+  if (!can.isMod(currentUser?.role)) return;
+  const res = await dbQ(d => d.from('kol_affiliate_reports').delete().eq('id', reportId));
+  if (res?.error) { toast('Gagal menghapus report: ' + res.error.message); return; }
+  toast('Report dihapus');
+  openKolReportModal(kolId);
+}
+window.deleteKolReport = deleteKolReport;
+
 async function _getPortalConfigVal(key, fallback) {
   if (db) {
     const res = await dbQ(d => d.from('portal_config').select('value').eq('key', key).maybeSingle());
@@ -18910,6 +19531,7 @@ function navTo(page, btn) {
   // Moderator-only pages (Budget Marketing juga dibuka untuk Owner, view-only)
   if (['team_tasks','users','mod_target'].includes(page) && !can.isMod(r)) { toast('Moderator access required'); return; }
   if (page === 'budget_marketing' && !can.isMod(r) && !isOwnerNav) { toast('Moderator access required'); return; }
+  if (page === 'kol_affiliate' && !can.isMod(r)) { toast('Moderator access required'); return; }
   // Manage (Ads) pages: moderator + admin/b2b (target). Ad Schedule juga dibuka untuk Owner (view-only).
   if (page === 'ad_scheduler' && !can.canSeeAds(r) && !isOwnerNav) { toast(t('adAccessReq')); return; }
   if (['ad_customers','ad_task'].includes(page) && !can.canSeeAds(r)) { toast(t('adAccessReq')); return; }
@@ -18942,6 +19564,7 @@ function loadPageData(page) {
   if (page === 'team_tasks')      renderTeamTasks();
   if (page === 'mod_target')      renderModTargetPage();
   if (page === 'budget_marketing') loadBudgetMarketingPage();
+  if (page === 'kol_affiliate')   loadKolAffiliatePage();
   if (page === 'users')           renderUsers();
   if (page === 'settings')        renderSettings();
   if (page === 'presence')        renderPresencePage();
