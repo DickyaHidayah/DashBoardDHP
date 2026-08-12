@@ -5512,10 +5512,10 @@ const can = {
   isContent:   r => r === 'content_creator',
   isHostLive:  r => r === 'host_live',
   isB2B:       r => r === 'b2b_marketing',
-  // Bisa jadi TARGET iklan & punya halaman/FAB task (admin + b2b)
-  isAdTarget:  r => r === 'admin' || r === 'b2b_marketing',
+  // Bisa jadi TARGET iklan & punya halaman/FAB task (admin + b2b + cs_hunter)
+  isAdTarget:  r => r === 'admin' || r === 'b2b_marketing' || r === 'cs_hunter',
   // Siapa pun yang berhak akses halaman Ad Schedule (moderator ATAU target)
-  canSeeAds:   r => r === 'head_moderator' || r === 'moderator' || r === 'admin' || r === 'b2b_marketing',
+  canSeeAds:   r => r === 'head_moderator' || r === 'moderator' || r === 'admin' || r === 'b2b_marketing' || r === 'cs_hunter',
   // v38: akun Owner — read-only, cuma boleh LIHAT beberapa halaman tertentu,
   // tidak pernah dapat hak edit/tambah/hapus di mana pun.
   isOwnerView: r => r === 'owner',
@@ -13998,12 +13998,12 @@ function escHtml(s) {
     .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-/* ── Role yang BOLEH jadi target iklan: admin & b2b-marketing saja ── */
-const AD_TARGET_ROLES = ['admin', 'b2b_marketing', 'b2b-marketing'];
+/* ── Role yang BOLEH jadi target iklan: admin, b2b-marketing & cs_hunter ── */
+const AD_TARGET_ROLES = ['admin', 'b2b_marketing', 'b2b-marketing', 'cs_hunter'];
 const isAdTargetRole = r => AD_TARGET_ROLES.includes(r);
 
 /* ── Daftar anggota/user yang bisa dijadikan TARGET iklan ──
-   Hanya akun dengan role admin atau b2b-marketing. */
+   Akun dengan role admin, b2b-marketing, atau cs_hunter. */
 function getTargetUsers() {
   const map = {};
   // Dari roster akun aplikasi (juga tersinkron dari DB saat approve)
