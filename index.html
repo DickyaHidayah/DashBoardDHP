@@ -1032,6 +1032,7 @@ body.light .b-admin{ background:#1a7a3e; color:#fff; border-color:#1a7a3e; }
 body.light .b-content_creator{ background:#7a1a72; color:#fff; border-color:#7a1a72; }
 body.light .b-host_live{ background:#c0392b; color:#fff; border-color:#c0392b; }
 body.light .b-b2b_marketing{ background:#1a56a0; color:#fff; border-color:#1a56a0; }
+body.light .b-cs_hunter{ background:#b8720f; color:#fff; border-color:#b8720f; }
 body.light .b-editor{ background:#a05800; color:#fff; border-color:#a05800; }
 body.light .b-guest,.b-viewer{ background:#888; color:#fff; border-color:#888; }
 body.light .b-active{ background:#f0fff4; color:#1a7a3e; border-color:rgba(26,122,62,.3); }
@@ -1587,6 +1588,7 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3Csvg width=
 .role-content_creator{background:#d98ec0}
 .role-host_live{background:#e87070}
 .role-b2b_marketing{background:#7ea8c9}
+.role-cs_hunter{background:#e8a33d}
 .role-guest{background:#666}
 .sb-user-role-lbl{font-size:9px;letter-spacing:.2em;color:var(--gold-lo);text-transform:uppercase}
 
@@ -1650,6 +1652,7 @@ body.role-theme-admin .sb-role-accent{background:linear-gradient(90deg,#7abf8e,#
 body.role-theme-content_creator .sb-role-accent{background:linear-gradient(90deg,#d98ec0,#e9b4d8)}
 body.role-theme-host_live .sb-role-accent{background:linear-gradient(90deg,#e87070,#f29d9d)}
 body.role-theme-b2b_marketing .sb-role-accent{background:linear-gradient(90deg,#7ea8c9,#a9c7e0)}
+body.role-theme-cs_hunter .sb-role-accent{background:linear-gradient(90deg,#e8a33d,#f5c778)}
 body.role-theme-moderator .sb-role-accent{background:linear-gradient(90deg,var(--gold),var(--gold-hi))}
 body.role-theme-head_moderator .sb-role-accent{background:linear-gradient(90deg,var(--gold-hi),#fff3d6,var(--gold-hi))}
 /* Active nav item tinted to match the logged-in role, not always gold */
@@ -1661,6 +1664,8 @@ body.role-theme-host_live .nav-item.active{background:rgba(232,112,112,.12);colo
 body.role-theme-host_live .nav-item.active .nav-icon{color:#e87070}
 body.role-theme-b2b_marketing .nav-item.active{background:rgba(126,168,201,.12);color:#7ea8c9}
 body.role-theme-b2b_marketing .nav-item.active .nav-icon{color:#7ea8c9}
+body.role-theme-cs_hunter .nav-item.active{background:rgba(232,163,61,.12);color:#e8a33d}
+body.role-theme-cs_hunter .nav-item.active .nav-icon{color:#e8a33d}
 
 /* Role badge shown next to brand */
 .role-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:11px;font-size:9px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;margin-left:6px;vertical-align:middle}
@@ -1675,6 +1680,8 @@ body.role-theme-b2b_marketing .nav-item.active .nav-icon{color:#7ea8c9}
 .stat-card.accent-host_live .stat-num{color:var(--red)}
 .stat-card.accent-b2b_marketing{border-color:rgba(126,168,201,.28)}
 .stat-card.accent-b2b_marketing .stat-num{color:var(--blue)}
+.stat-card.accent-cs_hunter{border-color:rgba(232,163,61,.28)}
+.stat-card.accent-cs_hunter .stat-num{color:#e8a33d}
 
 /* LIVE-pulse for host_live */
 @keyframes live-pulse{
@@ -1833,6 +1840,7 @@ tbody tr:last-child td{border-bottom:none}
 .b-content_creator{background:rgba(217,142,192,.1);color:#d98ec0;border:1px solid rgba(217,142,192,.25)}
 .b-host_live{background:rgba(232,112,112,.1);color:var(--red);border:1px solid rgba(232,112,112,.25)}
 .b-b2b_marketing{background:rgba(126,168,201,.1);color:var(--blue);border:1px solid rgba(126,168,201,.22)}
+.b-cs_hunter{background:rgba(232,163,61,.12);color:#e8a33d;border:1px solid rgba(232,163,61,.28)}
 .b-guest{background:rgba(120,120,120,.1);color:#888;border:1px solid rgba(120,120,120,.2)}
 .b-sakit{background:rgba(217,142,192,.1);color:#d98ec0;border:1px solid rgba(217,142,192,.25)}
 .b-izin{background:rgba(232,184,110,.1);color:#e8b86e;border:1px solid rgba(232,184,110,.28)}
@@ -3920,6 +3928,15 @@ body.light .kol-fin-val{color:#0d0d0d}
         </span>
         <span data-i18n="myPerformance">Performa Saya</span>
       </button>
+      <!-- ══ CS HUNTER — level & progress mingguan, khusus role cs_hunter (+ Mod/Admin lihat semua) ══ -->
+      <button class="nav-item" onclick="navTo('cs_hunter',this)" id="n-cs-hunter" style="display:none">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 1.5l1.8 3.7 4.1.6-3 2.9.7 4.1L8 11l-3.6 1.8.7-4.1-3-2.9 4.1-.6L8 1.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span>CS Hunter</span>
+      </button>
       <!-- ══ OVERVIEW TIM — khusus Moderator (lihat dashboard bulanan semua role) ══ -->
       <div class="nav-sec-lbl mod-only" id="ns-all-dash" style="display:none">
         <span class="sec-name">Overview Tim</span>
@@ -5225,6 +5242,25 @@ body.light .kol-fin-val{color:#0d0d0d}
         <div class="crm-foot-note" id="crm-foot-note"></div>
       </div>
 
+      <!-- ⑨-b CS HUNTER — dashboard level & progress mingguan CS Hunter -->
+      <div class="sp" id="pg-cs_hunter">
+        <div class="ph">
+          <div class="ph-left">
+            <div class="pt">
+              <span>CS Hunter</span>
+              <span class="role-pill" style="background:rgba(232,163,61,.14);color:#e8a33d;border:1px solid rgba(232,163,61,.32)">
+                <span class="pill-dot" style="background:#e8a33d"></span> <span id="csh-role-pill-txt">—</span>
+              </span>
+            </div>
+            <div class="ps">Progress leads &amp; closing mingguan, level Bronze → Diamond</div>
+          </div>
+          <div class="ph-acts">
+            <button class="btn-sm btn-gold" onclick="loadCsHunterPage()" title="Muat ulang">⟲ Muat Ulang</button>
+          </div>
+        </div>
+        <div id="csh-root"></div>
+      </div>
+
       <!-- ⑩ PRESENCE PAGE -->
       <div class="sp" id="pg-presence">
         <div class="ph">
@@ -5420,6 +5456,7 @@ const ROLE_LEVELS = {
   content_creator: 40,    // Studio
   host_live:       40,    // Live studio
   b2b_marketing:   40,    // Pipeline
+  cs_hunter:       40,    // CS Hunter — leads/closing
   guest:           10
 };
 const ROLE_COLORS = {
@@ -5429,9 +5466,10 @@ const ROLE_COLORS = {
   content_creator: '#d98ec0',
   host_live:       '#e87070',
   b2b_marketing:   '#7ea8c9',
+  cs_hunter:       '#e8a33d',
   guest:           '#666'
 };
-const ROLE_KEYS = ['head_moderator','moderator','admin','content_creator','host_live','b2b_marketing','guest'];
+const ROLE_KEYS = ['head_moderator','moderator','admin','content_creator','host_live','b2b_marketing','cs_hunter','guest'];
 
 let roleNames = JSON.parse(localStorage.getItem('dhp_roleNames') || 'null') || {
   head_moderator:  'Sovereign Moderator',
@@ -5440,6 +5478,7 @@ let roleNames = JSON.parse(localStorage.getItem('dhp_roleNames') || 'null') || {
   content_creator: 'Content Creator',
   host_live:       'Host Live',
   b2b_marketing:   'B2B Marketing',
+  cs_hunter:       'CS Hunter',
   guest:           'Guest',
   owner:           'Owner (View Only)'
 };
@@ -5450,6 +5489,7 @@ let roleNames = JSON.parse(localStorage.getItem('dhp_roleNames') || 'null') || {
   if (!roleNames.content_creator) { roleNames.content_creator = 'Content Creator';     changed = true; }
   if (!roleNames.host_live)       { roleNames.host_live       = 'Host Live';           changed = true; }
   if (!roleNames.b2b_marketing)   { roleNames.b2b_marketing   = 'B2B Marketing';       changed = true; }
+  if (!roleNames.cs_hunter)       { roleNames.cs_hunter       = 'CS Hunter';           changed = true; }
   // remove old keys
   ['editor','viewer'].forEach(k => { if (roleNames[k] !== undefined) { delete roleNames[k]; changed = true; } });
   if (changed) localStorage.setItem('dhp_roleNames', JSON.stringify(roleNames));
@@ -5485,6 +5525,7 @@ const can = {
   // ownerApplyReadOnly()/blockIfOwner().
   viewAll:     r => ['head_moderator','moderator'].includes(r) || r === 'owner',
   any:         r => !!r,
+  isCsHunter:  r => r === 'cs_hunter',
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -5496,9 +5537,12 @@ const LOCAL_USERS = {
   // ─── MODERATOR (regular) ───
   firman: { pass:'11223344', role:'moderator',       name:'Firman',  email:'firman@dhp.id' },
   // ─── ADMIN ───
-  yuna:   { pass:'123',      role:'admin',           name:'Yuna',    email:'yuna@dhp.id' },
   puji:   { pass:'321',      role:'admin',           name:'Puji',    email:'puji@dhp.id' },
   erni:   { pass:'111',      role:'admin',           name:'Erni',    email:'erni@dhp.id' },
+  // ─── CS HUNTER (leads/closing, sistem level Bronze→Diamond) ───
+  yuna:   { pass:'123',      role:'cs_hunter',       name:'Yuna',    email:'yuna@dhp.id' },
+  fiqi:   { pass:'fiqi123',  role:'cs_hunter',       name:'Fiqi',    email:'fiqi@dhp.id' },
+  murni:  { pass:'murni123', role:'cs_hunter',       name:'Murni',   email:'murni@dhp.id' },
   // ─── CONTENT CREATOR ───
   erika:  { pass:'333',      role:'content_creator', name:'Erika',   email:'erika@dhp.id' },
   // ─── HOST LIVE ───
@@ -5638,7 +5682,9 @@ function roleFromDb(r) {
     'content_creator': 'content_creator',
     'host_live':       'host_live',
     'b2b_marketing':   'b2b_marketing',
-    'head_moderator':  'head_moderator'
+    'head_moderator':  'head_moderator',
+    'cs-hunter':       'cs_hunter',
+    'cs_hunter':       'cs_hunter'
   };
   return map[r] || r;
 }
@@ -7298,6 +7344,7 @@ async function initDashboard() {
   navShow('n-all-dashboard',  isMod || isOwner);
   navShow('n-mod-tasks',      true && !isOwner);    // Tugas Saya — tidak relevan untuk Owner (tidak punya tugas pribadi)
   navShow('n-my-performance', true && !isOwner);    // Performa Saya — idem
+  navShow('n-cs-hunter',      can.isCsHunter(r) || isMod || isOwner);   // CS Hunter — level & progress (sendiri utk CS Hunter, semua tim utk Mod/Owner)
 
   // Administration — Progress Tugas/Target/Users tetap khusus Moderator.
   // Budget Marketing dibuka untuk Owner (view-only) sesuai permintaan.
@@ -10004,7 +10051,10 @@ function renderAllRoleDashboard({
       metric: `${contentTotalMonth} konten bulan ini · ${ccDone}/${ccTotal} sudah tayang` },
     { label: 'Host Live', desc: 'Live jualan TikTok sesuai jadwal &amp; mengejar target penjualan bulanan.',
       members: roleMembers.host_live||[],
-      metric: `${liveTotalSesi} sesi · ${liveTotalSelesai} selesai · ${liveTotalJam.toFixed(1)} jam live` }
+      metric: `${liveTotalSesi} sesi · ${liveTotalSelesai} selesai · ${liveTotalJam.toFixed(1)} jam live` },
+    { label: 'CS Hunter', desc: 'Follow-up leads &amp; kejar closing mingguan sesuai target level (Bronze → Diamond).',
+      members: roleMembers.cs_hunter||[],
+      metric: 'Lihat detail level & progress di halaman CS Hunter' }
   ];
   const jobDeskHtml = jobDeskCards.map(c => `
     <div class="ovt-owner-card ovt-jobdesk-card">
@@ -13190,7 +13240,7 @@ function renderSettings() {
   }));
   // Permission matrix (v2 — multi-role)
   const pm = document.getElementById('perm-matrix'); if (!pm) return;
-  const ALL_PRIVILEGED = ['head_moderator','moderator','admin','content_creator','host_live','b2b_marketing'];
+  const ALL_PRIVILEGED = ['head_moderator','moderator','admin','content_creator','host_live','b2b_marketing','cs_hunter'];
   const perms = [
     { label:'View Customers',         roles:['head_moderator','moderator','admin','b2b_marketing'] },
     { label:'Edit / Add Customers',   roles:['head_moderator','moderator','admin','content_creator','b2b_marketing'] },
@@ -13199,6 +13249,7 @@ function renderSettings() {
     { label:'Live Studio',            roles:['head_moderator','moderator','host_live'] },
     { label:'Live Dashboard',         roles:['head_moderator','moderator'] },
     { label:'B2B Pipeline',           roles:['head_moderator','moderator','b2b_marketing'] },
+    { label:'CS Hunter Progress',     roles:['head_moderator','moderator','cs_hunter'] },
     { label:'View Registrations',     roles:['head_moderator','moderator'] },
     { label:'Approve / Reject',       roles:['head_moderator','moderator'] },
     { label:'Manage Users',           roles:['head_moderator','moderator'] },
@@ -19523,7 +19574,7 @@ function navTo(page, btn) {
   // Schedule, Manage Customer CRM, dan Budget Marketing. Di luar daftar
   // ini (halaman kerja mentah moderator seperti Progress Tugas Tim,
   // Target, Users, Settings, Ads Customers/Task) tetap terkunci.
-  const OWNER_ALLOWED_PAGES = ['all_dashboard','content_studio','live_studio','live_dashboard','ad_scheduler','crm','budget_marketing'];
+  const OWNER_ALLOWED_PAGES = ['all_dashboard','content_studio','live_studio','live_dashboard','ad_scheduler','crm','budget_marketing','cs_hunter'];
   if (isOwnerNav && !OWNER_ALLOWED_PAGES.includes(page)) {
     toast('👁 Akun Owner hanya bisa melihat halaman: Laporan Tim, Content Studio, Live Studio, Live Dashboard, Ads Schedule, Manage CRM & Budget Marketing.');
     return;
@@ -19543,6 +19594,7 @@ function navTo(page, btn) {
   if (page === 'live_studio'    && !can.isHostLive(r) && !can.isMod(r) && !isOwnerNav) { toast('Host Live access required'); return; }
   if (page === 'live_dashboard' && !can.isMod(r) && !isOwnerNav) { toast('Moderator access required'); return; }
   if (page === 'all_dashboard'  && !can.isMod(r) && !isOwnerNav) { toast('Moderator access required'); return; }
+  if (page === 'cs_hunter'      && !can.isCsHunter(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Moderator access required'); return; }
 
   document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
   const target = document.getElementById(`pg-${page}`); if (target) target.classList.add('active');
@@ -19573,6 +19625,7 @@ function loadPageData(page) {
   if (page === 'live_studio')     renderLiveStudio();
   if (page === 'live_dashboard')  loadLiveDashboard();
   if (page === 'all_dashboard')   loadAllRoleDashboard();
+  if (page === 'cs_hunter')       loadCsHunterPage();
   if (page === 'ad_scheduler')    {
     // Non-mod: reload task dari DB setiap kali buka halaman (supaya selalu fresh)
     if (db && currentUser && !can.isMod(currentUser.role)) {
@@ -19591,6 +19644,240 @@ function loadPageData(page) {
       renderAdTaskPage();
     }
   }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ㉕-b CS HUNTER — sistem level Bronze→Diamond, leads & closing mingguan.
+   Tabel Supabase: cs_hunter_status (state saat ini per user) &
+   cs_hunter_history (rekap tiap minggu yang sudah selesai). Reset mingguan
+   dihitung otomatis "on read" (self-healing) tiap kali dashboard dibuka —
+   tidak butuh cron. Closing dihitung langsung dari tabel `leads`
+   (category = 'Closing') milik CS Hunter tsb pada rentang minggu terkait.
+   ═══════════════════════════════════════════════════════════ */
+const CSH_TIERS = [
+  { order:1, key:'bronze',   name:'Bronze',   color:'#c47a3d', glow:'rgba(196,122,61,.45)',  leadsPerDay:25, targetPerDay:2  },
+  { order:2, key:'silver',   name:'Silver',   color:'#a7b0ba', glow:'rgba(167,176,186,.45)', leadsPerDay:22, targetPerDay:4  },
+  { order:3, key:'gold',     name:'Gold',     color:'#e0b03e', glow:'rgba(224,176,62,.5)',   leadsPerDay:19, targetPerDay:6  },
+  { order:4, key:'platinum', name:'Platinum', color:'#5fd0c8', glow:'rgba(95,208,200,.5)',   leadsPerDay:16, targetPerDay:8  },
+  { order:5, key:'diamond',  name:'Diamond',  color:'#8fc6ff', glow:'rgba(143,198,255,.55)', leadsPerDay:13, targetPerDay:10 },
+];
+const csh = t => CSH_TIERS.find(x => x.order === t) || CSH_TIERS[0];
+
+function cshTodayJakarta() {
+  const now = new Date();
+  const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+  return new Date(utcMs + 7 * 3600000); // UTC+7 — pakai sbg "wall clock" lokal utk kalkulasi tanggal
+}
+function cshFmtDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function cshMondayOf(d) {
+  const day = d.getDay();
+  const diff = (day === 0 ? -6 : 1 - day);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + diff);
+}
+function cshAddDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+
+async function csHunterCountClosing(uid, wsStr, weStr) {
+  const res = await dbQ(d => d.from('leads').select('id', { count:'exact', head:true })
+    .eq('owner_id', uid).eq('category', 'Closing').gte('ad_date', wsStr).lt('ad_date', weStr));
+  return (res && typeof res.count === 'number') ? res.count : 0;
+}
+async function csHunterCountLeads(uid, wsStr, weStr) {
+  const res = await dbQ(d => d.from('leads').select('id', { count:'exact', head:true })
+    .eq('owner_id', uid).gte('ad_date', wsStr).lt('ad_date', weStr));
+  return (res && typeof res.count === 'number') ? res.count : 0;
+}
+
+// Self-healing weekly reset: baca state terakhir, "catch up" tiap minggu yang
+// sudah lewat (naik/tetap/turun level sesuai hasil closing minggu itu), lalu
+// simpan state terbaru. Aman dipanggil berkali-kali (idempotent per minggu).
+async function csHunterEnsureState(uid) {
+  if (!db) return null;
+  const res = await dbQ(d => d.from('cs_hunter_status').select('*').eq('user_id', uid).maybeSingle());
+  let state = (res && res.data) ? { ...res.data } : null;
+  const todayMon = cshMondayOf(cshTodayJakarta());
+  if (!state) {
+    state = { user_id: uid, tier_order: 1, consecutive_miss: 0, week_start: cshFmtDate(todayMon) };
+    await dbQ(d => d.from('cs_hunter_status').upsert(state, { onConflict:'user_id' }));
+  }
+  let ws = new Date(state.week_start + 'T00:00:00');
+  let guard = 0;
+  while (ws < todayMon && guard < 26) {
+    guard++;
+    const we = cshAddDays(ws, 7);
+    const tier = csh(state.tier_order);
+    const target = tier.targetPerDay * 7;
+    const actual = await csHunterCountClosing(uid, cshFmtDate(ws), cshFmtDate(we));
+    const passed = actual >= target;
+    let newTier = state.tier_order, newMiss = state.consecutive_miss;
+    if (passed) { newTier = Math.min(state.tier_order + 1, 5); newMiss = 0; }
+    else if (state.consecutive_miss === 0) { newMiss = 1; }               // gagal 1x — tetap, coba lagi
+    else { newTier = Math.max(state.tier_order - 1, 1); newMiss = 0; }    // gagal 2x berturut — turun level
+    await dbQ(d => d.from('cs_hunter_history').insert({
+      user_id: uid, week_start: cshFmtDate(ws), week_end: cshFmtDate(cshAddDays(we, -1)),
+      tier_order: state.tier_order, target_closing: target, actual_closing: actual, passed
+    }));
+    state.tier_order = newTier; state.consecutive_miss = newMiss;
+    ws = we;
+  }
+  state.week_start = cshFmtDate(ws);
+  await dbQ(d => d.from('cs_hunter_status').upsert(
+    { user_id: uid, tier_order: state.tier_order, consecutive_miss: state.consecutive_miss, week_start: state.week_start },
+    { onConflict:'user_id' }));
+  return state;
+}
+
+async function loadCsHunterPage() {
+  const root = document.getElementById('csh-root');
+  if (!root) return;
+  const r = currentUser.role;
+  const pillTxt = document.getElementById('csh-role-pill-txt');
+  if (pillTxt) pillTxt.textContent = (can.isCsHunter(r) && !can.isMod(r)) ? 'Progress Saya' : 'Overview Tim CS Hunter';
+  root.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);font-size:12px">Memuat progress…</div>';
+  cshInjectStyle();
+
+  if (!db) {
+    root.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);font-size:12px">Progress CS Hunter butuh koneksi Supabase (tidak tersedia dalam mode lokal).</div>';
+    return;
+  }
+
+  if (can.isCsHunter(r) && !can.isMod(r)) {
+    const state = await csHunterEnsureState(currentUser.id);
+    if (!state) { root.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted)">Gagal memuat data.</div>'; return; }
+    root.innerHTML = `<div class="csh-wrap">${await cshRenderCard(currentUser.id, currentUser.name, state)}</div>`;
+  } else {
+    let hunters = [];
+    const res = await dbQ(d => d.from('users').select('user_id, full_name').eq('role', 'cs_hunter').eq('is_active', true));
+    hunters = (res && res.data) ? res.data : [];
+    if (!hunters.length) { root.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted)">Belum ada akun dengan role CS Hunter.</div>'; return; }
+    let cards = '';
+    for (const h of hunters) {
+      const state = await csHunterEnsureState(h.user_id);
+      if (!state) continue;
+      cards += await cshRenderCard(h.user_id, h.full_name, state);
+    }
+    root.innerHTML = `<div class="csh-wrap csh-team">${cards || '<div style="padding:20px;color:var(--muted)">Data belum tersedia.</div>'}</div>`;
+  }
+}
+
+async function cshRenderCard(uid, name, state) {
+  const today = cshTodayJakarta();
+  const ws = new Date(state.week_start + 'T00:00:00');
+  const we = cshAddDays(ws, 7);
+  const tier = csh(state.tier_order);
+  const nextTier = state.tier_order < 5 ? csh(state.tier_order + 1) : null;
+  const weeklyTarget = tier.targetPerDay * 7;
+  const weeklyLeadsQuota = tier.leadsPerDay * 7;
+  const actualClosing = await csHunterCountClosing(uid, cshFmtDate(ws), cshFmtDate(we));
+  const actualLeads = await csHunterCountLeads(uid, cshFmtDate(ws), cshFmtDate(we));
+  const pct = Math.min(100, Math.round((actualClosing / weeklyTarget) * 100));
+  const leadsPct = Math.min(100, Math.round((actualLeads / weeklyLeadsQuota) * 100));
+  const daysLeft = Math.max(0, Math.ceil((we - today) / 86400000));
+  const remaining = Math.max(0, weeklyTarget - actualClosing);
+
+  const ladder = CSH_TIERS.map(tr => {
+    const cls = tr.order < tier.order ? 'done' : (tr.order === tier.order ? 'current' : 'upcoming');
+    return `<div class="csh-node ${cls}" style="--tc:${tr.color}"><div class="csh-node-dot"></div><div class="csh-node-lbl">${tr.name}</div></div>`;
+  }).join('<div class="csh-node-line"></div>');
+
+  const circumference = 2 * Math.PI * 42;
+  const dashoffset = circumference - (pct / 100) * circumference;
+
+  let statusMsg;
+  if (state.tier_order === 5) {
+    statusMsg = `🏆 Level maksimum — Diamond! Pertahankan performa closing minggu ini.`;
+  } else if (state.consecutive_miss === 1) {
+    statusMsg = `⚠️ Minggu lalu belum capai target — ini kesempatan terakhir sebelum turun ke level <b>${csh(Math.max(state.tier_order-1,1)).name}</b>.`;
+  } else if (remaining === 0) {
+    statusMsg = `✅ Target minggu ini tercapai! Naik ke <b>${nextTier ? nextTier.name : 'level berikutnya'}</b> di minggu depan.`;
+  } else {
+    statusMsg = `Butuh <b>${remaining}</b> closing lagi dalam ${daysLeft} hari untuk naik ke <b>${nextTier ? nextTier.name : '—'}</b>.`;
+  }
+
+  return `
+  <div class="csh-card" style="--tier-color:${tier.color};--tier-glow:${tier.glow}">
+    <div class="csh-card-head">
+      <div class="csh-avatar" style="background:${tier.color}">${(name||'?').charAt(0).toUpperCase()}</div>
+      <div>
+        <div class="csh-name">${name}</div>
+        <div class="csh-tier-badge" style="color:${tier.color};border-color:${tier.color}55;background:${tier.color}1a">★ ${tier.name}</div>
+      </div>
+      <div class="csh-ring-wrap">
+        <svg viewBox="0 0 100 100" class="csh-ring">
+          <circle cx="50" cy="50" r="42" class="csh-ring-bg"/>
+          <circle cx="50" cy="50" r="42" class="csh-ring-fg" style="stroke:${tier.color};stroke-dasharray:${circumference};stroke-dashoffset:${circumference}" data-final="${dashoffset}"/>
+        </svg>
+        <div class="csh-ring-txt">${pct}%</div>
+      </div>
+    </div>
+    <div class="csh-ladder">${ladder}</div>
+    <div class="csh-stats">
+      <div class="csh-stat">
+        <span class="csh-stat-lbl">Closing minggu ini</span>
+        <div class="csh-bar"><div class="csh-bar-fill" style="width:0%;background:${tier.color}" data-final="${pct}%"></div></div>
+        <span class="csh-stat-val">${actualClosing} / ${weeklyTarget}</span>
+      </div>
+      <div class="csh-stat">
+        <span class="csh-stat-lbl">Leads dikerjakan</span>
+        <div class="csh-bar"><div class="csh-bar-fill leads" style="width:0%" data-final="${leadsPct}%"></div></div>
+        <span class="csh-stat-val">${actualLeads} / ${weeklyLeadsQuota}</span>
+      </div>
+    </div>
+    <div class="csh-status">${statusMsg}</div>
+    <div class="csh-meta">Minggu ${cshFmtDate(ws)} – ${cshFmtDate(cshAddDays(we,-1))} · Target ${tier.targetPerDay}/hari · Jatah leads ${tier.leadsPerDay}/hari</div>
+  </div>`;
+}
+
+function cshInjectStyle() {
+  if (document.getElementById('csh-style')) { cshAnimate(); return; }
+  const css = `
+  .csh-wrap{padding:16px 4px 30px}
+  .csh-team{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+  .csh-card{border:1px solid rgba(232,163,61,.22);border-radius:16px;padding:18px 18px 16px;
+    background:linear-gradient(160deg,rgba(232,163,61,.06),transparent 60%);position:relative;overflow:hidden;margin-bottom:16px}
+  .csh-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 85% -10%,var(--tier-glow),transparent 55%);pointer-events:none}
+  .csh-card-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;position:relative}
+  .csh-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#1a1206;font-size:15px;flex-shrink:0}
+  .csh-name{font-weight:700;font-size:14px}
+  .csh-tier-badge{display:inline-block;margin-top:3px;font-size:10px;font-weight:700;letter-spacing:.05em;padding:2px 8px;border-radius:20px;border:1px solid}
+  .csh-ring-wrap{margin-left:auto;position:relative;width:58px;height:58px;flex-shrink:0}
+  .csh-ring{width:58px;height:58px;transform:rotate(-90deg)}
+  .csh-ring-bg{fill:none;stroke:rgba(255,255,255,.08);stroke-width:8}
+  .csh-ring-fg{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 1.1s cubic-bezier(.22,1,.36,1)}
+  .csh-ring-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+  .csh-ladder{display:flex;align-items:center;margin:14px 0 16px;position:relative}
+  .csh-node{display:flex;flex-direction:column;align-items:center;gap:5px;flex:0 0 auto;position:relative;z-index:1}
+  .csh-node-dot{width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.18);transition:all .6s ease}
+  .csh-node.done .csh-node-dot{background:var(--tc);border-color:var(--tc)}
+  .csh-node.current .csh-node-dot{background:var(--tc);border-color:var(--tc);box-shadow:0 0 0 4px color-mix(in srgb, var(--tc) 30%, transparent);animation:cshPulse 1.8s ease-in-out infinite}
+  .csh-node-lbl{font-size:8.5px;color:var(--muted);letter-spacing:.03em;white-space:nowrap}
+  .csh-node.current .csh-node-lbl{color:var(--tc);font-weight:700}
+  .csh-node-line{flex:1 1 auto;height:2px;background:rgba(255,255,255,.1);margin:0 -2px 15px}
+  @keyframes cshPulse{0%,100%{box-shadow:0 0 0 3px color-mix(in srgb, var(--tc) 30%, transparent)}50%{box-shadow:0 0 0 7px color-mix(in srgb, var(--tc) 8%, transparent)}}
+  .csh-stats{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+  .csh-stat{display:flex;flex-direction:column;gap:4px}
+  .csh-stat-lbl{font-size:10px;color:var(--muted)}
+  .csh-bar{height:7px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden}
+  .csh-bar-fill{height:100%;border-radius:6px;transition:width 1.1s cubic-bezier(.22,1,.36,1)}
+  .csh-bar-fill.leads{background:linear-gradient(90deg,#7ea8c9,#a9c7e0)}
+  .csh-stat-val{font-size:11px;font-weight:700;align-self:flex-end}
+  .csh-status{font-size:11.5px;line-height:1.5;color:var(--text);background:rgba(255,255,255,.04);border-radius:10px;padding:9px 12px;margin-bottom:8px}
+  .csh-meta{font-size:9.5px;color:var(--muted)}
+  `;
+  const style = document.createElement('style');
+  style.id = 'csh-style';
+  style.textContent = css;
+  document.head.appendChild(style);
+  cshAnimate();
+}
+function cshAnimate() {
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      document.querySelectorAll('.csh-ring-fg').forEach(el => { el.style.strokeDashoffset = el.dataset.final; });
+      document.querySelectorAll('.csh-bar-fill').forEach(el => { el.style.width = el.dataset.final; });
+    }, 60);
+  });
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -20650,6 +20937,14 @@ const TUT_ROLE_EXTRA = [
     title:'3. Tandai Task Selesai', desc:'Setelah semua lead dari task itu sudah kamu input ke Database Customer, tandai task-nya selesai supaya moderator tahu task ini sudah kelar.',
     demo:{ button:'Tandai Selesai (Demo)', successMsg:'Task demo ditandai selesai — moderator akan lihat status ini otomatis di Progress Tugas Tim.',
       readonly:'📌 Task: Follow-up 8 lead promo Shopee 9.9 — Deadline: 2 hari lagi' } },
+
+  // ══════════════════════════════════════════════════════════════
+  // ── CS HUNTER ──
+  // ══════════════════════════════════════════════════════════════
+  { afterId:'n-cs-hunter', roles:['cs_hunter'],
+    title:'1. Level Bronze → Diamond', desc:'Halaman ini nunjukin level kamu saat ini beserta target closing minggu ini. Tiap minggu ada jatah leads & target closing sendiri — makin tinggi levelnya, jatah leads makin sedikit tapi target closing makin tinggi.' },
+  { afterId:'n-cs-hunter', roles:['cs_hunter'],
+    title:'2. Cara Naik Level', desc:'Capai target closing mingguan → otomatis naik level minggu depan. Kalau sekali gagal, kamu masih dikasih kesempatan coba lagi minggu berikutnya di level yang sama. Gagal 2 minggu berturut-turut baru levelnya turun.' },
 ];
 
 let tutSteps = [];
