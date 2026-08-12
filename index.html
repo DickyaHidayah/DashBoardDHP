@@ -3897,6 +3897,7 @@ body.light .kol-fin-val{color:#0d0d0d}
             <div class="role-dot" id="sb-rdot"></div>
             <div class="sb-user-role-lbl" id="sb-rlbl">—</div>
           </div>
+          <div id="sb-tier-badge-wrap" style="display:none;margin-top:7px"></div>
           <div class="sb-user-gear" onclick="event.stopPropagation();openMyProfile()" title="Edit Profil">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
               <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.4"/>
@@ -5252,7 +5253,7 @@ body.light .kol-fin-val{color:#0d0d0d}
                 <span class="pill-dot" style="background:#e8a33d"></span> <span id="csh-role-pill-txt">—</span>
               </span>
             </div>
-            <div class="ps">Progress leads &amp; closing mingguan, level Bronze → Diamond</div>
+            <div class="ps">Tugas harian closing sesuai pangkat &amp; progress mingguan, level Bronze → Diamond</div>
           </div>
           <div class="ph-acts">
             <button class="btn-sm btn-gold" onclick="loadCsHunterPage()" title="Muat ulang">⟲ Muat Ulang</button>
@@ -7345,6 +7346,7 @@ async function initDashboard() {
   navShow('n-mod-tasks',      true && !isOwner);    // Tugas Saya — tidak relevan untuk Owner (tidak punya tugas pribadi)
   navShow('n-my-performance', true && !isOwner);    // Performa Saya — idem
   navShow('n-cs-hunter',      can.isCsHunter(r) || isMod || isOwner);   // CS Hunter — level & progress (sendiri utk CS Hunter, semua tim utk Mod/Owner)
+  initCsHunterOwnBadge(); // pangkat CS Hunter tampil di sidebar, di manapun dashboard dibuka
 
   // Administration — Progress Tugas/Target/Users tetap khusus Moderator.
   // Budget Marketing dibuka untuk Owner (view-only) sesuai permintaan.
@@ -7494,28 +7496,38 @@ async function initDashboard() {
   // admin & b2b & moderator → langsung ke Ads Schedule (sistem ads jadi pusat kerja mereka).
   // Overview dihapus total — tidak ada lagi halaman kosong untuk siapa pun.
   try {
+    // CS Hunter (bukan Mod/Owner) → langsung ke halaman Tugas Harian saat login,
+    // supaya target closing hari ini adalah hal pertama yang mereka lihat.
+    const isCsHunterOnly = can.isCsHunter(r) && !isMod && !isOwner;
     const homePage = isOwner        ? 'all_dashboard' :
                      isContent      ? 'content_studio' :
                      isLive         ? 'live_studio'    :
+                     isCsHunterOnly ? 'cs_hunter'       :
                                        'ad_scheduler';
     const homeNavBtn = document.getElementById(
       homePage === 'all_dashboard'  ? 'n-all-dashboard'  :
       homePage === 'content_studio' ? 'n-content-studio' :
       homePage === 'live_studio'    ? 'n-live-studio'    :
+      homePage === 'cs_hunter'      ? 'n-cs-hunter'      :
                                       'n-ad-scheduler'
     );
     navTo(homePage, homeNavBtn);
   } catch (e) {
     console.warn('[DHP] navigasi home gagal, fallback:', e);
     // Fallback manual: paksa tampilkan halaman kerja tanpa lewat navTo
+    const isCsHunterOnly = can.isCsHunter(r) && !isMod && !isOwner;
     const fallback = isOwner ? 'all_dashboard'
                    : isContent ? 'content_studio'
                    : isLive ? 'live_studio'
+                   : isCsHunterOnly ? 'cs_hunter'
                    : 'ad_scheduler';
     document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
     const tgt = document.getElementById(`pg-${fallback}`);
     if (tgt) tgt.classList.add('active');
-    try { if (fallback === 'ad_scheduler') renderAdScheduler(); } catch(_){}
+    try {
+      if (fallback === 'ad_scheduler') renderAdScheduler();
+      if (fallback === 'cs_hunter') loadCsHunterPage();
+    } catch(_){}
   }
 }
 
@@ -13634,13 +13646,20 @@ function startBrandPolling() {
 /* ═══════════════════════════════════════════════════════════
    ㉒-b MY PROFILE — Ganti nama & password sendiri (semua role)
    ═══════════════════════════════════════════════════════════ */
-function openMyProfile() {
+async function openMyProfile() {
   const u = currentUser;
   if (!u) return;
   const av = u.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
   const clr = ROLE_COLORS[u.role] || '#888';
   const isMod = can.isMod(u.role);
   const isHead = u.id === HEAD_MODERATOR_ID;
+
+  // Buka modal dulu dengan skeleton, supaya klik terasa instan — badge pangkat
+  // CS Hunter (butuh fetch state) disisipkan begitu datanya siap.
+  let cshBannerHtml = '';
+  if (can.isCsHunter(u.role) && !isMod && db) {
+    cshBannerHtml = '<div class="profile-tier-banner" id="profile-csh-banner"><div style="font-size:10.5px;color:var(--muted)">Memuat pangkat…</div></div>';
+  }
 
   document.getElementById('profile-modal-title').innerHTML = `
     My Profile
@@ -13651,6 +13670,7 @@ function openMyProfile() {
       </svg>
     </button>`;
   document.getElementById('profile-modal-body').innerHTML = `
+    ${cshBannerHtml}
     <div class="profile-avatar-big" style="background:${clr}22;color:${clr}">${av}</div>
     <div class="profile-info-card">
       <div class="profile-info-row">
@@ -13707,6 +13727,17 @@ function openMyProfile() {
   const ov = document.getElementById('profile-modal-ov');
   ov.classList.add('open');
   ov.style.display = 'flex';
+  cshBadgeChipStyleOnce();
+
+  // Isi banner pangkat CS Hunter setelah modal tampil (fetch state tier)
+  if (can.isCsHunter(u.role) && !isMod && db) {
+    csHunterEnsureState(u.id).then(st => {
+      const el = document.getElementById('profile-csh-banner');
+      if (!el || !st) return;
+      const missNote = st.consecutive_miss === 1 ? '⚠️ Minggu lalu belum capai target — jaga performa minggu ini.' : 'Progress minggu berjalan aktif.';
+      el.innerHTML = `${cshBadgeChip(st.tier_order)}<div class="csh-rank-note">${missNote}</div>`;
+    }).catch(e => console.warn('[DHP] load badge profil gagal:', e));
+  }
 }
 
 function closeProfileModal() {
@@ -19663,6 +19694,85 @@ const CSH_TIERS = [
 ];
 const csh = t => CSH_TIERS.find(x => x.order === t) || CSH_TIERS[0];
 
+/* ── Vector badge pangkat CS Hunter — hexagon medallion + gem facet + pip pangkat ──
+   Dipakai di manapun tier perlu ditampilkan: sidebar, profile modal, kartu CS Hunter.
+   Warna & bentuk mengikuti tier (Bronze→Diamond), pip di bawah menunjukkan pangkat
+   (1–5) supaya "level" nya kebaca sekilas tanpa perlu baca teks. */
+function cshBadgeSVG(tierOrder, size) {
+  size = size || 44;
+  const tier = csh(tierOrder);
+  const uid = 'cshg' + tierOrder + Math.random().toString(36).slice(2, 8);
+  let pips = '';
+  for (let i = 0; i < 5; i++) {
+    const on = i < tierOrder;
+    const x = 22 + (i - 2) * 7.2;
+    pips += `<circle cx="${x}" cy="41.5" r="${on ? 1.9 : 1.4}" fill="${on ? tier.color : 'rgba(255,255,255,.16)'}"/>`;
+  }
+  return `
+  <svg class="csh-badge-svg" width="${size}" height="${size}" viewBox="0 0 44 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="${uid}" x1="0" y1="0" x2="44" y2="46" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="${tier.color}"/>
+        <stop offset="100%" stop-color="${tier.color}" stop-opacity=".3"/>
+      </linearGradient>
+      <radialGradient id="${uid}-gl" cx="50%" cy="34%" r="65%">
+        <stop offset="0%" stop-color="${tier.color}" stop-opacity=".5"/>
+        <stop offset="100%" stop-color="${tier.color}" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <polygon points="22,1 40,11 40,29 22,39 4,29 4,11" fill="url(#${uid}-gl)"/>
+    <polygon points="22,2.5 38,11.5 38,28.5 22,37.5 6,28.5 6,11.5" fill="rgba(13,11,8,.55)" stroke="url(#${uid})" stroke-width="1.4"/>
+    <polygon points="22,9.5 29.5,16 26.5,26.5 17.5,26.5 14.5,16" fill="${tier.color}22" stroke="${tier.color}" stroke-width="1.1" stroke-linejoin="round"/>
+    <path d="M22 12.5 L22 23.5 M18 16 L26 20.5 M26 16 L18 20.5" stroke="${tier.color}" stroke-width=".75" opacity=".75"/>
+    ${pips}
+  </svg>`;
+}
+// Chip lengkap (badge + nama tier), dipakai di sidebar (compact) & profile (besar)
+function cshBadgeChip(tierOrder, compact) {
+  const tier = csh(tierOrder);
+  return `<div class="csh-badge-chip${compact ? ' compact' : ''}" style="--tc:${tier.color};--tg:${tier.glow}">
+    ${cshBadgeSVG(tierOrder, compact ? 24 : 50)}
+    <div class="csh-badge-chip-txt">
+      <span class="csh-badge-chip-name">${tier.name}</span>
+      ${compact ? '' : `<span class="csh-badge-chip-sub">Pangkat ${tierOrder} dari 5 · CS Hunter</span>`}
+    </div>
+  </div>`;
+}
+function cshBadgeChipStyleOnce() {
+  if (document.getElementById('csh-badge-style')) return;
+  const css = `
+  .csh-badge-chip{display:inline-flex;align-items:center;gap:10px;padding:6px 12px 6px 6px;border-radius:14px;
+    border:1px solid var(--tc)45;background:linear-gradient(120deg,var(--tc)1a,transparent 70%);white-space:nowrap}
+  .csh-badge-chip.compact{padding:3px 10px 3px 3px;border-radius:11px;gap:6px}
+  .csh-badge-chip-txt{display:flex;flex-direction:column;line-height:1.25}
+  .csh-badge-chip-name{font-weight:800;font-size:12.5px;color:var(--tc);letter-spacing:.02em}
+  .csh-badge-chip.compact .csh-badge-chip-name{font-size:10.5px}
+  .csh-badge-chip-sub{font-size:9px;color:var(--muted)}
+  .profile-tier-banner{display:flex;justify-content:center;margin-bottom:14px}
+  .csh-rank-note{font-size:10.5px;color:var(--muted);text-align:center;margin-top:6px}
+  `;
+  const s = document.createElement('style'); s.id = 'csh-badge-style'; s.textContent = css;
+  document.head.appendChild(s);
+}
+// Render badge pangkat CS Hunter di sidebar (nampak di manapun dashboard dibuka)
+function renderSidebarTierBadge(tierOrder) {
+  cshBadgeChipStyleOnce();
+  const wrap = document.getElementById('sb-tier-badge-wrap');
+  if (!wrap) return;
+  if (!tierOrder) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+  wrap.innerHTML = cshBadgeChip(tierOrder, true);
+  wrap.style.display = '';
+}
+async function initCsHunterOwnBadge() {
+  if (!db || !currentUser || !can.isCsHunter(currentUser.role) || can.isMod(currentUser.role)) {
+    renderSidebarTierBadge(null); return;
+  }
+  try {
+    const st = await csHunterEnsureState(currentUser.id);
+    if (st) renderSidebarTierBadge(st.tier_order);
+  } catch (e) { console.warn('[DHP] initCsHunterOwnBadge gagal:', e); }
+}
+
 function cshTodayJakarta() {
   const now = new Date();
   const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
@@ -19687,6 +19797,16 @@ async function csHunterCountLeads(uid, wsStr, weStr) {
   const res = await dbQ(d => d.from('leads').select('id', { count:'exact', head:true })
     .eq('owner_id', uid).gte('ad_date', wsStr).lt('ad_date', weStr));
   return (res && typeof res.count === 'number') ? res.count : 0;
+}
+// Rincian closing per-hari dalam satu minggu — dasar tampilan "Tugas Harian".
+// Satu query (bukan 7), lalu di-kelompokkan per tanggal di client.
+async function csHunterDailyBreakdown(uid, wsStr, weStr) {
+  const res = await dbQ(d => d.from('leads').select('ad_date')
+    .eq('owner_id', uid).eq('category', 'Closing').gte('ad_date', wsStr).lt('ad_date', weStr));
+  const rows = (res && res.data) ? res.data : [];
+  const counts = {};
+  rows.forEach(row => { const k = row.ad_date; counts[k] = (counts[k] || 0) + 1; });
+  return counts;
 }
 
 // Self-healing weekly reset: baca state terakhir, "catch up" tiap minggu yang
@@ -19733,7 +19853,7 @@ async function loadCsHunterPage() {
   if (!root) return;
   const r = currentUser.role;
   const pillTxt = document.getElementById('csh-role-pill-txt');
-  if (pillTxt) pillTxt.textContent = (can.isCsHunter(r) && !can.isMod(r)) ? 'Progress Saya' : 'Overview Tim CS Hunter';
+  if (pillTxt) pillTxt.textContent = (can.isCsHunter(r) && !can.isMod(r)) ? 'Tugas Harian Saya' : 'Overview Tim CS Hunter';
   root.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);font-size:12px">Memuat progress…</div>';
   cshInjectStyle();
 
@@ -19771,10 +19891,35 @@ async function cshRenderCard(uid, name, state) {
   const weeklyLeadsQuota = tier.leadsPerDay * 7;
   const actualClosing = await csHunterCountClosing(uid, cshFmtDate(ws), cshFmtDate(we));
   const actualLeads = await csHunterCountLeads(uid, cshFmtDate(ws), cshFmtDate(we));
+  const dailyCounts = await csHunterDailyBreakdown(uid, cshFmtDate(ws), cshFmtDate(we));
   const pct = Math.min(100, Math.round((actualClosing / weeklyTarget) * 100));
   const leadsPct = Math.min(100, Math.round((actualLeads / weeklyLeadsQuota) * 100));
   const daysLeft = Math.max(0, Math.ceil((we - today) / 86400000));
   const remaining = Math.max(0, weeklyTarget - actualClosing);
+
+  // ── Tugas Harian — target closing hari ini + strip status Sen–Min minggu berjalan ──
+  const todayStr = cshFmtDate(today);
+  const dayLbls = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
+  const todayCount = dailyCounts[todayStr] || 0;
+  const todayPct = Math.min(100, Math.round((todayCount / tier.targetPerDay) * 100));
+  let dayStrip = '';
+  for (let i = 0; i < 7; i++) {
+    const dDate = cshAddDays(ws, i);
+    const dStr = cshFmtDate(dDate);
+    const cnt = dailyCounts[dStr] || 0;
+    const isToday = dStr === todayStr;
+    const isFuture = dDate > today;
+    const hit = cnt >= tier.targetPerDay;
+    const cls = isToday ? 'today' : (isFuture ? 'future' : (hit ? 'hit' : 'miss'));
+    const mark = hit ? '✓' : (isFuture ? '' : cnt);
+    dayStrip += `<div class="csh-day ${cls}" title="${dayLbls[i]}: ${cnt}/${tier.targetPerDay} closing">
+      <span class="csh-day-lbl">${dayLbls[i]}</span>
+      <span class="csh-day-dot">${mark}</span>
+    </div>`;
+  }
+  const dailyStatusMsg = todayCount >= tier.targetPerDay
+    ? `✅ Target hari ini tercapai — ${todayCount}/${tier.targetPerDay} closing.`
+    : `Butuh <b>${tier.targetPerDay - todayCount}</b> closing lagi hari ini untuk capai target harian.`;
 
   const ladder = CSH_TIERS.map(tr => {
     const cls = tr.order < tier.order ? 'done' : (tr.order === tier.order ? 'current' : 'upcoming');
@@ -19810,6 +19955,15 @@ async function cshRenderCard(uid, name, state) {
         </svg>
         <div class="csh-ring-txt">${pct}%</div>
       </div>
+    </div>
+    <div class="csh-daily">
+      <div class="csh-daily-head">
+        <span>🎯 Tugas Harian Hari Ini</span>
+        <span class="csh-daily-count">${todayCount} / ${tier.targetPerDay}</span>
+      </div>
+      <div class="csh-bar"><div class="csh-bar-fill" style="width:0%;background:${tier.color}" data-final="${todayPct}%"></div></div>
+      <div class="csh-daily-msg">${dailyStatusMsg}</div>
+      <div class="csh-week-strip">${dayStrip}</div>
     </div>
     <div class="csh-ladder">${ladder}</div>
     <div class="csh-stats">
@@ -19864,6 +20018,22 @@ function cshInjectStyle() {
   .csh-stat-val{font-size:11px;font-weight:700;align-self:flex-end}
   .csh-status{font-size:11.5px;line-height:1.5;color:var(--text);background:rgba(255,255,255,.04);border-radius:10px;padding:9px 12px;margin-bottom:8px}
   .csh-meta{font-size:9.5px;color:var(--muted)}
+  .csh-daily{position:relative;border:1px solid var(--tier-color,rgba(232,163,61,.3))55;border-radius:12px;
+    padding:12px 14px 13px;margin-bottom:16px;background:linear-gradient(160deg,var(--tier-glow,rgba(232,163,61,.15)),transparent 65%)}
+  .csh-daily-head{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;font-weight:700;margin-bottom:8px}
+  .csh-daily-count{font-size:13px;font-weight:800;color:var(--tier-color)}
+  .csh-daily-msg{font-size:10.5px;color:var(--muted);margin-top:7px;line-height:1.4}
+  .csh-week-strip{display:flex;justify-content:space-between;gap:4px;margin-top:12px}
+  .csh-day{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;padding:6px 0 7px;border-radius:8px;
+    background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+  .csh-day-lbl{font-size:8px;color:var(--muted);letter-spacing:.04em}
+  .csh-day-dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:9.5px;font-weight:800;background:rgba(255,255,255,.07);color:var(--muted)}
+  .csh-day.hit .csh-day-dot{background:#2fae6a;color:#fff}
+  .csh-day.miss .csh-day-dot{background:rgba(220,90,90,.25);color:#e08a8a}
+  .csh-day.today{border-color:var(--tier-color);background:var(--tier-color)14}
+  .csh-day.today .csh-day-dot{background:var(--tier-color);color:#1a1206;box-shadow:0 0 0 3px var(--tier-color)33}
+  .csh-day.future .csh-day-dot{opacity:.4}
   `;
   const style = document.createElement('style');
   style.id = 'csh-style';
