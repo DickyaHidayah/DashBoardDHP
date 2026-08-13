@@ -12895,6 +12895,55 @@ async function renderCsHunterDailyCard(el) {
   const count = leads.length;
   const pct = target ? Math.min(100, Math.round((count/target)*100)) : 0;
   const circ = 2 * Math.PI * 34;
+
+  // v42: Follow Up Ads Customer — customer yang SUDAH MASUK dari leads iklan
+  // (owner = CS Hunter ini sendiri, channel_is_ads = true) & perlu di-follow
+  // up hari ini. Pakai infrastruktur follow-up yang sama dengan Admin/B2B
+  // (crmData, followupDoneTodayIds, markFollowedUp, mtFu* helpers) supaya
+  // konsisten & tidak duplikat logika.
+  let fuHtml = '';
+  try {
+    if (crmUsesDB()) {
+      await loadCRM();
+      await loadFollowupLogsToday();
+      const mine = crmData.filter(c => c.channel_is_ads);
+      const doneToday = mine.filter(c => followupDoneTodayIds.has(_followupCustKey(c)));
+      const doneCount = doneToday.length;
+      const pendingCount = Math.max(0, mine.length - doneCount);
+      _mtFuMine = mine; _mtFuOrder = null; _mtFuSearchQ = '';
+      fuHtml = `
+        <div class="mt-main-card" style="margin-top:14px">
+          <div class="mt-main-head">
+            <span class="mt-main-tag">${t('myTasksMainTag')}</span>
+            <span class="mt-main-title">Follow Up Ads Customer</span>
+          </div>
+          <div class="mt-fu-lists">
+            <div class="mt-fu-list-col">
+              <div class="mt-fu-list-title" style="color:var(--green)">✓ Sudah di-follow up (${doneCount})</div>
+              <div class="mt-fu-list-body">
+                ${doneToday.slice(0,30).map(c => `<div class="mt-fu-list-item">${escHtml(c.nama||'—')}</div>`).join('') || `<div class="mt-fu-list-empty">Belum ada yang di-follow up hari ini</div>`}
+              </div>
+            </div>
+            <div class="mt-fu-list-col">
+              <div class="mt-fu-col-head">
+                <div class="mt-fu-list-title" style="color:var(--amber);margin-bottom:0">○ Belum di-follow up (${pendingCount})</div>
+                <div class="mt-fu-toolbar">
+                  <div class="mt-fu-search-wrap">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                    <input type="text" id="mt-fu-search" class="mt-fu-search-input" placeholder="Cari nama / WA / kota…" oninput="mtFuDebouncedSearch(this.value)"/>
+                  </div>
+                  <button type="button" id="mt-fu-refresh-btn" class="mt-fu-refresh-btn" title="Acak ulang urutan" onclick="mtFuReshuffle()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="mt-fu-list-body" id="mt-fu-pending-body">${mtFuPendingHtml()}</div>
+            </div>
+          </div>
+        </div>`;
+    }
+  } catch(e) { console.warn('[DHP] follow up ads customer gagal:', e); }
+
   el.innerHTML = `
     <div class="mt-main-card">
       <div class="mt-main-head">
@@ -12923,7 +12972,8 @@ async function renderCsHunterDailyCard(el) {
           ${count ? leads.slice(0,20).map(l => leadRowHtml(l)).join('') : `<div class="lead-empty">${t('myTasksDailyEmpty')}</div>`}
         </div>
       </div>
-    </div>`;
+    </div>
+    ${fuHtml}`;
 }
 
 /* Dashboard Progress Bulanan — Admin/B2B (follow-up), pakai RPC followup_monthly_daily
@@ -15605,9 +15655,14 @@ function renderTaskPanel() {
       }
     }
 
+    // v42: tanda sumber task — dari Ads Schedule (moderator publish, ad_id
+    // terisi) vs Tugas Harian biasa (ad_id NULL, dari ensure_daily_task).
+    const srcBadge = tk.adId
+      ? `<span class="cat-badge" style="background:rgba(126,168,201,.16);color:#7ea8c9;border:1px solid rgba(126,168,201,.35)">🎯 Ads Schedule</span>`
+      : `<span class="cat-badge" style="opacity:.6">📋 Harian</span>`;
     return `
     <div class="task-card cat-${tk.category}">
-      <div class="tc-tag"><span class="new-pill">${tk.status==='unlock_requested'?'⏳':t('taskNew')}</span> ${tk.category} ${statusPill}</div>
+      <div class="tc-tag"><span class="new-pill">${tk.status==='unlock_requested'?'⏳':t('taskNew')}</span> ${tk.category} ${statusPill} ${srcBadge}</div>
       <div class="tc-theme">${escHtml(tk.title)}</div>
       <div class="tc-meta">
         <span class="cat-badge cat-${tk.category}">${tk.category}</span>
