@@ -3916,7 +3916,7 @@ body.light .kol-fin-val{color:#0d0d0d}
             <path d="M4.7 8.2l2 2 4.6-4.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </span>
-        <span data-i18n="myTasks">Tugas Saya</span>
+        <span id="n-mod-tasks-label" data-i18n="myTasks">Tugas Saya</span>
         <span class="nav-badge" id="mt-pending-badge" style="display:none">0</span>
       </button>
       <!-- ══ PERFORMA SAYA — tersedia untuk SEMUA role, dashboard bulanan bergrafik ══ -->
@@ -4217,9 +4217,9 @@ body.light .kol-fin-val{color:#0d0d0d}
         <div class="ph">
           <div class="ph-left">
             <div class="pt">
-              <span data-i18n="myTasks">Tugas Saya</span>
+              <span id="mt-page-title" data-i18n="myTasks">Tugas Saya</span>
             </div>
-            <div class="ps" data-i18n="myTasksSub">Catat pekerjaan yang harus kamu kerjakan, atur deadline & waktu, dapat notifikasi saat mendekati tenggat</div>
+            <div class="ps" id="mt-page-sub" data-i18n="myTasksSub">Catat pekerjaan yang harus kamu kerjakan, atur deadline & waktu, dapat notifikasi saat mendekati tenggat</div>
           </div>
         </div>
 
@@ -4256,26 +4256,30 @@ body.light .kol-fin-val{color:#0d0d0d}
           </div>
         </div>
 
-        <!-- (B) TUGAS PRIBADI / CUSTOM — dibuat manual oleh user sendiri -->
-        <div class="mt-section-head">
-          <div class="mt-section-title" data-i18n="myTasksCustomTitle">Tugas Pribadi &amp; Catatan Kerja</div>
-          <div class="ph-acts">
-            <button class="btn-g btn-sm" onclick="clearModTaskHistory()" data-i18n="myTasksClearHistory">Hapus Riwayat</button>
-            <button class="btn-g btn-sm" onclick="clearAllModTasks()" data-i18n="myTasksClearAll">Hapus Semua</button>
-            <button class="btn-add" onclick="openModTaskModal()">+ <span data-i18n="myTasksNew">Tugas Baru</span></button>
+        <!-- (B) TUGAS PRIBADI / CUSTOM — dibuat manual oleh user sendiri.
+             v41: disembunyikan untuk role CS Hunter (non-mod) — digantikan sepenuhnya
+             oleh kartu "Tugas Harian" (leads hari ini) di bagian (A) di atas. -->
+        <div id="mt-custom-section">
+          <div class="mt-section-head">
+            <div class="mt-section-title" data-i18n="myTasksCustomTitle">Tugas Pribadi &amp; Catatan Kerja</div>
+            <div class="ph-acts">
+              <button class="btn-g btn-sm" onclick="clearModTaskHistory()" data-i18n="myTasksClearHistory">Hapus Riwayat</button>
+              <button class="btn-g btn-sm" onclick="clearAllModTasks()" data-i18n="myTasksClearAll">Hapus Semua</button>
+              <button class="btn-add" onclick="openModTaskModal()">+ <span data-i18n="myTasksNew">Tugas Baru</span></button>
+            </div>
           </div>
-        </div>
-        <div class="stats-grid" id="mt-summary"></div>
-        <div class="mt-toolbar">
-          <div class="mt-filter-tabs" id="mt-filter-tabs">
-            <button class="mt-filter-tab active" data-f="all" onclick="setModTaskFilter('all')" data-i18n="myTasksAll">Semua</button>
-            <button class="mt-filter-tab" data-f="not_started" onclick="setModTaskFilter('not_started')" data-i18n="myTasksNotStarted">Belum Mulai</button>
-            <button class="mt-filter-tab" data-f="in_progress" onclick="setModTaskFilter('in_progress')" data-i18n="myTasksInProgress">Berjalan</button>
-            <button class="mt-filter-tab" data-f="done" onclick="setModTaskFilter('done')" data-i18n="myTasksDoneTab">Selesai</button>
+          <div class="stats-grid" id="mt-summary"></div>
+          <div class="mt-toolbar">
+            <div class="mt-filter-tabs" id="mt-filter-tabs">
+              <button class="mt-filter-tab active" data-f="all" onclick="setModTaskFilter('all')" data-i18n="myTasksAll">Semua</button>
+              <button class="mt-filter-tab" data-f="not_started" onclick="setModTaskFilter('not_started')" data-i18n="myTasksNotStarted">Belum Mulai</button>
+              <button class="mt-filter-tab" data-f="in_progress" onclick="setModTaskFilter('in_progress')" data-i18n="myTasksInProgress">Berjalan</button>
+              <button class="mt-filter-tab" data-f="done" onclick="setModTaskFilter('done')" data-i18n="myTasksDoneTab">Selesai</button>
+            </div>
+            <input class="search-box" id="mt-search" placeholder="Cari tugas..." oninput="renderModTasks()" style="max-width:220px"/>
           </div>
-          <input class="search-box" id="mt-search" placeholder="Cari tugas..." oninput="renderModTasks()" style="max-width:220px"/>
+          <div class="mt-list" id="mt-list"></div>
         </div>
-        <div class="mt-list" id="mt-list"></div>
       </div>
 
       <!-- ② TEAM TASK PROGRESS (Moderator only) — lihat task semua role/admin & progress masing-masing -->
@@ -5078,6 +5082,13 @@ body.light .kol-fin-val{color:#0d0d0d}
               </select>
               <button class="btn-g btn-sm" id="adcust-sort-btn" onclick="adCustCycleSortBtn()" style="min-width:100px">↓ Terbaru</button>
               <button class="btn-g btn-sm" id="adcust-sort-field-btn" onclick="adCustSortField=adCustSortField==='created_at'?'ad_date':'created_at';renderAdCustomers()" style="min-width:90px" title="Ganti urutan berdasarkan">📅 Tgl Masuk</button>
+              <select class="ads-select" id="adcust-label-filter" onchange="renderAdCustomers()" title="Filter berdasarkan label">
+                <option value="all" data-i18n="adcustAllLabels">Semua Label</option>
+                <option value="none" data-i18n="adcustNoLabel">Belum ada label</option>
+              </select>
+              <button class="btn-g btn-sm" onclick="openAdCustLabelManageModal()" title="Buat / edit label warna milikmu">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:3px"><path d="M8.6 1.8H2.6a.8.8 0 00-.8.8v6l7 7 6.2-6.2-7-7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="5" cy="5" r="1" fill="currentColor"/></svg><span data-i18n="adcustManageLabel">Kelola Label</span>
+              </button>
             </div>
           </div>
         </div>
@@ -5094,6 +5105,7 @@ body.light .kol-fin-val{color:#0d0d0d}
                 <th data-i18n="leadCategory">Kategori</th>
                 <th>Channel / Iklan</th>
                 <th data-i18n="ownerColumn">Diinput oleh</th>
+                <th data-i18n="adcustLabelCol">Label</th>
                 <th style="cursor:pointer" onclick="adCustCycleSortBtn()" title="Klik untuk balik urutan">Waktu ↕</th>
                 <th>Aksi</th>
               </tr>
@@ -6407,6 +6419,16 @@ const i18n = {
     myTasksMainContent:'Your main task is producing and publishing content in Content Studio today.',
     myTasksMainLive:'Your main task is running the scheduled live sessions in Live Studio today.',
     myTasksOpenStudio:'Open Studio',
+    // Daily Task — CS Hunter (replaces the generic My Task page for this role)
+    dailyTask:'Daily Task', dailyTaskSub:'Log every lead that comes in today, tracked in real time — the same flow as Ad Task.',
+    myTasksDailyMain:"Today's Leads", myTasksDailyDesc:'Log every lead you receive today. Progress updates live for you and your moderator.',
+    myTasksDailyEntered:'leads today', myTasksDailyTarget:'daily target', myTasksDailyBtn:'+ Add Lead',
+    myTasksDailyViewAll:'View all leads today', myTasksDailyDone:'Target reached today 🎉',
+    myTasksDailyEmpty:'No leads logged yet today — add your first one.',
+    // Ad target picker — role quick filter
+    targetFilterAll:'All', targetFilterCsHunter:'CS Hunter Only', targetSelectAllCsHunter:'Select all CS Hunter',
+    // Ads Customer — labels (same concept as CRM Database Customer)
+    adcustManageLabel:'Manage Label', adcustLabelCol:'Label', adcustAllLabels:'All Labels', adcustNoLabel:'No label yet',
     // Content Studio
     inDrafts:'In Drafts', piecesEditing:'Pieces currently being written or edited.',
     awaitingReviewSub:'Awaiting Review', awaitingReviewBody:'Sent to moderator for approval before publish.',
@@ -6670,6 +6692,16 @@ const i18n = {
     myTasksMainContent:'Tugas utamamu adalah membuat & publish konten hari ini di Studio Konten.',
     myTasksMainLive:'Tugas utamamu adalah menjalankan jadwal live hari ini di Studio Live.',
     myTasksOpenStudio:'Buka Studio',
+    // Tugas Harian — CS Hunter (menggantikan halaman Tugas Saya untuk role ini)
+    dailyTask:'Tugas Harian', dailyTaskSub:'Catat setiap leads yang masuk hari ini, progress terupdate realtime — alurnya sama seperti Task Iklan.',
+    myTasksDailyMain:'Leads Hari Ini', myTasksDailyDesc:'Catat setiap leads yang kamu terima hari ini. Progress terupdate realtime, terlihat oleh kamu & moderator.',
+    myTasksDailyEntered:'leads hari ini', myTasksDailyTarget:'target harian', myTasksDailyBtn:'+ Tambah Leads',
+    myTasksDailyViewAll:'Lihat semua leads hari ini', myTasksDailyDone:'Target hari ini tercapai 🎉',
+    myTasksDailyEmpty:'Belum ada leads yang dicatat hari ini — tambahkan yang pertama.',
+    // Target picker iklan — filter cepat per role
+    targetFilterAll:'Semua', targetFilterCsHunter:'Khusus CS Hunter', targetSelectAllCsHunter:'Pilih semua CS Hunter',
+    // Ads Customer — label (konsep sama seperti Database Customer)
+    adcustManageLabel:'Kelola Label', adcustLabelCol:'Label', adcustAllLabels:'Semua Label', adcustNoLabel:'Belum ada label',
     // Content Studio
     inDrafts:'Dalam Draf', piecesEditing:'Konten yang sedang ditulis atau diedit.',
     awaitingReviewSub:'Menunggu Peninjauan', awaitingReviewBody:'Dikirim ke moderator untuk persetujuan sebelum dipublikasikan.',
@@ -7344,6 +7376,9 @@ async function initDashboard() {
   navShow('ns-all-dash',      isMod || isOwner);   // Overview Tim — Dashboard Semua Role
   navShow('n-all-dashboard',  isMod || isOwner);
   navShow('n-mod-tasks',      true && !isOwner);    // Tugas Saya — tidak relevan untuk Owner (tidak punya tugas pribadi)
+  // v41: label sidebar "Tugas Saya" → "Tugas Harian" khusus CS Hunter (non-mod),
+  // karena isinya diganti total jadi form isi leads harian.
+  { const lbl = document.getElementById('n-mod-tasks-label'); if (lbl) lbl.textContent = (can.isCsHunter(r) && !isMod) ? t('dailyTask') : t('myTasks'); }
   navShow('n-my-performance', true && !isOwner);    // Performa Saya — idem
   navShow('n-cs-hunter',      can.isCsHunter(r) || isMod || isOwner);   // CS Hunter — level & progress (sendiri utk CS Hunter, semua tim utk Mod/Owner)
   initCsHunterOwnBadge(); // pangkat CS Hunter tampil di sidebar, di manapun dashboard dibuka
@@ -12732,6 +12767,16 @@ async function renderMtMainSection() {
   const atCardEl = document.getElementById('mt-admin-target-card');
   if (atCardEl) atCardEl.style.display = 'none';
 
+  // v41: judul halaman & bagian "Tugas Pribadi/Custom" — khusus CS Hunter
+  // (non-mod) diganti total jadi "Tugas Harian" isi leads, custom task disembunyikan.
+  const isCsHunterOnlyPage = can.isCsHunter(r) && !can.isMod(r);
+  const titleEl = document.getElementById('mt-page-title');
+  const subEl   = document.getElementById('mt-page-sub');
+  const customEl = document.getElementById('mt-custom-section');
+  if (titleEl) titleEl.textContent = isCsHunterOnlyPage ? t('dailyTask') : t('myTasks');
+  if (subEl)   subEl.textContent   = isCsHunterOnlyPage ? t('dailyTaskSub') : t('myTasksSub');
+  if (customEl) customEl.style.display = isCsHunterOnlyPage ? 'none' : '';
+
   if (can.isB2B(r) || r === 'admin') {
     if (crmUsesDB()) { try { await loadCRM(); } catch(e){} }
     try { await loadFollowupLogsToday(); } catch(e){}
@@ -12818,9 +12863,67 @@ async function renderMtMainSection() {
         <div class="mt-main-simple-text">${t('myTasksMainLive')}</div>
         <button class="btn-g btn-sm" onclick="navTo('live_studio', document.getElementById('n-live-studio'))">${t('myTasksOpenStudio')}</button>
       </div>`;
+  } else if (isCsHunterOnlyPage) {
+    await renderCsHunterDailyCard(el);
   } else {
     el.innerHTML = '';
   }
+}
+
+/* ── (A-cs) TUGAS HARIAN CS HUNTER — isi leads yang masuk hari ini.
+   Memakai infrastruktur yang sama dengan Ads Task (tabel ad_tasks + leads,
+   modal openLeadsModal, realtime channel dhp_ads) supaya progress selalu
+   sinkron real-time — hanya saja task-nya "harian" (bukan terikat 1 iklan
+   tertentu), dibuat/di-ensure otomatis lewat RPC ensure_daily_task. ── */
+async function renderCsHunterDailyCard(el) {
+  el.innerHTML = `<div class="mt-main-card"><div class="myperf-empty" style="padding:20px 0">Memuat tugas harian…</div></div>`;
+  const taskId = await ensureCsHunterDailyTask();
+  if (!taskId) {
+    el.innerHTML = `
+      <div class="mt-main-card mt-main-simple">
+        <span class="mt-main-tag">${t('myTasksMainTag')}</span>
+        <div class="mt-main-simple-text">${t('myTasksDailyDesc')}</div>
+      </div>`;
+    return;
+  }
+  let leads = [];
+  try {
+    const res = await dbQ(d => d.from('leads').select('*').eq('task_id', taskId).order('created_at', { ascending:false }));
+    leads = res?.data || [];
+  } catch (e) { console.warn('[DHP] load leads harian gagal:', e); }
+  const target = CS_HUNTER_DAILY_LEAD_TARGET;
+  const count = leads.length;
+  const pct = target ? Math.min(100, Math.round((count/target)*100)) : 0;
+  const circ = 2 * Math.PI * 34;
+  el.innerHTML = `
+    <div class="mt-main-card">
+      <div class="mt-main-head">
+        <span class="mt-main-tag">${t('myTasksMainTag')}</span>
+        <span class="mt-main-title">${t('myTasksDailyMain')}</span>
+      </div>
+      <div class="mt-main-body">
+        <div class="mt-main-ring">
+          <svg viewBox="0 0 80 80" width="72" height="72">
+            <circle cx="40" cy="40" r="34" stroke="var(--border)" stroke-width="7" fill="none"/>
+            <circle cx="40" cy="40" r="34" stroke="${count>=target?'var(--green)':'var(--gold)'}" stroke-width="7" fill="none"
+              stroke-dasharray="${circ}" stroke-dashoffset="${circ*(1-pct/100)}" stroke-linecap="round" transform="rotate(-90 40 40)"/>
+          </svg>
+          <div class="mt-main-ring-num">${count}/${target}</div>
+        </div>
+        <div class="mt-main-stats">
+          <div><b style="color:${count>=target?'var(--green)':'var(--amber)'}">${count}</b><span>${t('myTasksDailyEntered')}</span></div>
+          <div><b>${target}</b><span>${t('myTasksDailyTarget')}</span></div>
+        </div>
+        <button class="btn-add btn-sm" onclick="openLeadsModal('${taskId}')">${t('myTasksDailyBtn')}</button>
+      </div>
+      ${count >= target ? `<div style="margin-top:10px;font-size:11px;color:var(--green);font-weight:600">${t('myTasksDailyDone')}</div>` : ''}
+      <div class="mt-fu-list-col" style="margin-top:14px">
+        <div class="mt-fu-list-title" style="color:var(--gold)">${t('myTasksDailyViewAll')} (${count})</div>
+        <div class="lead-list" style="max-height:260px">
+          ${count ? leads.slice(0,20).map(l => leadRowHtml(l)).join('') : `<div class="lead-empty">${t('myTasksDailyEmpty')}</div>`}
+        </div>
+      </div>
+    </div>`;
 }
 
 /* Dashboard Progress Bulanan — Admin/B2B (follow-up), pakai RPC followup_monthly_daily
@@ -14021,6 +14124,14 @@ function getTargetUsers() {
       }
     }
   });
+  // v41: lengkapi dari roster DB paling baru (window._allUsers, diisi saat
+  // loadDataFromDB) — jaring pengaman supaya CS Hunter yang baru
+  // ditambahkan/di-approve tetap muncul walau belum pernah online.
+  (window._allUsers || []).forEach(u => {
+    if (u && u.user_id && !map[u.user_id] && isAdTargetRole(u.role)) {
+      map[u.user_id] = { id: u.user_id, name: u.full_name || u.user_id, role: u.role };
+    }
+  });
   // Urutkan berdasarkan level role lalu nama
   return Object.values(map).sort((a, b) => {
     const lv = (ROLE_LEVELS[b.role] || 0) - (ROLE_LEVELS[a.role] || 0);
@@ -14377,6 +14488,8 @@ function initAdRealtime() {
         if (isAdPageActive()) renderAdScheduler();
         if (document.getElementById('pg-ad_customers')?.classList.contains('active')) renderAdCustomers();
         if (isTaskPageActive()) renderAdTaskPage();
+        // v41: kartu "Tugas Harian" CS Hunter (leads hari ini) ikut realtime
+        if (document.getElementById('pg-mod_tasks')?.classList.contains('active')) renderMtMainSection();
       } catch (e) { console.warn('[DHP] realtime leads render error:', e); }
     })
     .subscribe(status => {
@@ -14940,6 +15053,7 @@ function fmtDayShort(ymd) {
 /* ── Add / Edit ad modal ── */
 function openAdModal(ymd, id) {
   if (!can.isMod(currentUser?.role)) { toast(t('modOnlyAds')); return; }
+  _adTargetRoleFilter = 'all';
   editAdId = id || null;
   const a = id ? ads.find(x => x.id === id) : null;
   const dateVal = a ? a.date : ymd;
@@ -14955,7 +15069,7 @@ function openAdModal(ymd, id) {
     const initials = u.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const isOnline = !!(presenceMap[u.id]?.online);
     return `
-      <label class="target-tile${isSel?' selected':''}" onclick="toggleTargetTile(this)" title="${escHtml(u.name)} · ${escHtml(rn(u.role))}">
+      <label class="target-tile${isSel?' selected':''}" data-role="${u.role}" onclick="toggleTargetTile(this)" title="${escHtml(u.name)} · ${escHtml(rn(u.role))}">
         <input type="checkbox" class="ad-target-cb" value="${escHtml(u.id)}"${isSel?' checked':''}/>
         <div class="target-tile-av-wrap">
           <div class="target-tile-av"
@@ -15033,6 +15147,13 @@ function openAdModal(ymd, id) {
           <input id="ad-target-search" placeholder="${t('searchTargetPh')}" oninput="filterTargetTiles(this.value)"/>
           <span class="target-picker-selall" onclick="toggleAllTargets()">${t('selectAll')}</span>
         </div>
+        <div class="mt-filter-tabs" id="ad-target-role-chips" style="margin:8px 0 0">
+          <button type="button" class="mt-filter-tab active" data-role="all" onclick="filterTargetTilesByRole('all',this)">${t('targetFilterAll')}</button>
+          <button type="button" class="mt-filter-tab" data-role="cs_hunter" onclick="filterTargetTilesByRole('cs_hunter',this)">
+            <svg width="10" height="10" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;margin-right:3px"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/><path d="M5.3 8.4l1.8 1.8 3.6-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>${t('targetFilterCsHunter')}
+          </button>
+          <span class="target-picker-selall" style="margin-left:auto" onclick="selectAllCsHunterTargets()">${t('targetSelectAllCsHunter')}</span>
+        </div>
         <div class="target-picker-meta">
           <span id="ad-target-count" class="target-picker-meta-count hidden"></span>
         </div>
@@ -15105,9 +15226,34 @@ function filterTargetTiles(q) {
   q = (q || '').toLowerCase();
   document.querySelectorAll('#ad-target-list .target-tile').forEach(el => {
     const name = el.querySelector('.target-tile-name')?.textContent.toLowerCase() || '';
-    el.classList.toggle('hidden-item', !!(q && !name.includes(q)));
+    const roleOk = !_adTargetRoleFilter || _adTargetRoleFilter === 'all' || el.dataset.role === _adTargetRoleFilter;
+    el.classList.toggle('hidden-item', !roleOk || !!(q && !name.includes(q)));
   });
 }
+
+/* v41: filter cepat picker target berdasarkan role — supaya moderator bisa
+   langsung lihat semua CS Hunter (termasuk yang baru ditambahkan) sekaligus. */
+let _adTargetRoleFilter = 'all';
+function filterTargetTilesByRole(role, btn) {
+  _adTargetRoleFilter = role;
+  document.querySelectorAll('#ad-target-role-chips .mt-filter-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  filterTargetTiles(document.getElementById('ad-target-search')?.value || '');
+}
+
+/* v41: pilih semua CS Hunter (yang lagi kelihatan di daftar) sekaligus —
+   memudahkan moderator menugaskan iklan/leads ke seluruh tim CS Hunter. */
+function selectAllCsHunterTargets() {
+  filterTargetTilesByRole('cs_hunter', document.querySelector('#ad-target-role-chips .mt-filter-tab[data-role="cs_hunter"]'));
+  const tiles = [...document.querySelectorAll('#ad-target-list .target-tile[data-role="cs_hunter"]')];
+  if (!tiles.length) { toast('Belum ada akun CS Hunter yang terdaftar'); return; }
+  tiles.forEach(el => {
+    const cb = el.querySelector('.ad-target-cb');
+    if (cb && !cb.checked) { cb.checked = true; toggleTargetTile(el); }
+  });
+  toast(`${tiles.length} CS Hunter dipilih`);
+}
+
 function toggleAllTargets() {
   const labels = [...document.querySelectorAll('#ad-target-list .target-tile')].filter(el => !el.classList.contains('hidden-item'));
   const cbs = labels.map(el => el.querySelector('.ad-target-cb')).filter(Boolean);
@@ -16076,12 +16222,172 @@ function renderAdCustDiagram(data) {
     }).join('')}</div>`;
 }
 
+/* ═══════════════════════════════════════════════════════════
+   ⑩-b ADS CUSTOMER — LABEL (v41)
+   Konsep & alur identik dengan label CRM Database Customer:
+   tabel `ad_cust_labels` (per-owner, maks 5 warna) + kolom
+   `label_id` di `leads` untuk menandai tiap baris pelanggan iklan.
+   ═══════════════════════════════════════════════════════════ */
+let adCustLabels = [];
+let _adCustLabelsLoaded = false;
+
+async function loadAdCustLabels() {
+  if (!db) return adCustLabels;
+  if (_adCustLabelsLoaded) return adCustLabels;
+  const res = await dbQ(() => db.from('ad_cust_labels').select('*'));
+  if (res && res.data) { adCustLabels = res.data; _adCustLabelsLoaded = true; }
+  return adCustLabels;
+}
+function adCustMyLabels() { return adCustLabels.filter(l => l.owner_id === currentUser?.id); }
+function adCustLabelOf(labelId) { if (!labelId) return null; return adCustLabels.find(l => l.id === labelId) || null; }
+
+function populateAdCustLabelFilter() {
+  const sel = document.getElementById('adcust-label-filter');
+  if (!sel) return;
+  const cur = sel.value || 'all';
+  const mine = can.isMod(currentUser?.role) ? adCustLabels : adCustMyLabels();
+  sel.innerHTML = `
+    <option value="all">${t('adcustAllLabels')}</option>
+    <option value="none">${t('adcustNoLabel')}</option>
+    ${mine.map(l => `<option value="${l.id}">${escHtml(l.name)}</option>`).join('')}`;
+  if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+}
+
+function openAdCustLabelManageModal() {
+  if (blockIfOwner()) return;
+  const mine = adCustMyLabels();
+  const usedColors = mine.map(l => l.color);
+  const rowsHtml = mine.map(l => `
+    <div class="crm-label-mng-row" data-lid="${l.id}">
+      <span class="crm-label-dot" style="background:${l.color}"></span>
+      <input class="fi crm-label-mng-name" value="${escHtml(l.name)}" placeholder="Nama label…" style="flex:1"/>
+      <button class="crm-ico-btn del" onclick="deleteAdCustLabel('${l.id}')" title="Hapus label ini">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5 4l.5 9h5L11 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>`).join('') || `<div class="mt-fu-list-empty">Belum ada label. Buat sampai ${CRM_LABEL_MAX} label warna di bawah.</div>`;
+  const canAddMore = mine.length < CRM_LABEL_MAX;
+  const freeColors = CRM_LABEL_COLORS.filter(c => !usedColors.includes(c.hex));
+  const addRowHtml = canAddMore ? `
+    <div class="crm-label-mng-add">
+      <div class="crm-label-color-pick" id="adcust-new-label-colors">
+        ${freeColors.map((c,i) => `<button type="button" class="crm-color-swatch${i===0?' selected':''}" data-color="${c.hex}" style="background:${c.hex}" onclick="adCustPickNewLabelColor(this)"></button>`).join('')}
+      </div>
+      <input class="fi" id="adcust-new-label-name" placeholder="Nama label baru, mis. Prospek Panas" style="flex:1"/>
+      <button class="btn-g btn-sm" onclick="addAdCustLabel()">+ Tambah</button>
+    </div>` : `<div class="mt-fu-list-empty">Maksimal ${CRM_LABEL_MAX} label sudah tercapai. Hapus salah satu dulu untuk menambah label baru.</div>`;
+  document.getElementById('m-title').textContent = 'Kelola Label Pelanggan Iklan';
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg">
+      <label>Label warnamu (maks ${CRM_LABEL_MAX})</label>
+      <div class="crm-label-mng-list" id="adcust-label-mng-list">${rowsHtml}</div>
+    </div>
+    <div class="fg">${addRowHtml}</div>
+  `;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-g" onclick="saveAdCustLabelNames()">Simpan Nama</button>
+    <button class="btn-g" onclick="closeModal()">Tutup</button>
+  `;
+  document.getElementById('modal-ov').classList.add('open');
+}
+
+function adCustPickNewLabelColor(btn) {
+  document.querySelectorAll('#adcust-new-label-colors .crm-color-swatch').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+async function addAdCustLabel() {
+  const nameEl = document.getElementById('adcust-new-label-name');
+  const name = nameEl?.value?.trim();
+  if (!name) { toast('Isi dulu nama labelnya'); return; }
+  if (adCustMyLabels().length >= CRM_LABEL_MAX) { toast(`Maksimal ${CRM_LABEL_MAX} label`); return; }
+  const colorBtn = document.querySelector('#adcust-new-label-colors .crm-color-swatch.selected');
+  const color = colorBtn?.dataset.color || CRM_LABEL_COLORS[0].hex;
+  if (db) {
+    const res = await dbQ(() => db.from('ad_cust_labels').insert({ owner_id: currentUser.id, name, color }).select().single());
+    if (res && res.data) adCustLabels.push(res.data);
+  }
+  toast('Label ditambahkan');
+  openAdCustLabelManageModal();
+  renderAdCustomers();
+}
+
+async function saveAdCustLabelNames() {
+  const rows = document.querySelectorAll('#adcust-label-mng-list .crm-label-mng-row');
+  for (const row of rows) {
+    const id = row.dataset.lid;
+    const newName = row.querySelector('.crm-label-mng-name')?.value?.trim();
+    const lbl = adCustLabels.find(l => l.id === id);
+    if (lbl && newName && newName !== lbl.name) {
+      lbl.name = newName;
+      if (db) { try { await dbQ(() => db.from('ad_cust_labels').update({ name:newName }).eq('id', id)); } catch(e){} }
+    }
+  }
+  toast('Label diperbarui');
+  closeModal();
+  renderAdCustomers();
+}
+
+async function deleteAdCustLabel(labelId) {
+  const ok = await uiConfirm({
+    title: 'Hapus Label',
+    message: 'Label ini akan dihapus dan semua pelanggan iklan yang ditandai dengan label ini akan kembali "belum ada label". Lanjutkan?',
+    icon: 'danger', tone: 'danger'
+  });
+  if (!ok) return;
+  if (db) {
+    try { await dbQ(() => db.from('leads').update({ label_id:null }).eq('label_id', labelId)); } catch(e){}
+    try { await dbQ(() => db.from('ad_cust_labels').delete().eq('id', labelId)); } catch(e){}
+  }
+  adCustomersCache.forEach(c => { if (c.label_id === labelId) c.label_id = null; });
+  adCustLabels = adCustLabels.filter(l => l.id !== labelId);
+  toast('Label dihapus');
+  openAdCustLabelManageModal();
+  renderAdCustomers();
+}
+
+function openAdCustLabelPicker(leadId) {
+  const c = adCustomersCache.find(x => x.id === leadId);
+  if (!c) return;
+  const mine = can.isMod(currentUser?.role) ? adCustLabels : adCustMyLabels();
+  if (!mine.length) {
+    toast('Belum ada label. Buat dulu lewat tombol "Kelola Label".');
+    return;
+  }
+  const optsHtml = mine.map(l => `
+    <button type="button" class="crm-label-opt${c.label_id===l.id?' selected':''}" onclick="assignAdCustLabel('${leadId}', '${l.id}')">
+      <span class="crm-label-dot" style="background:${l.color}"></span>${escHtml(l.name)}
+    </button>`).join('');
+  document.getElementById('m-title').textContent = 'Beri Label';
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg">
+      <label>Tandai <b>${escHtml(c.name||'pelanggan ini')}</b> dengan label:</label>
+      <div class="crm-label-opt-list">${optsHtml}</div>
+      ${c.label_id ? '<button class="btn-g btn-sm" style="margin-top:10px" onclick="assignAdCustLabel(\'' + leadId + '\', null)">✕ Lepas Label</button>' : ''}
+    </div>
+  `;
+  document.getElementById('m-foot').innerHTML = `<button class="btn-g" onclick="closeModal()">Tutup</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+
+async function assignAdCustLabel(leadId, labelId) {
+  const c = adCustomersCache.find(x => x.id === leadId);
+  if (!c) return;
+  c.label_id = labelId || null;
+  if (db) {
+    try { await dbQ(() => db.from('leads').update({ label_id: c.label_id }).eq('id', leadId)); } catch(e){}
+  }
+  closeModal();
+  renderAdCustomers();
+}
+
 async function renderAdCustomers() {
   const body = document.getElementById('adcust-body');
   const statsEl = document.getElementById('adcust-stats');
   if (!body) return;
 
   await loadAdCustomers();
+  await loadAdCustLabels();
+  populateAdCustLabelFilter();
 
   const badge = document.getElementById('adcust-badge');
   if (badge) {
@@ -16093,8 +16399,11 @@ async function renderAdCustomers() {
 
   const q   = (document.getElementById('adcust-search')?.value || '').toLowerCase().trim();
   const cat = document.getElementById('adcust-cat-filter')?.value || 'all';
+  const lbl = document.getElementById('adcust-label-filter')?.value || 'all';
   let rows = adCustomersCache.slice();
   if (cat !== 'all') rows = rows.filter(r => r.category === cat);
+  if (lbl === 'none') rows = rows.filter(r => !r.label_id);
+  else if (lbl !== 'all') rows = rows.filter(r => r.label_id === lbl);
   if (q) rows = rows.filter(r =>
     (r.name||'').toLowerCase().includes(q) ||
     (r.wa_phone||'').toLowerCase().includes(q) ||
@@ -16135,12 +16444,12 @@ async function renderAdCustomers() {
   }
 
   if (!rows.length) {
-    body.innerHTML = `<tr><td colspan="9" class="tbl-empty">${t('noCustomers')}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="10" class="tbl-empty">${t('noCustomers')}</td></tr>`;
     return;
   }
 
   const isMod = can.isMod(currentUser?.role);
-  body.innerHTML = rows.map(r => {
+  body.innerHTML = rows.map((r, idx) => {
     const u = getUserMeta(r.owner_id);
     const clr = ROLE_COLORS[u.role] || '#888';
     const catCls = (r.category||'Cold').toLowerCase();
@@ -16164,6 +16473,11 @@ async function renderAdCustomers() {
     const timeDisplay = adCustSortField === 'ad_date'
       ? `<div style="font-size:10px;color:var(--muted);white-space:nowrap">${r.ad_date||'—'}</div><div style="font-size:9px;color:var(--muted);opacity:.6">${fmtDateTime(r.created_at)}</div>`
       : `<div style="font-size:10px;color:var(--muted);white-space:nowrap">${fmtDateTime(r.created_at)}</div>`;
+    const lbl = adCustLabelOf(r.label_id);
+    const labelHtml = `<span class="crm-label-cell" onclick="openAdCustLabelPicker('${r.id}')" title="Klik untuk beri/ganti label" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px">
+      <span class="crm-label-dot" style="background:${lbl?lbl.color:'transparent'};border:1.5px solid ${lbl?lbl.color:'var(--border)'}"></span>
+      ${lbl ? `<span style="font-size:10px;color:var(--text2)">${escHtml(lbl.name)}</span>` : `<span style="font-size:10px;color:var(--muted)">${t('adcustNoLabel')}</span>`}
+    </span>`;
     return `<tr>
       <td style="font-weight:600;color:var(--text)">${escHtml(r.name)}</td>
       <td><a href="${waLink}" target="_blank" rel="noopener" class="wa-link">${escHtml(r.wa_phone)}</a></td>
@@ -16171,6 +16485,7 @@ async function renderAdCustomers() {
       <td><span class="lead-cat-badge lc-${catCls}">${t('leadCat'+(r.category||'Cold'))}</span></td>
       <td>${channelBadge}</td>
       <td><span class="adcust-owner"><span class="role-dot" style="background:${clr}"></span>${escHtml(u.name)}</span></td>
+      <td>${labelHtml}</td>
       <td>${timeDisplay}</td>
       <td>${actHtml}</td>
     </tr>`;
@@ -19807,6 +20122,29 @@ async function csHunterDailyBreakdown(uid, wsStr, weStr) {
   const counts = {};
   rows.forEach(row => { const k = row.ad_date; counts[k] = (counts[k] || 0) + 1; });
   return counts;
+}
+
+/* ── v41: Tugas Harian CS Hunter — "task" isi leads hari ini, dibuat
+   otomatis (get-or-create) lewat RPC ensure_daily_task supaya bisa memakai
+   flow leads yang sama persis dengan Ads Task (openLeadsModal, realtime). ── */
+const CS_HUNTER_DAILY_LEAD_TARGET = 5; // target isi leads harian per CS Hunter
+let csHunterDailyTaskId = null;
+
+async function ensureCsHunterDailyTask() {
+  if (!db || !currentUser) return null;
+  const today = ymdKey(new Date());
+  // Sudah ter-cache di adTasks (dari loadAdsFromDB sebelumnya)?
+  const cached = adTasks.find(x => x.assignee === currentUser.id && !x.adId && x.date === today && (x.title||'').indexOf('Tugas Harian') === 0);
+  if (cached) { csHunterDailyTaskId = cached.id; return cached.id; }
+  try {
+    const res = await dbQ(d => d.rpc('ensure_daily_task', { p_user_id: currentUser.id, p_date: today }));
+    const id = res && res.data;
+    if (id) {
+      csHunterDailyTaskId = id;
+      await loadAdsFromDB(); // sinkronkan cache adTasks & badge
+    }
+    return id;
+  } catch (e) { console.warn('[DHP] ensureCsHunterDailyTask gagal:', e); return null; }
 }
 
 // Self-healing weekly reset: baca state terakhir, "catch up" tiap minggu yang
