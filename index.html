@@ -3076,6 +3076,52 @@ body.owner-view .owner-readonly-banner{
 .crm-stat.cs-hot{border-color:rgba(232,112,112,.35);color:#e87070}
 .crm-stat.cs-warm{border-color:rgba(232,184,110,.35);color:#e8b86e}
 .crm-stat.cs-cold{border-color:rgba(126,168,201,.35);color:#7ea8c9}
+/* ══════ v42: SOROTAN — panel "harus ngapain sekarang" (prioritas follow up
+   + pelanggan baru masuk urut tanggal), diletakkan paling atas & dibuat
+   sangat visual (foto avatar inisial, badge warna, 1 klik langsung buka)
+   supaya user yang belum terbiasa tetap bisa langsung paham & bertindak. ══════ */
+.crm-spotlight{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+@media(max-width:900px){.crm-spotlight{grid-template-columns:1fr}}
+.crm-spot-card{background:linear-gradient(160deg,var(--surface2),var(--surface));border:1px solid var(--border);
+  border-radius:calc(var(--r) + 4px);padding:16px 16px 10px;box-shadow:0 6px 24px rgba(0,0,0,.12);position:relative;overflow:hidden}
+.crm-spot-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.crm-spot-card.spot-hot::before{background:linear-gradient(90deg,#e87070,#e8b86e)}
+.crm-spot-card.spot-new::before{background:linear-gradient(90deg,var(--gold),var(--gold-hi))}
+.crm-spot-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px}
+.crm-spot-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--text);letter-spacing:.01em}
+.crm-spot-title .cst-ico{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.crm-spot-card.spot-hot .cst-ico{background:rgba(232,112,112,.16);color:#e87070}
+.crm-spot-card.spot-new .cst-ico{background:rgba(201,169,110,.18);color:var(--gold)}
+.crm-spot-sub{font-size:10.5px;color:var(--text2);font-weight:400;display:block;margin-top:1px}
+.crm-spot-more{font-size:10.5px;color:var(--gold);background:none;border:none;cursor:pointer;font-weight:600;white-space:nowrap;
+  padding:4px 8px;border-radius:6px;transition:background var(--trans)}
+.crm-spot-more:hover{background:rgba(201,169,110,.1)}
+.crm-spot-list{display:flex;flex-direction:column;gap:4px;min-height:40px}
+.crm-spot-row{display:flex;align-items:center;gap:10px;padding:8px 8px;border-radius:9px;cursor:pointer;
+  transition:background var(--trans);border:1px solid transparent}
+.crm-spot-row:hover{background:rgba(201,169,110,.08);border-color:var(--border)}
+.crm-spot-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:#fff;flex-shrink:0;letter-spacing:0}
+.crm-spot-body{flex:1;min-width:0}
+.crm-spot-name{font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crm-spot-meta{font-size:10px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.crm-spot-tag{flex-shrink:0;font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.crm-spot-row.tag-overdue .crm-spot-tag{background:rgba(232,112,112,.14);color:#e87070}
+.crm-spot-row.tag-today .crm-spot-tag{background:rgba(122,191,142,.14);color:var(--green)}
+.crm-spot-row.tag-never .crm-spot-tag{background:rgba(232,184,110,.14);color:#e8b86e}
+.crm-spot-empty{font-size:11.5px;color:var(--muted);padding:14px 4px;text-align:center;font-style:italic}
+.crm-spot-wa{flex-shrink:0;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:rgba(122,191,142,.14);color:var(--green);transition:transform var(--trans)}
+.crm-spot-wa:hover{transform:scale(1.12)}
+body.light .crm-spot-card{background:#ffffff;border:1.5px solid rgba(0,0,0,.1);box-shadow:0 2px 12px rgba(0,0,0,.06)}
+body.light .crm-spot-name{color:#0d0d0d}
+body.light .crm-spot-row:hover{background:rgba(201,169,110,.08)}
+@media(max-width:768px){.crm-spot-title{font-size:12px}}
+
+.crm-tbl-heading{display:flex;align-items:baseline;gap:7px;margin:4px 2px 10px;font-size:13px;font-weight:700;color:var(--text)}
+.crm-tbl-heading-ico{color:var(--gold);flex-shrink:0;position:relative;top:1px}
+.crm-tbl-heading-sub{font-size:11px;font-weight:400;color:var(--text2)}
+body.light .crm-tbl-heading{color:#0d0d0d}
 .crm-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:calc(var(--r) + 2px);overflow:auto;max-height:62vh;
   box-shadow:0 1px 0 rgba(255,255,255,.02) inset}
 .crm-table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;min-width:1180px}
@@ -5148,7 +5194,7 @@ body.light .kol-fin-val{color:#0d0d0d}
               <span data-i18n="crmDatabaseCustomer">Database Customer</span>
               <span class="mod-badge" id="crm-page-badge">◆</span>
             </div>
-            <div class="ps" data-i18n="crmSub">Data customer utama — import, kelola & export rapi ke Excel</div>
+            <div class="ps" data-i18n="crmSub">Semua data pelanggan dalam satu tempat — lihat siapa yang perlu dihubungi, tambah data baru, atau export ke Excel</div>
           </div>
           <div class="ph-acts crm-acts">
             <!-- v23: hanya tombol AKSI global di header — search & filter dipindah ke toolbar tabel (dekat data) -->
@@ -5164,6 +5210,12 @@ body.light .kol-fin-val{color:#0d0d0d}
           </div>
         </div>
 
+        <!-- v42: SOROTAN UTAMA — dua panel aksi cepat yang paling sering dibutuhkan
+             tim: siapa yang HARUS dihubungi hari ini (prioritas), dan siapa yang BARU
+             masuk (urut tanggal). Ditaruh paling atas supaya user awam langsung tahu
+             "harus ngapain sekarang" tanpa perlu scroll atau paham istilah teknis. -->
+        <div class="crm-spotlight" id="crm-spotlight"></div>
+
         <!-- v25: Kapasitas database customer (10.000/owner; moderator = gabungan semua) -->
         <div class="crm-capacity-bar" id="crm-capacity-bar" style="display:none"></div>
 
@@ -5176,6 +5228,11 @@ body.light .kol-fin-val{color:#0d0d0d}
         <!-- Diagram CRM -->
         <div id="crm-diagram" class="crm-diagram-wrap"></div>
 
+        <div class="crm-tbl-heading">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" class="crm-tbl-heading-ico"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 6.5h12M6 3v10" stroke="currentColor" stroke-width="1.3"/></svg>
+          <span>Semua Data Pelanggan</span>
+          <span class="crm-tbl-heading-sub">— cari, sortir, atau klik ikon pensil untuk mengubah data</span>
+        </div>
         <div class="crm-table-wrap">
           <!-- v23: Baris pencarian & filter — dipindah ke sini supaya menyatu langsung dengan tabel yang difilter -->
           <div class="crm-tbl-filters">
@@ -18743,6 +18800,13 @@ async function renderCRM(reload = true) {
   // crmGlobalAgg) — bukan cuma crmData yang berisi 500 baris halaman aktif.
   renderCRMDiagram(gOwnerRows);
 
+  // v42: Sorotan "harus ngapain sekarang" — prioritas follow up + pelanggan
+  // baru masuk (urut tanggal). Dihitung dari crmData (baris halaman aktif,
+  // datanya lengkap termasuk nama/WA), independen dari filter tabel yang
+  // sedang aktif supaya sorotan ini selalu konsisten & tidak "hilang"
+  // ketika user sedang menyaring tabel di bawahnya.
+  renderCrmSpotlight();
+
   // Toolbar info
   const foot2 = document.getElementById('crm-foot-note2');
   if (foot2) foot2.textContent = crmData.length ? `Menampilkan ${rows.length} dari ${crmData.length} customer (halaman ini)` : '';
@@ -18844,6 +18908,101 @@ async function renderCRM(reload = true) {
       </td>
     </tr>`;
   }).join('');
+}
+
+// ── v42: SOROTAN — "Prioritas Follow Up" + "Baru Masuk" ──
+// Dua panel ringkas & sangat visual di paling atas halaman CRM, supaya user
+// awam langsung tahu siapa yang harus dihubungi & siapa yang baru masuk,
+// tanpa perlu membaca tabel besar / paham istilah teknis dulu.
+const CRM_SPOT_AVATAR_COLORS = ['#c9a96e','#7ea8c9','#7abf8e','#d98ec0','#e87070','#e8b86e','#a0c4ff','#b0a0e8'];
+function crmSpotInitials(name) {
+  return (name||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase() || '?';
+}
+function crmSpotAvatarColor(seed) {
+  let h = 0; const s = String(seed||'');
+  for (let i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) >>> 0;
+  return CRM_SPOT_AVATAR_COLORS[h % CRM_SPOT_AVATAR_COLORS.length];
+}
+function crmSpotRow(c, opts) {
+  const idx = crmData.indexOf(c);
+  const initials = crmSpotInitials(c.nama);
+  const avColor = crmSpotAvatarColor(c.id_customer || c.nama);
+  const waInfo = crmFormatWaLink(c.wa);
+  const waBtn = waInfo
+    ? `<a href="${waInfo.href}" target="_blank" rel="noopener" class="crm-spot-wa" title="Chat WhatsApp" onclick="event.stopPropagation()">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.4 6.4 0 00-5.5 9.7L1.5 14.5l3.4-1a6.4 6.4 0 108.9-9.4A6.36 6.36 0 008 1.5zm0 1.3c1.36 0 2.64.53 3.6 1.5a5.1 5.1 0 01-3.6 8.7c-.86 0-1.7-.22-2.44-.63l-.24-.14-1.86.55.55-1.8-.15-.25A5.1 5.1 0 018 2.8z"/></svg>
+      </a>`
+    : `<span class="crm-spot-wa" style="opacity:.25;pointer-events:none"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.4 6.4 0 00-5.5 9.7L1.5 14.5l3.4-1a6.4 6.4 0 108.9-9.4A6.36 6.36 0 008 1.5z"/></svg></span>`;
+  return `<div class="crm-spot-row ${opts.tagClass||''}" onclick="openCRMModal(${idx})" title="Klik untuk buka detail">
+      <span class="crm-spot-avatar" style="background:${avColor}">${escHtml(initials)}</span>
+      <div class="crm-spot-body">
+        <div class="crm-spot-name">${escHtml(c.nama||'—')}</div>
+        <div class="crm-spot-meta">${opts.meta}</div>
+      </div>
+      <span class="crm-spot-tag">${opts.tag}</span>
+      ${waBtn}
+    </div>`;
+}
+function renderCrmSpotlight() {
+  const el = document.getElementById('crm-spotlight');
+  if (!el) return;
+  if (!crmData.length) { el.innerHTML = ''; return; }
+
+  // ── Panel 1: Prioritas Follow Up — pelanggan "Panas" yang paling lama
+  // belum dihubungi duluan (paling butuh tindakan), maksimal 5.
+  const hotList = crmData
+    .filter(c => (c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status))) === 'Hot')
+    .map(c => ({ c, days: daysSinceFollowup(c) }))
+    .sort((a,b) => {
+      const da = a.days === null ? 9999 : a.days, db2 = b.days === null ? 9999 : b.days;
+      return db2 - da;
+    })
+    .slice(0, 5);
+  const hotHtml = hotList.length ? hotList.map(({c,days}) => {
+    const doneToday = followupDoneTodayIds.has(_followupCustKey(c));
+    const tagClass = doneToday ? 'tag-today' : (days === null ? 'tag-never' : 'tag-overdue');
+    const tag = doneToday ? '✓ Hari ini' : (days === null ? 'Belum pernah' : `${days} hari lalu`);
+    const meta = `${escHtml(c.kota||'—')} · ${(crmParseInt(c.total_order)||0)} order · ${crmFmtRupiah(crmParseMoney(c.total_belanja))}`;
+    return crmSpotRow(c, { tag, tagClass, meta });
+  }).join('') : `<div class="crm-spot-empty">Belum ada pelanggan berstatus "Panas" — mantap, semua sudah terkendali 👍</div>`;
+
+  // ── Panel 2: Baru Masuk — urut tanggal masuk (first_order) terbaru duluan.
+  const recentList = crmData.slice()
+    .filter(c => c.first_order)
+    .sort((a,b) => new Date(b.first_order) - new Date(a.first_order))
+    .slice(0, 5);
+  const recentHtml = recentList.length ? recentList.map(c => {
+    const d = new Date(c.first_order);
+    const tag = isNaN(d.getTime()) ? '—' : d.toLocaleDateString('id-ID', { day:'numeric', month:'short' });
+    const meta = `${escHtml(c.kota||'—')} · ${escHtml((c.channel||'—').length>22?(c.channel||'').slice(0,22)+'…':(c.channel||'—'))}`;
+    return crmSpotRow(c, { tag, tagClass:'tag-today', meta });
+  }).join('') : `<div class="crm-spot-empty">Belum ada data pelanggan baru untuk ditampilkan.</div>`;
+
+  el.innerHTML = `
+    <div class="crm-spot-card spot-hot">
+      <div class="crm-spot-head">
+        <div class="crm-spot-title">
+          <span class="cst-ico">${crmIco('flame')}</span>
+          <span>Perlu Dihubungi Segera
+            <span class="crm-spot-sub">5 pelanggan "Panas" paling lama belum di-follow up</span>
+          </span>
+        </div>
+        <button class="crm-spot-more" onclick="document.getElementById('crm-heat-filter').value='Hot';crmResetPaging();renderCRM(true);document.querySelector('.crm-table-wrap').scrollIntoView({behavior:'smooth',block:'start'})">Lihat semua →</button>
+      </div>
+      <div class="crm-spot-list">${hotHtml}</div>
+    </div>
+    <div class="crm-spot-card spot-new">
+      <div class="crm-spot-head">
+        <div class="crm-spot-title">
+          <span class="cst-ico">${crmIco('sparkle')}</span>
+          <span>Baru Masuk
+            <span class="crm-spot-sub">Urut tanggal masuk paling baru</span>
+          </span>
+        </div>
+        <button class="crm-spot-more" onclick="crmSortField='date';crmSortDir2='desc';const _b=document.getElementById('crm-sort-btn');if(_b)_b.textContent='↓ First Order Terbaru';renderCRM(false);document.querySelector('.crm-table-wrap').scrollIntoView({behavior:'smooth',block:'start'})">Lihat semua →</button>
+      </div>
+      <div class="crm-spot-list">${recentHtml}</div>
+    </div>`;
 }
 
 // ── ADD / EDIT MODAL ──
