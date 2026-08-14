@@ -3615,10 +3615,10 @@ body.light .crm-date-input{color-scheme:light}
 .crm-workspace{display:grid;grid-template-columns:266px 1fr;gap:16px;align-items:start}
 @media(max-width:1080px){.crm-workspace{grid-template-columns:1fr}}
 .crm-sidebar{display:flex;flex-direction:column;gap:0;background:var(--surface);border:1px solid var(--border);
-  border-radius:calc(var(--r) + 4px);padding:16px;position:sticky;top:12px;max-height:calc(100vh - 24px);
+  border-radius:calc(var(--r) + 4px);padding:18px;position:sticky;top:12px;max-height:calc(100vh - 24px);
   overflow-y:auto;box-shadow:0 6px 22px rgba(0,0,0,.10)}
 @media(max-width:1080px){.crm-sidebar{position:relative;top:0;max-height:none}}
-.crm-sidebar-section{display:flex;flex-direction:column;gap:8px;padding:0 0 14px;margin-bottom:14px;border-bottom:1px solid var(--border)}
+.crm-sidebar-section{display:flex;flex-direction:column;gap:9px;padding:0 0 16px;margin-bottom:16px;border-bottom:1px solid var(--border)}
 .crm-sidebar-section:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0}
 .crm-sidebar-lbl{font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--gold);font-weight:700}
 .crm-sidebar .crm-search{width:100%;min-width:0}
@@ -3631,20 +3631,91 @@ body.light .crm-date-input{color-scheme:light}
 .crm-sidebar .crm-btn,.crm-sidebar .btn-g,.crm-sidebar .btn-add{width:100%;justify-content:center;text-align:center}
 .crm-sidebar .crm-insight-wrap{margin-bottom:0}
 .crm-main{min-width:0}
-.crm-col-toggle{display:flex;align-items:flex-start;gap:8px;font-size:11px;color:var(--text2);cursor:pointer;line-height:1.4;font-weight:500}
-.crm-col-toggle:hover{color:var(--text)}
-.crm-col-toggle input{margin-top:2px;accent-color:var(--gold);cursor:pointer}
-.crm-sort-dir-btn{position:relative}
-#crm-sort-dir-btn.sort-active{border-color:var(--gold);color:var(--gold-hi);background:rgba(201,169,110,.08)}
 /* Baris pemisah grup saat tabel disortir per Tanggal / Minggu / Bulan */
 .crm-group-row td{background:var(--surface2)!important;padding:8px 14px!important;font-size:10px;font-weight:700;
   letter-spacing:.06em;text-transform:uppercase;color:var(--gold);border-bottom:1px solid var(--border)!important}
 .crm-group-count{color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0;margin-left:4px}
-/* Kolom sekunder (Channel/Label/Diinput Oleh) — disembunyikan default, hanya
-   kolom penting yang tampil, sesuai preferensi tampilan ringkas & profesional */
-.crm-table td.crm-col-extra,.crm-table th.crm-col-extra{display:none}
-.crm-table-wrap.show-extra td.crm-col-extra,.crm-table-wrap.show-extra th.crm-col-extra{display:table-cell}
+/* v46: semua kolom (termasuk Channel/Label/Diinput Oleh) selalu tampil —
+   toggle sembunyikan-kolom lama dihapus supaya data langsung terlihat semua */
 body.light .crm-group-row td{color:#a0752f}
+
+/* ══════ v46: Toolbar (cari + aksi) dipindah ke ATAS tabel — terpisah dari
+   sidebar kiri supaya lebih rapi & tidak menumpuk dengan filter/sortir. ══════ */
+.crm-toolbar{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:12px 14px;margin-bottom:12px;
+  background:var(--surface);border:1px solid var(--border);border-radius:calc(var(--r) + 4px);
+  box-shadow:0 4px 16px rgba(0,0,0,.06);
+}
+.crm-toolbar-search{position:relative;flex:1 1 240px;min-width:180px}
+.crm-toolbar-search .crm-search{width:100%;padding-left:34px;border-radius:9px;height:36px;box-sizing:border-box}
+.crm-toolbar-search-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.crm-toolbar-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto;flex-wrap:wrap}
+.crm-toolbar-actions .btn-add,.crm-toolbar-actions .btn-g{white-space:nowrap;height:36px;box-sizing:border-box;display:inline-flex;align-items:center}
+.crm-more{position:relative}
+.crm-more-btn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;padding:0!important;line-height:1}
+.crm-more.open .crm-more-btn{border-color:var(--gold);color:var(--gold-hi);background:rgba(201,169,110,.08)}
+.crm-more-menu{
+  position:absolute;top:calc(100% + 6px);right:0;z-index:30;min-width:230px;
+  background:var(--surface);border:1px solid var(--border-hi);border-radius:var(--r);
+  box-shadow:var(--shadow);padding:6px;display:flex;flex-direction:column;gap:2px;
+}
+.crm-more-menu button{
+  display:flex;align-items:center;gap:8px;width:100%;text-align:left;
+  background:none;border:none;color:var(--text2);font-size:12.5px;font-family:'Inter',sans-serif;
+  padding:9px 10px;border-radius:6px;cursor:pointer;transition:all var(--trans);
+}
+.crm-more-menu button:hover{background:var(--surface2);color:var(--text)}
+@media(max-width:640px){
+  .crm-toolbar{padding:10px}
+  .crm-toolbar-search{flex:1 1 100%}
+  .crm-toolbar-actions{flex:1 1 100%}
+}
+
+/* ══════ v46: "Periode Data" — satu panel terpadu (preset cepat + rentang
+   kustom + pengelompokan tampilan), gantikan "Tanggal Masuk" + "Sortir
+   Tanggal Masuk" + tombol Terbaru/Terlama yang lama supaya sidebar lega. ══════ */
+.crm-period{position:relative}
+.crm-period-btn{
+  display:flex;align-items:center;gap:8px;width:100%;
+  background:var(--bg3);border:1px solid var(--border);border-radius:9px;
+  padding:9px 11px;cursor:pointer;font-family:'Inter',sans-serif;
+  color:var(--text);font-size:11.5px;font-weight:600;transition:all var(--trans);
+}
+.crm-period-btn:hover{border-color:var(--border-hi)}
+.crm-period.open .crm-period-btn{border-color:var(--gold);background:rgba(201,169,110,.06)}
+.crm-period-btn-label{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crm-period-btn .chev{color:var(--muted);flex-shrink:0;transition:transform var(--trans)}
+.crm-period.open .crm-period-btn .chev{transform:rotate(180deg)}
+.crm-period-live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;animation:crmLivePulse 2s infinite}
+@keyframes crmLivePulse{
+  0%{box-shadow:0 0 0 0 rgba(122,191,142,.45)}
+  70%{box-shadow:0 0 0 6px rgba(122,191,142,0)}
+  100%{box-shadow:0 0 0 0 rgba(122,191,142,0)}
+}
+.crm-period-panel{
+  position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:30;
+  background:var(--surface);border:1px solid var(--border-hi);border-radius:calc(var(--r) + 4px);
+  box-shadow:var(--shadow);padding:8px;
+}
+.crm-period-group{display:flex;flex-direction:column;gap:1px}
+.crm-period-group-lbl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:6px 9px 4px}
+.crm-period-opt{
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+  width:100%;text-align:left;background:none;border:none;cursor:pointer;
+  color:var(--text2);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;
+  padding:8px 9px;border-radius:7px;transition:all var(--trans);
+}
+.crm-period-opt:hover{background:var(--surface2);color:var(--text)}
+.crm-period-opt.active{background:rgba(201,169,110,.12);color:var(--gold-hi);font-weight:700}
+.crm-period-opt .chev{color:var(--muted);opacity:.7}
+.crm-period-divider{height:1px;background:var(--border);margin:6px 2px}
+.crm-period-custom-range{display:flex;align-items:center;gap:6px;padding:8px 9px 2px}
+.crm-period-custom-range .crm-date-input{
+  background:var(--bg3);border:1px solid var(--border);border-radius:7px;flex:1;
+  padding:6px 8px;font-size:11px;color:var(--text);color-scheme:dark;width:auto;
+}
+body.light .crm-period-custom-range .crm-date-input{color-scheme:light}
 
 /* v43: Statistik & Insight — panel sekunder (spotlight, kapasitas, statistik,
    distribusi PIC, diagram) dikumpulkan & disembunyikan secara default supaya
@@ -5311,14 +5382,6 @@ body.light .kol-fin-val{color:#0d0d0d}
           <aside class="crm-sidebar" id="crm-sidebar">
 
             <div class="crm-sidebar-section">
-              <span class="crm-sidebar-lbl">Cari Customer</span>
-              <div class="crm-tbl-filters-search">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" class="crm-tbl-search-ico"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.4"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-                <input type="text" class="search-box crm-search" id="crm-search" placeholder="Cari nama / WA / kota / produk…" oninput="crmDebouncedSearch()"/>
-              </div>
-            </div>
-
-            <div class="crm-sidebar-section">
               <span class="crm-sidebar-lbl">Filter Data</span>
               <select class="fi crm-filter" id="crm-status-filter" onchange="crmResetPaging();renderCRM(true)">
                 <option value="all" data-i18n="crmAllStatus">Semua Status</option>
@@ -5341,68 +5404,44 @@ body.light .kol-fin-val{color:#0d0d0d}
               </select>
             </div>
 
-            <!-- v44: Filter tanggal masuk bebas — pilih tanggal berapa aja sesuai
-                 bulan & tahun lewat kalender bawaan browser. Kosongkan salah satu
-                 atau keduanya untuk menonaktifkan filter (tampil semua tanggal). -->
+            <!-- v46: "Periode Data" — satu panel terpadu (preset cepat +
+                 rentang kustom + pengelompokan tampilan), gantikan "Tanggal
+                 Masuk" + "Sortir Tanggal Masuk" + tombol Terbaru/Terlama lama
+                 supaya sidebar tidak ramai & lebih elegan. -->
             <div class="crm-sidebar-section">
-              <span class="crm-sidebar-lbl">Tanggal Masuk</span>
-              <div class="crm-date-range" id="crm-date-range">
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" class="crm-date-range-ico"><rect x="2" y="3.5" width="12" height="10.5" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 6.5h12M5 2v3M11 2v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-                <input type="date" class="fi crm-date-input" id="crm-date-from" title="Tgl masuk dari" onchange="crmResetPaging();renderCRM(false)"/>
-                <span class="crm-date-range-sep">–</span>
-                <input type="date" class="fi crm-date-input" id="crm-date-to" title="Tgl masuk sampai" onchange="crmResetPaging();renderCRM(false)"/>
-                <button type="button" class="crm-date-range-clear" id="crm-date-range-clear" title="Kosongkan filter tanggal" onclick="crmClearDateFilter()" style="display:none">✕</button>
+              <span class="crm-sidebar-lbl">Periode Data</span>
+              <div class="crm-period" id="crm-period">
+                <button type="button" class="crm-period-btn" id="crm-period-btn" onclick="crmTogglePeriodPanel()">
+                  <span class="crm-period-live-dot"></span>
+                  <span class="crm-period-btn-label" id="crm-period-btn-label">Real-time · Per Hari</span>
+                  <svg class="chev" width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <div class="crm-period-panel" id="crm-period-panel" style="display:none">
+                  <div class="crm-period-group">
+                    <button type="button" class="crm-period-opt active" data-preset="realtime" onclick="crmSetPeriodPreset('realtime')"><span>Real-time</span></button>
+                    <button type="button" class="crm-period-opt" data-preset="today" onclick="crmSetPeriodPreset('today')"><span>Hari Ini</span></button>
+                    <button type="button" class="crm-period-opt" data-preset="yesterday" onclick="crmSetPeriodPreset('yesterday')"><span>Kemarin</span></button>
+                    <button type="button" class="crm-period-opt" data-preset="7d" onclick="crmSetPeriodPreset('7d')"><span>7 Hari Terakhir</span></button>
+                    <button type="button" class="crm-period-opt" data-preset="30d" onclick="crmSetPeriodPreset('30d')"><span>30 Hari Terakhir</span></button>
+                    <button type="button" class="crm-period-opt" data-preset="custom" onclick="crmSetPeriodPreset('custom')"><span>Rentang Kustom…</span></button>
+                  </div>
+                  <div class="crm-period-custom-range" id="crm-period-custom-range" style="display:none">
+                    <input type="date" class="crm-date-input" id="crm-date-from" title="Tgl masuk dari" onchange="crmResetPaging();renderCRM(false)"/>
+                    <span class="crm-date-range-sep">–</span>
+                    <input type="date" class="crm-date-input" id="crm-date-to" title="Tgl masuk sampai" onchange="crmResetPaging();renderCRM(false)"/>
+                  </div>
+                  <div class="crm-period-divider"></div>
+                  <div class="crm-period-group">
+                    <span class="crm-period-group-lbl">Kelompokkan Tampilan</span>
+                    <button type="button" class="crm-period-opt crm-period-opt-group active" data-group="harian" onclick="crmSetPeriodGroup('harian')"><span>Per Hari</span></button>
+                    <button type="button" class="crm-period-opt crm-period-opt-group" data-group="mingguan" onclick="crmSetPeriodGroup('mingguan')"><span>Per Minggu</span></button>
+                    <button type="button" class="crm-period-opt crm-period-opt-group" data-group="bulanan" onclick="crmSetPeriodGroup('bulanan')"><span>Per Bulan</span></button>
+                    <button type="button" class="crm-period-opt crm-period-opt-group" data-group="tahunan" onclick="crmSetPeriodGroup('tahunan')"><span>Berdasarkan Tahun</span></button>
+                  </div>
+                  <div class="crm-period-divider"></div>
+                  <button type="button" class="crm-period-opt" onclick="crmSortByLabel()" title="Sortir berdasarkan label"><span>Sortir per Label</span></button>
+                </div>
               </div>
-            </div>
-
-            <!-- v45: Sortir tanggal masuk — pilih granularitas (Harian/Mingguan/
-                 Bulanan) + arah urutan (Terbaru/Terlama). Menggantikan tombol
-                 "Tgl Masuk Terbaru" lama yang statis. -->
-            <div class="crm-sidebar-section">
-              <span class="crm-sidebar-lbl">Sortir Tanggal Masuk</span>
-              <select class="fi crm-filter" id="crm-sort-period" onchange="crmChangeSortPeriod()" title="Kelompokkan tampilan tabel berdasarkan periode tanggal masuk">
-                <option value="harian">Per Tanggal (Harian)</option>
-                <option value="mingguan">Per Minggu</option>
-                <option value="bulanan">Per Bulan</option>
-              </select>
-              <button class="btn-g btn-sm sort-active" id="crm-sort-dir-btn" onclick="crmToggleSortDir()" title="Balik urutan terbaru/terlama">
-                <svg width="11" height="11" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;margin-right:4px"><path d="M4 3v10M4 13l-2.5-2.5M4 13l2.5-2.5M12 13V3M12 3l2.5 2.5M12 3l-2.5 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>↓ <span id="crm-sort-dir-label">Terbaru</span>
-              </button>
-              <button class="btn-g btn-sm" onclick="crmSortByLabel()" title="Sortir berdasarkan label" style="font-size:11px">Sortir per Label</button>
-            </div>
-
-            <div class="crm-sidebar-section">
-              <span class="crm-sidebar-lbl">Kolom Tabel</span>
-              <label class="crm-col-toggle">
-                <input type="checkbox" id="crm-col-extra-toggle" onchange="crmToggleExtraCols()"/>
-                <span>Tampilkan semua kolom (Channel, Label, Diinput Oleh)</span>
-              </label>
-            </div>
-
-            <div class="crm-sidebar-section">
-              <span class="crm-sidebar-lbl">Aksi</span>
-              <button class="btn-add crm-btn" onclick="openCRMModal()" data-i18n="addNew">+ Tambah</button>
-              <button class="btn-g btn-sm crm-btn" onclick="openCRMImport()" title="Import dari Excel/CSV">
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px"><path d="M8 1v9M8 10L5 7M8 10l3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                <span data-i18n="crmImport">Import</span>
-              </button>
-              <button class="btn-g btn-sm crm-btn" onclick="exportCRMExcel()" title="Export ke Excel rapi + statistik">
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px"><path d="M8 10V1M8 1L5 4M8 1l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                <span data-i18n="crmExport">Export Excel</span>
-              </button>
-              <button class="btn-g btn-sm crm-btn" onclick="exportCRMDatabaseOnly()" title="Export hanya isi database customer ke Excel">
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px"><path d="M8 10V1M8 1L5 4M8 1l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Export Database
-              </button>
-              <button class="btn-g btn-sm crm-btn" id="crm-export-pdf-btn" onclick="exportCRMPdf()" title="Export ke PDF — laporan rapi siap cetak">
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px"><path d="M8 10V1M8 1L5 4M8 1l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Export PDF
-              </button>
-              <!-- v22: Moderator atur target omzet bulanan — hanya tampil saat filter mengarah ke 1 Admin -->
-              <button class="btn-g btn-sm crm-btn" id="crm-admin-target-btn" onclick="openAdminTargetModal()" title="Atur target omzet bulanan Admin ini" style="display:none">
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:3px"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="3.4" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r=".9" fill="currentColor"/></svg><span data-i18n="crmSetAdminTarget">Atur Target Omzet</span>
-              </button>
-              <button class="btn-g btn-sm crm-btn" onclick="openCrmLabelManageModal()" title="Buat / edit label warna milikmu">
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:3px"><path d="M8.6 1.8H2.6a.8.8 0 00-.8.8v6l7 7 6.2-6.2-7-7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="5" cy="5" r="1" fill="currentColor"/></svg>Kelola Label
-              </button>
             </div>
 
             <!-- v43: Statistik & Insight — tetap bisa dibuka/tutup, sekarang jadi
@@ -5428,6 +5467,47 @@ body.light .kol-fin-val{color:#0d0d0d}
           </aside>
 
           <div class="crm-main">
+            <!-- v46: Search & Aksi dipindah ke SATU baris toolbar di atas tabel
+                 (bukan lagi di sidebar) supaya lebih rapi dan langsung terlihat
+                 bersama data yang mereka pengaruhi. Aksi sekunder dikumpulkan
+                 di menu "⋮" supaya toolbar tidak sesak. -->
+            <div class="crm-toolbar">
+              <div class="crm-toolbar-search">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" class="crm-toolbar-search-ico"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.4"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                <input type="text" class="search-box crm-search" id="crm-search" placeholder="Cari nama / WA / kota / produk…" oninput="crmDebouncedSearch()"/>
+              </div>
+              <div class="crm-toolbar-actions">
+                <button class="btn-add crm-btn" onclick="openCRMModal()" data-i18n="addNew">+ Tambah</button>
+                <button class="btn-g btn-sm crm-btn" onclick="exportCRMExcel()" title="Export ke Excel rapi + statistik">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px"><path d="M8 10V1M8 1L5 4M8 1l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                  <span data-i18n="crmExport">Export Excel</span>
+                </button>
+                <div class="crm-more" id="crm-more">
+                  <button type="button" class="btn-g btn-sm crm-more-btn" onclick="crmToggleMoreMenu()" title="Aksi lainnya">⋮</button>
+                  <div class="crm-more-menu" id="crm-more-menu" style="display:none">
+                    <button onclick="openCRMImport();crmToggleMoreMenu(true)" title="Import dari Excel/CSV">
+                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 1v9M8 10L5 7M8 10l3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                      <span data-i18n="crmImport">Import dari Excel/CSV</span>
+                    </button>
+                    <button onclick="exportCRMDatabaseOnly();crmToggleMoreMenu(true)" title="Export hanya isi database customer ke Excel">
+                      <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 10V1M8 1L5 4M8 1l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                      <span>Export Database</span>
+                    </button>
+                    <button id="crm-export-pdf-btn" onclick="exportCRMPdf();crmToggleMoreMenu(true)" title="Export ke PDF — laporan rapi siap cetak">
+                      <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 10V1M8 1L5 4M8 1l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                      <span>Export PDF</span>
+                    </button>
+                    <!-- v22: Moderator atur target omzet bulanan — hanya tampil saat filter mengarah ke 1 Admin -->
+                    <button id="crm-admin-target-btn" onclick="openAdminTargetModal();crmToggleMoreMenu(true)" title="Atur target omzet bulanan Admin ini" style="display:none">
+                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="3.4" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r=".9" fill="currentColor"/></svg><span data-i18n="crmSetAdminTarget">Atur Target Omzet</span>
+                    </button>
+                    <button onclick="openCrmLabelManageModal();crmToggleMoreMenu(true)" title="Buat / edit label warna milikmu">
+                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8.6 1.8H2.6a.8.8 0 00-.8.8v6l7 7 6.2-6.2-7-7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="5" cy="5" r="1" fill="currentColor"/></svg><span>Kelola Label</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div class="crm-tbl-heading">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none" class="crm-tbl-heading-ico"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 6.5h12M6 3v10" stroke="currentColor" stroke-width="1.3"/></svg>
               <span>Semua Data Pelanggan</span>
@@ -18549,33 +18629,125 @@ async function crmNextIdFor(ownerId) {
 // ── Sort CRM ──
 // v45: default sekarang selalu sortir per TANGGAL MASUK (first_order), terbaru
 // dulu — menggantikan default lama yang urut customer_id. Granularitas
-// pengelompokan (Harian/Mingguan/Bulanan) diatur lewat crmSortPeriod.
+// pengelompokan (Harian/Mingguan/Bulanan/Tahunan) diatur lewat crmSortPeriod.
+// v46: arah urutan dikunci selalu "terbaru dulu" (toggle Terlama/Terbaru
+// dihapus dari UI supaya panel Periode Data tidak ramai) — tetap pakai
+// variabel crmSortDir2 di kode sort supaya logic lain tidak berubah.
 let crmSortField  = 'date'; // 'date' (default, tgl first_order) | 'label'
 let crmSortDir2   = 'desc';
-let crmSortPeriod = 'harian'; // 'harian' | 'mingguan' | 'bulanan'
+let crmSortPeriod = 'harian'; // 'harian' | 'mingguan' | 'bulanan' | 'tahunan'
 
-// v45: ganti granularitas sortir tanggal (dipanggil dari dropdown sidebar)
-function crmChangeSortPeriod() {
-  crmSortField  = 'date';
-  crmSortPeriod = document.getElementById('crm-sort-period')?.value || 'harian';
+// ── v46: Panel "Periode Data" — gabungan preset cepat (Real-time/Hari Ini/
+// Kemarin/7 hari/30 hari/Kustom) + pengelompokan tampilan (Per Hari/Minggu/
+// Bulan/Tahun), gantikan "Tanggal Masuk" + "Sortir Tanggal Masuk" + tombol
+// Terbaru/Terlama yang lama. ──
+let crmPeriodPreset = 'realtime'; // 'realtime'|'today'|'yesterday'|'7d'|'30d'|'custom'
+
+function crmTogglePeriodPanel(forceClose) {
+  const panel = document.getElementById('crm-period-panel');
+  const wrap  = document.getElementById('crm-period');
+  if (!panel || !wrap) return;
+  const open = forceClose === true ? false : panel.style.display === 'none';
+  panel.style.display = open ? '' : 'none';
+  wrap.classList.toggle('open', open);
+}
+
+function crmFmtDateInput(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+// v46: pilih preset cepat — otomatis isi rentang tanggal dari/sampai, kecuali
+// "Real-time" (tampil semua, tanpa filter) & "Kustom" (user isi manual).
+function crmSetPeriodPreset(preset) {
+  crmPeriodPreset = preset;
+  const fromEl = document.getElementById('crm-date-from');
+  const toEl   = document.getElementById('crm-date-to');
+  const customWrap = document.getElementById('crm-period-custom-range');
+  document.querySelectorAll('#crm-period-panel .crm-period-opt[data-preset]').forEach(b => b.classList.toggle('active', b.dataset.preset === preset));
+
+  if (preset === 'custom') {
+    if (customWrap) customWrap.style.display = '';
+    crmUpdatePeriodLabel();
+    return; // biarkan panel terbuka supaya user bisa isi tanggalnya dulu
+  }
+  if (customWrap) customWrap.style.display = 'none';
+
+  const now = new Date();
+  const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  let from = '', to = '';
+  if (preset === 'today') {
+    from = to = crmFmtDateInput(today0);
+  } else if (preset === 'yesterday') {
+    const y = new Date(today0); y.setDate(y.getDate() - 1);
+    from = to = crmFmtDateInput(y);
+  } else if (preset === '7d') {
+    const s = new Date(today0); s.setDate(s.getDate() - 6);
+    from = crmFmtDateInput(s); to = crmFmtDateInput(today0);
+  } else if (preset === '30d') {
+    const s = new Date(today0); s.setDate(s.getDate() - 29);
+    from = crmFmtDateInput(s); to = crmFmtDateInput(today0);
+  } // 'realtime' → from/to tetap kosong (tampil semua tanggal, live)
+
+  if (fromEl) fromEl.value = from;
+  if (toEl) toEl.value = to;
+  crmUpdatePeriodLabel();
   crmResetPaging();
   renderCRM(false);
+  crmTogglePeriodPanel(true);
 }
 
-// v45: balik arah urutan (terbaru ↔ terlama)
-function crmToggleSortDir() {
-  crmSortField = 'date';
-  crmSortDir2  = crmSortDir2 === 'asc' ? 'desc' : 'asc';
-  const btn = document.getElementById('crm-sort-dir-btn');
-  const lbl = document.getElementById('crm-sort-dir-label');
-  if (lbl) lbl.textContent = crmSortDir2 === 'desc' ? 'Terbaru' : 'Terlama';
-  if (btn) {
-    const ico = btn.querySelector('svg');
-    btn.innerHTML = (ico ? ico.outerHTML : '') + (crmSortDir2 === 'desc' ? '↓ ' : '↑ ') + `<span id="crm-sort-dir-label">${crmSortDir2 === 'desc' ? 'Terbaru' : 'Terlama'}</span>`;
-    btn.classList.add('sort-active');
-  }
+// v46: ganti pengelompokan tampilan tabel (Per Hari/Minggu/Bulan/Tahun)
+function crmSetPeriodGroup(period) {
+  crmSortField  = 'date';
+  crmSortPeriod = period;
+  document.querySelectorAll('#crm-period-panel .crm-period-opt-group[data-group]').forEach(b => b.classList.toggle('active', b.dataset.group === period));
+  crmUpdatePeriodLabel();
+  crmResetPaging();
   renderCRM(false);
+  crmTogglePeriodPanel(true);
 }
+
+const CRM_PERIOD_PRESET_LABELS = { realtime:'Real-time', today:'Hari Ini', yesterday:'Kemarin', '7d':'7 Hari Terakhir', '30d':'30 Hari Terakhir', custom:'Rentang Kustom' };
+const CRM_PERIOD_GROUP_LABELS  = { harian:'Per Hari', mingguan:'Per Minggu', bulanan:'Per Bulan', tahunan:'Per Tahun' };
+function crmUpdatePeriodLabel() {
+  const lbl = document.getElementById('crm-period-btn-label');
+  if (!lbl) return;
+  lbl.textContent = (CRM_PERIOD_PRESET_LABELS[crmPeriodPreset] || 'Real-time') + ' · ' + (CRM_PERIOD_GROUP_LABELS[crmSortPeriod] || 'Per Hari');
+}
+
+// v46: dipanggil dari kartu "Baru Masuk" (Statistik & Insight) — lompat ke
+// tampilan default (Real-time, urut tanggal masuk terbaru, per hari)
+function crmJumpToRecent() {
+  crmSortField = 'date'; crmSortDir2 = 'desc'; crmSortPeriod = 'harian'; crmPeriodPreset = 'realtime';
+  const f = document.getElementById('crm-date-from'); if (f) f.value = '';
+  const t = document.getElementById('crm-date-to'); if (t) t.value = '';
+  const cw = document.getElementById('crm-period-custom-range'); if (cw) cw.style.display = 'none';
+  document.querySelectorAll('#crm-period-panel .crm-period-opt[data-preset]').forEach(b => b.classList.toggle('active', b.dataset.preset === 'realtime'));
+  document.querySelectorAll('#crm-period-panel .crm-period-opt-group[data-group]').forEach(b => b.classList.toggle('active', b.dataset.group === 'harian'));
+  crmUpdatePeriodLabel();
+  crmResetPaging();
+  renderCRM(false);
+  document.getElementById('crm-table-wrap')?.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+// v46: menu "⋮ Aksi lainnya" di toolbar atas tabel (Import/Export DB/PDF/
+// Target/Kelola Label) — dikumpulkan di sini supaya toolbar tidak sesak.
+function crmToggleMoreMenu(forceClose) {
+  const menu = document.getElementById('crm-more-menu');
+  const wrap = document.getElementById('crm-more');
+  if (!menu || !wrap) return;
+  const open = forceClose === true ? false : menu.style.display === 'none';
+  menu.style.display = open ? '' : 'none';
+  wrap.classList.toggle('open', open);
+}
+
+// v46: klik di luar panel Periode Data / menu Aksi → tutup otomatis
+document.addEventListener('click', (e) => {
+  const period = document.getElementById('crm-period');
+  if (period && !period.contains(e.target)) crmTogglePeriodPanel(true);
+  const more = document.getElementById('crm-more');
+  if (more && !more.contains(e.target)) crmToggleMoreMenu(true);
+});
 
 // v45: kunci pengelompokan periode dari sebuah tanggal first_order, dipakai
 // untuk menyisipkan baris judul grup (Tanggal/Minggu/Bulan) di tabel.
@@ -18583,6 +18755,9 @@ function crmPeriodKey(dateStr, period) {
   if (!dateStr) return '__none__';
   const d = new Date(dateStr);
   if (isNaN(d)) return '__none__';
+  if (period === 'tahunan') {
+    return String(d.getFullYear());
+  }
   if (period === 'bulanan') {
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
   }
@@ -18599,6 +18774,9 @@ function crmPeriodKey(dateStr, period) {
 const CRM_BULAN_NAMES = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 function crmPeriodLabel(key, period) {
   if (!key || key === '__none__') return 'Tanpa Tanggal Masuk';
+  if (period === 'tahunan') {
+    return 'Tahun ' + key;
+  }
   if (period === 'bulanan') {
     const [y, m] = key.split('-');
     return CRM_BULAN_NAMES[parseInt(m, 10) - 1] + ' ' + y;
@@ -18611,23 +18789,9 @@ function crmPeriodLabel(key, period) {
   return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-// v45: tampilkan/sembunyikan kolom sekunder (Channel, Label, Diinput Oleh) —
-// disimpan di localStorage supaya preferensi user diingat.
-function crmToggleExtraCols() {
-  const wrap = document.getElementById('crm-table-wrap');
-  const cb = document.getElementById('crm-col-extra-toggle');
-  if (wrap) wrap.classList.toggle('show-extra', !!cb?.checked);
-  try { localStorage.setItem('dhp_crm_show_extra_cols', cb?.checked ? '1' : '0'); } catch (e) {}
-}
-function crmRestoreExtraColsState() {
-  let show = false;
-  try { show = localStorage.getItem('dhp_crm_show_extra_cols') === '1'; } catch (e) {}
-  const cb = document.getElementById('crm-col-extra-toggle');
-  const wrap = document.getElementById('crm-table-wrap');
-  if (cb) cb.checked = show;
-  if (wrap) wrap.classList.toggle('show-extra', show);
-}
-document.addEventListener('DOMContentLoaded', crmRestoreExtraColsState);
+// v46: semua kolom (Channel, Label, Diinput Oleh) sekarang selalu tampil —
+// toggle sembunyikan-kolom lama dihapus dari UI supaya data langsung terlihat
+// semua tanpa langkah tambahan.
 
 // ── v43: Toggle panel "Statistik & Insight" (spotlight, kapasitas, stats,
 //    distribusi PIC, diagram) — default tertutup supaya tabel CRM (prioritas
@@ -19324,7 +19488,7 @@ function renderCrmSpotlight() {
             <span class="crm-spot-sub">Urut tanggal masuk paling baru</span>
           </span>
         </div>
-        <button class="crm-spot-more" onclick="crmSortField='date';crmSortDir2='desc';crmSortPeriod='harian';const _p=document.getElementById('crm-sort-period');if(_p)_p.value='harian';const _l=document.getElementById('crm-sort-dir-label');if(_l)_l.textContent='Terbaru';const _b=document.getElementById('crm-sort-dir-btn');if(_b)_b.classList.add('sort-active');renderCRM(false);document.getElementById('crm-table-wrap').scrollIntoView({behavior:'smooth',block:'start'})">Lihat semua →</button>
+        <button class="crm-spot-more" onclick="crmJumpToRecent()">Lihat semua →</button>
       </div>
       <div class="crm-spot-list">${recentHtml}</div>
     </div>`;
