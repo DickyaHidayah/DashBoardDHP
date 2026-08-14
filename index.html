@@ -3691,9 +3691,9 @@ body.light .crm-period-custom-range .crm-date-input{color-scheme:light}
    (position:fixed, dilepas dari sidebar) supaya tidak kepotong overflow
    sidebar & tetap bisa nempel di sisi panel Periode Data manapun. */
 .crm-period-cal-pop{
-  position:fixed;z-index:120;display:none;width:246px;
+  position:fixed;z-index:120;display:none;width:266px;
   background:var(--surface);border:1px solid var(--border-hi);border-radius:calc(var(--r) + 4px);
-  box-shadow:var(--shadow);padding:10px;font-family:'Inter',sans-serif;
+  box-shadow:var(--shadow);padding:12px;font-family:'Inter',sans-serif;
 }
 .crm-period-cal-pop.show{display:block}
 .crm-cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:0 2px}
@@ -3706,8 +3706,8 @@ body.light .crm-period-custom-range .crm-date-input{color-scheme:light}
 .crm-cal-grid.g-day{grid-template-columns:repeat(7,1fr);gap:2px}
 .crm-cal-dow{font-size:9px;text-align:center;color:var(--muted);font-weight:700;padding:2px 0}
 .crm-cal-cell{
-  background:none;border:none;cursor:pointer;color:var(--text2);font-size:11.5px;font-weight:600;
-  padding:9px 4px;border-radius:7px;transition:all var(--trans);text-align:center;font-family:'Inter',sans-serif;
+  background:none;border:none;cursor:pointer;color:var(--text2);font-size:12px;font-weight:600;
+  padding:11px 4px;border-radius:8px;transition:all var(--trans);text-align:center;font-family:'Inter',sans-serif;
 }
 .crm-cal-cell:hover:not(:disabled){background:var(--surface2);color:var(--text)}
 .crm-cal-cell:disabled{opacity:.32;cursor:default;color:var(--muted)}
@@ -18828,6 +18828,24 @@ let crmCalDecadeStart = Math.floor(crmCalViewYear / 10) * 10;
 const CRM_BULAN_SHORT = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
 const CRM_DOW_SHORT   = ['S','S','R','K','J','S','M']; // Senin..Minggu (minggu mulai Senin)
 
+// v48 FIX: .crm-sidebar pakai position:sticky, yang di semua browser modern
+// SELALU membuat stacking context baru — jadi walaupun popover kalender ini
+// position:fixed, kalau dia tetap jadi DESCENDANT dari .crm-sidebar dalam DOM,
+// dia kejebak di dalam stacking context sidebar dan ketutup/ketimpa konten
+// .crm-main (search box, tabel, dll) yang urutan DOM-nya setelah sidebar.
+// Fix: pindahkan node popover jadi direct child <body> saat load, supaya
+// lepas total dari stacking context manapun dan selalu di layer paling atas
+// (di bawah modal/notifikasi yang z-index-nya jauh lebih tinggi, itu wajar).
+(function crmDetachCalPopFromSidebar() {
+  const mount = () => {
+    const pop = document.getElementById('crm-period-cal-pop');
+    if (pop && pop.parentElement !== document.body) document.body.appendChild(pop);
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);
+  else mount();
+})();
+
+
 function crmOpenPeriodCal(mode) {
   crmPeriodCalMode = mode;
   const now = new Date();
@@ -18855,7 +18873,7 @@ function crmPositionCalPop() {
   const pop = document.getElementById('crm-period-cal-pop');
   if (!anchor || !pop || !pop.classList.contains('show')) return;
   const r = anchor.getBoundingClientRect();
-  const popW = pop.offsetWidth || 246;
+  const popW = pop.offsetWidth || 266;
   let left = r.right + 10;
   if (left + popW > window.innerWidth - 8) left = Math.max(8, r.left - popW - 10);
   if (left + popW > window.innerWidth - 8) left = Math.max(8, window.innerWidth - popW - 8);
