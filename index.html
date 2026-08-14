@@ -16791,6 +16791,21 @@ async function assignAdCustLabel(leadId, labelId) {
   c.label_id = labelId || null;
   if (db) {
     try { await dbQ(() => db.from('leads').update({ label_id: c.label_id }).eq('id', leadId)); } catch(e){}
+    // v43-fix: sebelumnya HANYA leads.label_id yang di-update di sini —
+    // customer yang sama di Database Customer (crm_customers) tidak ikut
+    // ter-tandai, jadi labelnya "hilang" begitu dicek dari halaman CRM.
+    // Sekarang ikut update crm_customers.label_id (dicocokkan lewat nomor
+    // WA — customer yang sama persis) supaya penandaan label BENAR-BENAR
+    // sinkron dua arah, bukan cuma definisi labelnya saja.
+    if (c.wa_phone) {
+      try { await dbQ(() => db.from('crm_customers').update({ label_id: c.label_id }).eq('wa_phone', c.wa_phone)); } catch(e){}
+    }
+  }
+  // Update cache CRM lokal juga (kalau sudah pernah dimuat) supaya kalau
+  // user langsung pindah ke halaman Database Customer, datanya sudah
+  // sinkron tanpa perlu nunggu realtime/refresh.
+  if (typeof crmData !== 'undefined' && c.wa_phone) {
+    crmData.forEach(cc => { if (cc.wa === c.wa_phone) cc.label_id = c.label_id; });
   }
   closeModal();
   renderAdCustomers();
@@ -17314,8 +17329,19 @@ async function assignCrmLabel(idx, labelId) {
   c.label_id = labelId || null;
   if (crmUsesDB() && c._uuid) {
     try { await dbQ(() => db.from('crm_customers').update({ label_id: c.label_id }).eq('id', c._uuid)); } catch(e){}
+    // v43-fix: penandaan dua arah — customer yang sama juga bisa muncul
+    // sebagai baris `leads` di halaman Ads Customer (kalau asalnya dari
+    // iklan). Tanpa ini, label yang di-set dari CRM tidak kelihatan kalau
+    // dicek balik dari Ads Customer.
+    if (c.wa) {
+      try { await dbQ(() => db.from('leads').update({ label_id: c.label_id }).eq('wa_phone', c.wa)); } catch(e){}
+    }
   } else {
     saveCRM();
+  }
+  // Update cache Ads Customer lokal juga (kalau sudah pernah dimuat).
+  if (typeof adCustomersCache !== 'undefined' && c.wa) {
+    adCustomersCache.forEach(r => { if (r.wa_phone === c.wa) r.label_id = c.label_id; });
   }
   closeModal();
   renderCRM(false);
