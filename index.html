@@ -3046,77 +3046,39 @@ body.owner-view .owner-readonly-banner{
    yang paling sering dipakai (tingkat keaktifan utk follow up) terlihat
    duluan, dengan ikon vektor elegan menggantikan emoji, dan label grup
    yang jelas supaya moderator/admin langsung paham fungsi tiap angka. */
-.crm-stats{display:flex;flex-direction:column;gap:14px;margin-bottom:18px}
-.crm-stats-group{display:flex;flex-direction:column;gap:8px}
-.crm-stats-group-lbl{display:flex;align-items:center;gap:6px;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+/* v47: kartu statistik dirapikan supaya rapat & tetap terbaca di sidebar
+   sempit (266px) — grid 2 kolom tetap, ukuran & padding diperkecil. */
+.crm-stats{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
+.crm-stats-group{display:flex;flex-direction:column;gap:7px}
+.crm-stats-group-lbl{display:flex;align-items:center;gap:6px;font-size:9px;letter-spacing:.12em;text-transform:uppercase;
   color:var(--text2);font-weight:700;padding-left:2px}
-.crm-stats-group-lbl svg{opacity:.75;flex-shrink:0}
-.crm-stats-row{display:flex;gap:10px;flex-wrap:wrap}
-.crm-stat{flex:1;min-width:128px;background:linear-gradient(160deg,var(--surface2),rgba(0,0,0,0));border:1px solid var(--border);
-  border-radius:calc(var(--r) + 2px);padding:13px 15px;display:flex;align-items:center;gap:11px;
-  transition:transform var(--trans),border-color var(--trans),box-shadow var(--trans);position:relative;overflow:hidden}
+.crm-stats-group-lbl svg{opacity:.75;flex-shrink:0;width:12px;height:12px}
+.crm-stats-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.crm-stat{background:linear-gradient(160deg,var(--surface2),rgba(0,0,0,0));border:1px solid var(--border);
+  border-radius:calc(var(--r) + 1px);padding:9px 10px;display:flex;align-items:center;gap:8px;min-width:0;
+  transition:border-color var(--trans);position:relative;overflow:hidden}
 .crm-stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:currentColor;opacity:.35}
-.crm-stat:hover{transform:translateY(-2px);border-color:var(--border-hi);box-shadow:0 8px 20px rgba(0,0,0,.18)}
-.crm-stat-ico{flex-shrink:0;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+.crm-stat:hover{border-color:var(--border-hi)}
+.crm-stat-ico{flex-shrink:0;width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;
   background:currentColor;opacity:1}
 .crm-stat-ico svg{position:relative;color:var(--bg);opacity:1}
-.crm-stat-ico-wrap{flex-shrink:0;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+.crm-stat-ico-wrap{flex-shrink:0;width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;
   background:color-mix(in srgb, currentColor 16%, transparent)}
-.crm-stat-ico-wrap svg{color:currentColor}
-.crm-stat-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
-.crm-stat .cs-num{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;line-height:1;color:var(--gold-hi);letter-spacing:.01em}
-.crm-stat .cs-lbl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);font-weight:600;white-space:nowrap}
-.crm-stat .cs-sub{font-size:10px;color:var(--muted)}
-.crm-stat.cs-money .cs-num{font-size:19px;color:var(--green)}
+.crm-stat-ico-wrap svg{color:currentColor;width:13px;height:13px}
+.crm-stat-txt{display:flex;flex-direction:column;gap:1px;min-width:0}
+.crm-stat .cs-num{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;line-height:1.05;color:var(--gold-hi);letter-spacing:.01em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crm-stat .cs-lbl{font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);font-weight:600;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.crm-stat .cs-sub{font-size:9px;color:var(--muted)}
+.crm-stat.cs-money{grid-column:span 2}
+.crm-stat.cs-money .cs-num{font-size:15px;color:var(--green)}
 .crm-stat.cs-new{border-color:rgba(126,168,201,.3);color:var(--blue)} .crm-stat.cs-new .cs-num{color:var(--blue)}
 .crm-stat.cs-leads{border-color:rgba(232,112,112,.3);color:var(--red)} .crm-stat.cs-leads .cs-num{color:var(--red)}
-/* Kartu prioritas (tingkat keaktifan) — sedikit lebih besar & menonjol karena paling sering dicek */
-.crm-stat.cs-priority{padding:14px 16px}
-.crm-stat.cs-priority .cs-num{font-size:24px}
 .crm-stat.cs-hot{border-color:rgba(232,112,112,.35);color:#e87070}
 .crm-stat.cs-warm{border-color:rgba(232,184,110,.35);color:#e8b86e}
 .crm-stat.cs-cold{border-color:rgba(126,168,201,.35);color:#7ea8c9}
-/* ══════ v42: SOROTAN — panel "harus ngapain sekarang" (prioritas follow up
-   + pelanggan baru masuk urut tanggal), diletakkan paling atas & dibuat
-   sangat visual (foto avatar inisial, badge warna, 1 klik langsung buka)
-   supaya user yang belum terbiasa tetap bisa langsung paham & bertindak. ══════ */
-.crm-spotlight{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
-@media(max-width:900px){.crm-spotlight{grid-template-columns:1fr}}
-.crm-spot-card{background:linear-gradient(160deg,var(--surface2),var(--surface));border:1px solid var(--border);
-  border-radius:calc(var(--r) + 4px);padding:16px 16px 10px;box-shadow:0 6px 24px rgba(0,0,0,.12);position:relative;overflow:hidden}
-.crm-spot-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-.crm-spot-card.spot-hot::before{background:linear-gradient(90deg,#e87070,#e8b86e)}
-.crm-spot-card.spot-new::before{background:linear-gradient(90deg,var(--gold),var(--gold-hi))}
-.crm-spot-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px}
-.crm-spot-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--text);letter-spacing:.01em}
-.crm-spot-title .cst-ico{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.crm-spot-card.spot-hot .cst-ico{background:rgba(232,112,112,.16);color:#e87070}
-.crm-spot-card.spot-new .cst-ico{background:rgba(201,169,110,.18);color:var(--gold)}
-.crm-spot-sub{font-size:10.5px;color:var(--text2);font-weight:400;display:block;margin-top:1px}
-.crm-spot-more{font-size:10.5px;color:var(--gold);background:none;border:none;cursor:pointer;font-weight:600;white-space:nowrap;
-  padding:4px 8px;border-radius:6px;transition:background var(--trans)}
-.crm-spot-more:hover{background:rgba(201,169,110,.1)}
-.crm-spot-list{display:flex;flex-direction:column;gap:4px;min-height:40px}
-.crm-spot-row{display:flex;align-items:center;gap:10px;padding:8px 8px;border-radius:9px;cursor:pointer;
-  transition:background var(--trans);border:1px solid transparent}
-.crm-spot-row:hover{background:rgba(201,169,110,.08);border-color:var(--border)}
-.crm-spot-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-size:11px;font-weight:700;color:#fff;flex-shrink:0;letter-spacing:0}
-.crm-spot-body{flex:1;min-width:0}
-.crm-spot-name{font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.crm-spot-meta{font-size:10px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
-.crm-spot-tag{flex-shrink:0;font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap}
-.crm-spot-row.tag-overdue .crm-spot-tag{background:rgba(232,112,112,.14);color:#e87070}
-.crm-spot-row.tag-today .crm-spot-tag{background:rgba(122,191,142,.14);color:var(--green)}
-.crm-spot-row.tag-never .crm-spot-tag{background:rgba(232,184,110,.14);color:#e8b86e}
-.crm-spot-empty{font-size:11.5px;color:var(--muted);padding:14px 4px;text-align:center;font-style:italic}
-.crm-spot-wa{flex-shrink:0;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  background:rgba(122,191,142,.14);color:var(--green);transition:transform var(--trans)}
-.crm-spot-wa:hover{transform:scale(1.12)}
-body.light .crm-spot-card{background:#ffffff;border:1.5px solid rgba(0,0,0,.1);box-shadow:0 2px 12px rgba(0,0,0,.06)}
-body.light .crm-spot-name{color:#0d0d0d}
-body.light .crm-spot-row:hover{background:rgba(201,169,110,.08)}
-@media(max-width:768px){.crm-spot-title{font-size:12px}}
+@media(min-width:1081px) and (max-width:1280px){.crm-stats-row{grid-template-columns:1fr}.crm-stat.cs-money{grid-column:span 1}}
 
 .crm-tbl-heading{display:flex;align-items:baseline;gap:7px;margin:4px 2px 10px;font-size:13px;font-weight:700;color:var(--text)}
 /* v44: rapatkan sedikit header halaman & judul tabel khusus di CRM, supaya
@@ -3526,22 +3488,30 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
   background:linear-gradient(160deg,var(--surface),rgba(0,0,0,0));border:1px solid var(--border);border-radius:calc(var(--r) + 2px);
   padding:18px 22px;margin-bottom:16px;
 }
-.crm-diag-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-@media(max-width:640px){.crm-diag-grid{grid-template-columns:1fr}}
-.crm-diag-card{background:var(--surface2);border:1px solid var(--border);border-radius:calc(var(--r) + 2px);padding:14px 16px}
+/* v47: diagram dirombak dari grid 2-kolom (80px label + track + angka
+   dalam 1 baris) — kolom label fixed 80px itu yang bikin teks kepotong
+   ("Tuga...") & kartu tabrakan di sidebar sempit. Sekarang tiap baris jadi
+   2 tingkat: label+angka di atas (bebas melebar), track bar di bawah
+   (selalu penuh 1 baris) — muat rapi di lebar berapa pun, sidebar atau
+   full-width sekalipun. Grid kartu juga dipaksa 1 kolom karena kartu ini
+   selalu tampil di sidebar sempit (266px), bukan area lebar. */
+.crm-diag-grid{display:flex;flex-direction:column;gap:12px}
+.crm-diag-card{background:var(--surface2);border:1px solid var(--border);border-radius:calc(var(--r) + 1px);padding:12px 13px}
 body.light .crm-diag-card2{background:#fbfbfb}
 .crm-diag-title{
-  display:flex;align-items:center;gap:7px;
-  font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--gold);
-  font-weight:700;margin-bottom:13px;padding-bottom:8px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:6px;
+  font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--gold);
+  font-weight:700;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--border);
 }
-.crm-diag-title svg{flex-shrink:0;opacity:.9}
-.crm-diag-bars{display:flex;flex-direction:column;gap:9px}
-.crm-diag-bar-row{display:grid;grid-template-columns:80px 1fr 60px;gap:8px;align-items:center}
-.crm-diag-bar-lbl{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.crm-diag-bar-track{height:7px;background:var(--bg3);border-radius:4px;overflow:hidden}
+.crm-diag-title svg{flex-shrink:0;opacity:.9;width:12px;height:12px}
+.crm-diag-bars{display:flex;flex-direction:column;gap:8px}
+.crm-diag-bar-row{display:flex;flex-direction:column;gap:3px}
+.crm-diag-bar-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.crm-diag-bar-lbl{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.crm-diag-bar-track{height:6px;background:var(--bg3);border-radius:4px;overflow:hidden}
 .crm-diag-bar-fill{height:100%;border-radius:4px;transition:width .5s cubic-bezier(.4,0,.2,1)}
-.crm-diag-bar-val{font-size:11px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.crm-diag-bar-val{flex-shrink:0;font-size:10.5px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;color:var(--text2)}
+.crm-diag-more{font-size:10px;color:var(--muted);font-style:italic;padding-top:1px}
 
 /* v43: Bar sticky yang menampung filter + toolbar CRM — menempel di atas
    saat tabel di-scroll ke bawah, supaya pencarian, filter tanggal & tombol
@@ -5456,7 +5426,6 @@ body.light .kol-fin-val{color:#0d0d0d}
                   <svg class="cit-chevron" id="crm-insight-chevron" width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
                 <div class="crm-insight-body" id="crm-insight-body">
-                  <div class="crm-spotlight" id="crm-spotlight"></div>
                   <div class="crm-capacity-bar" id="crm-capacity-bar" style="display:none"></div>
                   <div class="crm-stats" id="crm-stats"></div>
                   <div class="crm-pic-dist" id="crm-pic-dist" style="display:none"></div>
@@ -18872,16 +18841,32 @@ const crmDebouncedSearch = debounce(() => { crmResetPaging(); renderCRM(true); }
 
 
 // ── Diagram CRM ──
+// v47: satu helper markup untuk semua baris diagram — label & angka di
+// baris atas (bebas melebar, angka tidak pernah kepotong), track bar di
+// baris bawah (selalu penuh 1 baris). Menggantikan grid 3-kolom lama yang
+// bikin teks label kepotong ("Tuga...") di sidebar sempit.
+function crmDiagRow(label, color, n, pct, total, opts) {
+  opts = opts || {};
+  const pctTotal = total ? Math.round(n/total*100) : 0;
+  return `<div class="crm-diag-bar-row"${opts.title ? ` title="${escHtml(opts.title)}"` : ''}>
+      <div class="crm-diag-bar-top">
+        <span class="crm-diag-bar-lbl" style="color:${color}">${escHtml(label)}</span>
+        <span class="crm-diag-bar-val">${n.toLocaleString('id-ID')} <span style="opacity:.7">(${pctTotal}%)</span></span>
+      </div>
+      <div class="crm-diag-bar-track"><div class="crm-diag-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+    </div>`;
+}
+
 function renderCRMDiagram(data) {
   const el = document.getElementById('crm-diagram');
   if (!el || !data.length) { if (el) el.innerHTML = ''; return; }
 
   const isMod = can.isMod(currentUser?.role);
+  // v47: sidebar hanya 266px lebar — cukup tampilkan ringkasan (top 4),
+  // bukan seluruh daftar, supaya kartu tidak menumpuk & mudah discan.
+  const TOP_N = 4;
 
-  // v37: chart pertama sekarang berdasarkan Label (menggantikan Repeat/Agen/
-  // Reseller yang sudah dihapus) — menghitung customer per label yang benar-
-  // benar dipakai di data yang sedang ditampilkan (support banyak admin
-  // sekaligus untuk moderator), plus satu baris "Belum Berlabel".
+  // Label distribution (top 4 + gabungan sisanya + Belum Berlabel)
   const labelCounts = {};
   let unlabeledCount = 0;
   data.forEach(c => {
@@ -18889,17 +18874,22 @@ function renderCRMDiagram(data) {
     if (lbl) labelCounts[lbl.id] = (labelCounts[lbl.id] || 0) + 1;
     else unlabeledCount++;
   });
-  const usedLabels = Object.keys(labelCounts).map(id => crmLabelOf(id)).filter(Boolean);
-  const maxSt = Math.max(...Object.values(labelCounts), unlabeledCount, 1);
+  const usedLabels = Object.keys(labelCounts).map(id => crmLabelOf(id)).filter(Boolean)
+    .sort((a,b) => labelCounts[b.id] - labelCounts[a.id]);
+  const topLabels = usedLabels.slice(0, TOP_N);
+  const restLabelCount = usedLabels.slice(TOP_N).reduce((s,l) => s + labelCounts[l.id], 0);
+  const maxSt = Math.max(...topLabels.map(l => labelCounts[l.id]), unlabeledCount, 1);
 
-  // Channel distribution (top 6)
+  // Channel distribution (top 4 + gabungan sisanya)
   const chCount = {};
   data.forEach(c => { const ch = (c.channel||'—').trim()||'—'; chCount[ch] = (chCount[ch]||0)+1; });
-  const chEntries = Object.entries(chCount).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const chAll = Object.entries(chCount).sort((a,b)=>b[1]-a[1]);
+  const chEntries = chAll.slice(0, TOP_N);
+  const chRestCount = chAll.slice(TOP_N).reduce((s,[,n]) => s + n, 0);
   const maxCh = Math.max(...chEntries.map(e=>e[1]), 1);
-  const chColors = ['#c9a96e','#7ea8c9','#7abf8e','#d98ec0','#e87070','#e8b86e'];
+  const chColors = ['#c9a96e','#7ea8c9','#7abf8e','#d98ec0'];
 
-  // Per-user distribution (hanya moderator)
+  // Per-user distribution (hanya moderator, top 5)
   let userChartHtml = '';
   if (isMod) {
     const userCount = {};
@@ -18907,9 +18897,11 @@ function renderCRMDiagram(data) {
       const uid = c.owner_id || c.created_by || '—';
       userCount[uid] = (userCount[uid]||0)+1;
     });
-    const userEntries = Object.entries(userCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    const userAll = Object.entries(userCount).sort((a,b)=>b[1]-a[1]);
+    const userEntries = userAll.slice(0, 5);
+    const userRestCount = userAll.slice(5).reduce((s,[,n]) => s + n, 0);
     const maxUser = Math.max(...userEntries.map(e=>e[1]), 1);
-    const uColors = ['#c9a96e','#7ea8c9','#7abf8e','#d98ec0','#e87070','#e8b86e','#a0c4ff','#ffadad'];
+    const uColors = ['#c9a96e','#7ea8c9','#7abf8e','#d98ec0','#e87070'];
     userChartHtml = `
       <div class="crm-diag-card">
         <div class="crm-diag-title">${crmIco('person')}Diinput Oleh — Per User</div>
@@ -18917,41 +18909,25 @@ function renderCRMDiagram(data) {
           ${userEntries.map(([uid,n],i) => {
             const um = getUserMeta(uid);
             const pct = Math.round(n/maxUser*100);
-            const pctTotal = data.length ? Math.round(n/data.length*100) : 0;
-            return `<div class="crm-diag-bar-row">
-              <div class="crm-diag-bar-lbl" style="color:${uColors[i]}">${escHtml(um.name||uid)}</div>
-              <div class="crm-diag-bar-track"><div class="crm-diag-bar-fill" style="width:${pct}%;background:${uColors[i]}"></div></div>
-              <div class="crm-diag-bar-val">${n} <span style="color:var(--muted);font-size:9px">(${pctTotal}%)</span></div>
-            </div>`;
+            return crmDiagRow(um.name||uid, uColors[i], n, pct, data.length);
           }).join('')}
+          ${userRestCount ? `<div class="crm-diag-more">+${userRestCount.toLocaleString('id-ID')} dari user lainnya</div>` : ''}
         </div>
       </div>`;
   }
 
   el.innerHTML = `
-    <div class="crm-diag-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+    <div class="crm-diag-grid">
       <div class="crm-diag-card">
         <div class="crm-diag-title">${crmIco('tag')}Customer per Label</div>
         <div class="crm-diag-bars">
-          ${usedLabels.map(l => {
+          ${topLabels.map(l => {
             const n = labelCounts[l.id];
             const pct = Math.round(n/maxSt*100);
-            const pctTotal = data.length ? Math.round(n/data.length*100) : 0;
-            return `<div class="crm-diag-bar-row">
-              <div class="crm-diag-bar-lbl" style="color:${l.color}">${escHtml(l.name)}</div>
-              <div class="crm-diag-bar-track"><div class="crm-diag-bar-fill" style="width:${pct}%;background:${l.color}"></div></div>
-              <div class="crm-diag-bar-val">${n} <span style="color:var(--muted);font-size:9px">(${pctTotal}%)</span></div>
-            </div>`;
+            return crmDiagRow(l.name, l.color, n, pct, data.length);
           }).join('')}
-          ${(function(){
-            const pct = Math.round(unlabeledCount/maxSt*100);
-            const pctTotal = data.length ? Math.round(unlabeledCount/data.length*100) : 0;
-            return `<div class="crm-diag-bar-row">
-              <div class="crm-diag-bar-lbl" style="color:var(--muted)">Belum Berlabel</div>
-              <div class="crm-diag-bar-track"><div class="crm-diag-bar-fill" style="width:${pct}%;background:var(--muted)"></div></div>
-              <div class="crm-diag-bar-val">${unlabeledCount} <span style="color:var(--muted);font-size:9px">(${pctTotal}%)</span></div>
-            </div>`;
-          })()}
+          ${crmDiagRow('Belum Berlabel', 'var(--muted)', unlabeledCount, Math.round(unlabeledCount/maxSt*100), data.length)}
+          ${restLabelCount ? `<div class="crm-diag-more">+${restLabelCount.toLocaleString('id-ID')} dari label lainnya</div>` : ''}
           ${!usedLabels.length ? `<div class="mt-fu-list-empty">Belum ada label dipakai. Klik "Kelola Label" untuk membuat label pertamamu.</div>` : ''}
         </div>
       </div>
@@ -18960,17 +18936,12 @@ function renderCRMDiagram(data) {
         <div class="crm-diag-bars">
           ${chEntries.map(([ch,n],i) => {
             const pct = Math.round(n/maxCh*100);
-            const pctTotal = data.length ? Math.round(n/data.length*100) : 0;
-            return `<div class="crm-diag-bar-row">
-              <div class="crm-diag-bar-lbl" style="color:${chColors[i]}">${escHtml(ch)}</div>
-              <div class="crm-diag-bar-track"><div class="crm-diag-bar-fill" style="width:${pct}%;background:${chColors[i]}"></div></div>
-              <div class="crm-diag-bar-val">${n} <span style="color:var(--muted);font-size:9px">(${pctTotal}%)</span></div>
-            </div>`;
+            return crmDiagRow(ch, chColors[i], n, pct, data.length);
           }).join('')}
+          ${chRestCount ? `<div class="crm-diag-more">+${chRestCount.toLocaleString('id-ID')} dari channel lainnya</div>` : ''}
         </div>
       </div>
       ${userChartHtml}
-      <!-- v5.3: Heat Category chart — elegant labels -->
       <div class="crm-diag-card">
         <div class="crm-diag-title">${crmIco('flame')}Tingkat Keaktifan Customer</div>
         <div class="crm-diag-bars">
@@ -18988,12 +18959,7 @@ function renderCRMDiagram(data) {
             var maxH = Math.max.apply(null, counts.map(function(x){ return x.n; }).concat([1]));
             return counts.map(function(h) {
               var pct = Math.round(h.n / maxH * 100);
-              var pctTotal = data.length ? Math.round(h.n / data.length * 100) : 0;
-              return '<div class="crm-diag-bar-row" title="' + h.desc + '">'
-                + '<div class="crm-diag-bar-lbl" style="color:' + h.color + '">' + h.label + '</div>'
-                + '<div class="crm-diag-bar-track"><div class="crm-diag-bar-fill" style="width:' + pct + '%;background:' + h.color + '"></div></div>'
-                + '<div class="crm-diag-bar-val">' + h.n + ' <span style="color:var(--muted);font-size:9px">(' + pctTotal + '%)</span></div>'
-                + '</div>';
+              return crmDiagRow(h.label, h.color, h.n, pct, data.length, { title: h.desc });
             }).join('');
           }())}
         </div>
@@ -19269,13 +19235,9 @@ async function renderCRM(reload = true) {
   // Keaktifan) sekarang dihitung dari SELURUH database (gOwnerRows, dari
   // crmGlobalAgg) — bukan cuma crmData yang berisi 500 baris halaman aktif.
   renderCRMDiagram(gOwnerRows);
-
-  // v42: Sorotan "harus ngapain sekarang" — prioritas follow up + pelanggan
-  // baru masuk (urut tanggal). Dihitung dari crmData (baris halaman aktif,
-  // datanya lengkap termasuk nama/WA), independen dari filter tabel yang
-  // sedang aktif supaya sorotan ini selalu konsisten & tidak "hilang"
-  // ketika user sedang menyaring tabel di bawahnya.
-  renderCrmSpotlight();
+  // v47: panel sorotan "Perlu Dihubungi Segera" / "Baru Masuk" dihapus —
+  // sudah terwakili oleh grup "Prioritas Follow Up" di kartu statistik,
+  // supaya Statistik & Insight tidak tumpang tindih di sidebar sempit.
 
   // Toolbar info
   const foot2 = document.getElementById('crm-foot-note2');
@@ -19399,100 +19361,10 @@ async function renderCRM(reload = true) {
   }).join('');
 }
 
-// ── v42: SOROTAN — "Prioritas Follow Up" + "Baru Masuk" ──
-// Dua panel ringkas & sangat visual di paling atas halaman CRM, supaya user
-// awam langsung tahu siapa yang harus dihubungi & siapa yang baru masuk,
-// tanpa perlu membaca tabel besar / paham istilah teknis dulu.
-const CRM_SPOT_AVATAR_COLORS = ['#c9a96e','#7ea8c9','#7abf8e','#d98ec0','#e87070','#e8b86e','#a0c4ff','#b0a0e8'];
-function crmSpotInitials(name) {
-  return (name||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase() || '?';
-}
-function crmSpotAvatarColor(seed) {
-  let h = 0; const s = String(seed||'');
-  for (let i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) >>> 0;
-  return CRM_SPOT_AVATAR_COLORS[h % CRM_SPOT_AVATAR_COLORS.length];
-}
-function crmSpotRow(c, opts) {
-  const idx = crmData.indexOf(c);
-  const initials = crmSpotInitials(c.nama);
-  const avColor = crmSpotAvatarColor(c.id_customer || c.nama);
-  const waInfo = crmFormatWaLink(c.wa);
-  const waBtn = waInfo
-    ? `<a href="${waInfo.href}" target="_blank" rel="noopener" class="crm-spot-wa" title="Chat WhatsApp" onclick="event.stopPropagation()">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.4 6.4 0 00-5.5 9.7L1.5 14.5l3.4-1a6.4 6.4 0 108.9-9.4A6.36 6.36 0 008 1.5zm0 1.3c1.36 0 2.64.53 3.6 1.5a5.1 5.1 0 01-3.6 8.7c-.86 0-1.7-.22-2.44-.63l-.24-.14-1.86.55.55-1.8-.15-.25A5.1 5.1 0 018 2.8z"/></svg>
-      </a>`
-    : `<span class="crm-spot-wa" style="opacity:.25;pointer-events:none"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.4 6.4 0 00-5.5 9.7L1.5 14.5l3.4-1a6.4 6.4 0 108.9-9.4A6.36 6.36 0 008 1.5z"/></svg></span>`;
-  return `<div class="crm-spot-row ${opts.tagClass||''}" onclick="openCRMModal(${idx})" title="Klik untuk buka detail">
-      <span class="crm-spot-avatar" style="background:${avColor}">${escHtml(initials)}</span>
-      <div class="crm-spot-body">
-        <div class="crm-spot-name">${escHtml(c.nama||'—')}</div>
-        <div class="crm-spot-meta">${opts.meta}</div>
-      </div>
-      <span class="crm-spot-tag">${opts.tag}</span>
-      ${waBtn}
-    </div>`;
-}
-function renderCrmSpotlight() {
-  const el = document.getElementById('crm-spotlight');
-  if (!el) return;
-  if (!crmData.length) { el.innerHTML = ''; return; }
-
-  // ── Panel 1: Prioritas Follow Up — pelanggan "Panas" yang paling lama
-  // belum dihubungi duluan (paling butuh tindakan), maksimal 5.
-  const hotList = crmData
-    .filter(c => (c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status))) === 'Hot')
-    .map(c => ({ c, days: daysSinceFollowup(c) }))
-    .sort((a,b) => {
-      const da = a.days === null ? 9999 : a.days, db2 = b.days === null ? 9999 : b.days;
-      return db2 - da;
-    })
-    .slice(0, 5);
-  const hotHtml = hotList.length ? hotList.map(({c,days}) => {
-    const doneToday = followupDoneTodayIds.has(_followupCustKey(c));
-    const tagClass = doneToday ? 'tag-today' : (days === null ? 'tag-never' : 'tag-overdue');
-    const tag = doneToday ? '✓ Hari ini' : (days === null ? 'Belum pernah' : `${days} hari lalu`);
-    const meta = `${escHtml(c.kota||'—')} · ${(crmParseInt(c.total_order)||0)} order · ${crmFmtRupiah(crmParseMoney(c.total_belanja))}`;
-    return crmSpotRow(c, { tag, tagClass, meta });
-  }).join('') : `<div class="crm-spot-empty">Belum ada pelanggan berstatus "Panas" — mantap, semua sudah terkendali 👍</div>`;
-
-  // ── Panel 2: Baru Masuk — urut tanggal masuk (first_order) terbaru duluan.
-  const recentList = crmData.slice()
-    .filter(c => c.first_order)
-    .sort((a,b) => new Date(b.first_order) - new Date(a.first_order))
-    .slice(0, 5);
-  const recentHtml = recentList.length ? recentList.map(c => {
-    const d = new Date(c.first_order);
-    const tag = isNaN(d.getTime()) ? '—' : d.toLocaleDateString('id-ID', { day:'numeric', month:'short' });
-    const meta = `${escHtml(c.kota||'—')} · ${escHtml((c.channel||'—').length>22?(c.channel||'').slice(0,22)+'…':(c.channel||'—'))}`;
-    return crmSpotRow(c, { tag, tagClass:'tag-today', meta });
-  }).join('') : `<div class="crm-spot-empty">Belum ada data pelanggan baru untuk ditampilkan.</div>`;
-
-  el.innerHTML = `
-    <div class="crm-spot-card spot-hot">
-      <div class="crm-spot-head">
-        <div class="crm-spot-title">
-          <span class="cst-ico">${crmIco('flame')}</span>
-          <span>Perlu Dihubungi Segera
-            <span class="crm-spot-sub">5 pelanggan "Panas" paling lama belum di-follow up</span>
-          </span>
-        </div>
-        <button class="crm-spot-more" onclick="document.getElementById('crm-heat-filter').value='Hot';crmResetPaging();renderCRM(true);document.querySelector('.crm-table-wrap').scrollIntoView({behavior:'smooth',block:'start'})">Lihat semua →</button>
-      </div>
-      <div class="crm-spot-list">${hotHtml}</div>
-    </div>
-    <div class="crm-spot-card spot-new">
-      <div class="crm-spot-head">
-        <div class="crm-spot-title">
-          <span class="cst-ico">${crmIco('sparkle')}</span>
-          <span>Baru Masuk
-            <span class="crm-spot-sub">Urut tanggal masuk paling baru</span>
-          </span>
-        </div>
-        <button class="crm-spot-more" onclick="crmJumpToRecent()">Lihat semua →</button>
-      </div>
-      <div class="crm-spot-list">${recentHtml}</div>
-    </div>`;
-}
+// ── v47: panel "Perlu Dihubungi Segera" & "Baru Masuk" dihapus — fungsi
+// prioritas follow up sekarang cukup diwakili grup stat "Prioritas Follow
+// Up · Tingkat Keaktifan" di renderCRM() supaya Statistik & Insight tetap
+// ringkas dan tidak tumpang tindih di sidebar sempit.
 
 // ── ADD / EDIT MODAL ──
 function openCRMModal(idx) {
