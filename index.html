@@ -1567,7 +1567,7 @@ body.light .sb-brand-photo{border-color:rgba(160,88,0,.35)}
 select.fi{appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23c9a96e' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer}
 
 /* ══════ DASHBOARD SHELL ══════ */
-#dash{display:none;height:100vh;overflow:hidden;position:relative;z-index:100}
+#dash{display:none;height:100vh;height:100dvh;overflow:hidden;position:relative;z-index:100}
 #dash.active{display:flex}
 
 /* ── SIDEBAR ── */
@@ -3392,6 +3392,10 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
     bottom:0;
     width:min(290px, 84vw);
     height:100vh;
+    height:100dvh; /* v48 FIX: 100vh di HP dihitung dari viewport "besar" (seolah address bar
+      disembunyikan) — saat address bar kelihatan (kayak di screenshot bug), sidebar jadi
+      lebih tinggi dari layar asli sehingga sb-foot (tombol Sign Out) ke-render di luar layar
+      dan gak ke-scroll. 100dvh mengikuti tinggi viewport yang BENERAN kelihatan saat ini. */
     background:var(--bg2);
     border-right:1px solid var(--border-hi);
     box-shadow:8px 0 28px rgba(0,0,0,.6);
@@ -3428,6 +3432,10 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
 
   /* Make space at top of sidebar for the X close button */
   .sb-head{padding-right:54px !important}
+
+  /* v48 FIX: pastikan Sign Out selalu kelihatan + aman dari gesture-bar HP */
+  .sb-foot{padding-bottom:calc(10px + env(safe-area-inset-bottom, 0px))}
+  .sb-nav{padding-bottom:6px}
 
   /* When drawer is open: hide floating UI that might overlap visually */
   body.nav-on #pres-fab,
@@ -3625,11 +3633,19 @@ body.light .crm-group-row td{color:#a0752f}
 .crm-more{position:relative}
 .crm-more-btn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;padding:0!important;line-height:1}
 .crm-more.open .crm-more-btn{border-color:var(--gold);color:var(--gold-hi);background:rgba(201,169,110,.08)}
+/* v48 FIX: dulu position:absolute relatif ke .crm-more — kalau tombol ⋮ dekat tepi
+   layar (umum di HP), menu ke-clip oleh ancestor overflow:hidden/scroll sehingga
+   muncul kotak kosong ke-potong (lihat bug report). Sekarang position:fixed, posisi
+   dihitung JS (crmToggleMoreMenu) relatif ke viewport — sama seperti .ls-attn-menu. */
 .crm-more-menu{
-  position:absolute;top:calc(100% + 6px);right:0;z-index:30;min-width:230px;
+  position:fixed;z-index:2500;min-width:230px;max-width:min(260px,calc(100vw - 20px));
   background:var(--surface);border:1px solid var(--border-hi);border-radius:var(--r);
-  box-shadow:var(--shadow);padding:6px;display:flex;flex-direction:column;gap:2px;
+  box-shadow:0 16px 38px rgba(0,0,0,.45),0 0 0 1px rgba(201,169,110,.06);
+  padding:6px;display:flex;flex-direction:column;gap:2px;
+  opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none;transform-origin:top right;
+  transition:opacity .16s cubic-bezier(.16,1,.3,1),transform .16s cubic-bezier(.16,1,.3,1);
 }
+.crm-more-menu.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
 .crm-more-menu button{
   display:flex;align-items:center;gap:8px;width:100%;text-align:left;
   background:none;border:none;color:var(--text2);font-size:12.5px;font-family:'Inter',sans-serif;
@@ -18791,10 +18807,27 @@ function crmJumpToRecent() {
 function crmToggleMoreMenu(forceClose) {
   const menu = document.getElementById('crm-more-menu');
   const wrap = document.getElementById('crm-more');
+  const btn = wrap ? wrap.querySelector('.crm-more-btn') : null;
   if (!menu || !wrap) return;
-  const open = forceClose === true ? false : menu.style.display === 'none';
-  menu.style.display = open ? '' : 'none';
+  const open = forceClose === true ? false : !menu.classList.contains('open');
+  if (open && btn) {
+    // v48 FIX: hitung posisi menu relatif ke VIEWPORT (bukan parent) supaya tidak
+    // ke-clip oleh ancestor overflow:hidden, dan otomatis geser kalau kepepet tepi layar.
+    menu.style.display = '';
+    const r = btn.getBoundingClientRect();
+    const menuW = menu.offsetWidth || 230;
+    const menuH = menu.offsetHeight || 260;
+    let left = r.right - menuW; // align kanan tombol, sama seperti sebelumnya (right:0)
+    if (left < 8) left = 8;
+    if (left + menuW > window.innerWidth - 8) left = window.innerWidth - menuW - 8;
+    let top = r.bottom + 6;
+    if (top + menuH > window.innerHeight - 8) top = Math.max(8, r.top - menuH - 6);
+    menu.style.left = left + 'px';
+    menu.style.top = top + 'px';
+  }
+  menu.classList.toggle('open', open);
   wrap.classList.toggle('open', open);
+  if (!open) setTimeout(() => { if (!menu.classList.contains('open')) menu.style.display = 'none'; }, 160);
 }
 
 // v46/v47: klik di luar panel Periode Data (termasuk popover kalender) /
@@ -19112,6 +19145,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 window.addEventListener('resize', crmSyncStickyOffset);
+// v48: menu ⋮ (crm-more-menu) pakai position:fixed dgn koordinat dihitung sekali saat
+// dibuka — kalau user scroll/resize sementara menu terbuka, tutup saja biar tidak nyangkut
+// di posisi lama (lebih simpel & aman daripada reposisi terus-menerus tiap event scroll).
+window.addEventListener('resize', () => crmToggleMoreMenu(true));
+document.getElementById('crm-table-wrap')?.addEventListener('scroll', () => crmToggleMoreMenu(true), { passive:true });
+window.addEventListener('scroll', () => crmToggleMoreMenu(true), { passive:true, capture:true });
 
 // v24: sortir berdasarkan Label (grup per nama label, A-Z / Z-A; yang belum berlabel selalu di bawah)
 function crmSortByLabel() {
