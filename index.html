@@ -3527,8 +3527,11 @@ body.light .crm-diag-card2{background:#fbfbfb}
 .crm-tbl-sticky{
   position:sticky;top:0;z-index:5;
   background:var(--surface);
-  padding-top:1px;padding-bottom:2px;
-  margin:0 0 14px;
+  padding-top:1px;padding-bottom:14px; /* v49 FIX: sebelumnya margin-bottom:14px — margin TIDAK
+    ikut terhitung di offsetHeight yang dipakai crmSyncStickyOffset buat naruh posisi nempel thead,
+    jadi thead "nempel" 14px lebih tinggi dari seharusnya dan baris data bocor nongol di celahnya
+    (lihat bug report). Padding ikut terhitung di offsetHeight, jadi celahnya hilang. */
+  margin:0;
 }
 .crm-tbl-sticky::after{
   content:'';position:absolute;left:0;right:0;bottom:-1px;height:14px;
