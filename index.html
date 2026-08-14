@@ -3687,6 +3687,40 @@ body.light .crm-group-row td{color:#a0752f}
 }
 body.light .crm-period-custom-range .crm-date-input{color-scheme:light}
 
+/* v47: kalender picker untuk "Per Hari/Minggu/Bulan/Tahun" — popover terpisah
+   (position:fixed, dilepas dari sidebar) supaya tidak kepotong overflow
+   sidebar & tetap bisa nempel di sisi panel Periode Data manapun. */
+.crm-period-cal-pop{
+  position:fixed;z-index:120;display:none;width:246px;
+  background:var(--surface);border:1px solid var(--border-hi);border-radius:calc(var(--r) + 4px);
+  box-shadow:var(--shadow);padding:10px;font-family:'Inter',sans-serif;
+}
+.crm-period-cal-pop.show{display:block}
+.crm-cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:0 2px}
+.crm-cal-nav-btn{background:none;border:none;cursor:pointer;color:var(--muted);width:24px;height:24px;
+  border-radius:6px;transition:all var(--trans);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.crm-cal-nav-btn:hover{background:var(--surface2);color:var(--gold-hi)}
+.crm-cal-nav-title{font-size:12.5px;font-weight:700;color:var(--text);font-family:'Playfair Display',serif;letter-spacing:.02em}
+.crm-cal-grid{display:grid;gap:4px}
+.crm-cal-grid.g-month,.crm-cal-grid.g-year{grid-template-columns:repeat(3,1fr)}
+.crm-cal-grid.g-day{grid-template-columns:repeat(7,1fr);gap:2px}
+.crm-cal-dow{font-size:9px;text-align:center;color:var(--muted);font-weight:700;padding:2px 0}
+.crm-cal-cell{
+  background:none;border:none;cursor:pointer;color:var(--text2);font-size:11.5px;font-weight:600;
+  padding:9px 4px;border-radius:7px;transition:all var(--trans);text-align:center;font-family:'Inter',sans-serif;
+}
+.crm-cal-cell:hover:not(:disabled){background:var(--surface2);color:var(--text)}
+.crm-cal-cell:disabled{opacity:.32;cursor:default;color:var(--muted)}
+.crm-cal-cell.today{box-shadow:inset 0 0 0 1px var(--gold);color:var(--gold-hi)}
+.crm-cal-cell.sel{background:var(--gold);color:#141414;font-weight:800;box-shadow:none}
+.crm-cal-day{padding:6px 2px;font-size:11px;border-radius:50%}
+.crm-cal-day.out{opacity:.25}
+.crm-cal-day.in-range{background:rgba(201,169,110,.16);border-radius:0}
+.crm-cal-day.range-start{border-radius:50% 0 0 50%;background:rgba(201,169,110,.16)}
+.crm-cal-day.range-end{border-radius:0 50% 50% 0;background:rgba(201,169,110,.16)}
+.crm-period-opt-group .chev{width:11px;height:11px}
+.crm-period-nav-active{background:var(--surface2)!important;color:var(--gold-hi)!important}
+
 /* v43: Statistik & Insight — panel sekunder (spotlight, kapasitas, statistik,
    distribusi PIC, diagram) dikumpulkan & disembunyikan secara default supaya
    tabel database customer (prioritas utama) langsung terlihat tanpa banyak
@@ -5402,14 +5436,28 @@ body.light .kol-fin-val{color:#0d0d0d}
                   </div>
                   <div class="crm-period-divider"></div>
                   <div class="crm-period-group">
-                    <span class="crm-period-group-lbl">Kelompokkan Tampilan</span>
-                    <button type="button" class="crm-period-opt crm-period-opt-group active" data-group="harian" onclick="crmSetPeriodGroup('harian')"><span>Per Hari</span></button>
-                    <button type="button" class="crm-period-opt crm-period-opt-group" data-group="mingguan" onclick="crmSetPeriodGroup('mingguan')"><span>Per Minggu</span></button>
-                    <button type="button" class="crm-period-opt crm-period-opt-group" data-group="bulanan" onclick="crmSetPeriodGroup('bulanan')"><span>Per Bulan</span></button>
-                    <button type="button" class="crm-period-opt crm-period-opt-group" data-group="tahunan" onclick="crmSetPeriodGroup('tahunan')"><span>Berdasarkan Tahun</span></button>
+                    <span class="crm-period-group-lbl">Pilih per Periode</span>
+                    <button type="button" class="crm-period-opt crm-period-opt-group" data-group="harian" onclick="crmOpenPeriodCal('harian')"><span>Per Hari</span><svg class="chev" width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <button type="button" class="crm-period-opt crm-period-opt-group" data-group="mingguan" onclick="crmOpenPeriodCal('mingguan')"><span>Per Minggu</span><svg class="chev" width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <button type="button" class="crm-period-opt crm-period-opt-group" data-group="bulanan" onclick="crmOpenPeriodCal('bulanan')"><span>Per Bulan</span><svg class="chev" width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <button type="button" class="crm-period-opt crm-period-opt-group" data-group="tahunan" onclick="crmOpenPeriodCal('tahunan')"><span>Berdasarkan Tahun</span><svg class="chev" width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                   </div>
                   <div class="crm-period-divider"></div>
                   <button type="button" class="crm-period-opt" onclick="crmSortByLabel()" title="Sortir berdasarkan label"><span>Sortir per Label</span></button>
+                </div>
+                <!-- v47: popover kalender untuk Per Hari/Minggu/Bulan/Tahun — lihat CSS
+                     .crm-period-cal-pop & JS crmOpenPeriodCal() -->
+                <div class="crm-period-cal-pop" id="crm-period-cal-pop">
+                  <div class="crm-cal-nav">
+                    <button type="button" class="crm-cal-nav-btn" onclick="crmCalNav(-1)" title="Sebelumnya">
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <span class="crm-cal-nav-title" id="crm-cal-title"></span>
+                    <button type="button" class="crm-cal-nav-btn" onclick="crmCalNav(1)" title="Berikutnya">
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                  </div>
+                  <div id="crm-cal-body"></div>
                 </div>
               </div>
             </div>
@@ -18662,6 +18710,7 @@ function crmSetPeriodPreset(preset) {
   crmUpdatePeriodLabel();
   crmResetPaging();
   renderCRM(false);
+  crmCloseCalPop();
   crmTogglePeriodPanel(true);
 }
 
@@ -18696,6 +18745,7 @@ function crmJumpToRecent() {
   crmUpdatePeriodLabel();
   crmResetPaging();
   renderCRM(false);
+  crmCloseCalPop();
   document.getElementById('crm-table-wrap')?.scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
@@ -18710,10 +18760,17 @@ function crmToggleMoreMenu(forceClose) {
   wrap.classList.toggle('open', open);
 }
 
-// v46: klik di luar panel Periode Data / menu Aksi → tutup otomatis
+// v46/v47: klik di luar panel Periode Data (termasuk popover kalender) /
+// menu Aksi → tutup otomatis. Popover kalender pakai position:fixed jadi
+// dicek terpisah dari .crm-period (supaya klik di dalamnya tidak menutup).
 document.addEventListener('click', (e) => {
   const period = document.getElementById('crm-period');
-  if (period && !period.contains(e.target)) crmTogglePeriodPanel(true);
+  const calPop = document.getElementById('crm-period-cal-pop');
+  const insideCal = calPop && calPop.contains(e.target);
+  if (period && !period.contains(e.target) && !insideCal) {
+    crmTogglePeriodPanel(true);
+    crmCloseCalPop();
+  }
   const more = document.getElementById('crm-more');
   if (more && !more.contains(e.target)) crmToggleMoreMenu(true);
 });
@@ -18757,6 +18814,188 @@ function crmPeriodLabel(key, period) {
   const d = new Date(key + 'T00:00:00');
   return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 }
+
+// ══════ v47: Kalender picker untuk "Per Hari / Per Minggu / Per Bulan /
+// Berdasarkan Tahun" — klik salah satu baris di panel "Periode Data" akan
+// membuka popover kalender (mode disesuaikan) supaya user bisa PILIH
+// tanggal/minggu/bulan/tahun spesifik, bukan cuma grouping tampilan tabel
+// seperti sebelumnya. Memilih nilai di kalender langsung mengisi rentang
+// tanggal (crm-date-from/to) DAN mengatur crmSortPeriod sekaligus. ══════
+let crmPeriodCalMode = null; // 'harian' | 'mingguan' | 'bulanan' | 'tahunan' | null (tertutup)
+let crmCalViewYear   = new Date().getFullYear();
+let crmCalViewMonth  = new Date().getMonth();
+let crmCalDecadeStart = Math.floor(crmCalViewYear / 10) * 10;
+const CRM_BULAN_SHORT = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+const CRM_DOW_SHORT   = ['S','S','R','K','J','S','M']; // Senin..Minggu (minggu mulai Senin)
+
+function crmOpenPeriodCal(mode) {
+  crmPeriodCalMode = mode;
+  const now = new Date();
+  const fromVal = document.getElementById('crm-date-from')?.value;
+  const seed = fromVal ? new Date(fromVal + 'T00:00:00') : now;
+  crmCalViewYear  = seed.getFullYear();
+  crmCalViewMonth = seed.getMonth();
+  crmCalDecadeStart = Math.floor(crmCalViewYear / 10) * 10;
+  document.querySelectorAll('#crm-period-panel .crm-period-opt-group[data-group]')
+    .forEach(b => b.classList.toggle('crm-period-nav-active', b.dataset.group === mode));
+  crmRenderCal();
+  document.getElementById('crm-period-cal-pop')?.classList.add('show');
+  crmPositionCalPop();
+}
+
+function crmCloseCalPop() {
+  crmPeriodCalMode = null;
+  document.getElementById('crm-period-cal-pop')?.classList.remove('show');
+  document.querySelectorAll('#crm-period-panel .crm-period-opt-group[data-group]')
+    .forEach(b => b.classList.remove('crm-period-nav-active'));
+}
+
+function crmPositionCalPop() {
+  const anchor = document.getElementById('crm-period-panel');
+  const pop = document.getElementById('crm-period-cal-pop');
+  if (!anchor || !pop || !pop.classList.contains('show')) return;
+  const r = anchor.getBoundingClientRect();
+  const popW = pop.offsetWidth || 246;
+  let left = r.right + 10;
+  if (left + popW > window.innerWidth - 8) left = Math.max(8, r.left - popW - 10);
+  if (left + popW > window.innerWidth - 8) left = Math.max(8, window.innerWidth - popW - 8);
+  let top = r.top;
+  const popH = pop.offsetHeight || 260;
+  if (top + popH > window.innerHeight - 8) top = Math.max(8, window.innerHeight - popH - 8);
+  pop.style.left = left + 'px';
+  pop.style.top = top + 'px';
+}
+
+function crmCalNav(dir) {
+  if (crmPeriodCalMode === 'bulanan') {
+    crmCalViewYear += dir;
+  } else if (crmPeriodCalMode === 'tahunan') {
+    crmCalDecadeStart += dir * 10;
+  } else {
+    crmCalViewMonth += dir;
+    if (crmCalViewMonth < 0) { crmCalViewMonth = 11; crmCalViewYear--; }
+    if (crmCalViewMonth > 11) { crmCalViewMonth = 0; crmCalViewYear++; }
+  }
+  crmRenderCal();
+}
+
+function crmRenderCal() {
+  const title = document.getElementById('crm-cal-title');
+  const body  = document.getElementById('crm-cal-body');
+  if (!title || !body || !crmPeriodCalMode) return;
+  const now = new Date();
+  const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const fromVal = document.getElementById('crm-date-from')?.value;
+  const toVal   = document.getElementById('crm-date-to')?.value;
+  const selFrom = fromVal ? new Date(fromVal + 'T00:00:00') : null;
+  const selTo   = toVal ? new Date(toVal + 'T00:00:00') : null;
+  let html = '';
+
+  if (crmPeriodCalMode === 'bulanan') {
+    title.textContent = String(crmCalViewYear);
+    html += '<div class="crm-cal-grid g-month">';
+    for (let m = 0; m < 12; m++) {
+      const future = crmCalViewYear > now.getFullYear() || (crmCalViewYear === now.getFullYear() && m > now.getMonth());
+      const isSel = !!(selFrom && selTo && selFrom.getFullYear() === crmCalViewYear && selFrom.getMonth() === m &&
+        selTo.getFullYear() === crmCalViewYear && selTo.getMonth() === m && selFrom.getDate() === 1);
+      const isToday = crmCalViewYear === now.getFullYear() && m === now.getMonth();
+      html += `<button type="button" class="crm-cal-cell${isSel ? ' sel' : ''}${isToday && !isSel ? ' today' : ''}" ${future ? 'disabled' : ''} onclick="crmPickMonth(${crmCalViewYear},${m})">${CRM_BULAN_SHORT[m]}</button>`;
+    }
+    html += '</div>';
+
+  } else if (crmPeriodCalMode === 'tahunan') {
+    title.textContent = crmCalDecadeStart + ' – ' + (crmCalDecadeStart + 9);
+    html += '<div class="crm-cal-grid g-year">';
+    for (let y = crmCalDecadeStart; y < crmCalDecadeStart + 10; y++) {
+      const future = y > now.getFullYear();
+      const isSel = !!(selFrom && selTo && selFrom.getFullYear() === y && selFrom.getMonth() === 0 && selFrom.getDate() === 1 &&
+        selTo.getFullYear() === y && selTo.getMonth() === 11);
+      const isToday = y === now.getFullYear();
+      html += `<button type="button" class="crm-cal-cell${isSel ? ' sel' : ''}${isToday && !isSel ? ' today' : ''}" ${future ? 'disabled' : ''} onclick="crmPickYear(${y})">${y}</button>`;
+    }
+    html += '</div>';
+
+  } else { // harian | mingguan → grid harian dalam satu bulan
+    title.textContent = CRM_BULAN_NAMES[crmCalViewMonth] + ' ' + crmCalViewYear;
+    html += '<div class="crm-cal-grid g-day">';
+    CRM_DOW_SHORT.forEach(d => { html += `<div class="crm-cal-dow">${d}</div>`; });
+    const first = new Date(crmCalViewYear, crmCalViewMonth, 1);
+    const startOffset = (first.getDay() + 6) % 7; // Senin = 0
+    const daysInMonth = new Date(crmCalViewYear, crmCalViewMonth + 1, 0).getDate();
+    const prevDaysInMonth = new Date(crmCalViewYear, crmCalViewMonth, 0).getDate();
+    const cells = [];
+    for (let i = startOffset - 1; i >= 0; i--) cells.push({ d: prevDaysInMonth - i, out: true, m: crmCalViewMonth - 1, y: crmCalViewYear });
+    for (let d = 1; d <= daysInMonth; d++) cells.push({ d, out: false, m: crmCalViewMonth, y: crmCalViewYear });
+    let nd = 1;
+    while (cells.length % 7 !== 0) cells.push({ d: nd++, out: true, m: crmCalViewMonth + 1, y: crmCalViewYear });
+    cells.forEach(c => {
+      const cellDate = new Date(c.y, c.m, c.d);
+      const future = cellDate > today0;
+      const isToday = !c.out && cellDate.getTime() === today0.getTime();
+      let weekSel = false, edgeCls = '';
+      if (crmPeriodCalMode === 'mingguan' && selFrom && selTo && !c.out) {
+        weekSel = cellDate >= selFrom && cellDate <= selTo;
+        if (weekSel && cellDate.getTime() === selFrom.getTime()) edgeCls += ' range-start';
+        if (weekSel && cellDate.getTime() === selTo.getTime()) edgeCls += ' range-end';
+      }
+      let isSel = false;
+      if (crmPeriodCalMode === 'harian' && selFrom && selTo && !c.out) {
+        isSel = cellDate.getTime() === selFrom.getTime() && selFrom.getTime() === selTo.getTime();
+      }
+      const cls = 'crm-cal-cell crm-cal-day' + (c.out ? ' out' : '') +
+        (isToday && !isSel && !weekSel ? ' today' : '') + (isSel ? ' sel' : '') + (weekSel ? ' in-range' + edgeCls : '');
+      const dis = future || c.out ? 'disabled' : '';
+      html += `<button type="button" class="${cls}" ${dis} onclick="crmPickDay(${c.y},${c.m},${c.d})">${c.d}</button>`;
+    });
+    html += '</div>';
+  }
+  body.innerHTML = html;
+  crmPositionCalPop();
+}
+
+function crmPickMonth(y, m) {
+  const from = new Date(y, m, 1);
+  const to = new Date(y, m + 1, 0);
+  crmApplyPeriodRange(from, to, 'bulanan', CRM_BULAN_NAMES[m] + ' ' + y);
+}
+function crmPickYear(y) {
+  crmApplyPeriodRange(new Date(y, 0, 1), new Date(y, 11, 31), 'tahunan', 'Tahun ' + y);
+}
+function crmPickDay(y, m, d) {
+  const dt = new Date(y, m, d);
+  if (crmPeriodCalMode === 'mingguan') {
+    const dow = (dt.getDay() + 6) % 7;
+    const mon = new Date(dt); mon.setDate(dt.getDate() - dow);
+    const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+    crmApplyPeriodRange(mon, sun, 'mingguan', 'Minggu, ' + crmFmtDateInput(mon) + ' – ' + crmFmtDateInput(sun));
+  } else {
+    crmApplyPeriodRange(dt, dt, 'harian', dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }));
+  }
+}
+
+function crmApplyPeriodRange(fromDate, toDate, period, labelText) {
+  const fromEl = document.getElementById('crm-date-from');
+  const toEl   = document.getElementById('crm-date-to');
+  if (fromEl) fromEl.value = crmFmtDateInput(fromDate);
+  if (toEl) toEl.value = crmFmtDateInput(toDate);
+  crmPeriodPreset = 'custom';
+  crmSortField = 'date';
+  crmSortPeriod = period;
+  document.querySelectorAll('#crm-period-panel .crm-period-opt[data-preset]').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#crm-period-panel .crm-period-opt-group[data-group]').forEach(b => {
+    b.classList.toggle('active', b.dataset.group === period);
+    b.classList.remove('crm-period-nav-active');
+  });
+  const lbl = document.getElementById('crm-period-btn-label');
+  if (lbl) lbl.textContent = labelText;
+  crmResetPaging();
+  renderCRM(false);
+  crmCloseCalPop();
+  crmTogglePeriodPanel(true);
+}
+
+window.addEventListener('resize', () => { if (document.getElementById('crm-period-cal-pop')?.classList.contains('show')) crmPositionCalPop(); });
+window.addEventListener('scroll', () => { if (document.getElementById('crm-period-cal-pop')?.classList.contains('show')) crmPositionCalPop(); }, true);
 
 // v46: semua kolom (Channel, Label, Diinput Oleh) sekarang selalu tampil —
 // toggle sembunyikan-kolom lama dihapus dari UI supaya data langsung terlihat
