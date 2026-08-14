@@ -5313,7 +5313,7 @@ body.light .kol-fin-val{color:#0d0d0d}
                 <option value="Closing">Closing (Tutup)</option>
               </select>
               <button class="btn-g btn-sm" id="adcust-sort-btn" onclick="adCustCycleSortBtn()" style="min-width:100px">↓ Terbaru</button>
-              <button class="btn-g btn-sm" id="adcust-sort-field-btn" onclick="adCustSortField=adCustSortField==='created_at'?'ad_date':'created_at';renderAdCustomers()" style="min-width:90px" title="Ganti urutan berdasarkan">📅 Tgl Masuk</button>
+              <button class="btn-g btn-sm" id="adcust-sort-field-btn" onclick="adCustCycleSortField()" style="min-width:90px" title="Ganti urutan berdasarkan">📅 Tgl Masuk</button>
               <select class="ads-select" id="adcust-label-filter" onchange="renderAdCustomers()" title="Filter berdasarkan label">
                 <option value="all" data-i18n="adcustAllLabels">Semua Label</option>
                 <option value="none" data-i18n="adcustNoLabel">Belum ada label</option>
@@ -5334,7 +5334,9 @@ body.light .kol-fin-val{color:#0d0d0d}
                 <th data-i18n="leadName">Nama</th>
                 <th data-i18n="leadWA">WhatsApp</th>
                 <th data-i18n="leadRegion">Wilayah</th>
-                <th data-i18n="leadCategory">Kategori</th>
+                <th style="cursor:pointer" onclick="adCustSortByCategory()" title="Klik untuk urutkan: Panas → Dingin → Closing">Kategori ↕</th>
+                <th style="text-align:right;cursor:pointer" onclick="adCustSortByCategory()" title="Klik untuk urutkan berdasarkan kategori">Total Order</th>
+                <th style="text-align:right;cursor:pointer" onclick="adCustSortByCategory()" title="Klik untuk urutkan berdasarkan kategori">Total Belanja</th>
                 <th>Channel / Iklan</th>
                 <th data-i18n="ownerColumn">Diinput oleh</th>
                 <th data-i18n="adcustLabelCol">Label</th>
@@ -16545,6 +16547,26 @@ function adCustCycleSortBtn() {
   renderAdCustomers();
 }
 
+// v43: urutkan berdasarkan suhu leads — Panas (Closing→Hot) ke Dingin (Cold),
+// klik lagi untuk balik arahnya. Dipakai header kolom "Kategori" di tabel
+// Ads Customer & juga tersedia lewat tombol toolbar "Ganti urutan".
+const AD_CUST_CAT_RANK = { Closing: 4, Hot: 3, Warm: 2, Cold: 1 };
+function adCustSortByCategory() {
+  if (adCustSortField === 'category') {
+    adCustSortDir = adCustSortDir === 'desc' ? 'asc' : 'desc';
+  } else {
+    adCustSortField = 'category';
+    adCustSortDir = 'desc';
+  }
+  renderAdCustomers();
+}
+function adCustCycleSortField() {
+  adCustSortField = adCustSortField === 'created_at' ? 'ad_date'
+                   : adCustSortField === 'ad_date'    ? 'category'
+                   : 'created_at';
+  renderAdCustomers();
+}
+
 async function loadAdCustomers() {
   const isMod = can.isMod(currentUser?.role);
   const res = await dbQ(d => {
@@ -16553,11 +16575,33 @@ async function loadAdCustomers() {
     if (!isMod && currentUser) q = q.eq('owner_id', currentUser.id);
     return q.order('created_at', { ascending: false });
   });
-  adCustomersCache = (res?.data) ? res.data.map(r => ({
-    ...r,
-    ad_theme: r.ad_tasks?.title || r.ad_theme || null,
-    ad_category: r.ad_tasks?.category || null,
-  })) : [];
+  const rows = res?.data || [];
+
+  // v43: tarik total_order / total_spend / heat_category dari crm_customers
+  // yang berpadanan (dicocokkan lewat nomor WA — sama seperti cara add_lead()
+  // di database menyatukan lead baru ke customer yang sudah ada), supaya
+  // tabel Ads Customer menampilkan angka belanja yang SAMA PERSIS & realtime
+  // dengan Database Customer (CRM) — satu sumber data, bukan dua yang beda.
+  let crmByWa = {};
+  const waList = [...new Set(rows.map(r => r.wa_phone).filter(Boolean))];
+  if (db && waList.length) {
+    const crmRes = await dbQ(d => d.from('crm_customers')
+      .select('wa_phone,total_order,total_spend,heat_category')
+      .in('wa_phone', waList));
+    (crmRes?.data || []).forEach(c => { if (c.wa_phone) crmByWa[c.wa_phone] = c; });
+  }
+
+  adCustomersCache = rows.map(r => {
+    const crm = crmByWa[r.wa_phone] || null;
+    return {
+      ...r,
+      ad_theme: r.ad_tasks?.title || r.ad_theme || null,
+      ad_category: r.ad_tasks?.category || null,
+      total_order: crm ? (Number(crm.total_order) || 0) : 0,
+      total_spend: crm ? (Number(crm.total_spend) || 0) : 0,
+      heat_category: crm?.heat_category || null,
+    };
+  });
   return adCustomersCache;
 }
 
@@ -16676,29 +16720,32 @@ function renderAdCustDiagram(data) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ⑩-b ADS CUSTOMER — LABEL (v41)
-   Konsep & alur identik dengan label CRM Database Customer:
-   tabel `ad_cust_labels` (per-owner, maks 5 warna) + kolom
-   `label_id` di `leads` untuk menandai tiap baris pelanggan iklan.
+   ⑩-b ADS CUSTOMER — LABEL (v43 — SINKRON dengan CRM)
+   Sebelumnya (v41) halaman ini punya tabel label sendiri
+   (`ad_cust_labels`), terpisah dari label Database Customer/CRM
+   (`crm_labels`) — walau konsepnya identik (per-owner, maks 5 warna
+   dari palet yang sama). Akibatnya label yang dibuat di satu halaman
+   TIDAK muncul di halaman satunya.
+   v43: keduanya sekarang baca/tulis ke tabel `crm_labels` YANG SAMA.
+   Kolom `label_id` di `leads` (Ads Customer) & di `crm_customers`
+   (Database Customer) sama-sama menunjuk ke id di `crm_labels` itu.
+   Realtime subscription tabel `crm_labels` (lihat initCRMRealtime())
+   sudah di-update supaya me-refresh KEDUA halaman, jadi label baru /
+   diubah / dihapus di satu halaman langsung tampil live di halaman
+   lain tanpa reload manual.
+   Variabel & fungsi inti (crmLabels, loadCrmLabels, crmLabelOf,
+   crmMyLabels, openCrmLabelManageModal, dst.) didefinisikan di bagian
+   CRM Database Customer — bagian ini hanya wrapper tipis untuk
+   konteks halaman Ads Customer (menandai baris `leads`).
    ═══════════════════════════════════════════════════════════ */
-let adCustLabels = [];
-let _adCustLabelsLoaded = false;
-
-async function loadAdCustLabels() {
-  if (!db) return adCustLabels;
-  if (_adCustLabelsLoaded) return adCustLabels;
-  const res = await dbQ(() => db.from('ad_cust_labels').select('*'));
-  if (res && res.data) { adCustLabels = res.data; _adCustLabelsLoaded = true; }
-  return adCustLabels;
-}
-function adCustMyLabels() { return adCustLabels.filter(l => l.owner_id === currentUser?.id); }
-function adCustLabelOf(labelId) { if (!labelId) return null; return adCustLabels.find(l => l.id === labelId) || null; }
+function adCustMyLabels() { return crmMyLabels(); }
+function adCustLabelOf(labelId) { return crmLabelOf(labelId); }
 
 function populateAdCustLabelFilter() {
   const sel = document.getElementById('adcust-label-filter');
   if (!sel) return;
   const cur = sel.value || 'all';
-  const mine = can.isMod(currentUser?.role) ? adCustLabels : adCustMyLabels();
+  const mine = can.isMod(currentUser?.role) ? crmLabels : crmMyLabels();
   sel.innerHTML = `
     <option value="all">${t('adcustAllLabels')}</option>
     <option value="none">${t('adcustNoLabel')}</option>
@@ -16706,102 +16753,18 @@ function populateAdCustLabelFilter() {
   if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
 }
 
+// "Kelola Label" di halaman Ads Customer memakai modal YANG SAMA dengan
+// halaman Database Customer (CRM) — datanya sekarang satu tabel
+// (crm_labels), jadi tidak perlu (dan tidak boleh) ada 2 UI kelola
+// label yang bisa berbeda isi.
 function openAdCustLabelManageModal() {
-  if (blockIfOwner()) return;
-  const mine = adCustMyLabels();
-  const usedColors = mine.map(l => l.color);
-  const rowsHtml = mine.map(l => `
-    <div class="crm-label-mng-row" data-lid="${l.id}">
-      <span class="crm-label-dot" style="background:${l.color}"></span>
-      <input class="fi crm-label-mng-name" value="${escHtml(l.name)}" placeholder="Nama label…" style="flex:1"/>
-      <button class="crm-ico-btn del" onclick="deleteAdCustLabel('${l.id}')" title="Hapus label ini">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2.5h4V4M5 4l.5 9h5L11 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-    </div>`).join('') || `<div class="mt-fu-list-empty">Belum ada label. Buat sampai ${CRM_LABEL_MAX} label warna di bawah.</div>`;
-  const canAddMore = mine.length < CRM_LABEL_MAX;
-  const freeColors = CRM_LABEL_COLORS.filter(c => !usedColors.includes(c.hex));
-  const addRowHtml = canAddMore ? `
-    <div class="crm-label-mng-add">
-      <div class="crm-label-color-pick" id="adcust-new-label-colors">
-        ${freeColors.map((c,i) => `<button type="button" class="crm-color-swatch${i===0?' selected':''}" data-color="${c.hex}" style="background:${c.hex}" onclick="adCustPickNewLabelColor(this)"></button>`).join('')}
-      </div>
-      <input class="fi" id="adcust-new-label-name" placeholder="Nama label baru, mis. Prospek Panas" style="flex:1"/>
-      <button class="btn-g btn-sm" onclick="addAdCustLabel()">+ Tambah</button>
-    </div>` : `<div class="mt-fu-list-empty">Maksimal ${CRM_LABEL_MAX} label sudah tercapai. Hapus salah satu dulu untuk menambah label baru.</div>`;
-  document.getElementById('m-title').textContent = 'Kelola Label Pelanggan Iklan';
-  document.getElementById('m-body').innerHTML = `
-    <div class="fg">
-      <label>Label warnamu (maks ${CRM_LABEL_MAX})</label>
-      <div class="crm-label-mng-list" id="adcust-label-mng-list">${rowsHtml}</div>
-    </div>
-    <div class="fg">${addRowHtml}</div>
-  `;
-  document.getElementById('m-foot').innerHTML = `
-    <button class="btn-g" onclick="saveAdCustLabelNames()">Simpan Nama</button>
-    <button class="btn-g" onclick="closeModal()">Tutup</button>
-  `;
-  document.getElementById('modal-ov').classList.add('open');
-}
-
-function adCustPickNewLabelColor(btn) {
-  document.querySelectorAll('#adcust-new-label-colors .crm-color-swatch').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-}
-
-async function addAdCustLabel() {
-  const nameEl = document.getElementById('adcust-new-label-name');
-  const name = nameEl?.value?.trim();
-  if (!name) { toast('Isi dulu nama labelnya'); return; }
-  if (adCustMyLabels().length >= CRM_LABEL_MAX) { toast(`Maksimal ${CRM_LABEL_MAX} label`); return; }
-  const colorBtn = document.querySelector('#adcust-new-label-colors .crm-color-swatch.selected');
-  const color = colorBtn?.dataset.color || CRM_LABEL_COLORS[0].hex;
-  if (db) {
-    const res = await dbQ(() => db.from('ad_cust_labels').insert({ owner_id: currentUser.id, name, color }).select().single());
-    if (res && res.data) adCustLabels.push(res.data);
-  }
-  toast('Label ditambahkan');
-  openAdCustLabelManageModal();
-  renderAdCustomers();
-}
-
-async function saveAdCustLabelNames() {
-  const rows = document.querySelectorAll('#adcust-label-mng-list .crm-label-mng-row');
-  for (const row of rows) {
-    const id = row.dataset.lid;
-    const newName = row.querySelector('.crm-label-mng-name')?.value?.trim();
-    const lbl = adCustLabels.find(l => l.id === id);
-    if (lbl && newName && newName !== lbl.name) {
-      lbl.name = newName;
-      if (db) { try { await dbQ(() => db.from('ad_cust_labels').update({ name:newName }).eq('id', id)); } catch(e){} }
-    }
-  }
-  toast('Label diperbarui');
-  closeModal();
-  renderAdCustomers();
-}
-
-async function deleteAdCustLabel(labelId) {
-  const ok = await uiConfirm({
-    title: 'Hapus Label',
-    message: 'Label ini akan dihapus dan semua pelanggan iklan yang ditandai dengan label ini akan kembali "belum ada label". Lanjutkan?',
-    icon: 'danger', tone: 'danger'
-  });
-  if (!ok) return;
-  if (db) {
-    try { await dbQ(() => db.from('leads').update({ label_id:null }).eq('label_id', labelId)); } catch(e){}
-    try { await dbQ(() => db.from('ad_cust_labels').delete().eq('id', labelId)); } catch(e){}
-  }
-  adCustomersCache.forEach(c => { if (c.label_id === labelId) c.label_id = null; });
-  adCustLabels = adCustLabels.filter(l => l.id !== labelId);
-  toast('Label dihapus');
-  openAdCustLabelManageModal();
-  renderAdCustomers();
+  openCrmLabelManageModal();
 }
 
 function openAdCustLabelPicker(leadId) {
   const c = adCustomersCache.find(x => x.id === leadId);
   if (!c) return;
-  const mine = can.isMod(currentUser?.role) ? adCustLabels : adCustMyLabels();
+  const mine = can.isMod(currentUser?.role) ? crmLabels : crmMyLabels();
   if (!mine.length) {
     toast('Belum ada label. Buat dulu lewat tombol "Kelola Label".');
     return;
@@ -16839,7 +16802,7 @@ async function renderAdCustomers() {
   if (!body) return;
 
   await loadAdCustomers();
-  await loadAdCustLabels();
+  await loadCrmLabels();
   populateAdCustLabelFilter();
 
   const badge = document.getElementById('adcust-badge');
@@ -16864,6 +16827,12 @@ async function renderAdCustomers() {
 
   // Sort
   rows.sort((a,b) => {
+    if (adCustSortField === 'category') {
+      const ra = AD_CUST_CAT_RANK[a.category] || 0, rb = AD_CUST_CAT_RANK[b.category] || 0;
+      if (ra !== rb) return adCustSortDir === 'asc' ? ra - rb : rb - ra;
+      // Tie-break: leads dengan kategori sama diurutkan berdasarkan waktu terbaru
+      return new Date(b.created_at||0) - new Date(a.created_at||0);
+    }
     const va = new Date(a[adCustSortField]||0), vb = new Date(b[adCustSortField]||0);
     return adCustSortDir === 'asc' ? va - vb : vb - va;
   });
@@ -16886,18 +16855,28 @@ async function renderAdCustomers() {
   // Sort button label update
   const sortBtn = document.getElementById('adcust-sort-btn');
   if (sortBtn) {
-    const arrow = adCustSortDir === 'desc' ? '↓' : '↑';
-    const fieldLbl = adCustSortField === 'ad_date' ? 'Tgl Iklan' : 'Terbaru';
-    sortBtn.textContent = `${arrow} ${fieldLbl}`;
+    if (adCustSortField === 'category') {
+      sortBtn.textContent = adCustSortDir === 'desc' ? '🔥 Panas→Dingin' : '❄️ Dingin→Panas';
+    } else {
+      const arrow = adCustSortDir === 'desc' ? '↓' : '↑';
+      const fieldLbl = adCustSortField === 'ad_date' ? 'Tgl Iklan' : 'Terbaru';
+      sortBtn.textContent = `${arrow} ${fieldLbl}`;
+    }
   }
   const sortFieldBtn = document.getElementById('adcust-sort-field-btn');
   if (sortFieldBtn) {
-    sortFieldBtn.textContent = adCustSortField === 'ad_date' ? '📅 Tgl Iklan' : '📅 Tgl Masuk';
-    sortFieldBtn.title = adCustSortField === 'ad_date' ? 'Urut berdasarkan tanggal iklan' : 'Urut berdasarkan tanggal masuk';
+    const fieldLbls = { created_at: '📅 Tgl Masuk', ad_date: '📅 Tgl Iklan', category: '🌡️ Kategori' };
+    const fieldTitles = {
+      created_at: 'Urut berdasarkan tanggal masuk',
+      ad_date: 'Urut berdasarkan tanggal iklan',
+      category: 'Urut berdasarkan kategori: Panas / Dingin / Closing'
+    };
+    sortFieldBtn.textContent = fieldLbls[adCustSortField] || fieldLbls.created_at;
+    sortFieldBtn.title = fieldTitles[adCustSortField] || '';
   }
 
   if (!rows.length) {
-    body.innerHTML = `<tr><td colspan="10" class="tbl-empty">${t('noCustomers')}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="11" class="tbl-empty">${t('noCustomers')}</td></tr>`;
     return;
   }
 
@@ -16936,6 +16915,8 @@ async function renderAdCustomers() {
       <td><a href="${waLink}" target="_blank" rel="noopener" class="wa-link">${escHtml(r.wa_phone)}</a></td>
       <td>${escHtml(r.region)}</td>
       <td><span class="lead-cat-badge lc-${catCls}">${t('leadCat'+(r.category||'Cold'))}</span></td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums">${(r.total_order||0).toLocaleString('id-ID')}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums;color:var(--gold-hi)">${crmFmtRupiah(r.total_spend||0)}</td>
       <td>${channelBadge}</td>
       <td><span class="adcust-owner"><span class="role-dot" style="background:${clr}"></span>${escHtml(u.name)}</span></td>
       <td>${labelHtml}</td>
@@ -17212,10 +17193,10 @@ function openCrmLabelManageModal() {
       <input class="fi" id="crm-new-label-name" placeholder="Nama label baru, mis. Reseller" style="flex:1"/>
       <button class="btn-g btn-sm" onclick="addCrmLabel()">+ Tambah</button>
     </div>` : `<div class="mt-fu-list-empty">Maksimal ${CRM_LABEL_MAX} label sudah tercapai. Hapus salah satu dulu untuk menambah label baru.</div>`;
-  document.getElementById('m-title').textContent = 'Kelola Label CRM';
+  document.getElementById('m-title').textContent = 'Kelola Label';
   document.getElementById('m-body').innerHTML = `
     <div class="fg">
-      <label>Label warnamu (maks ${CRM_LABEL_MAX})</label>
+      <label>Label warnamu (maks ${CRM_LABEL_MAX}) — <span style="font-weight:400;color:var(--text2)">dipakai bareng di Database Customer & Pelanggan Iklan</span></label>
       <div class="crm-label-mng-list" id="crm-label-mng-list">${rowsHtml}</div>
     </div>
     <div class="fg">${addRowHtml}</div>
@@ -17230,6 +17211,16 @@ function openCrmLabelManageModal() {
 function crmPickNewLabelColor(btn) {
   document.querySelectorAll('#crm-new-label-colors .crm-color-swatch').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
+}
+
+// v43: label sekarang satu sumber data (crm_labels) dipakai 2 halaman —
+// tiap kali label ditambah/diubah/dihapus, refresh yang mana pun sedang
+// aktif (CRM Database Customer ATAU Ads Customer).
+function _refreshLabelConsumerPages() {
+  renderCRM(false);
+  if (document.getElementById('pg-ad_customers')?.classList.contains('active')) {
+    try { renderAdCustomers(); } catch(e){}
+  }
 }
 
 async function addCrmLabel() {
@@ -17248,7 +17239,7 @@ async function addCrmLabel() {
   }
   toast('Label ditambahkan');
   openCrmLabelManageModal();
-  renderCRM(false);
+  _refreshLabelConsumerPages();
 }
 
 async function saveCrmLabelNames() {
@@ -17265,26 +17256,31 @@ async function saveCrmLabelNames() {
   saveCrmLabelsLocal();
   toast('Label diperbarui');
   closeModal();
-  renderCRM(false);
+  _refreshLabelConsumerPages();
 }
 
 async function deleteCrmLabel(labelId) {
   const ok = await uiConfirm({
     title: 'Hapus Label',
-    message: 'Label ini akan dihapus dan semua customer yang ditandai dengan label ini akan kembali "belum diberi label". Lanjutkan?',
+    message: 'Label ini akan dihapus dan semua customer (Database Customer maupun Pelanggan Iklan) yang ditandai dengan label ini akan kembali "belum diberi label". Lanjutkan?',
     icon: 'danger', tone: 'danger'
   });
   if (!ok) return;
   if (crmUsesDB()) {
+    // v43: label satu sumber data dipakai 2 halaman — lepas penandaan di
+    // KEDUA tabel (crm_customers utk Database Customer, leads utk Ads
+    // Customer) sebelum menghapus definisi labelnya di crm_labels.
     try { await dbQ(() => db.from('crm_customers').update({ label_id:null }).eq('label_id', labelId)); } catch(e){}
+    try { await dbQ(() => db.from('leads').update({ label_id:null }).eq('label_id', labelId)); } catch(e){}
     try { await dbQ(() => db.from('crm_labels').delete().eq('id', labelId)); } catch(e){}
   }
   crmData.forEach(c => { if (c.label_id === labelId) c.label_id = null; });
+  adCustomersCache.forEach(c => { if (c.label_id === labelId) c.label_id = null; });
   crmLabels = crmLabels.filter(l => l.id !== labelId);
   saveCrmLabelsLocal();
   toast('Label dihapus');
   openCrmLabelManageModal();
-  renderCRM(false);
+  _refreshLabelConsumerPages();
 }
 
 // ── Modal: pilih/lepas label untuk satu customer (klik titik di baris) ──
@@ -17456,12 +17452,27 @@ function initCRMRealtime() {
         if (document.getElementById('pg-all_dashboard')?.classList.contains('active')) {
           loadAllRoleDashboard().catch(()=>{});
         }
+        // v43: kolom Total Order/Total Belanja di tabel Ads Customer diambil
+        // dari crm_customers (dicocokkan lewat nomor WA) — begitu ada
+        // transaksi/status baru di CRM, tabel Ads Customer ikut ter-update
+        // live kalau halamannya sedang dibuka, tanpa perlu reload manual.
+        if (document.getElementById('pg-ad_customers')?.classList.contains('active')) {
+          adCustomersCache = [];
+          try { renderAdCustomers(); } catch(e){}
+        }
       })
       // v34: label/tag CRM dibuat & dipakai bareng-bareng lintas admin —
       // tanpa ini, admin lain baru lihat label baru setelah reload manual.
+      // v43: sekarang tabel `crm_labels` ini JUGA sumber label halaman Ads
+      // Customer (lihat blok "ADS CUSTOMER — LABEL (v43)"), jadi refresh
+      // dua-duanya di sini supaya keduanya selalu sinkron & realtime.
       .on('postgres_changes', { event:'*', schema:'public', table:'crm_labels' }, () => {
+        _crmLabelsLoaded = false;
         loadCrmLabels().then(() => {
           if (document.getElementById('pg-crm')?.classList.contains('active')) renderCRM();
+          if (document.getElementById('pg-ad_customers')?.classList.contains('active')) {
+            try { renderAdCustomers(); } catch(e){}
+          }
         });
       })
       .subscribe();
