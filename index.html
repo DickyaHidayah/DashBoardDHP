@@ -3119,10 +3119,15 @@ body.light .crm-spot-row:hover{background:rgba(201,169,110,.08)}
 @media(max-width:768px){.crm-spot-title{font-size:12px}}
 
 .crm-tbl-heading{display:flex;align-items:baseline;gap:7px;margin:4px 2px 10px;font-size:13px;font-weight:700;color:var(--text)}
+/* v44: rapatkan sedikit header halaman & judul tabel khusus di CRM, supaya
+   tabel (prioritas utama) tidak ketarik terlalu jauh ke bawah dan lebih
+   banyak baris langsung terlihat penuh tanpa scroll. */
+#pg-crm .ph{margin-bottom:14px}
+#pg-crm .crm-tbl-heading{margin:2px 2px 8px}
 .crm-tbl-heading-ico{color:var(--gold);flex-shrink:0;position:relative;top:1px}
 .crm-tbl-heading-sub{font-size:11px;font-weight:400;color:var(--text2)}
 body.light .crm-tbl-heading{color:#0d0d0d}
-.crm-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:calc(var(--r) + 2px);overflow:auto;max-height:68vh;
+.crm-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:calc(var(--r) + 2px);overflow:auto;max-height:calc(100vh - 300px);min-height:380px;
   box-shadow:0 1px 0 rgba(255,255,255,.02) inset}
 .crm-table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;min-width:1180px}
 .crm-table th{position:sticky;top:var(--crm-thead-top,0px);z-index:2;text-align:left;padding:12px 14px;font-size:9px;letter-spacing:.1em;
@@ -3565,6 +3570,30 @@ body.light .crm-tbl-sticky{background:#ffffff}
 .crm-tbl-filters-search .crm-search{width:100%;padding-left:32px;border-radius:8px}
 .crm-tbl-search-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
 .crm-tbl-filters .crm-filter{flex:0 0 auto;border-radius:8px}
+/* v44: Filter rentang tanggal masuk (dari–sampai) */
+.crm-date-range{
+  display:flex;align-items:center;gap:6px;flex:0 0 auto;
+  padding:5px 9px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);
+}
+.crm-date-range-ico{color:var(--gold);flex-shrink:0}
+.crm-date-input{
+  background:transparent;border:none;color:var(--text);font-family:'Inter',sans-serif;
+  font-size:11.5px;padding:3px 2px;width:118px;color-scheme:dark;
+}
+.crm-date-input:focus{outline:none}
+body.light .crm-date-input{color-scheme:light}
+.crm-date-range-sep{color:var(--muted);font-size:11px}
+.crm-date-range-clear{
+  background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;
+  width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all var(--trans);
+}
+.crm-date-range-clear:hover{background:rgba(232,112,112,.14);color:#e87070}
+.crm-date-range.active{border-color:var(--gold);background:rgba(201,169,110,.06)}
+@media (max-width:640px){
+  .crm-date-range{flex:1 1 100%}
+  .crm-date-input{flex:1;width:auto}
+}
 @media (max-width:640px){
   .crm-tbl-filters{padding:10px}
   .crm-tbl-filters-search{flex:1 1 100%}
@@ -3585,7 +3614,7 @@ body.light .crm-tbl-sticky{background:#ffffff}
    distribusi PIC, diagram) dikumpulkan & disembunyikan secara default supaya
    tabel database customer (prioritas utama) langsung terlihat tanpa banyak
    scroll. User bisa buka kapan saja lewat tombol toggle. */
-.crm-insight-wrap{margin-bottom:16px}
+.crm-insight-wrap{margin-bottom:12px}
 .crm-insight-toggle{
   width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;
   padding:11px 15px;background:var(--surface2);border:1px solid var(--border);
@@ -5309,6 +5338,16 @@ body.light .kol-fin-val{color:#0d0d0d}
               <option value="Warm">Hangat (Warm)</option>
               <option value="Cold">Dingin (Cold)</option>
             </select>
+            <!-- v44: Filter tanggal masuk bebas — pilih tanggal berapa aja (1-30/31)
+                 sesuai bulan & tahun lewat kalender bawaan browser. Kosongkan salah satu
+                 atau keduanya untuk menonaktifkan filter (tampil semua tanggal). -->
+            <div class="crm-date-range" id="crm-date-range">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" class="crm-date-range-ico"><rect x="2" y="3.5" width="12" height="10.5" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 6.5h12M5 2v3M11 2v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              <input type="date" class="fi crm-date-input" id="crm-date-from" title="Tgl masuk dari" onchange="crmResetPaging();renderCRM(false)"/>
+              <span class="crm-date-range-sep">–</span>
+              <input type="date" class="fi crm-date-input" id="crm-date-to" title="Tgl masuk sampai" onchange="crmResetPaging();renderCRM(false)"/>
+              <button type="button" class="crm-date-range-clear" id="crm-date-range-clear" title="Kosongkan filter tanggal" onclick="crmClearDateFilter()" style="display:none">✕</button>
+            </div>
             <select class="fi crm-filter" id="crm-label-filter" onchange="crmResetPaging();renderCRM(true)" title="Filter berdasarkan label" style="max-width:150px">
               <option value="all">Semua Label</option>
               <option value="none">Belum diberi label</option>
@@ -18470,6 +18509,16 @@ function crmSortByDate() {
 // ── v43: Toggle panel "Statistik & Insight" (spotlight, kapasitas, stats,
 //    distribusi PIC, diagram) — default tertutup supaya tabel CRM (prioritas
 //    utama) langsung terlihat. Status buka/tutup diingat di localStorage. ──
+// ── v44: Kosongkan filter tanggal masuk (dari & sampai) sekaligus ──
+function crmClearDateFilter() {
+  const f = document.getElementById('crm-date-from');
+  const t = document.getElementById('crm-date-to');
+  if (f) f.value = '';
+  if (t) t.value = '';
+  crmResetPaging();
+  renderCRM(false);
+}
+
 function crmToggleInsight() {
   const body = document.getElementById('crm-insight-body');
   const btn  = document.getElementById('crm-insight-toggle');
@@ -18759,6 +18808,26 @@ async function renderCRM(reload = true) {
     (c.kota||'').toLowerCase().includes(q) ||
     (c.produk_fav||'').toLowerCase().includes(q) ||
     (c.id_customer||'').toLowerCase().includes(q));
+
+  // v44: Filter rentang tanggal masuk (first_order) — bebas pilih tanggal berapa
+  // aja sesuai bulan & tahunnya lewat kalender bawaan browser. Kalau salah satu
+  // atau kedua kotak dikosongkan, filter itu otomatis tidak berlaku (tampil semua).
+  const dateFromEl = document.getElementById('crm-date-from');
+  const dateToEl   = document.getElementById('crm-date-to');
+  const dateFromV  = dateFromEl?.value || '';
+  const dateToV    = dateToEl?.value || '';
+  if (dateFromV) {
+    const fromD = new Date(dateFromV + 'T00:00:00');
+    rows = rows.filter(c => c.first_order && new Date(c.first_order) >= fromD);
+  }
+  if (dateToV) {
+    const toD = new Date(dateToV + 'T23:59:59');
+    rows = rows.filter(c => c.first_order && new Date(c.first_order) <= toD);
+  }
+  const dateRangeWrap = document.getElementById('crm-date-range');
+  const dateRangeClearBtn = document.getElementById('crm-date-range-clear');
+  if (dateRangeWrap) dateRangeWrap.classList.toggle('active', !!(dateFromV || dateToV));
+  if (dateRangeClearBtn) dateRangeClearBtn.style.display = (dateFromV || dateToV) ? '' : 'none';
 
   // Sort: default by customer ID (urut CST), atau by first_order date, atau by label
   if (crmSortField === 'date') {
@@ -19113,7 +19182,7 @@ function renderCrmSpotlight() {
             <span class="crm-spot-sub">Urut tanggal masuk paling baru</span>
           </span>
         </div>
-        <button class="crm-spot-more" onclick="crmSortField='date';crmSortDir2='desc';const _b=document.getElementById('crm-sort-btn');if(_b)_b.textContent='↓ First Order Terbaru';renderCRM(false);document.querySelector('.crm-table-wrap').scrollIntoView({behavior:'smooth',block:'start'})">Lihat semua →</button>
+        <button class="crm-spot-more" onclick="crmSortField='date';crmSortDir2='desc';const _b=document.getElementById('crm-sort-btn');if(_b){const _ico=_b.querySelector('svg');_b.innerHTML=(_ico?_ico.outerHTML:'')+'↓ First Order Terbaru';_b.classList.add('sort-active');}renderCRM(false);document.getElementById('crm-table-wrap').scrollIntoView({behavior:'smooth',block:'start'})">Lihat semua →</button>
       </div>
       <div class="crm-spot-list">${recentHtml}</div>
     </div>`;
