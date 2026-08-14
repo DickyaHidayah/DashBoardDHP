@@ -1104,20 +1104,6 @@ body.light .pp-item:hover{ background:#f7f7f8; }
 body.light .pp-foot{ border-top:1.5px solid rgba(0,0,0,.1); color:rgba(13,13,13,.45); background:#f7f7f8; }
 body.light .live-dot{ background:#1a7a3e; }
 
-/* ── Task FAB & Panel ── */
-body.light .task-fab-btn{ background:#0d0d0d; border:none; color:#ffffff; box-shadow:0 2px 12px rgba(0,0,0,.15); }
-body.light #task-panel{ background:#ffffff; border:1.5px solid rgba(0,0,0,.12); box-shadow:0 8px 32px rgba(0,0,0,.1); }
-body.light .tp-head{ border-bottom:1.5px solid rgba(0,0,0,.1); background:#f7f7f8; }
-body.light .tp-title{ color:#0d0d0d; font-weight:800; }
-body.light .tp-sub{ color:rgba(13,13,13,.55); }
-body.light .tp-close{ color:rgba(13,13,13,.5); font-weight:700; }
-body.light .tp-close:hover{ background:#f0f0f0; color:#0d0d0d; }
-body.light .tp-foot{ border-top:1.5px solid rgba(0,0,0,.1); color:rgba(13,13,13,.45); background:#f7f7f8; }
-body.light .task-card{ background:#ffffff; border:1.5px solid rgba(0,0,0,.1); }
-body.light .task-card:hover{ background:#f7f7f8; }
-body.light #task-panel{ background:var(--surface); border:1px solid var(--border-hi); }
-body.light .tp-title{ color:var(--gold-dk); }
-
 /* ── Confirm dialog ── */
 body.light .cfm-modal{ background:#ffffff; border:1.5px solid rgba(0,0,0,.14); box-shadow:0 8px 40px rgba(0,0,0,.12); }
 body.light .cfm-title{ color:#0d0d0d; font-weight:800; }
@@ -1207,9 +1193,7 @@ body.light .lock-badge{ font-weight:700; }
 body.light .lock-badge.open,body.light .lock-badge.done{ background:#f0fff4; color:#1a7a3e; border-color:rgba(26,122,62,.3); }
 body.light .lock-badge.locked{ background:#fff0f0; color:#c0392b; border-color:rgba(192,57,43,.3); }
 body.light .lock-badge.req{ background:#fffbf0; color:#a05800; border-color:rgba(160,88,0,.3); }
-body.light .tc-theme,.dai-theme{ color:#0d0d0d; font-weight:700; }
-body.light .tc-target-names{ color:rgba(13,13,13,.55); }
-body.light .tc-done-btn:hover{ color:#0d0d0d; background:#f0f0f0; }
+body.light .dai-theme{ color:#0d0d0d; font-weight:700; }
 
 /* ── Leads ── */
 body.light .lead-row{ background:#ffffff; border:1.5px solid rgba(0,0,0,.1); }
@@ -2514,128 +2498,12 @@ body.light .target-tile-dot{border-color:#ffffff}
 .target-opt-dot.offline{background:rgba(232,228,220,.2)}
 .target-count{display:none}
 
-/* ═══════════════════════════════════════════════════════════════════
-   ★ TASK NOTIFICATIONS — persistent, responsive
-   ═══════════════════════════════════════════════════════════════════ */
-/* v43: Presence FAB dihapus dari layar → Task FAB sekarang jadi satu-satunya
-   FAB, ambil alih posisi utama bottom-right. Task FAB juga bisa di-drag
-   (geser) ke posisi mana pun di layar — posisinya disimpan di localStorage
-   lewat taskFabInitDrag(), style left/top di-override oleh JS saat digeser. */
-#task-fab{position:fixed;bottom:24px;right:24px;z-index:520;display:none;touch-action:none}
-#task-fab.visible{display:block}
-.task-fab-btn{width:52px;height:52px;border-radius:50%;background:var(--surface2);border:1px solid var(--border-hi);
-    color:var(--amber);cursor:grab;display:flex;align-items:center;justify-content:center;
-    box-shadow:var(--shadow);transition:transform var(--trans),border-color var(--trans),background var(--trans);position:relative;user-select:none}
-.task-fab-btn:active{cursor:grabbing}
-.task-fab-btn:hover{transform:scale(1.08);border-color:var(--amber);background:rgba(232,184,110,.1)}
-#task-fab.dragging .task-fab-btn{transform:scale(1.06);transition:none}
-.task-fab-btn.has-tasks{border-color:var(--amber);animation:task-glow 2.4s ease-in-out infinite}
-@keyframes task-glow{0%,100%{box-shadow:var(--shadow)}50%{box-shadow:0 0 18px rgba(232,184,110,.5),var(--shadow)}}
-.task-fab-count{position:absolute;top:-4px;right:-4px;background:var(--amber);color:#0a0906;font-size:9px;font-weight:800;
-    border-radius:10px;padding:2px 6px;min-width:20px;text-align:center;display:none;border:2px solid var(--bg)}
-.task-fab-count.show{display:block}
 
-/* Task panel — desktop: opens above task FAB (v43: FAB sekarang di bottom:24, jadi panel di 24+52+12=88) */
-#task-panel{position:fixed;bottom:88px;right:24px;width:340px;max-width:calc(100vw - 36px);background:var(--surface);
-    border:1px solid var(--border-hi);border-radius:14px;z-index:560;display:none;flex-direction:column;
-    box-shadow:var(--shadow);overflow:hidden;max-height:min(70vh,560px)}
-#task-panel.open{display:flex;animation:task-pop .25s cubic-bezier(.4,0,.2,1)}
-@keyframes task-pop{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
-.tp-head{padding:15px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0}
-.tp-head-l{display:flex;align-items:center;gap:9px;min-width:0}
-.tp-head-icon{width:30px;height:30px;border-radius:8px;background:rgba(232,184,110,.12);border:1px solid rgba(232,184,110,.3);
-    display:flex;align-items:center;justify-content:center;color:var(--amber);flex-shrink:0}
-.tp-title{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--gold-hi);letter-spacing:.03em;line-height:1.1}
-.tp-sub{font-size:9px;color:var(--text2);letter-spacing:.04em;margin-top:1px}
-.tp-close{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:6px;border-radius:6px;
-    min-width:32px;min-height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.tp-close:hover{color:var(--text);background:rgba(255,255,255,.06)}
-body.light .tp-close:hover{background:#f0f0f0;color:#0d0d0d}
-.tp-body{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:9px}
-.task-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 14px 12px;position:relative;
-    overflow:hidden;transition:border-color var(--trans)}
-body.light .task-card{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
-.task-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--amber)}
-.task-card.cat-Reseller::before{background:#d98ec0}
-.task-card.cat-Product::before{background:var(--blue)}
-.task-card.cat-B2B::before{background:var(--green)}
-.tc-tag{font-size:7.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--amber);font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:5px}
-.tc-tag .new-pill{background:var(--amber);color:#0a0906;border-radius:3px;padding:1px 5px;font-size:7px}
-.tc-theme{font-size:13px;font-weight:600;color:var(--text);line-height:1.35}
-.tc-meta{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:8px}
-/* Target — refined inline flourish */
-.tc-target{
-  display:flex;align-items:baseline;gap:0;margin-top:10px;
-  padding-top:9px;border-top:1px solid var(--border);
-}
-.tc-target-lbl{
-  font-size:7.5px;letter-spacing:.22em;text-transform:uppercase;
-  color:var(--muted);font-weight:500;flex-shrink:0;
-  font-family:'Cormorant Garamond',serif;font-style:italic;
-  margin-right:7px;padding-top:1px;
-}
-.tc-target-names{
-  font-size:11px;color:var(--gold-lo);letter-spacing:.03em;
-  font-family:'Cormorant Garamond',serif;font-weight:400;
-  line-height:1.3;
-}
-
-/* Footer — time only, dismiss via gold thread line at bottom */
-.tc-foot{
-  display:flex;align-items:center;justify-content:space-between;
-  gap:8px;margin-top:11px;
-}
-.tc-time{font-size:9px;color:var(--muted);letter-spacing:.04em}
-
-/* Dismiss — ghost arc, no fill, no label on idle */
-.tc-done-btn{
-  background:none;
-  border:none;
-  color:var(--muted);
-  padding:4px;
-  width:28px;height:28px;
-  border-radius:50%;
-  cursor:pointer;
-  transition:color var(--trans),background var(--trans),transform .18s ease;
-  display:inline-flex;align-items:center;justify-content:center;
-  flex-shrink:0;
-  position:relative;
-}
-.tc-done-btn::before{
-  content:'';
-  position:absolute;inset:0;
-  border-radius:50%;
-  border:1px solid transparent;
-  transition:border-color .2s ease,box-shadow .2s ease;
-}
-.tc-done-btn:hover{
-  color:var(--gold);
-  background:rgba(201,169,110,.07);
-  transform:scale(1.1);
-}
-.tc-done-btn:hover::before{
-  border-color:rgba(201,169,110,.3);
-  box-shadow:0 0 10px rgba(201,169,110,.15);
-}
-.tc-done-btn:active{transform:scale(.94)}
-.tp-empty{text-align:center;padding:38px 20px;color:var(--muted);font-size:12px;font-style:italic}
-.tp-empty svg{display:block;margin:0 auto 12px;opacity:.4}
-.tp-foot{padding:11px 16px;border-top:1px solid var(--border);font-size:9px;color:var(--muted);
-    display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-
-/* Light-mode tweaks untuk Ad Scheduler & Task panel */
 body.light .cal-wrap{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
-/* dup removed */
 body.light .cal-month-name{color:#0d0d0d;font-weight:800}
-/* dup removed */
 body.light .cal-dow{color:rgba(13,13,13,.55);font-weight:700;background:#f7f7f8}
-body.light #task-panel{background:#ffffff;border:1.5px solid rgba(0,0,0,.12)}
-body.light .tp-title{color:#0d0d0d;font-weight:800}
-body.light .tc-theme,body.light .dai-theme{color:#0d0d0d;font-weight:700}
-body.light .task-fab-btn{background:#0d0d0d;border:none;color:#ffffff;box-shadow:0 2px 12px rgba(0,0,0,.15)}
+body.light .dai-theme{color:#0d0d0d;font-weight:700}
 body.light .ads-vt-btn.active{background:#0d0d0d;color:#ffffff;border-color:#0d0d0d}
-body.light .tc-target-names{color:rgba(13,13,13,.55);font-weight:500}
-body.light .tc-done-btn:hover{color:#0d0d0d;background:#f0f0f0}
 
 /* ════════════ v4.0 — Leads / Lock / Unlock / Recap ════════════ */
 /* Button variants tambahan */
@@ -2652,15 +2520,12 @@ body.light .tc-done-btn:hover{color:#0d0d0d;background:#f0f0f0}
   background:rgba(232,184,110,.1);color:var(--amber);border:1px solid rgba(232,184,110,.3)}
 .lock-badge.open{background:rgba(122,191,142,.12);color:var(--green);border-color:rgba(122,191,142,.32)}
 .lock-badge.done{background:rgba(122,191,142,.12);color:var(--green);border-color:rgba(122,191,142,.32)}
+@keyframes task-glow{0%,100%{box-shadow:none}50%{box-shadow:0 0 10px rgba(232,184,110,.5)}}
 .lock-badge.req{background:rgba(232,184,110,.16);color:var(--amber);border-color:rgba(232,184,110,.4);
   animation:task-glow 2s ease-in-out infinite}
 .lock-note{font-size:11px;color:var(--amber);background:rgba(232,184,110,.08);
   border:1px solid rgba(232,184,110,.22);border-radius:8px;padding:9px 11px;line-height:1.5;margin-top:8px}
 .dai-await{font-size:10px;color:var(--green);font-style:italic}
-
-/* FAB urgent (ada permintaan buka kunci untuk moderator) */
-.task-fab-btn.has-urgent{border-color:var(--amber)!important;
-  animation:task-glow 1.4s ease-in-out infinite}
 
 /* Day modal — baris task per target (moderator) */
 .dai-tasks{display:flex;flex-direction:column;gap:7px;margin-top:9px;
@@ -3092,15 +2957,19 @@ body.light .crm-tbl-heading{color:#0d0d0d}
 .crm-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:calc(var(--r) + 2px);overflow:auto;max-height:calc(100vh - 300px);min-height:380px;
   box-shadow:0 1px 0 rgba(255,255,255,.02) inset}
 .crm-table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;min-width:1180px}
-.crm-table th{position:sticky;top:var(--crm-thead-top,0px);z-index:2;text-align:left;padding:12px 14px;font-size:9px;letter-spacing:.1em;
-  /* v50 FIX: "bocor" — baris data nembus/nyelip di atas header pas discroll. Ini bug rendering
-     Chromium (termasuk Chrome Android) waktu position:sticky digabung backdrop-filter tanpa GPU
-     layer sendiri: browser gagal nge-clear repaint di seam antara elemen sticky, jadi baris di
-     baliknya "tembus" sekilas. Fix: hapus backdrop-filter (ga penting² amat efeknya toh sudah solid
-     background) + paksa th render di layer GPU sendiri (transform+will-change) supaya browser selalu
-     repaint bersih di posisi sticky manapun, no more seam/ghosting.  */
-  transform:translateZ(0);will-change:transform;
+.crm-table th{position:sticky;top:var(--crm-thead-top,0px);z-index:3;text-align:left;padding:12px 14px;font-size:9px;letter-spacing:.1em;
+  /* v51 FIX: "bocor" (baris data nembus di atas header) DAN "loncat/pindah" saat discroll —
+     akar masalahnya ternyata si v50 fix sendiri: `transform` yang ditempel ke elemen yang
+     SAMA dengan `position:sticky` bikin elemen itu jadi containing-block baru buat dirinya
+     sendiri, dan di banyak versi Chromium (termasuk Chrome Android) ini justru yang bikin
+     browser salah hitung ulang posisi sticky tiap discroll — kadang nyangkut/loncat sesaat,
+     kadang gagal nge-clear repaint di baliknya jadi baris data "tembus" sekilas. Fix yang
+     benar: JANGAN taruh transform di elemen sticky-nya sendiri. Cukup `contain:paint` — ini
+     yang bikin browser selalu repaint bersih di dalam batas elemen (jadi tidak ada "bocor")
+     TANPA mengubah cara posisi sticky-nya dihitung sama sekali (jadi tidak ada "loncat"). */
+  contain:paint;
   text-transform:uppercase;color:var(--gold);background:var(--bg3);border-bottom:1px solid var(--border-hi);white-space:nowrap}
+.crm-table th.crm-freeze-id,.crm-table th.crm-freeze-name{z-index:4}
 .crm-table td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
 .crm-table tr:last-child td{border-bottom:none}
 .crm-table tr{transition:background var(--trans)}
@@ -3314,14 +3183,6 @@ body.light .unlock-task-theme{color:#0d0d0d;font-weight:800}
   .cal-dow{padding:7px 2px;font-size:8px}
   .cal-legend{font-size:8px;gap:9px}
   .cal-add-hint{display:none}
-  /* v43: presence-fab dihapus, task-fab sendirian ambil posisi bottom-right */
-  #task-fab{bottom:24px;right:16px}
-  /* Task panel: bottom sheet anchored above task FAB */
-  #task-panel{
-    left:10px;right:10px;width:auto;max-width:none;
-    bottom:90px;max-height:64vh;
-    border-radius:16px
-  }
 }
 @media(max-width:360px){
   .cal-cell{min-height:54px}
@@ -3532,8 +3393,8 @@ body.light .crm-diag-card2{background:#fbfbfb}
    saat tabel di-scroll ke bawah, supaya pencarian, filter tanggal & tombol
    export tetap terlihat tanpa perlu scroll balik ke atas. */
 .crm-tbl-sticky{
-  position:sticky;top:0;z-index:5;
-  transform:translateZ(0);will-change:transform; /* v50: sama kayak thead — cegah seam/ghosting Chromium */
+  position:sticky;top:0;z-index:6;
+  contain:paint; /* v51: sama kayak thead — transform DIHAPUS, ini penyebab loncat/bocornya */
   background:var(--surface);
   padding-top:1px;padding-bottom:14px; /* v49 FIX: sebelumnya margin-bottom:14px — margin TIDAK
     ikut terhitung di offsetHeight yang dipakai crmSyncStickyOffset buat naruh posisi nempel thead,
@@ -3548,6 +3409,20 @@ body.light .crm-diag-card2{background:#fbfbfb}
 }
 .crm-table-wrap.scrolled .crm-tbl-sticky::after{opacity:1}
 body.light .crm-tbl-sticky{background:#ffffff}
+
+/* v51: kolom ID & Nama "dibekukan" (freeze) di kiri — saat tabel discroll ke
+   kanan (banyak kolom di layar sempit/HP), identitas pelanggan tetap kelihatan,
+   jadi tidak lagi nyasar lihat baris "Murni / Belum pernah" tanpa tau itu punya
+   siapa. Solid background wajib supaya konten kolom lain yang lewat di bawahnya
+   ke-tutup rapi, bukan tembus. */
+.crm-table td.crm-freeze-id,.crm-table td.crm-freeze-name{position:sticky;z-index:1;background:var(--surface);contain:paint}
+.crm-table td.crm-freeze-id{left:0;width:96px;min-width:96px;max-width:96px}
+.crm-table td.crm-freeze-name{left:96px;width:132px;min-width:132px;max-width:132px;overflow:hidden;text-overflow:ellipsis}
+.crm-table th.crm-freeze-id{left:0;width:96px;min-width:96px;max-width:96px}
+.crm-table th.crm-freeze-name{left:96px;width:132px;min-width:132px;max-width:132px}
+.crm-table td.crm-freeze-name .crm-name{overflow:hidden;text-overflow:ellipsis;max-width:100%;display:inline-block;vertical-align:bottom}
+.crm-table-wrap.h-scrolled .crm-freeze-name{box-shadow:6px 0 8px -6px rgba(0,0,0,.35)}
+body.light .crm-table td.crm-freeze-id,body.light .crm-table td.crm-freeze-name{background:#ffffff}
 
 /* v23: CRM table filters row — search & filter menyatu langsung dengan tabel */
 .crm-tbl-filters{
@@ -5568,8 +5443,8 @@ body.light .kol-fin-val{color:#0d0d0d}
               <table class="crm-table">
                 <thead>
                   <tr>
-                    <th data-i18n="crmColId">ID Customer</th>
-                    <th data-i18n="crmColName">Nama</th>
+                    <th class="crm-freeze-id" data-i18n="crmColId">ID Customer</th>
+                    <th class="crm-freeze-name" data-i18n="crmColName">Nama</th>
                     <th data-i18n="crmColWA">Nomor WhatsApp</th>
                     <th data-i18n="crmColCity">Kota</th>
                     <th class="crm-col-extra" data-i18n="crmColChannel">Channel</th>
@@ -5731,39 +5606,7 @@ body.light .kol-fin-val{color:#0d0d0d}
   </div>
 </div>
 
-<!-- ══ TASK NOTIFICATIONS (Ad publish tasks — persistent) ══ -->
-<div id="task-fab">
-  <button class="task-fab-btn" id="task-fab-btn" onclick="toggleTaskPanel()" title="Tasks">
-    <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
-      <path d="M9 2H4a1 1 0 00-1 1v10a1 1 0 001 1h8a1 1 0 001-1V6L9 2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
-      <path d="M9 2v4h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M5.5 9.5l1.3 1.3L9.8 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    <span class="task-fab-count" id="task-fab-count">0</span>
-  </button>
-</div>
-<div id="task-panel">
-  <div class="tp-head">
-    <div class="tp-head-l">
-      <div class="tp-head-icon">
-        <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-          <path d="M5.5 9.5l1.3 1.3L9.8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <rect x="2.5" y="2.5" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.3"/>
-        </svg>
-      </div>
-      <div style="min-width:0">
-        <div class="tp-title" data-i18n="taskTitle">Task Iklan</div>
-        <div class="tp-sub" id="tp-sub" data-i18n="taskSub">Tugas baru dari iklan terpublish</div>
-      </div>
-    </div>
-    <button class="tp-close" onclick="toggleTaskPanel()">✕</button>
-  </div>
-  <div class="tp-body" id="task-body"></div>
-  <div class="tp-foot">
-    <span><span class="live-dot" style="background:var(--amber)"></span><span data-i18n="taskPersistent">Tetap sampai dikerjakan</span></span>
-    <span id="tp-count">0 task</span>
-  </div>
-</div>
+
 
 <!-- ══ MODAL ══ -->
 <div id="modal-ov" onclick="if(event.target===this)closeModal()">
@@ -19143,10 +18986,24 @@ function crmSyncStickyOffset() {
   if (!sticky || !wrap) return;
   wrap.style.setProperty('--crm-thead-top', sticky.offsetHeight + 'px');
 }
+let _crmScrollRaf = null;
 function crmOnTableScroll(el) {
-  // Munculkan bayangan halus di bawah bar sticky saat mulai discroll,
-  // supaya terasa "melayang" di atas baris data — bukan cuma dempet datar.
-  el.classList.toggle('scrolled', el.scrollTop > 4);
+  // v51: dibungkus requestAnimationFrame — baca scrollTop/scrollLeft & toggle
+  // class SETELAH browser selesai layout scroll saat ini, bukan di tengah-
+  // tengahnya. Kalau class di-toggle langsung di event scroll (apalagi yang
+  // memicu reflow, misal ResizeObserver di atas), browser Chromium kadang
+  // "membatalkan" momentum scroll yang lagi jalan dan balik ke posisi awal —
+  // ini penyebab paling umum kesan "discroll malah pindah/loncat ke atas".
+  if (_crmScrollRaf) return;
+  _crmScrollRaf = requestAnimationFrame(() => {
+    _crmScrollRaf = null;
+    // Munculkan bayangan halus di bawah bar sticky saat mulai discroll,
+    // supaya terasa "melayang" di atas baris data — bukan cuma dempet datar.
+    el.classList.toggle('scrolled', el.scrollTop > 4);
+    // Bayangan di sisi kanan kolom Nama yang dibekukan, saat tabel digeser
+    // ke kanan — kasih isyarat visual "ada lagi kolom yang ketutup di sini".
+    el.classList.toggle('h-scrolled', el.scrollLeft > 4);
+  });
 }
 document.addEventListener('DOMContentLoaded', () => {
   crmSyncStickyOffset();
@@ -19663,8 +19520,8 @@ async function renderCRM(reload = true) {
            <span class="crm-label-name" style="color:var(--muted)">+ Label</span>
          </button>`;
     return `${groupHeaderHtml}<tr>
-      <td><span class="crm-id">${escHtml(c.id_customer||'—')}</span></td>
-      <td><span class="crm-name ${rowLabel?'crm-name-labeled':''}" ${rowLabel?`style="border-bottom:2px solid ${rowLabel.color};padding-bottom:1px"`:''}>${escHtml(c.nama||'—')}</span>${c.catatan?`<div style="font-size:9px;color:var(--muted);margin-top:2px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(c.catatan)}">${escHtml(c.catatan)}</div>`:''}</td>
+      <td class="crm-freeze-id"><span class="crm-id">${escHtml(c.id_customer||'—')}</span></td>
+      <td class="crm-freeze-name"><span class="crm-name ${rowLabel?'crm-name-labeled':''}" ${rowLabel?`style="border-bottom:2px solid ${rowLabel.color};padding-bottom:1px"`:''}>${escHtml(c.nama||'—')}</span>${c.catatan?`<div style="font-size:9px;color:var(--muted);margin-top:2px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(c.catatan)}">${escHtml(c.catatan)}</div>`:''}</td>
       <td>${waCell}</td>
       <td>${escHtml(c.kota||'—')}</td>
       <td class="crm-col-extra">${chBadge}</td>
