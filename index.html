@@ -3093,7 +3093,14 @@ body.light .crm-tbl-heading{color:#0d0d0d}
   box-shadow:0 1px 0 rgba(255,255,255,.02) inset}
 .crm-table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;min-width:1180px}
 .crm-table th{position:sticky;top:var(--crm-thead-top,0px);z-index:2;text-align:left;padding:12px 14px;font-size:9px;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--gold);background:var(--bg3);backdrop-filter:blur(6px);border-bottom:1px solid var(--border-hi);white-space:nowrap}
+  /* v50 FIX: "bocor" — baris data nembus/nyelip di atas header pas discroll. Ini bug rendering
+     Chromium (termasuk Chrome Android) waktu position:sticky digabung backdrop-filter tanpa GPU
+     layer sendiri: browser gagal nge-clear repaint di seam antara elemen sticky, jadi baris di
+     baliknya "tembus" sekilas. Fix: hapus backdrop-filter (ga penting² amat efeknya toh sudah solid
+     background) + paksa th render di layer GPU sendiri (transform+will-change) supaya browser selalu
+     repaint bersih di posisi sticky manapun, no more seam/ghosting.  */
+  transform:translateZ(0);will-change:transform;
+  text-transform:uppercase;color:var(--gold);background:var(--bg3);border-bottom:1px solid var(--border-hi);white-space:nowrap}
 .crm-table td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
 .crm-table tr:last-child td{border-bottom:none}
 .crm-table tr{transition:background var(--trans)}
@@ -3526,6 +3533,7 @@ body.light .crm-diag-card2{background:#fbfbfb}
    export tetap terlihat tanpa perlu scroll balik ke atas. */
 .crm-tbl-sticky{
   position:sticky;top:0;z-index:5;
+  transform:translateZ(0);will-change:transform; /* v50: sama kayak thead — cegah seam/ghosting Chromium */
   background:var(--surface);
   padding-top:1px;padding-bottom:14px; /* v49 FIX: sebelumnya margin-bottom:14px — margin TIDAK
     ikut terhitung di offsetHeight yang dipakai crmSyncStickyOffset buat naruh posisi nempel thead,
