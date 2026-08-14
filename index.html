@@ -3610,6 +3610,42 @@ body.light .crm-date-input{color-scheme:light}
 #crm-sort-btn{position:relative}
 #crm-sort-btn.sort-active{border-color:var(--gold);color:var(--gold-hi);background:rgba(201,169,110,.08)}
 
+/* ══════ v45: TATA LETAK 2 KOLOM — panel tool (cari/filter/sortir/aksi)
+   menempel di kiri, tabel database customer full lega di kanan. ══════ */
+.crm-workspace{display:grid;grid-template-columns:266px 1fr;gap:16px;align-items:start}
+@media(max-width:1080px){.crm-workspace{grid-template-columns:1fr}}
+.crm-sidebar{display:flex;flex-direction:column;gap:0;background:var(--surface);border:1px solid var(--border);
+  border-radius:calc(var(--r) + 4px);padding:16px;position:sticky;top:12px;max-height:calc(100vh - 24px);
+  overflow-y:auto;box-shadow:0 6px 22px rgba(0,0,0,.10)}
+@media(max-width:1080px){.crm-sidebar{position:relative;top:0;max-height:none}}
+.crm-sidebar-section{display:flex;flex-direction:column;gap:8px;padding:0 0 14px;margin-bottom:14px;border-bottom:1px solid var(--border)}
+.crm-sidebar-section:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0}
+.crm-sidebar-lbl{font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.crm-sidebar .crm-search{width:100%;min-width:0}
+.crm-sidebar .crm-filter{width:100%;max-width:none!important}
+.crm-sidebar .crm-tbl-filters-search{position:relative;width:100%}
+.crm-sidebar .crm-tbl-filters-search .crm-search{width:100%;padding-left:32px;border-radius:8px}
+.crm-sidebar .crm-tbl-search-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.crm-sidebar .crm-date-range{width:100%;flex-wrap:wrap}
+.crm-sidebar .crm-date-input{flex:1;width:auto;min-width:70px}
+.crm-sidebar .crm-btn,.crm-sidebar .btn-g,.crm-sidebar .btn-add{width:100%;justify-content:center;text-align:center}
+.crm-sidebar .crm-insight-wrap{margin-bottom:0}
+.crm-main{min-width:0}
+.crm-col-toggle{display:flex;align-items:flex-start;gap:8px;font-size:11px;color:var(--text2);cursor:pointer;line-height:1.4;font-weight:500}
+.crm-col-toggle:hover{color:var(--text)}
+.crm-col-toggle input{margin-top:2px;accent-color:var(--gold);cursor:pointer}
+.crm-sort-dir-btn{position:relative}
+#crm-sort-dir-btn.sort-active{border-color:var(--gold);color:var(--gold-hi);background:rgba(201,169,110,.08)}
+/* Baris pemisah grup saat tabel disortir per Tanggal / Minggu / Bulan */
+.crm-group-row td{background:var(--surface2)!important;padding:8px 14px!important;font-size:10px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--gold);border-bottom:1px solid var(--border)!important}
+.crm-group-count{color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0;margin-left:4px}
+/* Kolom sekunder (Channel/Label/Diinput Oleh) — disembunyikan default, hanya
+   kolom penting yang tampil, sesuai preferensi tampilan ringkas & profesional */
+.crm-table td.crm-col-extra,.crm-table th.crm-col-extra{display:none}
+.crm-table-wrap.show-extra td.crm-col-extra,.crm-table-wrap.show-extra th.crm-col-extra{display:table-cell}
+body.light .crm-group-row td{color:#a0752f}
+
 /* v43: Statistik & Insight — panel sekunder (spotlight, kapasitas, statistik,
    distribusi PIC, diagram) dikumpulkan & disembunyikan secara default supaya
    tabel database customer (prioritas utama) langsung terlihat tanpa banyak
@@ -5266,155 +5302,181 @@ body.light .kol-fin-val{color:#0d0d0d}
             </div>
             <div class="ps" data-i18n="crmSub">Semua data pelanggan dalam satu tempat — lihat siapa yang perlu dihubungi, tambah data baru, atau export ke Excel</div>
           </div>
-          <div class="ph-acts crm-acts">
-            <!-- v23: hanya tombol AKSI global di header — search & filter dipindah ke toolbar tabel (dekat data) -->
-            <button class="btn-g btn-sm crm-btn" onclick="openCRMImport()" title="Import dari Excel/CSV">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px"><path d="M8 1v9M8 10L5 7M8 10l3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              <span data-i18n="crmImport">Import</span>
-            </button>
-            <button class="btn-g btn-sm crm-btn" onclick="exportCRMExcel()" title="Export ke Excel rapi + statistik">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px"><path d="M8 10V1M8 1L5 4M8 1l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              <span data-i18n="crmExport">Export Excel</span>
-            </button>
-            <button class="btn-add crm-btn" onclick="openCRMModal()" data-i18n="addNew">+ Tambah</button>
-          </div>
         </div>
 
-        <!-- v43: Statistik & Insight — digabung jadi satu panel yang bisa dibuka/tutup.
-             Default TERTUTUP supaya begitu halaman dibuka, tabel database customer
-             (prioritas utama) langsung terlihat tanpa banyak scroll. Isi panel sama
-             persis seperti sebelumnya, hanya posisinya dirapikan jadi satu grup. -->
-        <div class="crm-insight-wrap">
-          <button type="button" class="crm-insight-toggle" id="crm-insight-toggle" onclick="crmToggleInsight()">
-            <span class="cit-left">
-              <span class="cit-ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 13.5h2v-6H2v6zM7 13.5h2v-10H7v10zM12 13.5h2v-8h-2v8z" fill="currentColor"/></svg></span>
-              <span>Statistik &amp; Insight Cepat</span>
-              <span class="cit-hint">— prioritas hot lead, kapasitas, ringkasan angka</span>
-            </span>
-            <svg class="cit-chevron" id="crm-insight-chevron" width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <div class="crm-insight-body" id="crm-insight-body">
-            <!-- v42: SOROTAN UTAMA — dua panel aksi cepat yang paling sering dibutuhkan
-                 tim: siapa yang HARUS dihubungi hari ini (prioritas), dan siapa yang BARU
-                 masuk (urut tanggal). -->
-            <div class="crm-spotlight" id="crm-spotlight"></div>
+        <!-- v45: TATA LETAK 2 KOLOM — semua tool (cari, filter, sortir, kelola
+             kolom, aksi, statistik) dikumpulkan di panel KIRI yang sticky saat
+             discroll. Tabel database customer full lega di KANAN. -->
+        <div class="crm-workspace">
+          <aside class="crm-sidebar" id="crm-sidebar">
 
-            <!-- v25: Kapasitas database customer (10.000/owner; moderator = gabungan semua) -->
-            <div class="crm-capacity-bar" id="crm-capacity-bar" style="display:none"></div>
-
-            <!-- Statistik & ringkasan (v30: sekarang total KESELURUHAN, bukan per-halaman) -->
-            <div class="crm-stats" id="crm-stats"></div>
-
-            <!-- v30: Distribusi/persentase customer per PIC — khusus moderator -->
-            <div class="crm-pic-dist" id="crm-pic-dist" style="display:none"></div>
-
-            <!-- Diagram CRM -->
-            <div id="crm-diagram" class="crm-diagram-wrap"></div>
-          </div>
-        </div>
-
-        <div class="crm-tbl-heading">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" class="crm-tbl-heading-ico"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 6.5h12M6 3v10" stroke="currentColor" stroke-width="1.3"/></svg>
-          <span>Semua Data Pelanggan</span>
-          <span class="crm-tbl-heading-sub">— cari, sortir, atau klik ikon pensil untuk mengubah data</span>
-        </div>
-        <div class="crm-table-wrap" id="crm-table-wrap" onscroll="crmOnTableScroll(this)">
-          <!-- v43: filter + toolbar digabung dalam satu bar sticky, supaya pencarian,
-               sortir tanggal & tombol export tetap terlihat saat tabel discroll. -->
-          <div class="crm-tbl-sticky" id="crm-tbl-sticky">
-          <div class="crm-tbl-filters">
-            <div class="crm-tbl-filters-search">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" class="crm-tbl-search-ico"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.4"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-              <input type="text" class="search-box crm-search" id="crm-search" placeholder="Cari nama / WA / kota / produk…" oninput="crmDebouncedSearch()"/>
+            <div class="crm-sidebar-section">
+              <span class="crm-sidebar-lbl">Cari Customer</span>
+              <div class="crm-tbl-filters-search">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" class="crm-tbl-search-ico"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.4"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                <input type="text" class="search-box crm-search" id="crm-search" placeholder="Cari nama / WA / kota / produk…" oninput="crmDebouncedSearch()"/>
+              </div>
             </div>
-            <select class="fi crm-filter" id="crm-status-filter" onchange="crmResetPaging();renderCRM(true)">
-              <option value="all" data-i18n="crmAllStatus">Semua Status</option>
-              <option value="New">New (input manual)</option>
-              <option value="Leads">Leads (dari Ads)</option>
-            </select>
-            <select class="fi crm-filter" id="crm-heat-filter" onchange="crmResetPaging();renderCRM(true)" title="Filter Tingkat Keaktifan" style="max-width:140px">
-              <option value="all">Semua Tingkat</option>
-              <option value="Hot">Panas (Hot)</option>
-              <option value="Warm">Hangat (Warm)</option>
-              <option value="Cold">Dingin (Cold)</option>
-            </select>
-            <!-- v44: Filter tanggal masuk bebas — pilih tanggal berapa aja (1-30/31)
-                 sesuai bulan & tahun lewat kalender bawaan browser. Kosongkan salah satu
+
+            <div class="crm-sidebar-section">
+              <span class="crm-sidebar-lbl">Filter Data</span>
+              <select class="fi crm-filter" id="crm-status-filter" onchange="crmResetPaging();renderCRM(true)">
+                <option value="all" data-i18n="crmAllStatus">Semua Status</option>
+                <option value="New">New (input manual)</option>
+                <option value="Leads">Leads (dari Ads)</option>
+              </select>
+              <select class="fi crm-filter" id="crm-heat-filter" onchange="crmResetPaging();renderCRM(true)" title="Filter Tingkat Keaktifan">
+                <option value="all">Semua Tingkat</option>
+                <option value="Hot">Panas (Hot)</option>
+                <option value="Warm">Hangat (Warm)</option>
+                <option value="Cold">Dingin (Cold)</option>
+              </select>
+              <select class="fi crm-filter" id="crm-label-filter" onchange="crmResetPaging();renderCRM(true)" title="Filter berdasarkan label">
+                <option value="all">Semua Label</option>
+                <option value="none">Belum diberi label</option>
+              </select>
+              <!-- Filter per user — hanya tampil untuk moderator -->
+              <select class="fi crm-filter" id="crm-owner-filter" onchange="crmOwnerFilter=this.value;crmResetPaging();renderCRM()" style="display:none">
+                <option value="all">Semua Admin & B2B</option>
+              </select>
+            </div>
+
+            <!-- v44: Filter tanggal masuk bebas — pilih tanggal berapa aja sesuai
+                 bulan & tahun lewat kalender bawaan browser. Kosongkan salah satu
                  atau keduanya untuk menonaktifkan filter (tampil semua tanggal). -->
-            <div class="crm-date-range" id="crm-date-range">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" class="crm-date-range-ico"><rect x="2" y="3.5" width="12" height="10.5" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 6.5h12M5 2v3M11 2v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-              <input type="date" class="fi crm-date-input" id="crm-date-from" title="Tgl masuk dari" onchange="crmResetPaging();renderCRM(false)"/>
-              <span class="crm-date-range-sep">–</span>
-              <input type="date" class="fi crm-date-input" id="crm-date-to" title="Tgl masuk sampai" onchange="crmResetPaging();renderCRM(false)"/>
-              <button type="button" class="crm-date-range-clear" id="crm-date-range-clear" title="Kosongkan filter tanggal" onclick="crmClearDateFilter()" style="display:none">✕</button>
+            <div class="crm-sidebar-section">
+              <span class="crm-sidebar-lbl">Tanggal Masuk</span>
+              <div class="crm-date-range" id="crm-date-range">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" class="crm-date-range-ico"><rect x="2" y="3.5" width="12" height="10.5" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 6.5h12M5 2v3M11 2v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                <input type="date" class="fi crm-date-input" id="crm-date-from" title="Tgl masuk dari" onchange="crmResetPaging();renderCRM(false)"/>
+                <span class="crm-date-range-sep">–</span>
+                <input type="date" class="fi crm-date-input" id="crm-date-to" title="Tgl masuk sampai" onchange="crmResetPaging();renderCRM(false)"/>
+                <button type="button" class="crm-date-range-clear" id="crm-date-range-clear" title="Kosongkan filter tanggal" onclick="crmClearDateFilter()" style="display:none">✕</button>
+              </div>
             </div>
-            <select class="fi crm-filter" id="crm-label-filter" onchange="crmResetPaging();renderCRM(true)" title="Filter berdasarkan label" style="max-width:150px">
-              <option value="all">Semua Label</option>
-              <option value="none">Belum diberi label</option>
-            </select>
-            <!-- Filter per user — hanya tampil untuk moderator -->
-            <select class="fi crm-filter" id="crm-owner-filter" onchange="crmOwnerFilter=this.value;crmResetPaging();renderCRM()" style="display:none">
-              <option value="all">Semua Admin & B2B</option>
-            </select>
-            <!-- v22: Moderator atur target omzet bulanan — hanya tampil saat filter di atas mengarah ke 1 Admin -->
-            <button class="btn-g btn-sm crm-btn" id="crm-admin-target-btn" onclick="openAdminTargetModal()" title="Atur target omzet bulanan Admin ini" style="display:none">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:3px"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="3.4" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r=".9" fill="currentColor"/></svg><span data-i18n="crmSetAdminTarget">Atur Target Omzet</span>
-            </button>
-            <button class="btn-g btn-sm crm-btn" onclick="openCrmLabelManageModal()" title="Buat / edit label warna milikmu">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:3px"><path d="M8.6 1.8H2.6a.8.8 0 00-.8.8v6l7 7 6.2-6.2-7-7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="5" cy="5" r="1" fill="currentColor"/></svg>Kelola Label
-            </button>
-          </div>
-          <div class="crm-tbl-toolbar">
-            <span class="crm-tbl-info" id="crm-foot-note2"></span>
-            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-              <button class="btn-g btn-sm" id="crm-sort-btn" onclick="crmSortByDate()" title="Sortir berdasarkan tanggal customer masuk" style="min-width:150px;font-size:11px">
-                <svg width="11" height="11" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;margin-right:4px"><path d="M4 3v10M4 13l-2.5-2.5M4 13l2.5-2.5M12 13V3M12 3l2.5 2.5M12 3l-2.5 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>↓ Tgl Masuk Terbaru
+
+            <!-- v45: Sortir tanggal masuk — pilih granularitas (Harian/Mingguan/
+                 Bulanan) + arah urutan (Terbaru/Terlama). Menggantikan tombol
+                 "Tgl Masuk Terbaru" lama yang statis. -->
+            <div class="crm-sidebar-section">
+              <span class="crm-sidebar-lbl">Sortir Tanggal Masuk</span>
+              <select class="fi crm-filter" id="crm-sort-period" onchange="crmChangeSortPeriod()" title="Kelompokkan tampilan tabel berdasarkan periode tanggal masuk">
+                <option value="harian">Per Tanggal (Harian)</option>
+                <option value="mingguan">Per Minggu</option>
+                <option value="bulanan">Per Bulan</option>
+              </select>
+              <button class="btn-g btn-sm sort-active" id="crm-sort-dir-btn" onclick="crmToggleSortDir()" title="Balik urutan terbaru/terlama">
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;margin-right:4px"><path d="M4 3v10M4 13l-2.5-2.5M4 13l2.5-2.5M12 13V3M12 3l2.5 2.5M12 3l-2.5 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>↓ <span id="crm-sort-dir-label">Terbaru</span>
               </button>
-              <button class="btn-g btn-sm" onclick="exportCRMDatabaseOnly()" title="Export hanya isi database customer ke Excel" style="font-size:11px;white-space:nowrap">
+              <button class="btn-g btn-sm" onclick="crmSortByLabel()" title="Sortir berdasarkan label" style="font-size:11px">Sortir per Label</button>
+            </div>
+
+            <div class="crm-sidebar-section">
+              <span class="crm-sidebar-lbl">Kolom Tabel</span>
+              <label class="crm-col-toggle">
+                <input type="checkbox" id="crm-col-extra-toggle" onchange="crmToggleExtraCols()"/>
+                <span>Tampilkan semua kolom (Channel, Label, Diinput Oleh)</span>
+              </label>
+            </div>
+
+            <div class="crm-sidebar-section">
+              <span class="crm-sidebar-lbl">Aksi</span>
+              <button class="btn-add crm-btn" onclick="openCRMModal()" data-i18n="addNew">+ Tambah</button>
+              <button class="btn-g btn-sm crm-btn" onclick="openCRMImport()" title="Import dari Excel/CSV">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px"><path d="M8 1v9M8 10L5 7M8 10l3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span data-i18n="crmImport">Import</span>
+              </button>
+              <button class="btn-g btn-sm crm-btn" onclick="exportCRMExcel()" title="Export ke Excel rapi + statistik">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px"><path d="M8 10V1M8 1L5 4M8 1l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span data-i18n="crmExport">Export Excel</span>
+              </button>
+              <button class="btn-g btn-sm crm-btn" onclick="exportCRMDatabaseOnly()" title="Export hanya isi database customer ke Excel">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px"><path d="M8 10V1M8 1L5 4M8 1l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Export Database
               </button>
-              <button class="btn-g btn-sm" id="crm-export-pdf-btn" onclick="exportCRMPdf()" title="Export ke PDF — laporan rapi siap cetak" style="font-size:11px;white-space:nowrap">
+              <button class="btn-g btn-sm crm-btn" id="crm-export-pdf-btn" onclick="exportCRMPdf()" title="Export ke PDF — laporan rapi siap cetak">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px"><path d="M8 10V1M8 1L5 4M8 1l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Export PDF
               </button>
+              <!-- v22: Moderator atur target omzet bulanan — hanya tampil saat filter mengarah ke 1 Admin -->
+              <button class="btn-g btn-sm crm-btn" id="crm-admin-target-btn" onclick="openAdminTargetModal()" title="Atur target omzet bulanan Admin ini" style="display:none">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:3px"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="3.4" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r=".9" fill="currentColor"/></svg><span data-i18n="crmSetAdminTarget">Atur Target Omzet</span>
+              </button>
+              <button class="btn-g btn-sm crm-btn" onclick="openCrmLabelManageModal()" title="Buat / edit label warna milikmu">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:3px"><path d="M8.6 1.8H2.6a.8.8 0 00-.8.8v6l7 7 6.2-6.2-7-7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="5" cy="5" r="1" fill="currentColor"/></svg>Kelola Label
+              </button>
             </div>
+
+            <!-- v43: Statistik & Insight — tetap bisa dibuka/tutup, sekarang jadi
+                 bagian bawah panel kiri supaya tidak mendesak tabel di kanan. -->
+            <div class="crm-sidebar-section">
+              <div class="crm-insight-wrap">
+                <button type="button" class="crm-insight-toggle" id="crm-insight-toggle" onclick="crmToggleInsight()">
+                  <span class="cit-left">
+                    <span class="cit-ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 13.5h2v-6H2v6zM7 13.5h2v-10H7v10zM12 13.5h2v-8h-2v8z" fill="currentColor"/></svg></span>
+                    <span>Statistik &amp; Insight</span>
+                  </span>
+                  <svg class="cit-chevron" id="crm-insight-chevron" width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <div class="crm-insight-body" id="crm-insight-body">
+                  <div class="crm-spotlight" id="crm-spotlight"></div>
+                  <div class="crm-capacity-bar" id="crm-capacity-bar" style="display:none"></div>
+                  <div class="crm-stats" id="crm-stats"></div>
+                  <div class="crm-pic-dist" id="crm-pic-dist" style="display:none"></div>
+                  <div id="crm-diagram" class="crm-diagram-wrap"></div>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <div class="crm-main">
+            <div class="crm-tbl-heading">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" class="crm-tbl-heading-ico"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 6.5h12M6 3v10" stroke="currentColor" stroke-width="1.3"/></svg>
+              <span>Semua Data Pelanggan</span>
+              <span class="crm-tbl-heading-sub">— klik ikon pensil untuk mengubah data</span>
+            </div>
+            <div class="crm-table-wrap" id="crm-table-wrap" onscroll="crmOnTableScroll(this)">
+              <div class="crm-tbl-sticky" id="crm-tbl-sticky">
+                <div class="crm-tbl-toolbar">
+                  <span class="crm-tbl-info" id="crm-foot-note2"></span>
+                </div>
+              </div>
+              <table class="crm-table">
+                <thead>
+                  <tr>
+                    <th data-i18n="crmColId">ID Customer</th>
+                    <th data-i18n="crmColName">Nama</th>
+                    <th data-i18n="crmColWA">Nomor WhatsApp</th>
+                    <th data-i18n="crmColCity">Kota</th>
+                    <th class="crm-col-extra" data-i18n="crmColChannel">Channel</th>
+                    <th data-i18n="crmColTotalOrder" style="white-space:nowrap">
+                      Total Order
+                      <div style="font-size:8px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;margin-top:1px">Jumlah transaksi</div>
+                    </th>
+                    <th data-i18n="crmColTotalSpend" style="white-space:nowrap">
+                      Total Belanja
+                      <div style="font-size:8px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;margin-top:1px">Akumulasi (Rp)</div>
+                    </th>
+                    <th style="white-space:nowrap">
+                      Panas/Dingin
+                      <div style="font-size:8px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;margin-top:1px">Tingkat Keaktifan</div>
+                    </th>
+                    <th class="crm-col-extra" style="cursor:pointer;white-space:nowrap" onclick="crmSortByLabel()" title="Klik untuk sortir berdasarkan label">
+                      Label ↕
+                      <div style="font-size:8px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;margin-top:1px">Klik titik untuk menandai</div>
+                    </th>
+                    <th class="crm-col-extra">Diinput Oleh</th>
+                    <th style="white-space:nowrap">
+                      Follow Up
+                      <div style="font-size:8px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;margin-top:1px">Terakhir dihubungi</div>
+                    </th>
+                    <th data-i18n="action">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="crm-body"></tbody>
+              </table>
+            </div>
+            <div class="crm-foot-note" id="crm-foot-note"></div>
           </div>
-          </div>
-          <table class="crm-table">
-            <thead>
-              <tr>
-                <th data-i18n="crmColId">ID Customer</th>
-                <th data-i18n="crmColName">Nama</th>
-                <th data-i18n="crmColWA">Nomor WhatsApp</th>
-                <th data-i18n="crmColCity">Kota</th>
-                <th data-i18n="crmColChannel">Channel</th>
-                <th data-i18n="crmColTotalOrder" style="white-space:nowrap">
-                  Total Order
-                  <div style="font-size:8px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;margin-top:1px">Jumlah transaksi</div>
-                </th>
-                <th data-i18n="crmColTotalSpend" style="white-space:nowrap">
-                  Total Belanja
-                  <div style="font-size:8px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;margin-top:1px">Akumulasi (Rp)</div>
-                </th>
-                <th style="white-space:nowrap">
-                  Panas/Dingin
-                  <div style="font-size:8px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;margin-top:1px">Tingkat Keaktifan</div>
-                </th>
-                <th style="cursor:pointer;white-space:nowrap" onclick="crmSortByLabel()" title="Klik untuk sortir berdasarkan label">
-                  Label ↕
-                  <div style="font-size:8px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;margin-top:1px">Klik titik untuk menandai</div>
-                </th>
-                <th>Diinput Oleh</th>
-                <th style="white-space:nowrap">
-                  Follow Up
-                  <div style="font-size:8px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;margin-top:1px">Terakhir dihubungi</div>
-                </th>
-                <th data-i18n="action">Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="crm-body"></tbody>
-          </table>
         </div>
-        <div class="crm-foot-note" id="crm-foot-note"></div>
       </div>
 
       <!-- ⑨-b CS HUNTER — dashboard level & progress mingguan CS Hunter -->
@@ -18485,26 +18547,87 @@ async function crmNextIdFor(ownerId) {
 }
 
 // ── Sort CRM ──
-let crmSortField = 'id'; // 'id' (default, urut customer_id) | 'date' (tgl first_order)
-let crmSortDir2  = 'asc';
+// v45: default sekarang selalu sortir per TANGGAL MASUK (first_order), terbaru
+// dulu — menggantikan default lama yang urut customer_id. Granularitas
+// pengelompokan (Harian/Mingguan/Bulanan) diatur lewat crmSortPeriod.
+let crmSortField  = 'date'; // 'date' (default, tgl first_order) | 'label'
+let crmSortDir2   = 'desc';
+let crmSortPeriod = 'harian'; // 'harian' | 'mingguan' | 'bulanan'
 
-function crmSortByDate() {
-  if (crmSortField === 'date') {
-    crmSortDir2 = crmSortDir2 === 'asc' ? 'desc' : 'asc';
-  } else {
-    crmSortField = 'date';
-    crmSortDir2  = 'desc';
-  }
-  const btn = document.getElementById('crm-sort-btn');
+// v45: ganti granularitas sortir tanggal (dipanggil dari dropdown sidebar)
+function crmChangeSortPeriod() {
+  crmSortField  = 'date';
+  crmSortPeriod = document.getElementById('crm-sort-period')?.value || 'harian';
+  crmResetPaging();
+  renderCRM(false);
+}
+
+// v45: balik arah urutan (terbaru ↔ terlama)
+function crmToggleSortDir() {
+  crmSortField = 'date';
+  crmSortDir2  = crmSortDir2 === 'asc' ? 'desc' : 'asc';
+  const btn = document.getElementById('crm-sort-dir-btn');
+  const lbl = document.getElementById('crm-sort-dir-label');
+  if (lbl) lbl.textContent = crmSortDir2 === 'desc' ? 'Terbaru' : 'Terlama';
   if (btn) {
-    // v43: hanya ganti label teksnya, ikon SVG di dalam tombol tetap dipertahankan
     const ico = btn.querySelector('svg');
-    const label = crmSortDir2 === 'desc' ? '↓ First Order Terbaru' : '↑ First Order Terlama';
-    btn.innerHTML = (ico ? ico.outerHTML : '') + label;
+    btn.innerHTML = (ico ? ico.outerHTML : '') + (crmSortDir2 === 'desc' ? '↓ ' : '↑ ') + `<span id="crm-sort-dir-label">${crmSortDir2 === 'desc' ? 'Terbaru' : 'Terlama'}</span>`;
     btn.classList.add('sort-active');
   }
   renderCRM(false);
 }
+
+// v45: kunci pengelompokan periode dari sebuah tanggal first_order, dipakai
+// untuk menyisipkan baris judul grup (Tanggal/Minggu/Bulan) di tabel.
+function crmPeriodKey(dateStr, period) {
+  if (!dateStr) return '__none__';
+  const d = new Date(dateStr);
+  if (isNaN(d)) return '__none__';
+  if (period === 'bulanan') {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  }
+  if (period === 'mingguan') {
+    const dt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = (dt.getUTCDay() + 6) % 7;
+    dt.setUTCDate(dt.getUTCDate() - dayNum + 3);
+    const firstThu = new Date(Date.UTC(dt.getUTCFullYear(), 0, 4));
+    const week = 1 + Math.round(((dt - firstThu) / 86400000 - 3 + ((firstThu.getUTCDay() + 6) % 7)) / 7);
+    return dt.getUTCFullYear() + '-W' + String(week).padStart(2, '0');
+  }
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+const CRM_BULAN_NAMES = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+function crmPeriodLabel(key, period) {
+  if (!key || key === '__none__') return 'Tanpa Tanggal Masuk';
+  if (period === 'bulanan') {
+    const [y, m] = key.split('-');
+    return CRM_BULAN_NAMES[parseInt(m, 10) - 1] + ' ' + y;
+  }
+  if (period === 'mingguan') {
+    const [y, w] = key.split('-W');
+    return 'Minggu ke-' + parseInt(w, 10) + ' · ' + y;
+  }
+  const d = new Date(key + 'T00:00:00');
+  return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+// v45: tampilkan/sembunyikan kolom sekunder (Channel, Label, Diinput Oleh) —
+// disimpan di localStorage supaya preferensi user diingat.
+function crmToggleExtraCols() {
+  const wrap = document.getElementById('crm-table-wrap');
+  const cb = document.getElementById('crm-col-extra-toggle');
+  if (wrap) wrap.classList.toggle('show-extra', !!cb?.checked);
+  try { localStorage.setItem('dhp_crm_show_extra_cols', cb?.checked ? '1' : '0'); } catch (e) {}
+}
+function crmRestoreExtraColsState() {
+  let show = false;
+  try { show = localStorage.getItem('dhp_crm_show_extra_cols') === '1'; } catch (e) {}
+  const cb = document.getElementById('crm-col-extra-toggle');
+  const wrap = document.getElementById('crm-table-wrap');
+  if (cb) cb.checked = show;
+  if (wrap) wrap.classList.toggle('show-extra', show);
+}
+document.addEventListener('DOMContentLoaded', crmRestoreExtraColsState);
 
 // ── v43: Toggle panel "Statistik & Insight" (spotlight, kapasitas, stats,
 //    distribusi PIC, diagram) — default tertutup supaya tabel CRM (prioritas
@@ -19014,8 +19137,27 @@ async function renderCRM(reload = true) {
   }
 
   const isModRow = can.isMod(currentUser?.role);
+  // v45: saat sortir aktif berdasarkan tanggal (default), kelompokkan baris
+  // dengan judul grup (Per Tanggal/Minggu/Bulan) sesuai crmSortPeriod.
+  const useGrouping = crmSortField === 'date';
+  const crmGroupCounts = {};
+  if (useGrouping) {
+    rows.forEach(r => {
+      const k = crmPeriodKey(r.first_order, crmSortPeriod);
+      crmGroupCounts[k] = (crmGroupCounts[k] || 0) + 1;
+    });
+  }
+  let lastGroupKey;
   body.innerHTML = rows.map(c => {
     const idx = crmData.indexOf(c);
+    let groupHeaderHtml = '';
+    if (useGrouping) {
+      const gk = crmPeriodKey(c.first_order, crmSortPeriod);
+      if (gk !== lastGroupKey) {
+        lastGroupKey = gk;
+        groupHeaderHtml = `<tr class="crm-group-row"><td colspan="12">${crmPeriodLabel(gk, crmSortPeriod)}<span class="crm-group-count">· ${crmGroupCounts[gk]} customer</span></td></tr>`;
+      }
+    }
     const waInfo = crmFormatWaLink(c.wa);
     const waCell = waInfo
       ? `<a href="${waInfo.href}" target="_blank" rel="noopener" class="wa-link">${escHtml(waInfo.display)}</a>`
@@ -19050,12 +19192,12 @@ async function renderCRM(reload = true) {
            <span class="crm-label-dot crm-label-dot-empty"></span>
            <span class="crm-label-name" style="color:var(--muted)">+ Label</span>
          </button>`;
-    return `<tr>
+    return `${groupHeaderHtml}<tr>
       <td><span class="crm-id">${escHtml(c.id_customer||'—')}</span></td>
       <td><span class="crm-name ${rowLabel?'crm-name-labeled':''}" ${rowLabel?`style="border-bottom:2px solid ${rowLabel.color};padding-bottom:1px"`:''}>${escHtml(c.nama||'—')}</span>${c.catatan?`<div style="font-size:9px;color:var(--muted);margin-top:2px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(c.catatan)}">${escHtml(c.catatan)}</div>`:''}</td>
       <td>${waCell}</td>
       <td>${escHtml(c.kota||'—')}</td>
-      <td>${chBadge}</td>
+      <td class="crm-col-extra">${chBadge}</td>
       <td style="text-align:right;font-variant-numeric:tabular-nums">${(function(){
         const heat = c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status));
         const ord = crmParseInt(c.total_order);
@@ -19067,8 +19209,8 @@ async function renderCRM(reload = true) {
         return heat === 'Cold' && sp === 0 ? '<span style="color:var(--muted)">—</span>' : crmFmtRupiah(sp);
       })()}</td>
       <td>${crmHeatBadge(c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status)))}</td>
-      <td>${labelCell}</td>
-      <td>${inputByCell}</td>
+      <td class="crm-col-extra">${labelCell}</td>
+      <td class="crm-col-extra">${inputByCell}</td>
       <td>${(function(){
         const days = daysSinceFollowup(c);
         const doneToday = followupDoneTodayIds.has(_followupCustKey(c));
@@ -19182,7 +19324,7 @@ function renderCrmSpotlight() {
             <span class="crm-spot-sub">Urut tanggal masuk paling baru</span>
           </span>
         </div>
-        <button class="crm-spot-more" onclick="crmSortField='date';crmSortDir2='desc';const _b=document.getElementById('crm-sort-btn');if(_b){const _ico=_b.querySelector('svg');_b.innerHTML=(_ico?_ico.outerHTML:'')+'↓ First Order Terbaru';_b.classList.add('sort-active');}renderCRM(false);document.getElementById('crm-table-wrap').scrollIntoView({behavior:'smooth',block:'start'})">Lihat semua →</button>
+        <button class="crm-spot-more" onclick="crmSortField='date';crmSortDir2='desc';crmSortPeriod='harian';const _p=document.getElementById('crm-sort-period');if(_p)_p.value='harian';const _l=document.getElementById('crm-sort-dir-label');if(_l)_l.textContent='Terbaru';const _b=document.getElementById('crm-sort-dir-btn');if(_b)_b.classList.add('sort-active');renderCRM(false);document.getElementById('crm-table-wrap').scrollIntoView({behavior:'smooth',block:'start'})">Lihat semua →</button>
       </div>
       <div class="crm-spot-list">${recentHtml}</div>
     </div>`;
