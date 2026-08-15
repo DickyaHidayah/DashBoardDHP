@@ -2728,6 +2728,38 @@ body.light .target-card{background:#ffffff}
 .mt-main-simple{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .mt-main-simple-text{flex:1;min-width:160px;font-size:12px;color:var(--text2);line-height:1.5}
 
+/* ── FOLLOW UP (Tools — CS Hunter) — tabel customer yang harus di-follow up
+   hari ini + progress target harian. Kartu ring pakai gaya .mt-main-card yang
+   sama dengan Tugas Harian supaya konsisten dengan halaman lain. ── */
+.fu-progress-hit{margin-top:12px;font-size:11px;color:var(--green);font-weight:700}
+.fu-progress-bar-wrap{height:6px;border-radius:4px;background:rgba(201,169,110,.12);overflow:hidden;margin-top:14px}
+.fu-progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),#e8cc99);border-radius:4px;transition:width .6s cubic-bezier(.16,1,.3,1)}
+.fu-table{width:100%;border-collapse:separate;border-spacing:0;font-size:12.5px;min-width:620px}
+.fu-table th{text-align:left;padding:12px 14px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap}
+.fu-table td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+.fu-table tr:last-child td{border-bottom:none}
+.fu-table tr{transition:background var(--trans)}
+.fu-table tr:hover td{background:rgba(201,169,110,.05)}
+.fu-table tr.fu-row-done{opacity:.55}
+.fu-name-cell{display:flex;align-items:center;gap:7px}
+.fu-name-txt{font-weight:600;color:var(--text);white-space:nowrap}
+.fu-city-txt{font-size:10.5px;color:var(--muted);margin-top:2px}
+.fu-done-check{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(122,191,142,.18);color:var(--green);flex-shrink:0}
+.fu-done-check svg{width:9px;height:9px}
+.fu-act-cell{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
+.fu-wa-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:11px;font-weight:600;color:#fff;background:#25D366;text-decoration:none;white-space:nowrap;padding:7px 12px;border-radius:7px;transition:filter .15s,transform .15s;box-shadow:0 1px 4px rgba(37,211,102,.25)}
+.fu-wa-btn:hover{filter:brightness(1.08);transform:translateY(-1px);text-decoration:none}
+.fu-wa-btn svg{flex-shrink:0}
+.fu-wa-none{font-size:10.5px;color:var(--muted);font-style:italic;white-space:nowrap}
+.fu-progress-btn{padding:7px 14px;font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border-radius:6px;border:1px solid var(--border-hi);background:transparent;color:var(--text2);cursor:pointer;transition:all var(--trans);white-space:nowrap;font-family:'Inter',sans-serif}
+.fu-progress-btn:hover{border-color:var(--gold);color:var(--text);background:rgba(201,169,110,.08);transform:translateY(-1px)}
+.fu-progress-done{padding:7px 14px;font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border-radius:6px;border:1px solid rgba(122,191,142,.35);background:rgba(122,191,142,.1);color:var(--green);cursor:default;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;font-family:'Inter',sans-serif}
+.fu-toolbar-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+body.light .fu-wa-btn{box-shadow:0 1px 6px rgba(37,211,102,.3)}
+@media (max-width:720px){
+  .fu-act-cell{flex-direction:column;align-items:stretch}
+}
+
 /* Section head — pemisah antara Tugas Utama & Tugas Pribadi/Custom */
 .mt-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
 .mt-section-title{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
@@ -4071,6 +4103,23 @@ body.light .kol-fin-val{color:#0d0d0d}
           </svg>
         </span>
         <span>CS Hunter</span>
+      </button>
+      <!-- ══ TOOLS — Follow Up, khusus role cs_hunter (+ Mod/Owner lihat semua) ══
+           v45: menggantikan widget "Follow Up Ads Customer" yang dulu nempel di
+           Tugas Harian — sekarang halaman tersendiri, tabel + target 50/hari. -->
+      <div class="nav-sec-lbl" id="ns-cs-tools" style="display:none">
+        <span class="sec-name" data-i18n="navTools">Tools</span>
+        <span class="sec-scope">CS Hunter</span>
+      </div>
+      <button class="nav-item" onclick="navTo('followup',this)" id="n-followup" style="display:none">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="2" width="12" height="12" rx="2.4" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M5 8.3l1.8 1.8L11.2 5.7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span data-i18n="followupNav">Follow Up</span>
+        <span class="nav-badge" id="fu-pending-badge" style="display:none">0</span>
       </button>
       <!-- ══ OVERVIEW TIM — khusus Moderator (lihat dashboard bulanan semua role) ══ -->
       <div class="nav-sec-lbl mod-only" id="ns-all-dash" style="display:none">
@@ -5499,6 +5548,22 @@ body.light .kol-fin-val{color:#0d0d0d}
         <div id="csh-root"></div>
       </div>
 
+      <!-- ⑨-c FOLLOW UP — tools khusus CS Hunter: tabel customer yang harus
+           di-follow up hari ini + target 50/hari, tombol Chat WA (template
+           profesional otomatis) & tombol Progress. -->
+      <div class="sp" id="pg-followup">
+        <div class="ph">
+          <div class="ph-left">
+            <div class="pt" data-i18n="followupNav">Follow Up</div>
+            <div class="ps" data-i18n="followupPageSub">Daftar customer yang harus dihubungi hari ini, lengkap dengan chat WhatsApp siap kirim &amp; target harian</div>
+          </div>
+          <div class="ph-acts">
+            <button class="btn-sm btn-gold" onclick="renderFollowupPage()" title="Muat ulang">⟲ Muat Ulang</button>
+          </div>
+        </div>
+        <div id="followup-root"></div>
+      </div>
+
       <!-- ⑩ PRESENCE PAGE -->
       <div class="sp" id="pg-presence">
         <div class="ph">
@@ -6618,6 +6683,15 @@ const i18n = {
     myTasksDailyEntered:'leads today', myTasksDailyTarget:'daily target', myTasksDailyBtn:'+ Add Lead',
     myTasksDailyViewAll:'View all leads today', myTasksDailyDone:'Target reached today 🎉',
     myTasksDailyEmpty:'No leads logged yet today — add your first one.',
+    // v45: Follow Up — dedicated tools page for CS Hunter (table + daily target)
+    navTools:'Tools', followupNav:'Follow Up',
+    followupPageSub:"Today's customers to contact, complete with a ready-to-send WhatsApp chat & daily target",
+    followupDoneToday:'followed up today', followupRemainingToday:'remaining today', followupTotalMine:'total your customers',
+    followupTargetHit:'🎉 Today\'s target reached!', followupTableTitle:'Follow Up List',
+    followupSearchPh:'Search name / WA / city…', followupColCustomer:'Customer', followupColStatus:'Status',
+    followupColLast:'Last Follow Up', followupColAction:'Action', followupChatWa:'Chat WA', followupBtnProgress:'Progress',
+    followupBtnDone:'Done', followupNoWa:'No valid WA', followupEmpty:'No customers in your database yet.',
+    followupNoResult:'No results for this search.', followupToday:'Today', followupDaysAgo:'{n} days ago',
     // Ad target picker — role quick filter
     targetFilterAll:'All', targetFilterCsHunter:'CS Hunter Only', targetSelectAllCsHunter:'Select all CS Hunter',
     // Ads Customer — labels (same concept as CRM Database Customer)
@@ -6891,6 +6965,15 @@ const i18n = {
     myTasksDailyEntered:'leads hari ini', myTasksDailyTarget:'target harian', myTasksDailyBtn:'+ Tambah Leads',
     myTasksDailyViewAll:'Lihat semua leads hari ini', myTasksDailyDone:'Target hari ini tercapai 🎉',
     myTasksDailyEmpty:'Belum ada leads yang dicatat hari ini — tambahkan yang pertama.',
+    // v45: Follow Up — halaman tools khusus CS Hunter (tabel + target harian)
+    navTools:'Tools', followupNav:'Follow Up',
+    followupPageSub:'Daftar customer yang harus dihubungi hari ini, lengkap dengan chat WhatsApp siap kirim & target harian',
+    followupDoneToday:'di-follow up hari ini', followupRemainingToday:'sisa hari ini', followupTotalMine:'total customer kamu',
+    followupTargetHit:'🎉 Target hari ini tercapai!', followupTableTitle:'Daftar Follow Up',
+    followupSearchPh:'Cari nama / WA / kota…', followupColCustomer:'Customer', followupColStatus:'Status',
+    followupColLast:'Terakhir Follow Up', followupColAction:'Aksi', followupChatWa:'Chat WA', followupBtnProgress:'Progress',
+    followupBtnDone:'Selesai', followupNoWa:'Tanpa WA valid', followupEmpty:'Belum ada customer di database kamu.',
+    followupNoResult:'Tidak ada hasil untuk pencarian ini.', followupToday:'Hari ini', followupDaysAgo:'{n} hari lalu',
     // Target picker iklan — filter cepat per role
     targetFilterAll:'Semua', targetFilterCsHunter:'Khusus CS Hunter', targetSelectAllCsHunter:'Pilih semua CS Hunter',
     // Ads Customer — label (konsep sama seperti Database Customer)
@@ -7568,13 +7651,20 @@ async function initDashboard() {
   navShow('n-live-dashboard', isMod || isOwner);   // Live Dashboard (perbandingan seluruh host)
   navShow('ns-all-dash',      isMod || isOwner);   // Overview Tim — Dashboard Semua Role
   navShow('n-all-dashboard',  isMod || isOwner);
-  navShow('n-mod-tasks',      true && !isOwner);    // Tugas Saya — tidak relevan untuk Owner (tidak punya tugas pribadi)
+  // v45: CS Hunter (non-mod) tidak lagi punya "Tugas Saya/Tugas Harian" &
+  // "Performa Saya" — diganti total oleh halaman Tools → Follow Up (tabel
+  // customer + target 50/hari). Mod/Owner tetap lihat seperti biasa.
+  const isCsHunterOnlyRole = can.isCsHunter(r) && !isMod;
+  navShow('n-mod-tasks',      true && !isOwner && !isCsHunterOnlyRole);    // Tugas Saya — tidak relevan untuk Owner (tidak punya tugas pribadi)
   // v41: label sidebar "Tugas Saya" → "Tugas Harian" khusus CS Hunter (non-mod),
   // karena isinya diganti total jadi form isi leads harian.
   { const lbl = document.getElementById('n-mod-tasks-label'); if (lbl) lbl.textContent = (can.isCsHunter(r) && !isMod) ? t('dailyTask') : t('myTasks'); }
-  navShow('n-my-performance', true && !isOwner);    // Performa Saya — idem
+  navShow('n-my-performance', true && !isOwner && !isCsHunterOnlyRole);    // Performa Saya — idem
   navShow('n-cs-hunter',      can.isCsHunter(r) || isMod || isOwner);   // CS Hunter — level & progress (sendiri utk CS Hunter, semua tim utk Mod/Owner)
+  navShow('ns-cs-tools',      can.isCsHunter(r) || isMod || isOwner);   // Section label "Tools"
+  navShow('n-followup',       can.isCsHunter(r) || isMod || isOwner);   // v45: Follow Up — tabel customer + target 50/hari
   initCsHunterOwnBadge(); // pangkat CS Hunter tampil di sidebar, di manapun dashboard dibuka
+  initFollowupBadge();    // v45: badge jumlah customer yang belum di-follow up hari ini
 
   // Administration — Progress Tugas/Target/Users tetap khusus Moderator.
   // Budget Marketing dibuka untuk Owner (view-only) sesuai permintaan.
@@ -7724,19 +7814,19 @@ async function initDashboard() {
   // admin & b2b & moderator → langsung ke Ads Schedule (sistem ads jadi pusat kerja mereka).
   // Overview dihapus total — tidak ada lagi halaman kosong untuk siapa pun.
   try {
-    // CS Hunter (bukan Mod/Owner) → langsung ke halaman Tugas Harian saat login,
-    // supaya target closing hari ini adalah hal pertama yang mereka lihat.
+    // CS Hunter (bukan Mod/Owner) → langsung ke halaman Follow Up saat login,
+    // supaya target follow-up hari ini adalah hal pertama yang mereka lihat.
     const isCsHunterOnly = can.isCsHunter(r) && !isMod && !isOwner;
     const homePage = isOwner        ? 'all_dashboard' :
                      isContent      ? 'content_studio' :
                      isLive         ? 'live_studio'    :
-                     isCsHunterOnly ? 'cs_hunter'       :
+                     isCsHunterOnly ? 'followup'        :
                                        'ad_scheduler';
     const homeNavBtn = document.getElementById(
       homePage === 'all_dashboard'  ? 'n-all-dashboard'  :
       homePage === 'content_studio' ? 'n-content-studio' :
       homePage === 'live_studio'    ? 'n-live-studio'    :
-      homePage === 'cs_hunter'      ? 'n-cs-hunter'      :
+      homePage === 'followup'       ? 'n-followup'       :
                                       'n-ad-scheduler'
     );
     navTo(homePage, homeNavBtn);
@@ -7747,14 +7837,14 @@ async function initDashboard() {
     const fallback = isOwner ? 'all_dashboard'
                    : isContent ? 'content_studio'
                    : isLive ? 'live_studio'
-                   : isCsHunterOnly ? 'cs_hunter'
+                   : isCsHunterOnly ? 'followup'
                    : 'ad_scheduler';
     document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
     const tgt = document.getElementById(`pg-${fallback}`);
     if (tgt) tgt.classList.add('active');
     try {
       if (fallback === 'ad_scheduler') renderAdScheduler();
-      if (fallback === 'cs_hunter') loadCsHunterPage();
+      if (fallback === 'followup') renderFollowupPage();
     } catch(_){}
   }
 }
@@ -17387,22 +17477,29 @@ function initCRMRealtime() {
                      hari ini oleh user yang sedang login.
    ═══════════════════════════════════════════════════════════ */
 // v23: target follow-up harian sekarang bisa diubah moderator per role (dulu konstanta tetap 50)
-let FOLLOWUP_DAILY_TARGETS = { admin: 50, b2b: 50 };
+let FOLLOWUP_DAILY_TARGETS = { admin: 50, b2b: 50, cs_hunter: 50 };
 let FOLLOWUP_DAILY_TARGET  = 50; // target milik currentUser yang login (disinkron via syncFollowupTargetForCurrentUser)
 
 function followupTargetForRole(jsRole) {
-  return jsRole === 'b2b_marketing' ? FOLLOWUP_DAILY_TARGETS.b2b : FOLLOWUP_DAILY_TARGETS.admin;
+  if (jsRole === 'b2b_marketing') return FOLLOWUP_DAILY_TARGETS.b2b;
+  if (jsRole === 'cs_hunter')     return FOLLOWUP_DAILY_TARGETS.cs_hunter;
+  return FOLLOWUP_DAILY_TARGETS.admin;
 }
 function followupTargetForUser(uid) {
   return followupTargetForRole(getUserMeta(uid).role);
 }
 async function loadFollowupTargetsFromDB() {
   try {
-    const [admT, b2bT] = await Promise.all([
+    const [admT, b2bT, cshT] = await Promise.all([
       _getPortalConfigVal('followup_target_admin', '50'),
       _getPortalConfigVal('followup_target_b2b', '50'),
+      _getPortalConfigVal('followup_target_cs_hunter', '50'),
     ]);
-    FOLLOWUP_DAILY_TARGETS = { admin: Math.max(1, crmParseInt(admT) || 50), b2b: Math.max(1, crmParseInt(b2bT) || 50) };
+    FOLLOWUP_DAILY_TARGETS = {
+      admin: Math.max(1, crmParseInt(admT) || 50),
+      b2b: Math.max(1, crmParseInt(b2bT) || 50),
+      cs_hunter: Math.max(1, crmParseInt(cshT) || 50),
+    };
   } catch(e) { console.warn('[DHP] loadFollowupTargetsFromDB gagal:', e); }
   syncFollowupTargetForCurrentUser();
 }
@@ -17556,6 +17653,9 @@ async function _confirmFollowup(idx, response) {
   }
   if (document.getElementById('pg-crm')?.classList.contains('active')) renderCRM();
   if (document.getElementById('pg-mod_tasks')?.classList.contains('active')) { try { await renderMtMainSection(); } catch(e){} }
+  // v45: kalau halaman Follow Up sedang dibuka, render ulang supaya ring
+  // target & tabel langsung update begitu progress dikonfirmasi.
+  if (document.getElementById('pg-followup')?.classList.contains('active')) { try { await renderFollowupPage(); } catch(e){} }
   try { await checkAndCelebrateFollowupMilestone(); } catch(e) { console.warn('[DHP] cek milestone follow up gagal:', e); }
 }
 window._confirmFollowup = _confirmFollowup;
@@ -18341,9 +18441,10 @@ async function _setPortalConfigVal(key, val) {
 async function _renderFollowupTargetGrid() {
   const grid = document.getElementById('mtg-followup-grid');
   if (!grid) return;
-  const [admTarget, b2bTarget] = await Promise.all([
+  const [admTarget, b2bTarget, cshTarget] = await Promise.all([
     _getPortalConfigVal('followup_target_admin', '50'),
     _getPortalConfigVal('followup_target_b2b', '50'),
+    _getPortalConfigVal('followup_target_cs_hunter', '50'),
   ]);
   grid.innerHTML = `
     <div class="target-card">
@@ -18361,6 +18462,14 @@ async function _renderFollowupTargetGrid() {
         <input class="fi" id="mtg-fu-b2b" type="number" min="1" value="${escHtml(b2bTarget)}"/>
         <button class="btn-sm btn-gold" onclick="_saveFollowupTarget('b2b')">Simpan</button>
       </div>
+    </div>
+    <div class="target-card">
+      <div class="target-card-name">CS Hunter</div>
+      <div class="target-card-role">Target follow-up customer / hari</div>
+      <div class="target-card-edit">
+        <input class="fi" id="mtg-fu-cs_hunter" type="number" min="1" value="${escHtml(cshTarget)}"/>
+        <button class="btn-sm btn-gold" onclick="_saveFollowupTarget('cs_hunter')">Simpan</button>
+      </div>
     </div>`;
 }
 
@@ -18369,8 +18478,10 @@ async function _saveFollowupTarget(roleKey) {
   const val = Math.max(1, crmParseInt(input?.value) || 1);
   await _setPortalConfigVal(`followup_target_${roleKey}`, val);
   FOLLOWUP_DAILY_TARGETS[roleKey] = val;
-  toast(`Target follow-up ${roleKey === 'admin' ? 'Admin' : 'B2B Marketing'} diatur: ${val}/hari`);
+  const roleLbl = roleKey === 'admin' ? 'Admin' : roleKey === 'b2b' ? 'B2B Marketing' : 'CS Hunter';
+  toast(`Target follow-up ${roleLbl} diatur: ${val}/hari`);
   pushActivity(`Target follow-up harian ${roleKey} diatur ${val}/hari`, 'info');
+  if (currentUser && followupTargetForRole(currentUser.role) !== undefined) syncFollowupTargetForCurrentUser();
 }
 window._saveFollowupTarget = _saveFollowupTarget;
 
@@ -20778,7 +20889,7 @@ function navTo(page, btn) {
   // Schedule, Manage Customer CRM, dan Budget Marketing. Di luar daftar
   // ini (halaman kerja mentah moderator seperti Progress Tugas Tim,
   // Target, Users, Settings, Ads Customers/Task) tetap terkunci.
-  const OWNER_ALLOWED_PAGES = ['all_dashboard','content_studio','live_studio','live_dashboard','ad_scheduler','crm','budget_marketing','cs_hunter'];
+  const OWNER_ALLOWED_PAGES = ['all_dashboard','content_studio','live_studio','live_dashboard','ad_scheduler','crm','budget_marketing','cs_hunter','followup'];
   if (isOwnerNav && !OWNER_ALLOWED_PAGES.includes(page)) {
     toast('👁 Akun Owner hanya bisa melihat halaman: Laporan Tim, Content Studio, Live Studio, Live Dashboard, Ads Schedule, Manage CRM & Budget Marketing.');
     return;
@@ -20799,6 +20910,7 @@ function navTo(page, btn) {
   if (page === 'live_dashboard' && !can.isMod(r) && !isOwnerNav) { toast('Moderator access required'); return; }
   if (page === 'all_dashboard'  && !can.isMod(r) && !isOwnerNav) { toast('Moderator access required'); return; }
   if (page === 'cs_hunter'      && !can.isCsHunter(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Moderator access required'); return; }
+  if (page === 'followup'       && !can.isCsHunter(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Moderator access required'); return; }
 
   document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
   const target = document.getElementById(`pg-${page}`); if (target) target.classList.add('active');
@@ -20830,6 +20942,7 @@ function loadPageData(page) {
   if (page === 'live_dashboard')  loadLiveDashboard();
   if (page === 'all_dashboard')   loadAllRoleDashboard();
   if (page === 'cs_hunter')       loadCsHunterPage();
+  if (page === 'followup')        renderFollowupPage();
   if (page === 'ad_scheduler')    {
     // Non-mod: reload task dari DB setiap kali buka halaman (supaya selalu fresh)
     if (db && currentUser && !can.isMod(currentUser.role)) {
@@ -20980,6 +21093,210 @@ async function csHunterDailyBreakdown(uid, wsStr, weStr) {
   const counts = {};
   rows.forEach(row => { const k = row.ad_date; counts[k] = (counts[k] || 0) + 1; });
   return counts;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ㉕-c FOLLOW UP — halaman Tools khusus CS Hunter (v45).
+   Tabel berisi SELURUH customer milik CS Hunter yang login (crmData,
+   sudah otomatis difilter per-owner oleh loadCRM()), diurutkan supaya
+   yang prioritas (Hot/Warm & belum di-follow up hari ini) tampil dulu.
+   Target 50/hari (bisa diubah moderator lewat halaman Target) dipakai
+   di ring progress paling atas — begitu tombol "Progress" ditekan &
+   dikonfirmasi lewat openFollowupResponseModal/_confirmFollowup (log
+   ke followup_logs, sama seperti Admin/B2B), ring & tabel ini otomatis
+   me-render ulang. Tombol "Chat WA" membuka wa.me dengan template
+   pesan follow-up profesional yang otomatis memanggil nama customer.
+   ═══════════════════════════════════════════════════════════ */
+const FU_WA_ICON = `<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.337-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/></svg>`;
+const FU_CHECK_ICON = `<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2l2.1 2.1L8 3"/></svg>`;
+
+let _fuMine = [];
+let _fuOrder = null;
+let _fuSearchQ = '';
+
+// Template chat WA follow-up yang profesional & otomatis memanggil nama customer.
+function fuWaTemplate(c) {
+  const waInfo = crmFormatWaLink(c.wa);
+  if (!waInfo) return null;
+  const firstName = (c.nama || '').trim().split(/\s+/)[0] || '';
+  const greet = firstName ? `Halo Kak ${firstName}` : 'Halo Kak';
+  const agent = (currentUser && currentUser.name) ? currentUser.name : 'tim kami';
+  const productLine = c.produk_fav ? ` mengenai ${c.produk_fav}` : '';
+  const text = [
+    `${greet}, mohon maaf mengganggu waktunya 🙏`,
+    ``,
+    `Perkenalkan saya ${agent}. Saya ingin menindaklanjuti (follow up) minat/pesanan Kakak sebelumnya${productLine}.`,
+    `Apakah Kakak masih berkenan untuk melanjutkan, atau ada yang bisa kami bantu informasikan lebih lanjut?`,
+    ``,
+    `Kami siap membantu kapan saja ya, Kak. Terima kasih banyak 🙏`
+  ].join('\n');
+  return { href: `${waInfo.href}?text=${encodeURIComponent(text)}`, display: waInfo.display };
+}
+
+function fuHeatOf(c) { return c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status)); }
+
+// Urutan tampil: prioritas (Hot/Warm) yang belum di-follow up dulu (diacak biar
+// tidak monoton), lalu sisanya yang belum, baru yang sudah di-follow up hari ini.
+function fuBuildOrder() {
+  const pending = _fuMine.filter(c => !followupDoneTodayIds.has(_followupCustKey(c)));
+  const done    = _fuMine.filter(c => followupDoneTodayIds.has(_followupCustKey(c)));
+  const recommended = mtShuffle(pending.filter(c => ['Hot','Warm'].includes(fuHeatOf(c))));
+  const rest         = mtShuffle(pending.filter(c => !['Hot','Warm'].includes(fuHeatOf(c))));
+  _fuOrder = [...recommended, ...rest, ...done];
+}
+
+function fuDaysAgoLabel(c) {
+  const days = daysSinceFollowup(c);
+  if (days === null) return '—';
+  if (days === 0) return t('followupToday');
+  return t('followupDaysAgo').replace('{n}', days);
+}
+
+function fuRowHtml(c) {
+  const idx = crmData.indexOf(c);
+  const heat = fuHeatOf(c);
+  const isReco = ['Hot','Warm'].includes(heat);
+  const doneToday = followupDoneTodayIds.has(_followupCustKey(c));
+  const wa = fuWaTemplate(c);
+  return `<tr class="${doneToday ? 'fu-row-done' : ''}">
+    <td>
+      <div class="fu-name-cell">
+        ${doneToday
+          ? `<span class="fu-done-check" title="${escHtml(t('followupDoneToday'))}">${FU_CHECK_ICON}</span>`
+          : (isReco ? `<span class="mt-fu-reco-badge ${heat==='Hot'?'is-hot':'is-warm'}">${heat==='Hot'?'🔥':'☀'} Prioritas</span>` : '')}
+        <span class="fu-name-txt">${escHtml(c.nama||'—')}</span>
+      </div>
+      ${c.kota ? `<div class="fu-city-txt">${escHtml(c.kota)}</div>` : ''}
+    </td>
+    <td>${crmHeatBadge(heat)}</td>
+    <td>${fuDaysAgoLabel(c)}</td>
+    <td>
+      <div class="fu-act-cell">
+        ${wa ? `<a href="${wa.href}" target="_blank" rel="noopener" class="fu-wa-btn" onclick="event.stopPropagation()">${FU_WA_ICON}<span>${t('followupChatWa')}</span></a>` : `<span class="fu-wa-none">${t('followupNoWa')}</span>`}
+        ${doneToday
+          ? `<button type="button" class="fu-progress-done" disabled>${FU_CHECK_ICON}${t('followupBtnDone')}</button>`
+          : `<button type="button" class="fu-progress-btn" onclick="markFollowedUp(${idx})">${t('followupBtnProgress')}</button>`}
+      </div>
+    </td>
+  </tr>`;
+}
+
+function fuBodyHtml() {
+  if (!_fuOrder) fuBuildOrder();
+  let list = _fuOrder;
+  if (_fuSearchQ) {
+    const q = _fuSearchQ;
+    list = list.filter(c => (c.nama||'').toLowerCase().includes(q) || (c.wa||'').toLowerCase().includes(q) || (c.kota||'').toLowerCase().includes(q));
+  }
+  if (!list.length) return `<tr><td colspan="4" class="tbl-empty">${_fuSearchQ ? t('followupNoResult') : t('followupEmpty')}</td></tr>`;
+  return list.map(fuRowHtml).join('');
+}
+
+function fuRenderBody() {
+  const tb = document.getElementById('fu-tbody');
+  if (tb) tb.innerHTML = fuBodyHtml();
+}
+
+const fuDebouncedSearch = debounce((v) => { _fuSearchQ = (v||'').toLowerCase().trim(); fuRenderBody(); }, 200);
+
+function fuReshuffle() {
+  const btn = document.getElementById('fu-refresh-btn');
+  if (btn) btn.classList.add('is-spinning');
+  _fuOrder = null;
+  fuRenderBody();
+  if (btn) setTimeout(() => btn.classList.remove('is-spinning'), 500);
+}
+
+// Badge kecil di sidebar (jumlah customer yang belum di-follow up hari ini) —
+// dipanggil setiap dashboard dirender ulang, di manapun halamannya dibuka.
+async function initFollowupBadge() {
+  if (!currentUser || !can.isCsHunter(currentUser.role) || can.isMod(currentUser.role)) {
+    const badge = document.getElementById('fu-pending-badge');
+    if (badge) badge.style.display = 'none';
+    return;
+  }
+  try {
+    if (crmUsesDB()) { await loadCRM(); }
+    await loadFollowupLogsToday();
+    const mine = crmData.slice();
+    const doneCount = mine.filter(c => followupDoneTodayIds.has(_followupCustKey(c))).length;
+    const pending = Math.max(0, mine.length - doneCount);
+    const badge = document.getElementById('fu-pending-badge');
+    if (badge) { badge.textContent = pending; badge.style.display = pending > 0 ? '' : 'none'; }
+  } catch(e) { console.warn('[DHP] initFollowupBadge gagal:', e); }
+}
+
+async function renderFollowupPage() {
+  const root = document.getElementById('followup-root');
+  if (!root || !currentUser) return;
+  root.innerHTML = `<div class="myperf-empty" style="padding:20px 0">Memuat data follow up…</div>`;
+  try {
+    if (crmUsesDB()) { await loadCRM(); }
+    await loadFollowupLogsToday();
+  } catch(e) { console.warn('[DHP] renderFollowupPage gagal muat data:', e); }
+
+  syncFollowupTargetForCurrentUser();
+  const mine = crmData.slice();
+  const doneCount = mine.filter(c => followupDoneTodayIds.has(_followupCustKey(c))).length;
+  const target = FOLLOWUP_DAILY_TARGET;
+  const pct = target ? Math.min(100, Math.round((doneCount/target)*100)) : 0;
+  const pendingCount = Math.max(0, mine.length - doneCount);
+  const circ = 2 * Math.PI * 34;
+  const hit = doneCount >= target;
+
+  _fuMine = mine; _fuOrder = null; _fuSearchQ = '';
+
+  root.innerHTML = `
+    <div class="mt-main-card">
+      <div class="mt-main-head">
+        <span class="mt-main-tag">${t('myTasksMainTag')}</span>
+        <span class="mt-main-title" data-i18n="followupTableTitle">${t('followupTableTitle')}</span>
+      </div>
+      <div class="mt-main-body">
+        <div class="mt-main-ring">
+          <svg viewBox="0 0 80 80" width="72" height="72">
+            <circle cx="40" cy="40" r="34" stroke="var(--border)" stroke-width="7" fill="none"/>
+            <circle cx="40" cy="40" r="34" stroke="${hit?'var(--green)':'var(--gold)'}" stroke-width="7" fill="none"
+              stroke-dasharray="${circ}" stroke-dashoffset="${circ*(1-pct/100)}" stroke-linecap="round" transform="rotate(-90 40 40)"/>
+          </svg>
+          <div class="mt-main-ring-num">${doneCount}/${target}</div>
+        </div>
+        <div class="mt-main-stats">
+          <div><b style="color:var(--green)">${doneCount}</b><span>${t('followupDoneToday')}</span></div>
+          <div><b style="color:var(--amber)">${pendingCount}</b><span>${t('followupRemainingToday')}</span></div>
+          <div><b>${mine.length}</b><span>${t('followupTotalMine')}</span></div>
+        </div>
+      </div>
+      ${hit ? `<div class="fu-progress-hit">${t('followupTargetHit')}</div>` : `<div class="fu-progress-bar-wrap"><div class="fu-progress-bar-fill" style="width:${pct}%"></div></div>`}
+    </div>
+
+    <div class="tbl-wrap" style="margin-top:16px">
+      <div class="tbl-head">
+        <div class="tbl-title">${t('followupTableTitle')} (${mine.length})</div>
+        <div class="tbl-actions">
+          <div class="fu-toolbar-wrap">
+            <div class="mt-fu-search-wrap">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+              <input type="text" id="fu-search" class="mt-fu-search-input" placeholder="${escHtml(t('followupSearchPh'))}" oninput="fuDebouncedSearch(this.value)"/>
+            </div>
+            <button type="button" id="fu-refresh-btn" class="mt-fu-refresh-btn" title="Acak ulang urutan" onclick="fuReshuffle()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="tbl-scroll">
+        <table class="fu-table">
+          <thead><tr>
+            <th>${t('followupColCustomer')}</th><th>${t('followupColStatus')}</th><th>${t('followupColLast')}</th><th>${t('followupColAction')}</th>
+          </tr></thead>
+          <tbody id="fu-tbody">${fuBodyHtml()}</tbody>
+        </table>
+      </div>
+    </div>`;
+
+  const badge = document.getElementById('fu-pending-badge');
+  if (badge) { badge.textContent = pendingCount; badge.style.display = pendingCount > 0 ? '' : 'none'; }
 }
 
 /* ── v41: Tugas Harian CS Hunter — "task" isi leads hari ini, dibuat
@@ -22153,6 +22470,8 @@ function fireStAchieveConfetti(ov) {
 const TUT_STEPS_DEFS = [
   { id:'n-mod-tasks',      title:'Tugas Saya',             desc:'Semua tugas yang ditugaskan ke kamu ada di sini. Tandai selesai begitu sudah kamu kerjakan.' },
   { id:'n-my-performance', title:'Performa Saya',          desc:'Dashboard performa bulananmu — grafik tren 6 bulan & capaian bulan ini, tersedia untuk semua role.' },
+  { id:'n-cs-hunter',      title:'CS Hunter',               desc:'Level Bronze → Diamond & progress closing mingguan kamu ada di sini.' },
+  { id:'n-followup',       title:'Follow Up',               desc:'Daftar customer yang harus kamu hubungi hari ini, lengkap dengan chat WhatsApp siap kirim & target 50 follow-up per hari.' },
   { id:'n-content-studio', title:'Studio Konten',          desc:'4 kartu ringkasan progress kontenmu bulan ini, plus Kalender Konten tempat semua tema, script & jadwal konten kamu berada.' },
   { id:'n-live-studio',    title:'Studio Live',            desc:'Lihat jadwal live kamu, isi laporan sesi, dan pantau dashboard performa milikmu sendiri di sini.' },
   { id:'n-live-dashboard', title:'Live Dashboard',         desc:'Bandingkan performa seluruh Host Live dalam satu tampilan — khusus moderator.' },
