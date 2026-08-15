@@ -19461,6 +19461,18 @@ async function renderCRM(reload = true) {
   if (dateRangeWrap) dateRangeWrap.classList.toggle('active', !!(dateFromV || dateToV));
   if (dateRangeClearBtn) dateRangeClearBtn.style.display = (dateFromV || dateToV) ? '' : 'none';
 
+  // v49: Customer yang baru dikirim moderator ke Follow Up (fu_flag=true)
+  // TIDAK ikut tampil dulu di tabel Database Customer biasa milik target —
+  // dia cuma boleh kelihatan di halaman Follow Up (paling atas, bertanda
+  // emas) supaya tidak "nyempil" seolah sudah lama jadi customer si target.
+  // Begitu target menekan tombol Follow Up pertama kali (fu_flag otomatis
+  // balik ke false — lihat _confirmFollowup), baris ini baru muncul lagi
+  // secara normal di Database Customer. Moderator/Owner (view-only) tetap
+  // melihat semua baris apa adanya supaya bisa memantau status kiriman.
+  if (!can.viewAll(currentUser?.role)) {
+    rows = rows.filter(c => !c.fu_flag);
+  }
+
   // Sort: default by customer ID (urut CST), atau by first_order date, atau by label
   if (crmSortField === 'date') {
     rows.sort((a,b) => {
@@ -19647,7 +19659,15 @@ async function renderCRM(reload = true) {
   // halaman/data saat ini (mis. setelah reload/filter/pindah halaman), supaya
   // bar aksi massal tidak "nyangkut" menghitung baris yang sudah tak terlihat.
   if (isModRow && crmSelectedIds.size) {
-    const liveKeys = new Set(crmData.map(cc => cc._uuid || cc.id_customer));
+    // v49-FIX: dulu dibandingkan ke `crmData` (seluruh 500 baris mentah 1
+    // halaman) — akibatnya centang lama dari SEBELUM filter tanggal/status/
+    // heat/label/search diterapkan tetap dianggap "masih ada" walau baris
+    // itu sudah tidak kelihatan lagi di tabel (karena kefilter), sehingga
+    // ikut kekirim saat "Kirim ke Follow Up" walau tidak dicentang manual.
+    // Sekarang dibandingkan ke `rows` (baris yang BENAR-BENAR tampil sesuai
+    // filter aktif saat ini) supaya jumlah yang terkirim selalu pas sama
+    // dengan yang terlihat & dicentang oleh moderator.
+    const liveKeys = new Set(rows.map(cc => cc._uuid || cc.id_customer));
     let changed = false;
     crmSelectedIds.forEach(k => { if (!liveKeys.has(k)) { crmSelectedIds.delete(k); changed = true; } });
     if (changed) crmUpdateBulkBar();
