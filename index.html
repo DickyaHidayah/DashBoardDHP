@@ -3448,13 +3448,57 @@ body.light .crm-tbl-sticky{background:#ffffff}
    siapa. Solid background wajib supaya konten kolom lain yang lewat di bawahnya
    ke-tutup rapi, bukan tembus. */
 .crm-table td.crm-freeze-id,.crm-table td.crm-freeze-name{position:sticky;z-index:1;background:var(--surface);contain:paint}
-.crm-table td.crm-freeze-id{left:0;width:96px;min-width:96px;max-width:96px}
-.crm-table td.crm-freeze-name{left:96px;width:132px;min-width:132px;max-width:132px;overflow:hidden;text-overflow:ellipsis}
-.crm-table th.crm-freeze-id{left:0;width:96px;min-width:96px;max-width:96px}
-.crm-table th.crm-freeze-name{left:96px;width:132px;min-width:132px;max-width:132px}
+.crm-table td.crm-freeze-id{left:34px;width:96px;min-width:96px;max-width:96px}
+.crm-table td.crm-freeze-name{left:130px;width:132px;min-width:132px;max-width:132px;overflow:hidden;text-overflow:ellipsis}
+.crm-table th.crm-freeze-id{left:34px;width:96px;min-width:96px;max-width:96px}
+.crm-table th.crm-freeze-name{left:130px;width:132px;min-width:132px;max-width:132px}
 .crm-table td.crm-freeze-name .crm-name{overflow:hidden;text-overflow:ellipsis;max-width:100%;display:inline-block;vertical-align:bottom}
 .crm-table-wrap.h-scrolled .crm-freeze-name{box-shadow:6px 0 8px -6px rgba(0,0,0,.35)}
 body.light .crm-table td.crm-freeze-id,body.light .crm-table td.crm-freeze-name{background:#ffffff}
+
+/* v48: kolom checkbox seleksi massal — hanya moderator/head_moderator yang
+   melihat & bisa memakainya (dikontrol lewat class body.is-mod-crm), dipakai
+   untuk fitur "Kirim ke Follow Up" (pilih banyak customer sekaligus, kirim
+   kepemilikannya ke Admin/B2B/CS Hunter supaya masuk daftar Follow Up mereka). */
+.crm-table th.crm-cb-col,.crm-table td.crm-cb-col{display:none;position:sticky;left:0;z-index:2;width:34px;min-width:34px;max-width:34px;text-align:center;background:var(--surface)}
+.crm-table th.crm-cb-col{z-index:5;background:var(--surface2,var(--surface))}
+body.is-mod-crm .crm-table th.crm-cb-col,body.is-mod-crm .crm-table td.crm-cb-col{display:table-cell}
+body.light .crm-table td.crm-cb-col{background:#ffffff}
+.crm-row-cb,.crm-head-cb{width:14px;height:14px;cursor:pointer;accent-color:var(--gold);vertical-align:middle}
+.crm-table tr.crm-row-selected td{background:rgba(201,169,110,.08)}
+body.light .crm-table tr.crm-row-selected td{background:rgba(201,169,110,.14)}
+.crm-table tr.crm-row-selected td.crm-freeze-id,.crm-table tr.crm-row-selected td.crm-freeze-name,.crm-table tr.crm-row-selected td.crm-cb-col{background:rgba(201,169,110,.14)}
+
+/* Badge "ditugaskan moderator" pada baris customer yang baru dikirim ke
+   Follow Up seseorang — tetap tampil sampai orang itu benar-benar follow up. */
+.crm-fu-flag-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;background:rgba(201,169,110,.16);color:var(--gold);border:1px solid rgba(201,169,110,.4);white-space:nowrap;margin-top:3px}
+
+/* Bar aksi massal mengambang — muncul begitu ada baris yang dicentang */
+.crm-bulk-bar{display:none;align-items:center;gap:12px;padding:10px 16px;margin-bottom:10px;border-radius:10px;background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.35);animation:crmBulkIn .18s ease}
+.crm-bulk-bar.show{display:flex}
+@keyframes crmBulkIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.crm-bulk-count{font-size:12px;font-weight:700;color:var(--gold);white-space:nowrap}
+.crm-bulk-count b{font-size:14px}
+.crm-bulk-spacer{flex:1}
+.crm-bulk-bar .btn-sm{white-space:nowrap}
+
+/* Modal "Kirim ke Follow Up" — daftar target user (mirip target-tile ads) */
+.fu-send-target-list{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto;margin-top:4px}
+.fu-send-target-row{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--border);border-radius:9px;cursor:pointer;transition:border-color var(--trans),background var(--trans)}
+.fu-send-target-row:hover{border-color:var(--border-hi)}
+.fu-send-target-row.selected{border-color:var(--gold);background:rgba(201,169,110,.1)}
+.fu-send-target-row input{display:none}
+.fu-send-target-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.fu-send-target-info{flex:1;min-width:0}
+.fu-send-target-name{font-size:12.5px;font-weight:600;color:var(--text)}
+.fu-send-target-meta{font-size:10px;color:var(--text2);margin-top:1px}
+.fu-send-target-tick{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--border-hi);flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.fu-send-target-row.selected .fu-send-target-tick{background:var(--gold);border-color:var(--gold)}
+.fu-send-empty{padding:16px;text-align:center;color:var(--muted);font-size:11.5px}
+
+/* Prioritas "Dari Moderator" di halaman Follow Up milik Admin/B2B/CS Hunter */
+.mt-fu-reco-badge.is-mod-flag{background:rgba(201,169,110,.18);color:var(--gold);border:1px solid rgba(201,169,110,.4)}
+.fu-modflag-banner{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.35);font-size:11.5px;color:var(--gold);font-weight:600;margin-bottom:12px}
 
 /* v23: CRM table filters row — search & filter menyatu langsung dengan tabel */
 .crm-tbl-filters{
@@ -5478,6 +5522,18 @@ body.light .kol-fin-val{color:#0d0d0d}
                 </div>
               </div>
             </div>
+            <!-- v48: bar aksi massal — moderator pilih beberapa customer lalu kirim
+                 kepemilikannya ke Admin/B2B/CS Hunter supaya masuk daftar Follow Up
+                 mereka, ditandai jelas sebagai "dari moderator" & realtime ke semua. -->
+            <div class="crm-bulk-bar" id="crm-bulk-bar">
+              <span class="crm-bulk-count"><b id="crm-bulk-count-num">0</b> customer dipilih</span>
+              <div class="crm-bulk-spacer"></div>
+              <button class="btn-g btn-sm" onclick="crmClearSelection()">Batal</button>
+              <button class="btn-sm btn-gold" onclick="openCrmSendFollowupModal()">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:2px"><path d="M2 8h11M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Kirim ke Follow Up
+              </button>
+            </div>
             <div class="crm-tbl-heading">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none" class="crm-tbl-heading-ico"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 6.5h12M6 3v10" stroke="currentColor" stroke-width="1.3"/></svg>
               <span>Semua Data Pelanggan</span>
@@ -5492,6 +5548,7 @@ body.light .kol-fin-val{color:#0d0d0d}
               <table class="crm-table">
                 <thead>
                   <tr>
+                    <th class="crm-cb-col"><input type="checkbox" class="crm-head-cb" id="crm-select-all" onchange="crmToggleSelectAll(this.checked)" title="Pilih semua di halaman ini"/></th>
                     <th class="crm-freeze-id" data-i18n="crmColId">ID Customer</th>
                     <th class="crm-freeze-name" data-i18n="crmColName">Nama</th>
                     <th data-i18n="crmColWA">Nomor WhatsApp</th>
@@ -6151,6 +6208,7 @@ const NP_POP_ICONS = {
   ad:     '<svg viewBox="0 0 24 24"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>',
   content:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 8l6 4-6 4V8z"/></svg>',
   live:   '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M4.9 4.9a10 10 0 0 0 0 14.1M19.1 4.9a10 10 0 0 1 0 14.1M8 8a5 5 0 0 0 0 8M16 8a5 5 0 0 1 0 8"/></svg>',
+  followup_assign: '<svg viewBox="0 0 24 24"><path d="M2 8h11M9 4l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="18" cy="8" r="2.5"/></svg>',
   login:  '<svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>',
   system: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
   info:   '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
@@ -6158,7 +6216,7 @@ const NP_POP_ICONS = {
 /* Map tipe notif → kelas tone popup */
 const NP_TONE = { task:'task', action:'task', ad:'task', done:'done', task_done:'done',
   alert:'alert', reject:'alert', lead:'lead', reg:'lead', login:'task', system:'task', info:'task',
-  content:'task', live:'task' };
+  content:'task', live:'task', followup_assign:'lead' };
 
 const NP_POP_MS = 8000;   // popup tampil 8 detik
 let _npPopCount = 0;
@@ -6244,7 +6302,7 @@ function NP_TYPE_TITLE(type) {
     task:   t_('npTask'), action: t_('npTask'), ad: t_('npAd'),
     done:   t_('npDone'), lead: t_('npLead'), reg: t_('npReg'),
     login:  t_('npLogin'), alert: t_('npAlert'), system: t_('npSystem'), info: t_('npSystem'),
-    content:'Kalender Konten', live:'Studio Live'
+    content:'Kalender Konten', live:'Studio Live', followup_assign:'Follow Up'
   };
   return map[type] || t_('npSystem');
 }
@@ -6280,7 +6338,7 @@ function renderNotifPanel() {
     return;
   }
   body.innerHTML = notifications.map(n => {
-    const typeLabel = { reg:'Pendaftaran', system:'Sistem', action:'Task', login:'Login', task:'Task', done:'Selesai', alert:'Pemberitahuan', lead:'Lead', info:'Info', ad:'Iklan', content:'Konten', live:'Live' }[n.type] || n.type.toUpperCase();
+    const typeLabel = { reg:'Pendaftaran', system:'Sistem', action:'Task', login:'Login', task:'Task', done:'Selesai', alert:'Pemberitahuan', lead:'Lead', info:'Info', ad:'Iklan', content:'Konten', live:'Live', followup_assign:'Follow Up' }[n.type] || n.type.toUpperCase();
     const headline = n.title ? `<div class="ni-head">${n.title}</div>` : '';
     const text = n.title ? (n.body || '') : n.msg;
     return `<div class="notif-item ${n.read?'':'unread'}${n.link?' ni-clickable':''}" onclick="markNotif(${JSON.stringify(n.id)});${n.link ? `notifGoTo(${JSON.stringify(n.link)})` : ''}">
@@ -17097,6 +17155,10 @@ function crmFromDb(row) {
     last_followup_at: row.last_followup_at || '',   // v5.4 — task follow up harian
     label_id:       row.label_id || null,            // v24 — label warna per-role
     last_followup_by: row.last_followup_by || '',
+    fu_flag:        !!row.fu_flag,                    // v48 — ditandai moderator, perlu di-follow up
+    fu_assigned_by: row.fu_assigned_by || '',
+    fu_assigned_at: row.fu_assigned_at || '',
+    fu_note:        row.fu_note || '',
   };
 }
 
@@ -17629,6 +17691,10 @@ async function _confirmFollowup(idx, response) {
       }));
       const upd = { last_followup_at: now, last_followup_by: currentUser.id };
       if (heatAfter !== heatBefore) upd.heat_category = heatAfter;
+      // v48: begitu customer ini benar-benar di-follow up, lepas tanda
+      // "Dari Moderator" — flag itu tugasnya cuma menandai PRIORITAS yang
+      // belum ditangani, bukan riwayat permanen siapa yang mengirim dulu.
+      if (c.fu_flag) upd.fu_flag = false;
       await dbQ(d => d.from('crm_customers').update(upd).eq('id', c._uuid));
     } catch(e) { console.warn('[DHP] markFollowedUp gagal:', e); }
   } else {
@@ -17643,6 +17709,7 @@ async function _confirmFollowup(idx, response) {
   c.last_followup_at = now;
   c.last_followup_by  = currentUser.id;
   if (heatAfter !== heatBefore) c.heat_category = heatAfter;
+  if (c.fu_flag) c.fu_flag = false;
   followupDoneTodayIds.add(key);
   saveCRM();
 
@@ -19570,11 +19637,23 @@ async function renderCRM(reload = true) {
   }
 
   if (!rows.length) {
-    body.innerHTML = `<tr><td colspan="12" class="tbl-empty">${crmData.length ? t('noCustomers') : t('crmEmpty')}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="13" class="tbl-empty">${crmData.length ? t('noCustomers') : t('crmEmpty')}</td></tr>`;
     return;
   }
 
   const isModRow = can.isMod(currentUser?.role);
+  document.body.classList.toggle('is-mod-crm', isModRow);
+  // v48: bersihkan seleksi massal dari customer yang sudah tidak ada lagi di
+  // halaman/data saat ini (mis. setelah reload/filter/pindah halaman), supaya
+  // bar aksi massal tidak "nyangkut" menghitung baris yang sudah tak terlihat.
+  if (isModRow && crmSelectedIds.size) {
+    const liveKeys = new Set(crmData.map(cc => cc._uuid || cc.id_customer));
+    let changed = false;
+    crmSelectedIds.forEach(k => { if (!liveKeys.has(k)) { crmSelectedIds.delete(k); changed = true; } });
+    if (changed) crmUpdateBulkBar();
+  } else if (!isModRow && crmSelectedIds.size) {
+    crmSelectedIds.clear(); crmUpdateBulkBar();
+  }
   // v45: saat sortir aktif berdasarkan tanggal (default), kelompokkan baris
   // dengan judul grup (Per Tanggal/Minggu/Bulan) sesuai crmSortPeriod.
   const useGrouping = crmSortField === 'date';
@@ -19593,7 +19672,7 @@ async function renderCRM(reload = true) {
       const gk = crmPeriodKey(c.first_order, crmSortPeriod);
       if (gk !== lastGroupKey) {
         lastGroupKey = gk;
-        groupHeaderHtml = `<tr class="crm-group-row"><td colspan="12">${crmPeriodLabel(gk, crmSortPeriod)}<span class="crm-group-count">· ${crmGroupCounts[gk]} customer</span></td></tr>`;
+        groupHeaderHtml = `<tr class="crm-group-row"><td colspan="13">${crmPeriodLabel(gk, crmSortPeriod)}<span class="crm-group-count">· ${crmGroupCounts[gk]} customer</span></td></tr>`;
       }
     }
     const waInfo = crmFormatWaLink(c.wa);
@@ -19630,9 +19709,20 @@ async function renderCRM(reload = true) {
            <span class="crm-label-dot crm-label-dot-empty"></span>
            <span class="crm-label-name" style="color:var(--muted)">+ Label</span>
          </button>`;
-    return `${groupHeaderHtml}<tr>
+    const custKey = c._uuid || c.id_customer || String(idx);
+    const isSelectedRow = crmSelectedIds.has(custKey);
+    const fuFlagBadge = c.fu_flag
+      ? (function(){
+          const am = getUserMeta(c.fu_assigned_by);
+          const when = c.fu_assigned_at ? timeAgo(new Date(c.fu_assigned_at).getTime()) : '';
+          const tip = `Dikirim oleh ${escHtml(am.name)}${when?' · '+when:''}${c.fu_note?' — "'+escHtml(c.fu_note)+'"':''}`;
+          return `<div class="crm-fu-flag-badge" title="${tip}">${crmIco('sparkle')} Dari Moderator</div>`;
+        })()
+      : '';
+    return `${groupHeaderHtml}<tr class="${isSelectedRow?'crm-row-selected':''}" data-custkey="${escHtml(custKey)}">
+      <td class="crm-cb-col"><input type="checkbox" class="crm-row-cb" ${isSelectedRow?'checked':''} onchange="crmToggleSelectRow('${escHtml(custKey).replace(/'/g,"\\'")}',this.checked)"/></td>
       <td class="crm-freeze-id"><span class="crm-id">${escHtml(c.id_customer||'—')}</span></td>
-      <td class="crm-freeze-name"><span class="crm-name ${rowLabel?'crm-name-labeled':''}" ${rowLabel?`style="border-bottom:2px solid ${rowLabel.color};padding-bottom:1px"`:''}>${escHtml(c.nama||'—')}</span>${c.catatan?`<div style="font-size:9px;color:var(--muted);margin-top:2px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(c.catatan)}">${escHtml(c.catatan)}</div>`:''}</td>
+      <td class="crm-freeze-name"><span class="crm-name ${rowLabel?'crm-name-labeled':''}" ${rowLabel?`style="border-bottom:2px solid ${rowLabel.color};padding-bottom:1px"`:''}>${escHtml(c.nama||'—')}</span>${c.catatan?`<div style="font-size:9px;color:var(--muted);margin-top:2px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(c.catatan)}">${escHtml(c.catatan)}</div>`:''}${fuFlagBadge}</td>
       <td>${waCell}</td>
       <td>${escHtml(c.kota||'—')}</td>
       <td class="crm-col-extra">${chBadge}</td>
@@ -19677,6 +19767,156 @@ async function renderCRM(reload = true) {
 // prioritas follow up sekarang cukup diwakili grup stat "Prioritas Follow
 // Up · Tingkat Keaktifan" di renderCRM() supaya Statistik & Insight tetap
 // ringkas dan tidak tumpang tindih di sidebar sempit.
+
+/* ═══════════════════════════════════════════════════════════
+   ⑪-d KIRIM KE FOLLOW UP (v48) — khusus Moderator/Head Moderator
+   ─ Moderator memilih beberapa customer sekaligus di Database Customer
+     (checkbox per baris / "Pilih Semua" per halaman), lalu mengirim
+     kepemilikannya (owner_id) ke satu Admin/B2B/CS Hunter. Customer yang
+     dikirim otomatis ditandai `fu_flag = true` supaya langsung muncul
+     PALING ATAS & bertanda emas di halaman Follow Up milik target,
+     dan orang itu dapat notifikasi bel + popup + bunyi secara realtime
+     (lewat tabel `notifications` yang sudah ada infrastrukturnya).
+   ─ Flag otomatis hilang begitu target benar-benar menekan tombol
+     Follow Up pertama kali sesudah menerima kiriman ini (lihat
+     _confirmFollowup()).
+   ─ Semua perubahan owner_id ini juga otomatis ter-broadcast lewat
+     channel realtime `dhp_crm` yang sudah ada, jadi moderator lain yang
+     sedang membuka Database Customer langsung lihat perpindahan PIC-nya
+     tanpa perlu reload manual.
+   ═══════════════════════════════════════════════════════════ */
+let crmSelectedIds = new Set();   // set of _uuid (atau id_customer di mode offline)
+let crmFuSendTarget = null;       // user_id target terpilih di modal kirim
+
+function crmToggleSelectRow(key, checked) {
+  if (checked) crmSelectedIds.add(key); else crmSelectedIds.delete(key);
+  const row = document.querySelector(`.crm-table tr[data-custkey="${CSS.escape(key)}"]`);
+  if (row) row.classList.toggle('crm-row-selected', checked);
+  crmUpdateBulkBar();
+}
+window.crmToggleSelectRow = crmToggleSelectRow;
+
+function crmToggleSelectAll(checked) {
+  document.querySelectorAll('#crm-body .crm-row-cb').forEach(cb => {
+    cb.checked = checked;
+    const tr = cb.closest('tr');
+    const key = tr?.dataset?.custkey;
+    if (!key) return;
+    if (checked) crmSelectedIds.add(key); else crmSelectedIds.delete(key);
+    tr.classList.toggle('crm-row-selected', checked);
+  });
+  crmUpdateBulkBar();
+}
+window.crmToggleSelectAll = crmToggleSelectAll;
+
+function crmClearSelection() {
+  crmSelectedIds.clear();
+  const selAll = document.getElementById('crm-select-all');
+  if (selAll) selAll.checked = false;
+  document.querySelectorAll('#crm-body .crm-row-cb').forEach(cb => cb.checked = false);
+  document.querySelectorAll('#crm-body tr.crm-row-selected').forEach(tr => tr.classList.remove('crm-row-selected'));
+  crmUpdateBulkBar();
+}
+window.crmClearSelection = crmClearSelection;
+
+function crmUpdateBulkBar() {
+  const bar = document.getElementById('crm-bulk-bar');
+  const numEl = document.getElementById('crm-bulk-count-num');
+  if (numEl) numEl.textContent = crmSelectedIds.size;
+  if (bar) bar.classList.toggle('show', crmSelectedIds.size > 0 && can.isMod(currentUser?.role));
+}
+
+/* Modal pemilihan target — hanya role Admin/B2B/CS Hunter (role "murni"
+   yang benar-benar memegang tugas follow-up harian), dibangun dari
+   getTargetUsers() yang sudah dipakai fitur Target Iklan supaya daftarnya
+   selalu konsisten dengan roster aktif. */
+function openCrmSendFollowupModal() {
+  if (!crmSelectedIds.size) { toast('Pilih dulu minimal 1 customer'); return; }
+  crmFuSendTarget = null;
+  const targets = getTargetUsers();
+  const rowsHtml = targets.length ? targets.map(u => {
+    const clr = ROLE_COLORS[u.role] || '#888';
+    const initials = (u.name||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    const isOnline = !!(presenceMap[u.id]?.online);
+    const myCount = crmGlobalAgg.filter(c => c.owner_id === u.id).length;
+    return `<label class="fu-send-target-row" data-uid="${escHtml(u.id)}" onclick="crmPickFuTarget('${escHtml(u.id).replace(/'/g,"\\'")}')">
+      <input type="radio" name="fu-send-target"/>
+      <div class="fu-send-target-av" style="background:${clr}18;color:${clr};border:1.5px solid ${clr}44">${escHtml(initials)}</div>
+      <div class="fu-send-target-info">
+        <div class="fu-send-target-name">${escHtml(u.name)} ${isOnline?'<span style="color:var(--green)">●</span>':''}</div>
+        <div class="fu-send-target-meta">${escHtml(rn(u.role))} · ${myCount.toLocaleString('id-ID')} customer saat ini</div>
+      </div>
+      <span class="fu-send-target-tick"></span>
+    </label>`;
+  }).join('') : `<div class="fu-send-empty">Belum ada akun dengan role Admin, B2B Marketing, atau CS Hunter.</div>`;
+
+  document.getElementById('m-title').textContent = 'Kirim ke Follow Up';
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg">
+      <label>Mengirim <b style="color:var(--gold)">${crmSelectedIds.size}</b> customer terpilih ke daftar Follow Up milik:</label>
+      <div class="fu-send-target-list" id="fu-send-target-list">${rowsHtml}</div>
+    </div>
+    <div class="fg" style="margin-top:12px">
+      <label>Catatan untuk target (opsional)</label>
+      <textarea class="fi" id="fu-send-note" rows="2" placeholder="Mis. Prioritaskan, sudah pernah nanya harga…" style="resize:vertical"></textarea>
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button>
+    <button class="btn-sm btn-gold" onclick="crmSendToFollowup()">Kirim Sekarang</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+window.openCrmSendFollowupModal = openCrmSendFollowupModal;
+
+function crmPickFuTarget(uid) {
+  crmFuSendTarget = uid;
+  document.querySelectorAll('#fu-send-target-list .fu-send-target-row').forEach(r => {
+    const sel = r.dataset.uid === uid;
+    r.classList.toggle('selected', sel);
+    const radio = r.querySelector('input[type=radio]');
+    if (radio) radio.checked = sel;
+  });
+}
+window.crmPickFuTarget = crmPickFuTarget;
+
+async function crmSendToFollowup() {
+  if (!crmFuSendTarget) { toast('Pilih dulu target penerima'); return; }
+  if (!crmSelectedIds.size) { toast('Tidak ada customer yang dipilih'); closeModal(); return; }
+  const note = document.getElementById('fu-send-note')?.value?.trim() || null;
+  const targetMeta = getUserMeta(crmFuSendTarget);
+  const ids = [...crmSelectedIds];
+  closeModal();
+
+  if (crmUsesDB()) {
+    try {
+      const res = await dbQ(d => d.rpc('assign_crm_followup', {
+        p_ids: ids, p_target: crmFuSendTarget, p_by: currentUser.id, p_note: note
+      }));
+      const n = (res && typeof res.data === 'number') ? res.data : ids.length;
+      toast(`✓ ${n} customer dikirim ke Follow Up ${targetMeta.name}`);
+    } catch(e) {
+      console.warn('[DHP] crmSendToFollowup gagal:', e);
+      toast('Gagal mengirim ke Follow Up — coba lagi');
+      return;
+    }
+  } else {
+    // Mode offline — update langsung di memori/localStorage
+    const now = new Date().toISOString();
+    crmData.forEach(c => {
+      const key = c._uuid || c.id_customer;
+      if (ids.includes(key)) {
+        c.owner_id = crmFuSendTarget; c.fu_flag = true;
+        c.fu_assigned_by = currentUser.id; c.fu_assigned_at = now; c.fu_note = note || '';
+      }
+    });
+    saveCRM();
+    toast(`✓ ${ids.length} customer dikirim ke Follow Up ${targetMeta.name}`);
+  }
+
+  crmClearSelection();
+  try { await crmFetchGlobalAgg(); } catch(e) {}
+  await renderCRM(true);
+}
+window.crmSendToFollowup = crmSendToFollowup;
 
 // ── ADD / EDIT MODAL ──
 function openCRMModal(idx) {
@@ -21135,14 +21375,18 @@ function fuWaTemplate(c) {
 
 function fuHeatOf(c) { return c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status)); }
 
-// Urutan tampil: prioritas (Hot/Warm) yang belum di-follow up dulu (diacak biar
-// tidak monoton), lalu sisanya yang belum, baru yang sudah di-follow up hari ini.
+// Urutan tampil: PRIORITAS TERTINGGI = customer yang baru dikirim moderator
+// (fu_flag, belum ditangani) — supaya tidak kelewat. Lalu prioritas alami
+// (Hot/Warm) yang belum di-follow up (diacak biar tidak monoton), baru
+// sisanya yang belum, dan terakhir yang sudah di-follow up hari ini.
 function fuBuildOrder() {
   const pending = _fuMine.filter(c => !followupDoneTodayIds.has(_followupCustKey(c)));
   const done    = _fuMine.filter(c => followupDoneTodayIds.has(_followupCustKey(c)));
-  const recommended = mtShuffle(pending.filter(c => ['Hot','Warm'].includes(fuHeatOf(c))));
-  const rest         = mtShuffle(pending.filter(c => !['Hot','Warm'].includes(fuHeatOf(c))));
-  _fuOrder = [...recommended, ...rest, ...done];
+  const modFlagged   = pending.filter(c => c.fu_flag);
+  const restPending  = pending.filter(c => !c.fu_flag);
+  const recommended = mtShuffle(restPending.filter(c => ['Hot','Warm'].includes(fuHeatOf(c))));
+  const rest         = mtShuffle(restPending.filter(c => !['Hot','Warm'].includes(fuHeatOf(c))));
+  _fuOrder = [...modFlagged, ...recommended, ...rest, ...done];
 }
 
 function fuDaysAgoLabel(c) {
@@ -21158,12 +21402,20 @@ function fuRowHtml(c) {
   const isReco = ['Hot','Warm'].includes(heat);
   const doneToday = followupDoneTodayIds.has(_followupCustKey(c));
   const wa = fuWaTemplate(c);
+  const modFlagBadge = (!doneToday && c.fu_flag)
+    ? (function(){
+        const am = getUserMeta(c.fu_assigned_by);
+        const when = c.fu_assigned_at ? timeAgo(new Date(c.fu_assigned_at).getTime()) : '';
+        const tip = `Dikirim oleh ${escHtml(am.name)}${when?' · '+when:''}${c.fu_note?' — "'+escHtml(c.fu_note)+'"':''}`;
+        return `<span class="mt-fu-reco-badge is-mod-flag" title="${tip}">${crmIco('sparkle')} Dari Moderator</span>`;
+      })()
+    : '';
   return `<tr class="${doneToday ? 'fu-row-done' : ''}">
     <td>
       <div class="fu-name-cell">
         ${doneToday
           ? `<span class="fu-done-check" title="${escHtml(t('followupDoneToday'))}">${FU_CHECK_ICON}</span>`
-          : (isReco ? `<span class="mt-fu-reco-badge ${heat==='Hot'?'is-hot':'is-warm'}">${heat==='Hot'?'🔥':'☀'} Prioritas</span>` : '')}
+          : (modFlagBadge || (isReco ? `<span class="mt-fu-reco-badge ${heat==='Hot'?'is-hot':'is-warm'}">${heat==='Hot'?'🔥':'☀'} Prioritas</span>` : ''))}
         <span class="fu-name-txt">${escHtml(c.nama||'—')}</span>
       </div>
       ${c.kota ? `<div class="fu-city-txt">${escHtml(c.kota)}</div>` : ''}
@@ -21245,8 +21497,13 @@ async function renderFollowupPage() {
   const hit = doneCount >= target;
 
   _fuMine = mine; _fuOrder = null; _fuSearchQ = '';
+  const modFlagCount = mine.filter(c => c.fu_flag && !followupDoneTodayIds.has(_followupCustKey(c))).length;
+  const modFlagBanner = modFlagCount
+    ? `<div class="fu-modflag-banner">${crmIco('sparkle')} <span>${modFlagCount} customer baru dikirim moderator ke daftar kamu — perlu di-follow up segera</span></div>`
+    : '';
 
   root.innerHTML = `
+    ${modFlagBanner}
     <div class="mt-main-card">
       <div class="mt-main-head">
         <span class="mt-main-tag">${t('myTasksMainTag')}</span>
