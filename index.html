@@ -7561,6 +7561,23 @@ async function handleForgot() {
 
 function loginSuccess(id, role, name, tutSeenAt) {
   currentUser = { id, role, name, tutSeenAt: tutSeenAt || null };
+  // v49-FIX: reset TOTAL semua state Database Customer (CRM) & Follow Up
+  // dari sesi akun sebelumnya. Sebelumnya variabel-variabel ini (crmData,
+  // crmGlobalAgg, crmTotalCount, followupDoneTodayIds, dst) TIDAK PERNAH
+  // dikosongkan saat ganti akun di tab/browser yang sama — akibatnya kalau
+  // logout lalu login pakai akun lain, Database Customer & badge Follow Up
+  // masih menampilkan data/hitungan customer milik akun SEBELUMNYA (nyangkut/
+  // "gabung" ke CRM user lain) sampai ada trigger lain yang kebetulan
+  // memaksa reload ulang. Sekarang langsung dikosongkan total di sini,
+  // supaya akun yang baru login selalu mulai bersih dari 0 dan Follow Up
+  // hari ini juga otomatis dihitung ulang murni untuk akun ini saja —
+  // loadCRM()/loadFollowupLogsToday() akan menariknya lagi dari awal
+  // begitu halaman terkait dibuka.
+  crmData = []; crmGlobalAgg = []; crmTotalCount = 0; crmHasMore = false;
+  crmPageOffset = 0; crmOwnerFilter = 'all'; _crmGlobalAggReady = false;
+  crmSelectedIds.clear();
+  followupDoneTodayIds = new Set(); _fuMine = []; _fuOrder = null; _fuSearchQ = '';
+  updateCRMBadge();
   // Reset notifikasi sesi sebelumnya (fix: ganti akun di tab yang sama
   // sempat menampilkan notif milik akun lama saat transisi login).
   notifications = []; notifUnread = 0;
@@ -7640,6 +7657,15 @@ function handleLogout() {
     pushActivity(`${currentUser.name} signed out`, 'leave');
   }
   currentUser = null;
+  // v49-FIX: kosongkan juga state CRM & Follow Up saat logout (bukan cuma
+  // saat login) — lapis pengaman kedua supaya tidak ada kemungkinan data
+  // akun lama sempat ke-render lagi sebelum akun berikutnya benar-benar
+  // login dan menarik datanya sendiri.
+  crmData = []; crmGlobalAgg = []; crmTotalCount = 0; crmHasMore = false;
+  crmPageOffset = 0; crmOwnerFilter = 'all'; _crmGlobalAggReady = false;
+  crmSelectedIds.clear();
+  followupDoneTodayIds = new Set(); _fuMine = []; _fuOrder = null; _fuSearchQ = '';
+  updateCRMBadge();
   document.body.classList.remove('is-mod');
   document.body.classList.remove('is-head-mod');
   document.body.classList.remove('owner-view');
