@@ -7646,6 +7646,7 @@ function handleLogout() {
     if (adChannel)   { try { adChannel.unsubscribe();  } catch(e){} adChannel  = null; }
     if (crmChannel)  { try { crmChannel.unsubscribe(); } catch(e){} crmChannel = null; }
     if (notifChannel){ try { notifChannel.unsubscribe(); } catch(e){} notifChannel = null; }
+    if (miscRtChannel){ try { miscRtChannel.unsubscribe(); } catch(e){} miscRtChannel = null; }
     notifications = []; notifUnread = 0;
     // ── Cleanup brand channel & polling ──────────────────────────
     if (_brandChannel)  { try { _brandChannel.unsubscribe();  } catch(e){} _brandChannel  = null; }
@@ -7860,6 +7861,10 @@ async function initDashboard() {
   // v34: to-do moderator (per device) + target omzet (moderator + host/admin/b2b pemilik target)
   if (isMod) { try { initModTasksRealtime(currentUser.id); } catch (e) { console.warn('[DHP] initModTasksRealtime gagal:', e); } }
   if (isMod || isLive || canSeeAds) { try { initTargetsRealtime(); } catch (e) { console.warn('[DHP] initTargetsRealtime gagal:', e); } }
+  // v45: KOL/Affiliate + Budget Marketing + Follow Up log — moderator, owner
+  // (view-only), & admin/B2B (follow up log milik sendiri) perlu lihat
+  // perubahan dari device lain tanpa refresh manual.
+  if (isMod || isOwner || canSeeAds) { try { initMiscRealtime(); } catch (e) { console.warn('[DHP] initMiscRealtime gagal:', e); } }
 
   try { renderStats(); renderActivity(); }
   catch (e) { console.warn('[DHP] render awal gagal:', e); }
@@ -14987,11 +14992,27 @@ function initLiveScheduleRealtime() {
       const targetUserId = row.user_id;
       const isMod = can.isMod(currentUser?.role);
       if (!isMod && targetUserId && currentUser && targetUserId !== currentUser.id) return;
+      let handled = false;
       if (isLiveStudioPageActive() && targetUserId === lsTargetId) {
         loadLsMonth();
-      } else {
-        flagRemoteUpdate();
+        handled = true;
       }
+      // v45: attendance (Izin/Sakit/Libur) ikut refresh total_izin/total_sakit
+      // di Live Dashboard, Dashboard Semua Role, & dashboard pribadi host —
+      // sebelumnya cuma kepakai kalau lagi buka Live Studio host itu saja.
+      if (isLiveDashboardPageActive() && isMod) {
+        safe(loadLiveDashboard);
+        handled = true;
+      }
+      if (document.getElementById('pg-all_dashboard')?.classList.contains('active')) {
+        safe(() => loadAllRoleDashboard().catch(() => {}));
+        handled = true;
+      }
+      if (document.getElementById('dash-stat-grid') && (can.isHostLive(currentUser?.role) ? currentUser.id === targetUserId : true)) {
+        safe(() => loadHostDashboard().catch?.(() => {}));
+        handled = true;
+      }
+      if (!handled) flagRemoteUpdate();
     })
     // v34: status pengajuan izin telat lapor — host perlu lihat approve/reject
     // moderator secara realtime, bukan cuma setelah reload manual.
@@ -15009,6 +15030,54 @@ function isAdPageActive() {
   const el = document.getElementById('pg-ad_scheduler');
   return el && el.classList.contains('active');
 }
+
+// v45: KOL/Affiliate, Budget Marketing, & Follow Up Log — tiga modul ini
+// sebelumnya SAMA SEKALI tidak punya channel realtime, jadi perubahan dari
+// satu device baru kelihatan di device lain setelah reload manual. Disatukan
+// di sini karena semuanya dipakai moderator + owner (view-only) dan sama-sama
+// "ringan" (bukan per-user filtered seperti mod_tasks).
+let miscRtChannel = null;
+function initMiscRealtime() {
+  if (!db || miscRtChannel) return;
+  const safe = (fn) => { try { fn(); } catch (e) { console.warn('[DHP] misc realtime render error:', e); } };
+  try {
+    miscRtChannel = db.channel('dhp_misc_sync')
+      .on('postgres_changes', { event:'*', schema:'public', table:'kol_affiliates' }, () => {
+        if (document.getElementById('pg-kol_affiliate')?.classList.contains('active')) {
+          safe(() => loadKolAffiliatePage());
+        } else {
+          flagRemoteUpdate();
+        }
+      })
+      .on('postgres_changes', { event:'*', schema:'public', table:'kol_affiliate_reports' }, () => {
+        if (document.getElementById('pg-kol_affiliate')?.classList.contains('active')) {
+          safe(() => loadKolAffiliatePage());
+        } else {
+          flagRemoteUpdate();
+        }
+      })
+      .on('postgres_changes', { event:'*', schema:'public', table:'marketing_budget' }, () => {
+        if (document.getElementById('pg-budget_marketing')?.classList.contains('active')) {
+          safe(() => loadBudgetMarketingPage());
+        } else {
+          flagRemoteUpdate();
+        }
+      })
+      .on('postgres_changes', { event:'*', schema:'public', table:'followup_logs' }, payload => {
+        const row = payload.new || payload.old;
+        // dashboard tim (moderator/owner) — progress follow up semua orang
+        if (document.getElementById('pg-all_dashboard')?.classList.contains('active')) {
+          safe(() => loadAllRoleDashboard().catch(() => {}));
+        }
+        // ring/progress follow up harian milik user yang sedang login sendiri
+        if (row && currentUser && row.user_id === currentUser.id) {
+          safe(() => loadFollowupLogsToday());
+        }
+      })
+      .subscribe();
+  } catch (e) { console.warn('[DHP] initMiscRealtime gagal:', e); }
+}
+
 function isTaskPageActive() {
   const el = document.getElementById('pg-ad_task');
   return el && el.classList.contains('active');
