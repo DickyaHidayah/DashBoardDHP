@@ -5948,6 +5948,13 @@ const can = {
   viewAll:     r => ['head_moderator','moderator'].includes(r) || r === 'owner',
   any:         r => !!r,
   isCsHunter:  r => r === 'cs_hunter',
+  // v53: role yang boleh pakai fitur Follow Up (tabel customer + target
+  // harian) — sebelumnya cuma cs_hunter, sekarang B2B Marketing (Galih)
+  // juga bisa, memakai database customer miliknya sendiri (owner_id-nya).
+  // Target harian per-role sudah lama disiapkan di FOLLOWUP_DAILY_TARGETS
+  // (followup_target_b2b) — cuma gerbang akses nav/badge/route-nya yang
+  // belum dibuka untuk b2b_marketing, jadi cukup ditambah di sini.
+  canFollowup: r => r === 'cs_hunter' || r === 'b2b_marketing',
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -7873,8 +7880,8 @@ async function initDashboard() {
   { const lbl = document.getElementById('n-mod-tasks-label'); if (lbl) lbl.textContent = (can.isCsHunter(r) && !isMod) ? t('dailyTask') : t('myTasks'); }
   navShow('n-my-performance', true && !isOwner && !isCsHunterOnlyRole);    // Performa Saya — idem
   navShow('n-cs-hunter',      can.isCsHunter(r) || isMod || isOwner);   // CS Hunter — level & progress (sendiri utk CS Hunter, semua tim utk Mod/Owner)
-  navShow('ns-cs-tools',      can.isCsHunter(r) || isMod || isOwner);   // Section label "Tools"
-  navShow('n-followup',       can.isCsHunter(r) || isMod || isOwner);   // v45: Follow Up — tabel customer + target 50/hari
+  navShow('ns-cs-tools',      can.canFollowup(r) || isMod || isOwner);   // v53: Section label "Tools" — kini juga muncul utk B2B Marketing
+  navShow('n-followup',       can.canFollowup(r) || isMod || isOwner);   // v53: Follow Up — tabel customer + target harian (cs_hunter + b2b_marketing)
   initCsHunterOwnBadge(); // pangkat CS Hunter tampil di sidebar, di manapun dashboard dibuka
   initFollowupBadge();    // v45: badge jumlah customer yang belum di-follow up hari ini
 
@@ -21432,7 +21439,7 @@ function navTo(page, btn) {
   if (page === 'live_dashboard' && !can.isMod(r) && !isOwnerNav) { toast('Moderator access required'); return; }
   if (page === 'all_dashboard'  && !can.isMod(r) && !isOwnerNav) { toast('Moderator access required'); return; }
   if (page === 'cs_hunter'      && !can.isCsHunter(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Moderator access required'); return; }
-  if (page === 'followup'       && !can.isCsHunter(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Moderator access required'); return; }
+  if (page === 'followup'       && !can.canFollowup(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / B2B Marketing / Moderator access required'); return; }
 
   document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
   const target = document.getElementById(`pg-${page}`); if (target) target.classList.add('active');
@@ -21873,7 +21880,7 @@ function fuReshuffle() {
 // Badge kecil di sidebar (jumlah customer yang belum di-follow up hari ini) —
 // dipanggil setiap dashboard dirender ulang, di manapun halamannya dibuka.
 async function initFollowupBadge() {
-  if (!currentUser || !can.isCsHunter(currentUser.role) || can.isMod(currentUser.role)) {
+  if (!currentUser || !can.canFollowup(currentUser.role) || can.isMod(currentUser.role)) {
     const badge = document.getElementById('fu-pending-badge');
     if (badge) badge.style.display = 'none';
     return;
