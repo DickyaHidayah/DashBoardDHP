@@ -7636,6 +7636,15 @@ function updateClock() {
    ⑮ AUTH
    ═══════════════════════════════════════════════════════════ */
 let currentUser = null;
+// v52-FIX: "session epoch" — dinaikkan tiap kali login/logout. Dipakai
+// sebagai guard di semua fetch async yang mengisi state global (CRM,
+// Follow Up, agregat, dst). Sebelumnya kalau ganti akun CEPAT (logout lalu
+// login akun lain sebelum query akun sebelumnya selesai), response yang
+// telat itu tetap ditimpakan ke state global begitu nyampe — walau
+// currentUser sudah berganti — sehingga data akun LAMA "nyusul masuk" ke
+// tampilan akun BARU. Sekarang tiap fetch menyimpan epoch saat mulai, dan
+// membuang hasilnya kalau epoch sudah berubah pas response tiba.
+let _authEpoch = 0;
 
 async function handleLogin() {
   hideAlert('login-al');
@@ -7677,6 +7686,7 @@ async function handleForgot() {
 
 function loginSuccess(id, role, name, tutSeenAt) {
   currentUser = { id, role, name, tutSeenAt: tutSeenAt || null };
+  _authEpoch++; // v52-FIX: sesi baru — semua fetch dari sesi sebelumnya jadi basi
   // v49-FIX: reset TOTAL semua state Database Customer (CRM) & Follow Up
   // dari sesi akun sebelumnya. Sebelumnya variabel-variabel ini (crmData,
   // crmGlobalAgg, crmTotalCount, followupDoneTodayIds, dst) TIDAK PERNAH
@@ -7774,6 +7784,7 @@ function handleLogout() {
     pushActivity(`${currentUser.name} signed out`, 'leave');
   }
   currentUser = null;
+  _authEpoch++; // v52-FIX: logout juga menandai sesi lama basi
   // v49-FIX: kosongkan juga state CRM & Follow Up saat logout (bukan cuma
   // saat login) — lapis pengaman kedua supaya tidak ada kemungkinan data
   // akun lama sempat ke-render lagi sebelum akun berikutnya benar-benar
@@ -17318,6 +17329,7 @@ let _crmGlobalAggReady = false;
 
 async function crmFetchGlobalAgg() {
   if (crmUsesDB()) {
+    const _epoch = _authEpoch; // v52-FIX: tandai sesi saat request ini mulai
     const isMod = can.viewAll(currentUser?.role); // v41: Moderator + Owner (view-only) lihat SEMUA baris
     // v32-FIX: Supabase/PostgREST membatasi hasil SELECT maksimal 1000 baris
     // per request kalau tidak pakai .range() — sebelumnya ini bikin total
@@ -17342,6 +17354,9 @@ async function crmFetchGlobalAgg() {
       offset += BATCH;
       if (offset > 100000) break; // safety guard
     }
+    // v52-FIX: kalau akun sudah ganti selagi loop batch ini berjalan, buang
+    // hasilnya — jangan sampai agregat akun LAMA menimpa akun yang aktif.
+    if (_epoch !== _authEpoch) return crmGlobalAgg;
     crmGlobalAgg = all.map(r => ({
       owner_id: r.owner_id || '__unassigned__',
       total_order: Number(r.total_order) || 0,
@@ -17613,6 +17628,7 @@ async function assignCrmLabel(idx, labelId) {
 async function loadCRM() {
   if (crmUsesDB()) {
     _crmLoading = true;
+    const _epoch = _authEpoch; // v52-FIX: tandai sesi saat request ini mulai
     const isMod = can.viewAll(currentUser?.role); // Moderator + Owner (view-only) melihat SEMUA data customer
     let q = db.from('crm_customers').select('*', { count: 'exact' });
     // Non-moderator (dan non-Owner) hanya melihat data yang mereka sendiri input
@@ -17643,6 +17659,10 @@ async function loadCRM() {
          .range(crmPageOffset, crmPageOffset + CRM_PAGE_SIZE - 1);
     const res = await dbQ(() => q);
     _crmLoading = false;
+    // v52-FIX: kalau akun sudah ganti (logout/login lain) selagi query ini
+    // berjalan, buang hasilnya — jangan sampai data akun LAMA menimpa akun
+    // yang sekarang aktif.
+    if (_epoch !== _authEpoch) return crmData;
     if (res && res.data) {
       crmData = res.data.map(crmFromDb);
       crmTotalCount = typeof res.count === 'number' ? res.count : crmData.length;
@@ -17828,11 +17848,13 @@ function _followupCustKey(c) { return c._uuid || c.id_customer || ''; }
 async function loadFollowupLogsToday() {
   followupDoneTodayIds = new Set();
   if (crmUsesDB() && currentUser) {
+    const _epoch = _authEpoch; // v52-FIX: tandai sesi saat request ini mulai
     try {
       const res = await dbQ(d => d.from('followup_logs')
         .select('customer_id')
         .eq('user_id', currentUser.id)
         .gte('followed_up_at', _todayStartISO()));
+      if (_epoch !== _authEpoch) return; // v52-FIX: akun sudah ganti, buang hasil basi
       if (res && res.data) res.data.forEach(row => followupDoneTodayIds.add(row.customer_id));
       return;
     } catch(e) { console.warn('[DHP] loadFollowupLogsToday gagal:', e); }
