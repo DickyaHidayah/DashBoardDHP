@@ -4259,6 +4259,18 @@ body.light .kol-fin-val{color:#0d0d0d}
         <span data-i18n="followupNav">Follow Up</span>
         <span class="nav-badge" id="fu-pending-badge" style="display:none">0</span>
       </button>
+      <!-- ══ TRACKING REPORT — laporan kinerja jam 12:00 & 17:00, khusus
+           role cs_hunter / admin / b2b_marketing (+ Mod/Owner lihat rekap tim) ══ -->
+      <button class="nav-item" onclick="navTo('tracking_report',this)" id="n-tracking-report" style="display:none">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M8 4.6V8l2.6 1.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span>Tracking Report</span>
+        <span class="nav-badge" id="trk-pending-badge" style="display:none">0</span>
+      </button>
       <!-- ══ OVERVIEW TIM — khusus Moderator (lihat dashboard bulanan semua role) ══ -->
       <div class="nav-sec-lbl mod-only" id="ns-all-dash" style="display:none">
         <span class="sec-name">Overview Tim</span>
@@ -5715,6 +5727,22 @@ body.light .kol-fin-val{color:#0d0d0d}
         <div id="followup-root"></div>
       </div>
 
+      <!-- ⑨-d TRACKING REPORT — laporan kinerja jam 12:00 (Siang) & 17:00 (Sore)
+           utk CS Hunter / Admin / B2B Marketing, direkap otomatis jadi laporan
+           harian. Moderator/Owner lihat rekap seluruh tim + kirim reminder. -->
+      <div class="sp" id="pg-tracking_report">
+        <div class="ph">
+          <div class="ph-left">
+            <div class="pt">Tracking Report</div>
+            <div class="ps" id="trk-page-sub">Laporan kinerja jam 12:00 &amp; 17:00 — otomatis direkap jadi laporan harian</div>
+          </div>
+          <div class="ph-acts">
+            <button class="btn-sm btn-gold" onclick="renderTrackingReportPage()" title="Muat ulang">⟲ Muat Ulang</button>
+          </div>
+        </div>
+        <div id="tracking-report-root"></div>
+      </div>
+
       <!-- ⑩ PRESENCE PAGE -->
       <div class="sp" id="pg-presence">
         <div class="ph">
@@ -5956,6 +5984,7 @@ const can = {
   // akses nav/badge/route-nya yang belum dibuka untuk admin, jadi cukup
   // ditambah di sini.
   canFollowup: r => r === 'cs_hunter' || r === 'b2b_marketing' || r === 'admin',
+  canTrackingReport: r => r === 'cs_hunter' || r === 'b2b_marketing' || r === 'admin',
   // v54: role admin (Puji, Erni) — dipakai untuk menyembunyikan "Tugas
   // Saya" & "Performa Saya" persis seperti CS Hunter non-mod, karena
   // kerja hariannya sekarang full lewat Tools → Follow Up.
@@ -7891,6 +7920,7 @@ async function initDashboard() {
   navShow('n-cs-hunter',      can.isCsHunter(r) || isMod || isOwner);   // CS Hunter — level & progress (sendiri utk CS Hunter, semua tim utk Mod/Owner)
   navShow('ns-cs-tools',      can.canFollowup(r) || isMod || isOwner);   // v53: Section label "Tools" — kini juga muncul utk B2B Marketing
   navShow('n-followup',       can.canFollowup(r) || isMod || isOwner);   // v54: Follow Up — tabel customer + target harian (cs_hunter + b2b_marketing + admin)
+  navShow('n-tracking-report', can.canTrackingReport(r) || isMod || isOwner); // v47: Tracking Report — laporan jam 12:00 & 17:00 (cs_hunter + b2b_marketing + admin, + rekap tim utk Mod/Owner)
   initCsHunterOwnBadge(); // pangkat CS Hunter tampil di sidebar, di manapun dashboard dibuka
   initFollowupBadge();    // v45: badge jumlah customer yang belum di-follow up hari ini
 
@@ -21427,7 +21457,7 @@ function navTo(page, btn) {
   // Schedule, Manage Customer CRM, dan Budget Marketing. Di luar daftar
   // ini (halaman kerja mentah moderator seperti Progress Tugas Tim,
   // Target, Users, Settings, Ads Customers/Task) tetap terkunci.
-  const OWNER_ALLOWED_PAGES = ['all_dashboard','content_studio','live_studio','live_dashboard','ad_scheduler','crm','budget_marketing','cs_hunter','followup'];
+  const OWNER_ALLOWED_PAGES = ['all_dashboard','content_studio','live_studio','live_dashboard','ad_scheduler','crm','budget_marketing','cs_hunter','followup','tracking_report'];
   if (isOwnerNav && !OWNER_ALLOWED_PAGES.includes(page)) {
     toast('👁 Akun Owner hanya bisa melihat halaman: Laporan Tim, Content Studio, Live Studio, Live Dashboard, Ads Schedule, Manage CRM & Budget Marketing.');
     return;
@@ -21449,6 +21479,7 @@ function navTo(page, btn) {
   if (page === 'all_dashboard'  && !can.isMod(r) && !isOwnerNav) { toast('Moderator access required'); return; }
   if (page === 'cs_hunter'      && !can.isCsHunter(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Moderator access required'); return; }
   if (page === 'followup'       && !can.canFollowup(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / B2B Marketing / Moderator access required'); return; }
+  if (page === 'tracking_report' && !can.canTrackingReport(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Admin / B2B Marketing / Moderator access required'); return; }
 
   document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
   const target = document.getElementById(`pg-${page}`); if (target) target.classList.add('active');
@@ -21481,6 +21512,7 @@ function loadPageData(page) {
   if (page === 'all_dashboard')   loadAllRoleDashboard();
   if (page === 'cs_hunter')       loadCsHunterPage();
   if (page === 'followup')        renderFollowupPage();
+  if (page === 'tracking_report') renderTrackingReportPage();
   if (page === 'ad_scheduler')    {
     // Non-mod: reload task dari DB setiap kali buka halaman (supaya selalu fresh)
     if (db && currentUser && !can.isMod(currentUser.role)) {
@@ -21631,6 +21663,412 @@ async function csHunterDailyBreakdown(uid, wsStr, weStr) {
   const counts = {};
   rows.forEach(row => { const k = row.ad_date; counts[k] = (counts[k] || 0) + 1; });
   return counts;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ㉕-b2 SISTEM TRACKING REPORT (v47) — laporan kinerja jam 12:00 (Siang) &
+   17:00 (Sore) khusus role CS Hunter / Admin / B2B Marketing. Tiap slot
+   dicatat: Follow Up, Offer, Nego, Deal, Customer Baru, FU Customer Lama,
+   Total Customer & Total Transaksi. Kedua slot otomatis digabung jadi
+   "Laporan Harian" oleh get_tracking_daily_recap() di database. Reminder
+   H-45 menit & lewat-deadline dihitung di client (dicek tiap 30 detik),
+   tidak butuh cron. Moderator/Owner lihat rekap seluruh tim per tanggal +
+   bisa kirim reminder manual ke staff yang belum isi.
+   ═══════════════════════════════════════════════════════════ */
+const TRACKING_SLOTS = [
+  { key:'siang', label:'Siang', time:'12:00', h:12, m:0, icon:'☀️' },
+  { key:'sore',  label:'Sore',  time:'17:00', h:17, m:0, icon:'🌇' },
+];
+const TRK_REMINDER_LEAD_MIN = 45; // mulai warning kalau sisa waktu ≤ 45 menit
+let _trkOwnRecap = null;      // hasil get_tracking_daily_recap utk currentUser hari ini
+let _trkTeamDate = null;      // tanggal yg sedang dilihat di rekap tim (yyyy-mm-dd)
+let _trkTeamRows = null;
+let _trkTimer = null;
+let trackingChannel = null;
+let _trkFormOpen = null;      // slot key yg formnya sedang terbuka (own view)
+
+function trkNowJakarta() { return cshTodayJakarta(); }
+function trkTodayStr() { return ymdKey(trkNowJakarta()); }
+function trkDeadlineDate(slotKey, base) {
+  const d = new Date(base.getTime());
+  const s = TRACKING_SLOTS.find(x => x.key === slotKey);
+  d.setHours(s.h, s.m, 0, 0);
+  return d;
+}
+function trkFmtHM(dateObj) {
+  if (!dateObj) return '—';
+  const d = new Date(dateObj);
+  return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+
+function trackingReportStyleOnce() {
+  if (document.getElementById('trk-style')) return;
+  const css = `
+  .trk-banner{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:var(--r);margin-bottom:16px;
+    border:1px solid var(--border-hi);background:var(--surface2);font-size:13px;font-weight:500;transition:var(--trans)}
+  .trk-banner.ok{border-color:rgba(122,191,142,.35);background:rgba(122,191,142,.08);color:var(--green)}
+  .trk-banner.warn{border-color:rgba(232,184,110,.4);background:rgba(232,184,110,.09);color:var(--amber);animation:trkPulse 2s ease-in-out infinite}
+  .trk-banner.late{border-color:rgba(232,112,112,.4);background:rgba(232,112,112,.09);color:var(--red);animation:trkPulse 1.4s ease-in-out infinite}
+  @keyframes trkPulse{0%,100%{opacity:1}50%{opacity:.72}}
+  .trk-slots{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+  @media(max-width:720px){.trk-slots{grid-template-columns:1fr}}
+  .trk-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;transition:var(--trans)}
+  .trk-card.filled{border-color:rgba(122,191,142,.3)}
+  .trk-card.late{border-color:rgba(232,112,112,.35)}
+  .trk-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .trk-card-title{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14.5px}
+  .trk-status-pill{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.02em}
+  .trk-status-pill.pending{background:var(--surface3);color:var(--muted)}
+  .trk-status-pill.ok{background:rgba(122,191,142,.14);color:var(--green)}
+  .trk-status-pill.late{background:rgba(232,112,112,.14);color:var(--red)}
+  .trk-mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
+  .trk-mini{background:var(--surface2);border-radius:6px;padding:8px 6px;text-align:center}
+  .trk-mini b{display:block;font-size:16px;color:var(--gold-hi)}
+  .trk-mini span{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+  .trk-form{margin-top:12px;padding-top:12px;border-top:1px dashed var(--border)}
+  .trk-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .trk-field{display:flex;flex-direction:column;gap:4px}
+  .trk-field label{font-size:10.5px;color:var(--muted);font-weight:600}
+  .trk-field input,.trk-field textarea{background:var(--bg3);border:1px solid var(--border);border-radius:6px;
+    color:var(--text);padding:8px 10px;font-size:13px;font-family:inherit}
+  .trk-field input:focus,.trk-field textarea:focus{outline:none;border-color:var(--gold)}
+  .trk-field.full{grid-column:1/-1}
+  .trk-form-acts{display:flex;gap:8px;margin-top:12px}
+  .trk-recap-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+  @media(max-width:720px){.trk-recap-strip{grid-template-columns:repeat(2,1fr)}}
+  .trk-recap-box{background:linear-gradient(160deg,var(--surface2),var(--surface));border:1px solid var(--border-hi);
+    border-radius:var(--r);padding:14px;text-align:center}
+  .trk-recap-box b{display:block;font-size:20px;color:var(--gold-hi);font-family:'Cormorant Garamond',serif}
+  .trk-recap-box span{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+  .trk-recap-box.hi{border-color:rgba(201,169,110,.5)}
+  .trk-team-row.missing{background:rgba(232,112,112,.05)}
+  .trk-team-slot{display:inline-flex;align-items:center;gap:5px;font-size:11.5px}
+  .trk-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+  .trk-dot.ok{background:var(--green)}
+  .trk-dot.late{background:var(--red)}
+  .trk-dot.pending{background:var(--muted)}
+  `;
+  const s = document.createElement('style'); s.id = 'trk-style'; s.textContent = css;
+  document.head.appendChild(s);
+}
+
+/* ── ENTRY POINT — dipanggil navTo()/loadPageData() saat halaman dibuka ── */
+async function renderTrackingReportPage() {
+  trackingReportStyleOnce();
+  const root = document.getElementById('tracking-report-root');
+  if (!root || !currentUser) return;
+  const r = currentUser.role;
+  const sub = document.getElementById('trk-page-sub');
+  if (can.isMod(r) || can.isOwnerView(r)) {
+    if (sub) sub.textContent = 'Rekap laporan seluruh tim (CS Hunter, Admin, B2B Marketing) per tanggal';
+    await renderTrackingTeamView(root);
+  } else if (can.canTrackingReport(r)) {
+    if (sub) sub.textContent = 'Laporan kinerja jam 12:00 & 17:00 — otomatis direkap jadi laporan harian';
+    await renderTrackingOwnView(root);
+  } else {
+    root.innerHTML = `<div class="myperf-empty" style="padding:20px 0">Halaman ini khusus CS Hunter, Admin, B2B Marketing, dan Moderator.</div>`;
+  }
+  initTrackingRealtime();
+}
+
+/* ═══ VIEW: STAFF SENDIRI (CS Hunter / Admin / B2B Marketing) ═══ */
+async function renderTrackingOwnView(root) {
+  root.innerHTML = `<div class="myperf-empty" style="padding:20px 0">Memuat data tracking report…</div>`;
+  const today = trkTodayStr();
+  let row = null;
+  try {
+    const res = await dbQ(d => d.rpc('get_tracking_daily_recap', { p_user_id: currentUser.id, p_date: today }));
+    row = res && res.data && res.data[0] ? res.data[0] : null;
+  } catch (e) { console.warn('[DHP] get_tracking_daily_recap gagal:', e); }
+  _trkOwnRecap = row;
+
+  const slotData = {
+    siang: row ? {
+      filled: row.siang_filled, follow_up: row.siang_follow_up, offer: row.siang_offer, nego: row.siang_nego,
+      deal: row.siang_deal, customer_baru: row.siang_customer_baru, fu_lama: row.siang_fu_lama,
+      total_customer: row.siang_total_customer, total_transaksi: row.siang_total_transaksi,
+      is_late: row.siang_is_late, filled_at: row.siang_filled_at
+    } : { filled:false },
+    sore: row ? {
+      filled: row.sore_filled, follow_up: row.sore_follow_up, offer: row.sore_offer, nego: row.sore_nego,
+      deal: row.sore_deal, customer_baru: row.sore_customer_baru, fu_lama: row.sore_fu_lama,
+      total_customer: row.sore_total_customer, total_transaksi: row.sore_total_transaksi,
+      is_late: row.sore_is_late, filled_at: row.sore_filled_at
+    } : { filled:false }
+  };
+
+  root.innerHTML = `
+    <div id="trk-reminder-banner" class="trk-banner ok">🔔 Memuat status reminder…</div>
+    <div class="trk-slots">
+      ${TRACKING_SLOTS.map(s => trkSlotCardHtml(s, slotData[s.key])).join('')}
+    </div>
+    <div class="trk-recap-strip">
+      <div class="trk-recap-box"><b>${row ? row.total_follow_up : 0}</b><span>Follow Up</span></div>
+      <div class="trk-recap-box"><b>${row ? row.total_offer : 0}</b><span>Offer</span></div>
+      <div class="trk-recap-box"><b>${row ? row.total_nego : 0}</b><span>Nego</span></div>
+      <div class="trk-recap-box hi"><b>${row ? row.total_deal : 0}</b><span>Deal Hari Ini</span></div>
+      <div class="trk-recap-box"><b>${row ? row.total_customer_baru : 0}</b><span>Customer Baru</span></div>
+      <div class="trk-recap-box"><b>${row ? row.total_fu_lama : 0}</b><span>FU Customer Lama</span></div>
+      <div class="trk-recap-box"><b>${row ? row.total_customer : 0}</b><span>Total Customer</span></div>
+      <div class="trk-recap-box hi"><b style="font-size:16px">${crmFmtRupiah(row ? row.total_transaksi : 0)}</b><span>Total Transaksi</span></div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);text-align:center">Laporan harian di atas otomatis digabung dari slot Siang (12:00) &amp; Sore (17:00).</div>
+  `;
+  trkTickReminder();
+}
+
+function trkSlotCardHtml(s, data) {
+  const filled = !!data.filled;
+  const statusCls = filled ? (data.is_late ? 'late' : 'ok') : 'pending';
+  const statusTxt = filled ? (data.is_late ? `Terlambat · ${trkFmtHM(data.filled_at)}` : `Terisi · ${trkFmtHM(data.filled_at)}`) : 'Belum diisi';
+  return `
+  <div class="trk-card ${filled ? 'filled' : ''} ${data.is_late ? 'late' : ''}" id="trk-card-${s.key}">
+    <div class="trk-card-head">
+      <div class="trk-card-title">${s.icon} ${s.label} · ${s.time}</div>
+      <span class="trk-status-pill ${statusCls}">${statusTxt}</span>
+    </div>
+    ${filled ? `
+    <div class="trk-mini-grid">
+      <div class="trk-mini"><b>${data.follow_up}</b><span>Follow Up</span></div>
+      <div class="trk-mini"><b>${data.offer}</b><span>Offer</span></div>
+      <div class="trk-mini"><b>${data.nego}</b><span>Nego</span></div>
+      <div class="trk-mini"><b>${data.deal}</b><span>Deal</span></div>
+    </div>
+    <div style="font-size:11.5px;color:var(--muted)">Customer baru ${data.customer_baru} · FU lama ${data.fu_lama} · Total customer ${data.total_customer} · ${crmFmtRupiah(data.total_transaksi)}</div>
+    ` : `<div style="font-size:12px;color:var(--muted)">Isi laporan sebelum jam ${s.time} ya, biar nggak kelewat deadline.</div>`}
+    <div class="trk-form-acts">
+      <button class="btn-sm ${filled ? '' : 'btn-gold'}" onclick="trkToggleForm('${s.key}')">${filled ? '✎ Ubah Laporan' : '+ Isi Laporan'}</button>
+    </div>
+    <div class="trk-form" id="trk-form-${s.key}" style="display:none"></div>
+  </div>`;
+}
+
+function trkToggleForm(slotKey) {
+  const wrap = document.getElementById('trk-form-' + slotKey);
+  if (!wrap) return;
+  const isOpen = wrap.style.display !== 'none';
+  // tutup form slot lain biar rapi
+  TRACKING_SLOTS.forEach(s => { const w = document.getElementById('trk-form-' + s.key); if (w && s.key !== slotKey) w.style.display = 'none'; });
+  if (isOpen) { wrap.style.display = 'none'; return; }
+  const d = (_trkOwnRecap && slotKey === 'siang') ? {
+    follow_up:_trkOwnRecap.siang_follow_up, offer:_trkOwnRecap.siang_offer, nego:_trkOwnRecap.siang_nego, deal:_trkOwnRecap.siang_deal,
+    customer_baru:_trkOwnRecap.siang_customer_baru, fu_lama:_trkOwnRecap.siang_fu_lama,
+    total_customer:_trkOwnRecap.siang_total_customer, total_transaksi:_trkOwnRecap.siang_total_transaksi
+  } : (_trkOwnRecap && slotKey === 'sore') ? {
+    follow_up:_trkOwnRecap.sore_follow_up, offer:_trkOwnRecap.sore_offer, nego:_trkOwnRecap.sore_nego, deal:_trkOwnRecap.sore_deal,
+    customer_baru:_trkOwnRecap.sore_customer_baru, fu_lama:_trkOwnRecap.sore_fu_lama,
+    total_customer:_trkOwnRecap.sore_total_customer, total_transaksi:_trkOwnRecap.sore_total_transaksi
+  } : { follow_up:0, offer:0, nego:0, deal:0, customer_baru:0, fu_lama:0, total_customer:0, total_transaksi:0 };
+
+  wrap.innerHTML = `
+    <div class="trk-form-grid">
+      <div class="trk-field"><label>Follow Up</label><input type="number" min="0" id="trk-in-${slotKey}-fu" value="${d.follow_up||0}"></div>
+      <div class="trk-field"><label>Offer</label><input type="number" min="0" id="trk-in-${slotKey}-offer" value="${d.offer||0}"></div>
+      <div class="trk-field"><label>Nego</label><input type="number" min="0" id="trk-in-${slotKey}-nego" value="${d.nego||0}"></div>
+      <div class="trk-field"><label>Deal</label><input type="number" min="0" id="trk-in-${slotKey}-deal" value="${d.deal||0}"></div>
+      <div class="trk-field"><label>Customer Baru</label><input type="number" min="0" id="trk-in-${slotKey}-cbaru" value="${d.customer_baru||0}"></div>
+      <div class="trk-field"><label>FU Customer Lama</label><input type="number" min="0" id="trk-in-${slotKey}-culama" value="${d.fu_lama||0}"></div>
+      <div class="trk-field"><label>Total Customer di Jam Ini</label><input type="number" min="0" id="trk-in-${slotKey}-ctotal" value="${d.total_customer||0}"></div>
+      <div class="trk-field"><label>Total Transaksi (Rp)</label><input type="number" min="0" id="trk-in-${slotKey}-trans" value="${d.total_transaksi||0}"></div>
+      <div class="trk-field full"><label>Catatan (opsional)</label><textarea id="trk-in-${slotKey}-note" rows="2" placeholder="Catatan tambahan…"></textarea></div>
+    </div>
+    <div class="trk-form-acts">
+      <button class="btn-sm btn-gold" onclick="trkSubmitSlot('${slotKey}')">💾 Simpan Laporan ${slotKey === 'siang' ? 'Siang' : 'Sore'}</button>
+      <button class="btn-sm" onclick="trkToggleForm('${slotKey}')">Batal</button>
+    </div>`;
+  wrap.style.display = '';
+}
+
+async function trkSubmitSlot(slotKey) {
+  if (!db || !currentUser) { toast('Supabase tidak aktif.'); return; }
+  const val = id => { const el = document.getElementById(id); return el ? Number(el.value) || 0 : 0; };
+  const noteEl = document.getElementById(`trk-in-${slotKey}-note`);
+  const payload = {
+    p_actor_id: currentUser.id, p_target_user_id: currentUser.id,
+    p_report_date: trkTodayStr(), p_slot: slotKey,
+    p_follow_up: val(`trk-in-${slotKey}-fu`), p_offer: val(`trk-in-${slotKey}-offer`),
+    p_nego: val(`trk-in-${slotKey}-nego`), p_deal: val(`trk-in-${slotKey}-deal`),
+    p_customer_baru: val(`trk-in-${slotKey}-cbaru`), p_fu_lama: val(`trk-in-${slotKey}-culama`),
+    p_total_customer: val(`trk-in-${slotKey}-ctotal`), p_total_transaksi: val(`trk-in-${slotKey}-trans`),
+    p_note: noteEl ? (noteEl.value || null) : null
+  };
+  const res = await dbQ(d => d.rpc('submit_tracking_report', payload));
+  if (!res || res.error) { toast('Gagal menyimpan laporan: ' + (res && res.error ? res.error.message : 'unknown')); return; }
+  toast(`Laporan ${slotKey === 'siang' ? 'Siang' : 'Sore'} tersimpan ✓`);
+  try { localStorage.removeItem(`dhp_trk_reminded_${currentUser.id}_${trkTodayStr()}_${slotKey}`); } catch(e){}
+  renderTrackingReportPage();
+}
+
+/* ── REMINDER: dicek tiap 30 detik selama halaman/aplikasi terbuka ── */
+function trkTickReminder() {
+  if (!currentUser) return;
+  clearInterval(_trkTimer);
+  const tick = () => {
+    const r = currentUser.role;
+    if (!can.canTrackingReport(r) || can.isMod(r)) return;
+    const now = trkNowJakarta();
+    const state = _trkOwnRecap;
+    const filledMap = { siang: state ? state.siang_filled : false, sore: state ? state.sore_filled : false };
+    let worst = null; // {level:'warn'|'late', slot, minutes}
+    TRACKING_SLOTS.forEach(s => {
+      if (filledMap[s.key]) return;
+      const deadline = trkDeadlineDate(s.key, now);
+      const diffMin = Math.round((deadline.getTime() - now.getTime()) / 60000);
+      if (diffMin <= 0) {
+        if (!worst || worst.level !== 'late' || diffMin < worst.diffMin) worst = { level:'late', slot:s, diffMin };
+      } else if (diffMin <= TRK_REMINDER_LEAD_MIN) {
+        if (!worst || worst.level === 'warn') worst = { level:'warn', slot:s, diffMin };
+      }
+    });
+
+    const banner = document.getElementById('trk-reminder-banner');
+    const allFilled = filledMap.siang && filledMap.sore;
+    if (banner) {
+      if (allFilled) {
+        banner.className = 'trk-banner ok';
+        banner.innerHTML = '✅ Laporan Siang &amp; Sore hari ini sudah lengkap. Terima kasih!';
+      } else if (worst && worst.level === 'late') {
+        banner.className = 'trk-banner late';
+        banner.innerHTML = `⚠️ Laporan <b>${worst.slot.label} (${worst.slot.time})</b> BELUM diisi — sudah lewat ${Math.abs(worst.diffMin)} menit dari deadline. Segera isi ya.`;
+      } else if (worst && worst.level === 'warn') {
+        banner.className = 'trk-banner warn';
+        banner.innerHTML = `🔔 Laporan <b>${worst.slot.label} (${worst.slot.time})</b> harus diisi dalam <b>${worst.diffMin} menit</b> lagi.`;
+      } else {
+        banner.className = 'trk-banner ok';
+        banner.innerHTML = '🙂 Belum ada deadline yang mendesak. Isi laporan sesuai jamnya ya.';
+      }
+    }
+    // badge di sidebar
+    const badge = document.getElementById('trk-pending-badge');
+    if (badge) {
+      const n = (filledMap.siang ? 0 : 1) + (filledMap.sore ? 0 : 1);
+      badge.textContent = n; badge.style.display = n > 0 ? '' : 'none';
+    }
+    // notif bel sekali per slot per hari saat masuk status warn/late
+    if (worst) {
+      const key = `dhp_trk_reminded_${currentUser.id}_${trkTodayStr()}_${worst.slot.key}_${worst.level}`;
+      try {
+        if (!localStorage.getItem(key)) {
+          localStorage.setItem(key, '1');
+          pushNotif({
+            type:'tracking_reminder',
+            title: worst.level === 'late' ? 'Tracking Report Terlambat' : 'Reminder Tracking Report',
+            body: worst.level === 'late'
+              ? `Laporan ${worst.slot.label} (${worst.slot.time}) belum diisi, sudah lewat deadline.`
+              : `Laporan ${worst.slot.label} (${worst.slot.time}) harus diisi dalam ${worst.diffMin} menit lagi.`,
+            link:'tracking_report'
+          });
+        }
+      } catch(e) {}
+    }
+  };
+  tick();
+  _trkTimer = setInterval(tick, 30000);
+}
+
+/* ── REALTIME — tracking_reports berubah (mis. diisi dari device lain) → refresh ── */
+function initTrackingRealtime() {
+  if (!db || trackingChannel || !currentUser) return;
+  try {
+    trackingChannel = db.channel('dhp_tracking_reports')
+      .on('postgres_changes', { event:'*', schema:'public', table:'tracking_reports' }, () => {
+        const pg = document.getElementById('pg-tracking_report');
+        if (pg && pg.classList.contains('active')) renderTrackingReportPage();
+      })
+      .subscribe();
+  } catch (e) { console.warn('[DHP] initTrackingRealtime gagal:', e); }
+}
+
+/* ═══ VIEW: REKAP TIM (Moderator / Owner) ═══ */
+async function renderTrackingTeamView(root) {
+  if (!_trkTeamDate) _trkTeamDate = trkTodayStr();
+  root.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <label style="font-size:12px;color:var(--muted)">Tanggal:</label>
+      <input type="date" id="trk-team-date" value="${_trkTeamDate}" onchange="trkTeamDateChange(this.value)"
+        style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:13px">
+      <button class="btn-sm btn-gold" onclick="trkLoadTeamRecap()">⟲ Muat Ulang</button>
+    </div>
+    <div id="trk-team-summary"></div>
+    <div class="tbl-wrap" style="margin-top:12px">
+      <div class="tbl-head"><div class="tbl-title">Rekap Harian Tim</div></div>
+      <div class="tbl-scroll">
+        <table class="fu-table">
+          <thead><tr>
+            <th>Nama</th><th>Role</th><th>Siang (12:00)</th><th>Sore (17:00)</th>
+            <th>Follow Up</th><th>Offer</th><th>Nego</th><th>Deal</th>
+            <th>Cust. Baru</th><th>FU Lama</th><th>Total Cust.</th><th>Total Transaksi</th><th></th>
+          </tr></thead>
+          <tbody id="trk-team-tbody"><tr><td colspan="13" style="text-align:center;color:var(--muted)">Memuat…</td></tr></tbody>
+        </table>
+      </div>
+    </div>`;
+  await trkLoadTeamRecap();
+}
+
+function trkTeamDateChange(v) { _trkTeamDate = v; trkLoadTeamRecap(); }
+
+async function trkLoadTeamRecap() {
+  const tbody = document.getElementById('trk-team-tbody');
+  if (tbody) tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;color:var(--muted)">Memuat…</td></tr>`;
+  let rows = [];
+  try {
+    const res = await dbQ(d => d.rpc('get_tracking_recap_team', { p_date: _trkTeamDate }));
+    rows = (res && res.data) || [];
+  } catch (e) { console.warn('[DHP] get_tracking_recap_team gagal:', e); }
+  _trkTeamRows = rows;
+
+  const roleLabel = { 'admin':'Admin', 'b2b-marketing':'B2B Marketing', 'cs-hunter':'CS Hunter' };
+  const grand = rows.reduce((a,r) => {
+    a.fu += r.total_follow_up||0; a.offer += r.total_offer||0; a.nego += r.total_nego||0; a.deal += r.total_deal||0;
+    a.cbaru += r.total_customer_baru||0; a.clama += r.total_fu_lama||0; a.ctotal += r.total_customer||0; a.trans += Number(r.total_transaksi)||0;
+    return a;
+  }, { fu:0, offer:0, nego:0, deal:0, cbaru:0, clama:0, ctotal:0, trans:0 });
+  const missingCount = rows.filter(r => !r.siang_filled || !r.sore_filled).length;
+
+  const summaryEl = document.getElementById('trk-team-summary');
+  if (summaryEl) {
+    summaryEl.innerHTML = `
+    <div class="trk-recap-strip">
+      <div class="trk-recap-box"><b>${grand.fu}</b><span>Follow Up</span></div>
+      <div class="trk-recap-box"><b>${grand.offer}</b><span>Offer</span></div>
+      <div class="trk-recap-box"><b>${grand.nego}</b><span>Nego</span></div>
+      <div class="trk-recap-box hi"><b>${grand.deal}</b><span>Deal</span></div>
+      <div class="trk-recap-box"><b>${grand.cbaru}</b><span>Customer Baru</span></div>
+      <div class="trk-recap-box"><b>${grand.clama}</b><span>FU Cust. Lama</span></div>
+      <div class="trk-recap-box"><b>${grand.ctotal}</b><span>Total Customer</span></div>
+      <div class="trk-recap-box hi"><b style="font-size:16px">${crmFmtRupiah(grand.trans)}</b><span>Total Transaksi Tim</span></div>
+    </div>
+    ${missingCount ? `<div class="trk-banner late" style="margin-bottom:10px">⚠️ ${missingCount} orang masih ada laporan yang belum diisi hari ini.</div>` : `<div class="trk-banner ok" style="margin-bottom:10px">✅ Semua staff sudah lengkap mengisi laporan.</div>`}`;
+  }
+
+  if (!tbody) return;
+  if (!rows.length) { tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;color:var(--muted)">Belum ada staff CS Hunter/Admin/B2B Marketing aktif.</td></tr>`; return; }
+  const dot = (filled, late) => `<span class="trk-dot ${!filled ? 'pending' : (late ? 'late' : 'ok')}"></span>`;
+  tbody.innerHTML = rows.map(r => {
+    const missing = !r.siang_filled || !r.sore_filled;
+    const canRemind = can.isMod(currentUser.role);
+    return `<tr class="${missing ? 'trk-team-row missing' : ''}">
+      <td>${escHtml(r.full_name)}</td>
+      <td>${roleLabel[r.role] || r.role}</td>
+      <td><span class="trk-team-slot">${dot(r.siang_filled, r.siang_is_late)} ${r.siang_filled ? (r.siang_is_late ? 'Terlambat' : 'Terisi') : 'Belum'}</span>
+        ${(!r.siang_filled && canRemind) ? `<button class="btn-sm" style="padding:2px 8px;font-size:10px;margin-left:4px" onclick="trkSendReminder('${r.user_id}','siang')">Ingatkan</button>` : ''}</td>
+      <td><span class="trk-team-slot">${dot(r.sore_filled, r.sore_is_late)} ${r.sore_filled ? (r.sore_is_late ? 'Terlambat' : 'Terisi') : 'Belum'}</span>
+        ${(!r.sore_filled && canRemind) ? `<button class="btn-sm" style="padding:2px 8px;font-size:10px;margin-left:4px" onclick="trkSendReminder('${r.user_id}','sore')">Ingatkan</button>` : ''}</td>
+      <td>${r.total_follow_up}</td><td>${r.total_offer}</td><td>${r.total_nego}</td>
+      <td><b style="color:var(--gold-hi)">${r.total_deal}</b></td>
+      <td>${r.total_customer_baru}</td><td>${r.total_fu_lama}</td><td>${r.total_customer}</td>
+      <td><b>${crmFmtRupiah(r.total_transaksi)}</b></td>
+      <td></td>
+    </tr>`;
+  }).join('');
+}
+
+async function trkSendReminder(userId, slotKey) {
+  if (!db || !currentUser) return;
+  const res = await dbQ(d => d.rpc('notify_tracking_reminder', { p_actor_id: currentUser.id, p_target_user_id: userId, p_slot: slotKey }));
+  if (!res || res.error) { toast('Gagal mengirim reminder: ' + (res && res.error ? res.error.message : 'unknown')); return; }
+  toast('Reminder terkirim ✓');
 }
 
 /* ═══════════════════════════════════════════════════════════
