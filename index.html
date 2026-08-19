@@ -21666,19 +21666,34 @@ async function csHunterDailyBreakdown(uid, wsStr, weStr) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ㉕-b2 SISTEM TRACKING REPORT (v47) — laporan kinerja jam 12:00 (Siang) &
+   ㉕-b2 SISTEM TRACKING REPORT (v48) — laporan kinerja jam 12:00 (Siang) &
    17:00 (Sore) khusus role CS Hunter / Admin / B2B Marketing. Tiap slot
-   dicatat: Follow Up, Offer, Nego, Deal, Customer Baru, FU Customer Lama,
-   Total Customer & Total Transaksi. Kedua slot otomatis digabung jadi
-   "Laporan Harian" oleh get_tracking_daily_recap() di database. Reminder
-   H-45 menit & lewat-deadline dihitung di client (dicek tiap 30 detik),
-   tidak butuh cron. Moderator/Owner lihat rekap seluruh tim per tanggal +
-   bisa kirim reminder manual ke staff yang belum isi.
+   dicatat: Jumlah Leads Masuk, Leads Terlayani, Follow Up Leads Lama,
+   Total Cold, Total Warm, Total Hot & Total Nominal Closing. Kedua slot
+   otomatis digabung jadi "Laporan Harian" oleh get_tracking_daily_recap()
+   di database. Reminder H-45 menit & lewat-deadline dihitung di client
+   (dicek tiap 30 detik), tidak butuh cron. Moderator/Owner lihat rekap
+   seluruh tim per tanggal + bisa kirim reminder manual ke staff yang
+   belum isi.
    ═══════════════════════════════════════════════════════════ */
 const TRACKING_SLOTS = [
-  { key:'siang', label:'Siang', time:'12:00', h:12, m:0, icon:'☀️' },
-  { key:'sore',  label:'Sore',  time:'17:00', h:17, m:0, icon:'🌇' },
+  { key:'siang', label:'Siang', time:'12:00',
+    icon:'<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3.1" stroke="currentColor" stroke-width="1.3"/><path d="M8 1.6v1.7M8 12.7v1.7M14.4 8h-1.7M3.3 8H1.6M12.4 3.6l-1.2 1.2M4.8 11.2l-1.2 1.2M12.4 12.4l-1.2-1.2M4.8 4.8 3.6 3.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>', h:12, m:0 },
+  { key:'sore',  label:'Sore',  time:'17:00',
+    icon:'<svg viewBox="0 0 16 16" fill="none"><path d="M8 3v4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M4.7 6.2 8 7.2l3.3-1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.2 9.6a3.9 3.9 0 0 1 7.6 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M2.3 9.6h11.4M2.3 12h11.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M4 13.9h1.4M6.3 13.9h1.4M8.6 13.9H10M10.9 13.9h1.4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>', h:17, m:0 },
 ];
+/* ── Vektor ikon per metrik — warna cold/warm/hot senada dengan heat-badge
+   yang sudah dipakai di CRM/Leads, supaya sistemnya terasa konsisten. ── */
+const TRK_ICO = {
+  masuk: '<svg viewBox="0 0 16 16" fill="none"><path d="M2.6 8.6v3.3c0 .61.5 1.1 1.1 1.1h8.6c.61 0 1.1-.49 1.1-1.1V8.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.6 8.6h2.9c.2 0 .38.12.45.3l.4.9c.08.18.25.3.46.3h2.38c.2 0 .38-.12.46-.3l.4-.9c.07-.18.25-.3.45-.3h2.9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 2.6v5.3M8 7.9 5.9 5.8M8 7.9l2.1-2.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  terlayani: '<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.6" stroke="currentColor" stroke-width="1.3"/><path d="M5.3 8.1 7.1 9.9l3.6-3.9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  fulama: '<svg viewBox="0 0 16 16" fill="none"><path d="M2.9 7.9a5.1 5.1 0 1 1 1.6 3.72" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M2.7 11.3v-2.9h2.9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 5.2v2.9l1.9 1.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  cold: '<svg viewBox="0 0 16 16" fill="none"><path d="M8 1.3v13.4M8 2.9 6.3 4.4M8 2.9l1.7 1.5M8 13.1l-1.7-1.5M8 13.1l1.7-1.5M2 4.5l12 7M2 4.5l2 .3M2 4.5l1 1.9M14 11.5l-2-.3M14 11.5l-1-1.9M2 11.5 14 4.5M2 11.5l1-1.9M2 11.5l2 .3M14 4.5l-1 1.9M14 4.5l-2 .3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>',
+  warm: '<svg viewBox="0 0 16 16" fill="none"><path d="M8 1.6c1.3 1.9.3 2.8-.5 3.8-.9 1.1-1.4 2.1-.8 3.4-1-.4-1.7-1.5-1.6-2.7-1.2 1.3-1.8 3.2-1 4.7.9 1.7 2.7 2.5 4.5 2.2 2-.3 3.5-2 3.4-3.9-.1-1.9-1.4-2.9-2.3-3.9-.9-1-1.5-2-1.7-3.6z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg>',
+  hot: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.6c1.3 1.9.3 2.8-.5 3.8-.9 1.1-1.4 2.1-.8 3.4-1-.4-1.7-1.5-1.6-2.7-1.2 1.3-1.8 3.2-1 4.7.9 1.7 2.7 2.5 4.5 2.2 2-.3 3.5-2 3.4-3.9-.1-1.9-1.4-2.9-2.3-3.9-.9-1-1.5-2-1.7-3.6z"/></svg>',
+  closing: '<svg viewBox="0 0 16 16" fill="none"><path d="M4.6 2.4h6.8v2.7a3.4 3.4 0 0 1-6.8 0V2.4Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M4.6 3.2H3a1 1 0 0 0-.98 1.2c.28 1.35 1.28 2.35 2.6 2.55M11.4 3.2H13a1 1 0 0 1 .98 1.2c-.28 1.35-1.28 2.35-2.6 2.55" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M8 8.8v2.1M6.1 13.6h3.8M6.7 10.9h2.6l.5 2.1H6.2l.5-2.1Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg>',
+  bell: '<svg viewBox="0 0 16 16" fill="none"><path d="M4 6.4a4 4 0 0 1 8 0c0 3 .9 3.9 1.4 4.5H2.6C3.1 10.3 4 9.4 4 6.4Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.5 13a1.6 1.6 0 0 0 3 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
+};
 const TRK_REMINDER_LEAD_MIN = 45; // mulai warning kalau sisa waktu ≤ 45 menit
 let _trkOwnRecap = null;      // hasil get_tracking_daily_recap utk currentUser hari ini
 let _trkTeamDate = null;      // tanggal yg sedang dilihat di rekap tim (yyyy-mm-dd)
@@ -21706,29 +21721,62 @@ function trackingReportStyleOnce() {
   const css = `
   .trk-banner{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:var(--r);margin-bottom:16px;
     border:1px solid var(--border-hi);background:var(--surface2);font-size:13px;font-weight:500;transition:var(--trans)}
+  .trk-banner svg{width:15px;height:15px;flex-shrink:0}
   .trk-banner.ok{border-color:rgba(122,191,142,.35);background:rgba(122,191,142,.08);color:var(--green)}
   .trk-banner.warn{border-color:rgba(232,184,110,.4);background:rgba(232,184,110,.09);color:var(--amber);animation:trkPulse 2s ease-in-out infinite}
   .trk-banner.late{border-color:rgba(232,112,112,.4);background:rgba(232,112,112,.09);color:var(--red);animation:trkPulse 1.4s ease-in-out infinite}
   @keyframes trkPulse{0%,100%{opacity:1}50%{opacity:.72}}
   .trk-slots{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
   @media(max-width:720px){.trk-slots{grid-template-columns:1fr}}
-  .trk-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;transition:var(--trans)}
+  .trk-card{position:relative;background:linear-gradient(165deg,var(--surface2),var(--surface));border:1px solid var(--border);
+    border-radius:calc(var(--r) + 2px);padding:18px;transition:var(--trans);overflow:hidden}
+  .trk-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,transparent,var(--border-hi),transparent);opacity:.6}
+  .trk-card.filled::before{background:linear-gradient(90deg,transparent,var(--green),transparent);opacity:.55}
+  .trk-card.late::before{background:linear-gradient(90deg,transparent,var(--red),transparent);opacity:.6}
   .trk-card.filled{border-color:rgba(122,191,142,.3)}
   .trk-card.late{border-color:rgba(232,112,112,.35)}
-  .trk-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-  .trk-card-title{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14.5px}
-  .trk-status-pill{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.02em}
+  .trk-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .trk-card-title{display:flex;align-items:center;gap:9px;font-weight:600;font-size:14.5px;letter-spacing:.01em}
+  .trk-card-title .ct-ico{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:rgba(201,169,110,.14);color:var(--gold);flex-shrink:0}
+  .trk-card-title .ct-ico svg{width:14px;height:14px}
+  .trk-card-title .ct-time{color:var(--muted);font-weight:500;font-size:12px}
+  .trk-status-pill{font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.02em}
   .trk-status-pill.pending{background:var(--surface3);color:var(--muted)}
   .trk-status-pill.ok{background:rgba(122,191,142,.14);color:var(--green)}
   .trk-status-pill.late{background:rgba(232,112,112,.14);color:var(--red)}
-  .trk-mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
-  .trk-mini{background:var(--surface2);border-radius:6px;padding:8px 6px;text-align:center}
-  .trk-mini b{display:block;font-size:16px;color:var(--gold-hi)}
-  .trk-mini span{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
-  .trk-form{margin-top:12px;padding-top:12px;border-top:1px dashed var(--border)}
+  .trk-mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+  @media(max-width:520px){.trk-mini-grid{grid-template-columns:repeat(2,1fr)}}
+  .trk-mini{display:flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--border);
+    border-radius:8px;padding:8px 9px;transition:var(--trans)}
+  .trk-mini .tm-ico{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .trk-mini .tm-ico svg{width:12px;height:12px}
+  .trk-mini .tm-body{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+  .trk-mini b{font-size:15px;color:var(--text);font-family:'Cormorant Garamond',serif}
+  .trk-mini span{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tm-masuk .tm-ico{background:rgba(201,169,110,.18);color:var(--gold)}
+  .tm-terlayani .tm-ico{background:rgba(122,191,142,.18);color:var(--green)}
+  .tm-fulama .tm-ico{background:rgba(126,168,201,.18);color:var(--blue)}
+  .tm-cold .tm-ico{background:rgba(126,168,201,.22);color:#7ea8c9}
+  .tm-warm .tm-ico{background:rgba(232,184,110,.22);color:#e8a840}
+  .tm-hot .tm-ico{background:rgba(232,112,112,.22);color:#e87070}
+  .tm-closing .tm-ico{background:linear-gradient(135deg,rgba(122,191,142,.26),rgba(201,169,110,.16));color:var(--green)}
+  body.light .tm-hot .tm-ico{color:#c0392b}
+  body.light .tm-warm .tm-ico{color:#a05800}
+  body.light .tm-cold .tm-ico{color:#1a56a0}
+  .trk-closing-bar{display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;border-radius:8px;
+    background:linear-gradient(135deg,rgba(122,191,142,.12),rgba(201,169,110,.06));border:1px solid rgba(122,191,142,.28)}
+  .trk-closing-bar .tm-ico{width:26px;height:26px;border-radius:50%;background:rgba(122,191,142,.2);color:var(--green);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .trk-closing-bar .tm-ico svg{width:14px;height:14px}
+  .trk-closing-bar .cb-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;display:block}
+  .trk-closing-bar .cb-val{font-size:17px;font-weight:700;color:var(--green);font-family:'Cormorant Garamond',serif}
+  .trk-form{margin-top:14px;padding-top:14px;border-top:1px dashed var(--border)}
   .trk-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .trk-field{display:flex;flex-direction:column;gap:4px}
-  .trk-field label{font-size:10.5px;color:var(--muted);font-weight:600}
+  .trk-field label{font-size:10.5px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:5px}
+  .trk-field label svg{width:11px;height:11px;flex-shrink:0}
   .trk-field input,.trk-field textarea{background:var(--bg3);border:1px solid var(--border);border-radius:6px;
     color:var(--text);padding:8px 10px;font-size:13px;font-family:inherit}
   .trk-field input:focus,.trk-field textarea:focus{outline:none;border-color:var(--gold)}
@@ -21736,11 +21784,15 @@ function trackingReportStyleOnce() {
   .trk-form-acts{display:flex;gap:8px;margin-top:12px}
   .trk-recap-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
   @media(max-width:720px){.trk-recap-strip{grid-template-columns:repeat(2,1fr)}}
-  .trk-recap-box{background:linear-gradient(160deg,var(--surface2),var(--surface));border:1px solid var(--border-hi);
-    border-radius:var(--r);padding:14px;text-align:center}
+  .trk-recap-box{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;
+    background:linear-gradient(160deg,var(--surface2),var(--surface));border:1px solid var(--border-hi);
+    border-radius:var(--r);padding:14px 10px;text-align:center;transition:var(--trans)}
+  .trk-recap-box .rb-ico{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+  .trk-recap-box .rb-ico svg{width:14px;height:14px}
   .trk-recap-box b{display:block;font-size:20px;color:var(--gold-hi);font-family:'Cormorant Garamond',serif}
-  .trk-recap-box span{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
-  .trk-recap-box.hi{border-color:rgba(201,169,110,.5)}
+  .trk-recap-box span{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+  .trk-recap-box.hi{border-color:rgba(122,191,142,.5)}
+  .trk-recap-box.hi b{color:var(--green)}
   .trk-team-row.missing{background:rgba(232,112,112,.05)}
   .trk-team-slot{display:inline-flex;align-items:center;gap:5px;font-size:11.5px}
   .trk-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
@@ -21784,33 +21836,32 @@ async function renderTrackingOwnView(root) {
 
   const slotData = {
     siang: row ? {
-      filled: row.siang_filled, follow_up: row.siang_follow_up, offer: row.siang_offer, nego: row.siang_nego,
-      deal: row.siang_deal, customer_baru: row.siang_customer_baru, fu_lama: row.siang_fu_lama,
-      total_customer: row.siang_total_customer, total_transaksi: row.siang_total_transaksi,
+      filled: row.siang_filled, leads_masuk: row.siang_leads_masuk, leads_terlayani: row.siang_leads_terlayani,
+      fu_leads_lama: row.siang_fu_leads_lama, total_cold: row.siang_total_cold, total_warm: row.siang_total_warm,
+      total_hot: row.siang_total_hot, total_nominal_closing: row.siang_total_nominal_closing,
       is_late: row.siang_is_late, filled_at: row.siang_filled_at
     } : { filled:false },
     sore: row ? {
-      filled: row.sore_filled, follow_up: row.sore_follow_up, offer: row.sore_offer, nego: row.sore_nego,
-      deal: row.sore_deal, customer_baru: row.sore_customer_baru, fu_lama: row.sore_fu_lama,
-      total_customer: row.sore_total_customer, total_transaksi: row.sore_total_transaksi,
+      filled: row.sore_filled, leads_masuk: row.sore_leads_masuk, leads_terlayani: row.sore_leads_terlayani,
+      fu_leads_lama: row.sore_fu_leads_lama, total_cold: row.sore_total_cold, total_warm: row.sore_total_warm,
+      total_hot: row.sore_total_hot, total_nominal_closing: row.sore_total_nominal_closing,
       is_late: row.sore_is_late, filled_at: row.sore_filled_at
     } : { filled:false }
   };
 
   root.innerHTML = `
-    <div id="trk-reminder-banner" class="trk-banner ok">🔔 Memuat status reminder…</div>
+    <div id="trk-reminder-banner" class="trk-banner ok">${TRK_ICO.bell} Memuat status reminder…</div>
     <div class="trk-slots">
       ${TRACKING_SLOTS.map(s => trkSlotCardHtml(s, slotData[s.key])).join('')}
     </div>
     <div class="trk-recap-strip">
-      <div class="trk-recap-box"><b>${row ? row.total_follow_up : 0}</b><span>Follow Up</span></div>
-      <div class="trk-recap-box"><b>${row ? row.total_offer : 0}</b><span>Offer</span></div>
-      <div class="trk-recap-box"><b>${row ? row.total_nego : 0}</b><span>Nego</span></div>
-      <div class="trk-recap-box hi"><b>${row ? row.total_deal : 0}</b><span>Deal Hari Ini</span></div>
-      <div class="trk-recap-box"><b>${row ? row.total_customer_baru : 0}</b><span>Customer Baru</span></div>
-      <div class="trk-recap-box"><b>${row ? row.total_fu_lama : 0}</b><span>FU Customer Lama</span></div>
-      <div class="trk-recap-box"><b>${row ? row.total_customer : 0}</b><span>Total Customer</span></div>
-      <div class="trk-recap-box hi"><b style="font-size:16px">${crmFmtRupiah(row ? row.total_transaksi : 0)}</b><span>Total Transaksi</span></div>
+      <div class="trk-recap-box"><div class="rb-ico tm-masuk" style="background:rgba(201,169,110,.18);color:var(--gold)">${TRK_ICO.masuk}</div><b>${row ? row.total_leads_masuk : 0}</b><span>Leads Masuk</span></div>
+      <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(122,191,142,.18);color:var(--green)">${TRK_ICO.terlayani}</div><b>${row ? row.total_leads_terlayani : 0}</b><span>Leads Terlayani</span></div>
+      <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(126,168,201,.18);color:var(--blue)">${TRK_ICO.fulama}</div><b>${row ? row.total_fu_leads_lama : 0}</b><span>FU Leads Lama</span></div>
+      <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(126,168,201,.22);color:#7ea8c9">${TRK_ICO.cold}</div><b>${row ? row.total_cold : 0}</b><span>Total Cold</span></div>
+      <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(232,184,110,.22);color:#e8a840">${TRK_ICO.warm}</div><b>${row ? row.total_warm : 0}</b><span>Total Warm</span></div>
+      <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(232,112,112,.22);color:#e87070">${TRK_ICO.hot}</div><b>${row ? row.total_hot : 0}</b><span>Total Hot</span></div>
+      <div class="trk-recap-box hi" style="grid-column:span 2"><div class="rb-ico" style="background:rgba(122,191,142,.2);color:var(--green)">${TRK_ICO.closing}</div><b style="font-size:17px">${crmFmtRupiah(row ? row.total_nominal_closing : 0)}</b><span>Total Nominal Closing</span></div>
     </div>
     <div style="font-size:11px;color:var(--muted);text-align:center">Laporan harian di atas otomatis digabung dari slot Siang (12:00) &amp; Sore (17:00).</div>
   `;
@@ -21824,17 +21875,19 @@ function trkSlotCardHtml(s, data) {
   return `
   <div class="trk-card ${filled ? 'filled' : ''} ${data.is_late ? 'late' : ''}" id="trk-card-${s.key}">
     <div class="trk-card-head">
-      <div class="trk-card-title">${s.icon} ${s.label} · ${s.time}</div>
+      <div class="trk-card-title"><span class="ct-ico">${s.icon}</span> ${s.label} <span class="ct-time">· ${s.time}</span></div>
       <span class="trk-status-pill ${statusCls}">${statusTxt}</span>
     </div>
     ${filled ? `
     <div class="trk-mini-grid">
-      <div class="trk-mini"><b>${data.follow_up}</b><span>Follow Up</span></div>
-      <div class="trk-mini"><b>${data.offer}</b><span>Offer</span></div>
-      <div class="trk-mini"><b>${data.nego}</b><span>Nego</span></div>
-      <div class="trk-mini"><b>${data.deal}</b><span>Deal</span></div>
+      <div class="trk-mini tm-masuk"><div class="tm-ico">${TRK_ICO.masuk}</div><div class="tm-body"><b>${data.leads_masuk}</b><span>Leads Masuk</span></div></div>
+      <div class="trk-mini tm-terlayani"><div class="tm-ico">${TRK_ICO.terlayani}</div><div class="tm-body"><b>${data.leads_terlayani}</b><span>Terlayani</span></div></div>
+      <div class="trk-mini tm-fulama"><div class="tm-ico">${TRK_ICO.fulama}</div><div class="tm-body"><b>${data.fu_leads_lama}</b><span>FU Lama</span></div></div>
+      <div class="trk-mini tm-cold"><div class="tm-ico">${TRK_ICO.cold}</div><div class="tm-body"><b>${data.total_cold}</b><span>Cold</span></div></div>
+      <div class="trk-mini tm-warm"><div class="tm-ico">${TRK_ICO.warm}</div><div class="tm-body"><b>${data.total_warm}</b><span>Warm</span></div></div>
+      <div class="trk-mini tm-hot"><div class="tm-ico">${TRK_ICO.hot}</div><div class="tm-body"><b>${data.total_hot}</b><span>Hot</span></div></div>
     </div>
-    <div style="font-size:11.5px;color:var(--muted)">Customer baru ${data.customer_baru} · FU lama ${data.fu_lama} · Total customer ${data.total_customer} · ${crmFmtRupiah(data.total_transaksi)}</div>
+    <div class="trk-closing-bar"><div class="tm-ico">${TRK_ICO.closing}</div><div><span class="cb-label">Total Nominal Closing</span><span class="cb-val">${crmFmtRupiah(data.total_nominal_closing)}</span></div></div>
     ` : `<div style="font-size:12px;color:var(--muted)">Isi laporan sebelum jam ${s.time} ya, biar nggak kelewat deadline.</div>`}
     <div class="trk-form-acts">
       <button class="btn-sm ${filled ? '' : 'btn-gold'}" onclick="trkToggleForm('${s.key}')">${filled ? '✎ Ubah Laporan' : '+ Isi Laporan'}</button>
@@ -21851,25 +21904,26 @@ function trkToggleForm(slotKey) {
   TRACKING_SLOTS.forEach(s => { const w = document.getElementById('trk-form-' + s.key); if (w && s.key !== slotKey) w.style.display = 'none'; });
   if (isOpen) { wrap.style.display = 'none'; return; }
   const d = (_trkOwnRecap && slotKey === 'siang') ? {
-    follow_up:_trkOwnRecap.siang_follow_up, offer:_trkOwnRecap.siang_offer, nego:_trkOwnRecap.siang_nego, deal:_trkOwnRecap.siang_deal,
-    customer_baru:_trkOwnRecap.siang_customer_baru, fu_lama:_trkOwnRecap.siang_fu_lama,
-    total_customer:_trkOwnRecap.siang_total_customer, total_transaksi:_trkOwnRecap.siang_total_transaksi
+    leads_masuk:_trkOwnRecap.siang_leads_masuk, leads_terlayani:_trkOwnRecap.siang_leads_terlayani,
+    fu_leads_lama:_trkOwnRecap.siang_fu_leads_lama, total_cold:_trkOwnRecap.siang_total_cold,
+    total_warm:_trkOwnRecap.siang_total_warm, total_hot:_trkOwnRecap.siang_total_hot,
+    total_nominal_closing:_trkOwnRecap.siang_total_nominal_closing
   } : (_trkOwnRecap && slotKey === 'sore') ? {
-    follow_up:_trkOwnRecap.sore_follow_up, offer:_trkOwnRecap.sore_offer, nego:_trkOwnRecap.sore_nego, deal:_trkOwnRecap.sore_deal,
-    customer_baru:_trkOwnRecap.sore_customer_baru, fu_lama:_trkOwnRecap.sore_fu_lama,
-    total_customer:_trkOwnRecap.sore_total_customer, total_transaksi:_trkOwnRecap.sore_total_transaksi
-  } : { follow_up:0, offer:0, nego:0, deal:0, customer_baru:0, fu_lama:0, total_customer:0, total_transaksi:0 };
+    leads_masuk:_trkOwnRecap.sore_leads_masuk, leads_terlayani:_trkOwnRecap.sore_leads_terlayani,
+    fu_leads_lama:_trkOwnRecap.sore_fu_leads_lama, total_cold:_trkOwnRecap.sore_total_cold,
+    total_warm:_trkOwnRecap.sore_total_warm, total_hot:_trkOwnRecap.sore_total_hot,
+    total_nominal_closing:_trkOwnRecap.sore_total_nominal_closing
+  } : { leads_masuk:0, leads_terlayani:0, fu_leads_lama:0, total_cold:0, total_warm:0, total_hot:0, total_nominal_closing:0 };
 
   wrap.innerHTML = `
     <div class="trk-form-grid">
-      <div class="trk-field"><label>Follow Up</label><input type="number" min="0" id="trk-in-${slotKey}-fu" value="${d.follow_up||0}"></div>
-      <div class="trk-field"><label>Offer</label><input type="number" min="0" id="trk-in-${slotKey}-offer" value="${d.offer||0}"></div>
-      <div class="trk-field"><label>Nego</label><input type="number" min="0" id="trk-in-${slotKey}-nego" value="${d.nego||0}"></div>
-      <div class="trk-field"><label>Deal</label><input type="number" min="0" id="trk-in-${slotKey}-deal" value="${d.deal||0}"></div>
-      <div class="trk-field"><label>Customer Baru</label><input type="number" min="0" id="trk-in-${slotKey}-cbaru" value="${d.customer_baru||0}"></div>
-      <div class="trk-field"><label>FU Customer Lama</label><input type="number" min="0" id="trk-in-${slotKey}-culama" value="${d.fu_lama||0}"></div>
-      <div class="trk-field"><label>Total Customer di Jam Ini</label><input type="number" min="0" id="trk-in-${slotKey}-ctotal" value="${d.total_customer||0}"></div>
-      <div class="trk-field"><label>Total Transaksi (Rp)</label><input type="number" min="0" id="trk-in-${slotKey}-trans" value="${d.total_transaksi||0}"></div>
+      <div class="trk-field"><label>${TRK_ICO.masuk} Jumlah Leads Masuk</label><input type="number" min="0" id="trk-in-${slotKey}-masuk" value="${d.leads_masuk||0}"></div>
+      <div class="trk-field"><label>${TRK_ICO.terlayani} Leads Terlayani</label><input type="number" min="0" id="trk-in-${slotKey}-terlayani" value="${d.leads_terlayani||0}"></div>
+      <div class="trk-field"><label>${TRK_ICO.fulama} Follow Up Leads Lama</label><input type="number" min="0" id="trk-in-${slotKey}-fulama" value="${d.fu_leads_lama||0}"></div>
+      <div class="trk-field"><label>${TRK_ICO.cold} Total Cold</label><input type="number" min="0" id="trk-in-${slotKey}-cold" value="${d.total_cold||0}"></div>
+      <div class="trk-field"><label>${TRK_ICO.warm} Total Warm</label><input type="number" min="0" id="trk-in-${slotKey}-warm" value="${d.total_warm||0}"></div>
+      <div class="trk-field"><label>${TRK_ICO.hot} Total Hot</label><input type="number" min="0" id="trk-in-${slotKey}-hot" value="${d.total_hot||0}"></div>
+      <div class="trk-field full"><label>${TRK_ICO.closing} Total Nominal Closing (Rp)</label><input type="number" min="0" id="trk-in-${slotKey}-closing" value="${d.total_nominal_closing||0}"></div>
       <div class="trk-field full"><label>Catatan (opsional)</label><textarea id="trk-in-${slotKey}-note" rows="2" placeholder="Catatan tambahan…"></textarea></div>
     </div>
     <div class="trk-form-acts">
@@ -21886,10 +21940,10 @@ async function trkSubmitSlot(slotKey) {
   const payload = {
     p_actor_id: currentUser.id, p_target_user_id: currentUser.id,
     p_report_date: trkTodayStr(), p_slot: slotKey,
-    p_follow_up: val(`trk-in-${slotKey}-fu`), p_offer: val(`trk-in-${slotKey}-offer`),
-    p_nego: val(`trk-in-${slotKey}-nego`), p_deal: val(`trk-in-${slotKey}-deal`),
-    p_customer_baru: val(`trk-in-${slotKey}-cbaru`), p_fu_lama: val(`trk-in-${slotKey}-culama`),
-    p_total_customer: val(`trk-in-${slotKey}-ctotal`), p_total_transaksi: val(`trk-in-${slotKey}-trans`),
+    p_leads_masuk: val(`trk-in-${slotKey}-masuk`), p_leads_terlayani: val(`trk-in-${slotKey}-terlayani`),
+    p_fu_leads_lama: val(`trk-in-${slotKey}-fulama`), p_total_cold: val(`trk-in-${slotKey}-cold`),
+    p_total_warm: val(`trk-in-${slotKey}-warm`), p_total_hot: val(`trk-in-${slotKey}-hot`),
+    p_total_nominal_closing: val(`trk-in-${slotKey}-closing`),
     p_note: noteEl ? (noteEl.value || null) : null
   };
   const res = await dbQ(d => d.rpc('submit_tracking_report', payload));
@@ -21996,10 +22050,10 @@ async function renderTrackingTeamView(root) {
         <table class="fu-table">
           <thead><tr>
             <th>Nama</th><th>Role</th><th>Siang (12:00)</th><th>Sore (17:00)</th>
-            <th>Follow Up</th><th>Offer</th><th>Nego</th><th>Deal</th>
-            <th>Cust. Baru</th><th>FU Lama</th><th>Total Cust.</th><th>Total Transaksi</th><th></th>
+            <th>Leads Masuk</th><th>Terlayani</th><th>FU Lama</th>
+            <th>Cold</th><th>Warm</th><th>Hot</th><th>Nominal Closing</th><th></th>
           </tr></thead>
-          <tbody id="trk-team-tbody"><tr><td colspan="13" style="text-align:center;color:var(--muted)">Memuat…</td></tr></tbody>
+          <tbody id="trk-team-tbody"><tr><td colspan="12" style="text-align:center;color:var(--muted)">Memuat…</td></tr></tbody>
         </table>
       </div>
     </div>`;
@@ -22010,7 +22064,7 @@ function trkTeamDateChange(v) { _trkTeamDate = v; trkLoadTeamRecap(); }
 
 async function trkLoadTeamRecap() {
   const tbody = document.getElementById('trk-team-tbody');
-  if (tbody) tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;color:var(--muted)">Memuat…</td></tr>`;
+  if (tbody) tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;color:var(--muted)">Memuat…</td></tr>`;
   let rows = [];
   try {
     const res = await dbQ(d => d.rpc('get_tracking_recap_team', { p_date: _trkTeamDate }));
@@ -22020,30 +22074,29 @@ async function trkLoadTeamRecap() {
 
   const roleLabel = { 'admin':'Admin', 'b2b-marketing':'B2B Marketing', 'cs-hunter':'CS Hunter' };
   const grand = rows.reduce((a,r) => {
-    a.fu += r.total_follow_up||0; a.offer += r.total_offer||0; a.nego += r.total_nego||0; a.deal += r.total_deal||0;
-    a.cbaru += r.total_customer_baru||0; a.clama += r.total_fu_lama||0; a.ctotal += r.total_customer||0; a.trans += Number(r.total_transaksi)||0;
+    a.masuk += r.total_leads_masuk||0; a.terlayani += r.total_leads_terlayani||0; a.fulama += r.total_fu_leads_lama||0;
+    a.cold += r.total_cold||0; a.warm += r.total_warm||0; a.hot += r.total_hot||0; a.closing += Number(r.total_nominal_closing)||0;
     return a;
-  }, { fu:0, offer:0, nego:0, deal:0, cbaru:0, clama:0, ctotal:0, trans:0 });
+  }, { masuk:0, terlayani:0, fulama:0, cold:0, warm:0, hot:0, closing:0 });
   const missingCount = rows.filter(r => !r.siang_filled || !r.sore_filled).length;
 
   const summaryEl = document.getElementById('trk-team-summary');
   if (summaryEl) {
     summaryEl.innerHTML = `
     <div class="trk-recap-strip">
-      <div class="trk-recap-box"><b>${grand.fu}</b><span>Follow Up</span></div>
-      <div class="trk-recap-box"><b>${grand.offer}</b><span>Offer</span></div>
-      <div class="trk-recap-box"><b>${grand.nego}</b><span>Nego</span></div>
-      <div class="trk-recap-box hi"><b>${grand.deal}</b><span>Deal</span></div>
-      <div class="trk-recap-box"><b>${grand.cbaru}</b><span>Customer Baru</span></div>
-      <div class="trk-recap-box"><b>${grand.clama}</b><span>FU Cust. Lama</span></div>
-      <div class="trk-recap-box"><b>${grand.ctotal}</b><span>Total Customer</span></div>
-      <div class="trk-recap-box hi"><b style="font-size:16px">${crmFmtRupiah(grand.trans)}</b><span>Total Transaksi Tim</span></div>
+      <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(201,169,110,.18);color:var(--gold)">${TRK_ICO.masuk}</div><b>${grand.masuk}</b><span>Leads Masuk</span></div>
+      <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(122,191,142,.18);color:var(--green)">${TRK_ICO.terlayani}</div><b>${grand.terlayani}</b><span>Leads Terlayani</span></div>
+      <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(126,168,201,.18);color:var(--blue)">${TRK_ICO.fulama}</div><b>${grand.fulama}</b><span>FU Leads Lama</span></div>
+      <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(126,168,201,.22);color:#7ea8c9">${TRK_ICO.cold}</div><b>${grand.cold}</b><span>Total Cold</span></div>
+      <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(232,184,110,.22);color:#e8a840">${TRK_ICO.warm}</div><b>${grand.warm}</b><span>Total Warm</span></div>
+      <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(232,112,112,.22);color:#e87070">${TRK_ICO.hot}</div><b>${grand.hot}</b><span>Total Hot</span></div>
+      <div class="trk-recap-box hi" style="grid-column:span 2"><div class="rb-ico" style="background:rgba(122,191,142,.2);color:var(--green)">${TRK_ICO.closing}</div><b style="font-size:16px">${crmFmtRupiah(grand.closing)}</b><span>Total Nominal Closing Tim</span></div>
     </div>
     ${missingCount ? `<div class="trk-banner late" style="margin-bottom:10px">⚠️ ${missingCount} orang masih ada laporan yang belum diisi hari ini.</div>` : `<div class="trk-banner ok" style="margin-bottom:10px">✅ Semua staff sudah lengkap mengisi laporan.</div>`}`;
   }
 
   if (!tbody) return;
-  if (!rows.length) { tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;color:var(--muted)">Belum ada staff CS Hunter/Admin/B2B Marketing aktif.</td></tr>`; return; }
+  if (!rows.length) { tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;color:var(--muted)">Belum ada staff CS Hunter/Admin/B2B Marketing aktif.</td></tr>`; return; }
   const dot = (filled, late) => `<span class="trk-dot ${!filled ? 'pending' : (late ? 'late' : 'ok')}"></span>`;
   tbody.innerHTML = rows.map(r => {
     const missing = !r.siang_filled || !r.sore_filled;
@@ -22055,10 +22108,10 @@ async function trkLoadTeamRecap() {
         ${(!r.siang_filled && canRemind) ? `<button class="btn-sm" style="padding:2px 8px;font-size:10px;margin-left:4px" onclick="trkSendReminder('${r.user_id}','siang')">Ingatkan</button>` : ''}</td>
       <td><span class="trk-team-slot">${dot(r.sore_filled, r.sore_is_late)} ${r.sore_filled ? (r.sore_is_late ? 'Terlambat' : 'Terisi') : 'Belum'}</span>
         ${(!r.sore_filled && canRemind) ? `<button class="btn-sm" style="padding:2px 8px;font-size:10px;margin-left:4px" onclick="trkSendReminder('${r.user_id}','sore')">Ingatkan</button>` : ''}</td>
-      <td>${r.total_follow_up}</td><td>${r.total_offer}</td><td>${r.total_nego}</td>
-      <td><b style="color:var(--gold-hi)">${r.total_deal}</b></td>
-      <td>${r.total_customer_baru}</td><td>${r.total_fu_lama}</td><td>${r.total_customer}</td>
-      <td><b>${crmFmtRupiah(r.total_transaksi)}</b></td>
+      <td>${r.total_leads_masuk}</td><td>${r.total_leads_terlayani}</td><td>${r.total_fu_leads_lama}</td>
+      <td>${r.total_cold}</td><td>${r.total_warm}</td>
+      <td><b style="color:#e87070">${r.total_hot}</b></td>
+      <td><b style="color:var(--green)">${crmFmtRupiah(r.total_nominal_closing)}</b></td>
       <td></td>
     </tr>`;
   }).join('');
