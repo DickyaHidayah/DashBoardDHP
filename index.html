@@ -4213,16 +4213,6 @@ body.light .kol-fin-val{color:#0d0d0d}
     </div>
 
     <div class="sb-nav" id="sb-nav">
-      <button class="nav-item active" onclick="navTo('mod_tasks',this)" id="n-mod-tasks">
-        <span class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/>
-            <path d="M4.7 8.2l2 2 4.6-4.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </span>
-        <span id="n-mod-tasks-label" data-i18n="myTasks">Tugas Saya</span>
-        <span class="nav-badge" id="mt-pending-badge" style="display:none">0</span>
-      </button>
       <!-- ══ PERFORMA SAYA — tersedia untuk SEMUA role, dashboard bulanan bergrafik ══ -->
       <button class="nav-item" onclick="navTo('my_performance',this)" id="n-my-performance">
         <span class="nav-icon">
@@ -4543,76 +4533,6 @@ body.light .kol-fin-val{color:#0d0d0d}
       <div class="owner-readonly-banner">
         <span style="font-size:17px">👁</span>
         <span>Mode Lihat Saja — semua data di bawah ini <b>selalu real-time</b>, tapi tidak ada yang bisa ditambah/diubah/dihapus dari akun ini.</span>
-      </div>
-
-      <!-- ①b MY TASKS — catatan pekerjaan pribadi, deadline & notifikasi -->
-      <div class="sp active" id="pg-mod_tasks">
-        <div class="ph">
-          <div class="ph-left">
-            <div class="pt">
-              <span id="mt-page-title" data-i18n="myTasks">Tugas Saya</span>
-            </div>
-            <div class="ps" id="mt-page-sub" data-i18n="myTasksSub">Catat pekerjaan yang harus kamu kerjakan, atur deadline & waktu, dapat notifikasi saat mendekati tenggat</div>
-          </div>
-        </div>
-
-        <!-- (A) TUGAS UTAMA — task bawaan sesuai role, auto-tracked, bukan dibuat manual -->
-        <div class="mt-main-section" id="mt-main-section"></div>
-
-        <!-- (A-bis) TARGET OMZET ADMIN (v22) — khusus role Admin -->
-        <div id="mt-admin-target-card" style="display:none;margin-bottom:20px"></div>
-
-        <!-- (A2) DASHBOARD PROGRESS BULANAN — khusus Admin/B2B (follow-up) -->
-        <div id="mt-followup-dash" style="display:none">
-          <div class="ph" style="margin-top:4px">
-            <div class="ph-left">
-              <div class="pt">Dashboard Progress Bulanan</div>
-              <div class="ps" id="fu-dash-sub">Follow-up kamu bulan ini</div>
-            </div>
-          </div>
-          <div class="dash-grid-with-ring">
-            <div class="dash-ring-card">
-              <svg viewBox="0 0 80 80" width="88" height="88">
-                <circle cx="40" cy="40" r="34" stroke="var(--border)" stroke-width="7" fill="none"/>
-                <circle id="fu-dash-ring-fg" cx="40" cy="40" r="34" stroke="var(--gold)" stroke-width="7" fill="none"
-                  stroke-dasharray="213.6" stroke-dashoffset="213.6" stroke-linecap="round" transform="rotate(-90 40 40)"
-                  style="transition:stroke-dashoffset 1s cubic-bezier(.16,1,.3,1)"/>
-              </svg>
-              <div class="dash-ring-num" id="fu-dash-ring-num">0%</div>
-              <div class="dash-ring-lbl">Hari Capai Target</div>
-            </div>
-            <div class="dash-grid" id="fu-dash-grid" style="flex:1"></div>
-          </div>
-          <div class="dash-chart-wrap">
-            <div class="dash-chart-title">Follow-up per Hari — Bulan Ini (Target 50/hari)</div>
-            <div class="dash-chart-bars" id="fu-dash-bars"></div>
-          </div>
-        </div>
-
-        <!-- (B) TUGAS PRIBADI / CUSTOM — dibuat manual oleh user sendiri.
-             v41: disembunyikan untuk role CS Hunter (non-mod) — digantikan sepenuhnya
-             oleh kartu "Tugas Harian" (leads hari ini) di bagian (A) di atas. -->
-        <div id="mt-custom-section">
-          <div class="mt-section-head">
-            <div class="mt-section-title" data-i18n="myTasksCustomTitle">Tugas Pribadi &amp; Catatan Kerja</div>
-            <div class="ph-acts">
-              <button class="btn-g btn-sm" onclick="clearModTaskHistory()" data-i18n="myTasksClearHistory">Hapus Riwayat</button>
-              <button class="btn-g btn-sm" onclick="clearAllModTasks()" data-i18n="myTasksClearAll">Hapus Semua</button>
-              <button class="btn-add" onclick="openModTaskModal()">+ <span data-i18n="myTasksNew">Tugas Baru</span></button>
-            </div>
-          </div>
-          <div class="stats-grid" id="mt-summary"></div>
-          <div class="mt-toolbar">
-            <div class="mt-filter-tabs" id="mt-filter-tabs">
-              <button class="mt-filter-tab active" data-f="all" onclick="setModTaskFilter('all')" data-i18n="myTasksAll">Semua</button>
-              <button class="mt-filter-tab" data-f="not_started" onclick="setModTaskFilter('not_started')" data-i18n="myTasksNotStarted">Belum Mulai</button>
-              <button class="mt-filter-tab" data-f="in_progress" onclick="setModTaskFilter('in_progress')" data-i18n="myTasksInProgress">Berjalan</button>
-              <button class="mt-filter-tab" data-f="done" onclick="setModTaskFilter('done')" data-i18n="myTasksDoneTab">Selesai</button>
-            </div>
-            <input class="search-box" id="mt-search" placeholder="Cari tugas..." oninput="renderModTasks()" style="max-width:220px"/>
-          </div>
-          <div class="mt-list" id="mt-list"></div>
-        </div>
       </div>
 
       <!-- ② TEAM TASK PROGRESS (Moderator only) — lihat task semua role/admin & progress masing-masing -->
@@ -6584,28 +6504,6 @@ function initNotifRealtime(userId) {
     .subscribe();
 }
 
-// v34: to-do harian moderator (mod_tasks) — sinkron kalau moderator yang
-// sama login di 2 device (mis. HP + laptop) supaya tugas yang dicentang/
-// dihapus di satu device langsung hilang di device lain juga.
-let modTasksChannel = null;
-function initModTasksRealtime(userId) {
-  if (!db || !userId) return;
-  if (modTasksChannel) { try { modTasksChannel.unsubscribe(); } catch (e) {} modTasksChannel = null; }
-  modTasksChannel = db.channel('dhp_mod_tasks_' + userId)
-    .on('postgres_changes', {
-      event:'*', schema:'public', table:'mod_tasks',
-      filter:'moderator_id=eq.' + userId
-    }, () => {
-      loadModTasks().then(() => {
-        renderModTasks();
-        if (document.getElementById('pg-mod_tasks')?.classList.contains('active')) {
-          renderMtMainSection().catch?.(() => {});
-        }
-      });
-    })
-    .subscribe();
-}
-
 // v34: target omzet (Host Live / Admin / B2B Marketing) — dipakai bareng
 // oleh moderator (yang mengatur target) dan si pemilik target (yang lihat
 // progress-nya). Tanpa ini, perubahan target/omzet baru kelihatan setelah
@@ -6841,41 +6739,9 @@ const i18n = {
     ttLiveDoneToday:'live sessions completed today', ttLiveRemaining:'sessions remaining',
     ttLiveTotalToday:'live sessions scheduled today',
     ttNoTaskToday:'No task scheduled for today',
-    // My Tasks (moderator personal job notes)
-    myTasks:'My Tasks', myTasksSub:'Note down the jobs you need to do, set a deadline & time, and get notified as it approaches',
+    // My Performance (all roles)
     myPerformance:'My Performance', myPerformanceSub:'Your performance summary this month & the 6-month trend, with charts',
-    myTasksNew:'New Task', myTasksActive:'Active', myTasksDoneTab:'Done', myTasksAll:'All',
-    myTasksTotal:'Total Tasks', myTasksPending:'Pending', myTasksOverdue:'Overdue',
-    myTasksEmpty:'No tasks here yet — add your first job note.',
-    myTasksMarkDone:'Mark as done', myTasksOverdueLbl:'Overdue',
-    myTasksNewTitle:'New Task', myTasksEditTitle:'Edit Task',
-    myTasksFieldTitle:'Task', myTasksFieldTitlePh:'e.g. Prepare the Shopee Ads report',
-    myTasksFieldNote:'Notes', myTasksFieldNotePh:'Additional details (optional)',
-    myTasksFieldDate:'Deadline Date', myTasksFieldTime:'Time', myTasksFieldPriority:'Priority',
-    myTasksFillTitle:'Please fill in the task name', myTasksAdded:'Task added', myTasksUpdated:'Task updated', myTasksDeleted:'Task deleted',
-    myTasksDeleteTitle:'Delete Task', myTasksDeleteMsg:'This task note will be permanently deleted.',
-    myTasksReminderTitle:'Deadline in 1 hour', myTasksOverdueTitle:'Task overdue',
-    mtPrioLow:'Low', mtPrioNormal:'Normal', mtPrioHigh:'High', mtPrioUrgent:'Urgent',
-    myTasksCustomTitle:'Personal Tasks & Work Notes', myTasksNotStarted:'Not Started', myTasksInProgress:'In Progress',
-    myTasksFieldStatus:'Status',
-    myTasksClearHistory:'Clear History', myTasksClearAll:'Delete All',
-    myTasksNoHistory:'No finished tasks to clear yet', myTasksNothingToClear:'No tasks to delete yet',
-    myTasksClearHistoryTitle:'Clear History', myTasksClearHistoryMsg:'All finished tasks will be permanently deleted.',
-    myTasksClearAllTitle:'Delete All Tasks', myTasksClearAllMsg:'All your personal tasks will be permanently deleted. This cannot be undone.',
-    myTasksHistoryCleared:'History cleared', myTasksAllCleared:'All tasks deleted',
-    myTasksMainTag:'Main Task', myTasksFollowupMain:'Daily Customer Follow-up',
-    myTasksFollowupRemaining:'remaining today', myTasksFollowupTotal:'total customers', myTasksOpenCRM:'Open Customer Database',
-    myTasksMainModerator:'As moderator, your main job is overseeing the whole team daily task progress.',
-    myTasksOpenTeamTasks:'Open Team Task Progress',
-    myTasksMainContent:'Your main task is producing and publishing content in Content Studio today.',
-    myTasksMainLive:'Your main task is running the scheduled live sessions in Live Studio today.',
-    myTasksOpenStudio:'Open Studio',
-    // Daily Task — CS Hunter (replaces the generic My Task page for this role)
-    dailyTask:'Daily Task', dailyTaskSub:'Log every lead that comes in today, tracked in real time — the same flow as Ad Task.',
-    myTasksDailyMain:"Today's Leads", myTasksDailyDesc:'Log every lead you receive today. Progress updates live for you and your moderator.',
-    myTasksDailyEntered:'leads today', myTasksDailyTarget:'daily target', myTasksDailyBtn:'+ Add Lead',
-    myTasksDailyViewAll:'View all leads today', myTasksDailyDone:'Target reached today 🎉',
-    myTasksDailyEmpty:'No leads logged yet today — add your first one.',
+    fuMainTag:'Main Task',
     // v45: Follow Up — dedicated tools page for CS Hunter (table + daily target)
     navTools:'Tools', followupNav:'Follow Up',
     followupPageSub:"Today's customers to contact, complete with a ready-to-send WhatsApp chat & daily target",
@@ -7134,41 +7000,9 @@ const i18n = {
     ttLiveDoneToday:'sesi live selesai hari ini', ttLiveRemaining:'sesi tersisa',
     ttLiveTotalToday:'sesi live terjadwal hari ini',
     ttNoTaskToday:'Belum ada jadwal untuk hari ini',
-    // Tugas Saya (catatan pekerjaan pribadi moderator)
-    myTasks:'Tugas Saya', myTasksSub:'Catat pekerjaan yang harus kamu kerjakan, atur deadline & waktu, dapat notifikasi saat mendekati tenggat',
+    // Performa Saya (semua role)
     myPerformance:'Performa Saya', myPerformanceSub:'Ringkasan performamu bulan ini & tren 6 bulan terakhir, lengkap dengan grafik',
-    myTasksNew:'Tugas Baru', myTasksActive:'Berjalan', myTasksDoneTab:'Selesai', myTasksAll:'Semua',
-    myTasksTotal:'Total Tugas', myTasksPending:'Belum Selesai', myTasksOverdue:'Terlambat',
-    myTasksEmpty:'Belum ada tugas — catat pekerjaan pertamamu di sini.',
-    myTasksMarkDone:'Tandai selesai', myTasksOverdueLbl:'Terlambat',
-    myTasksNewTitle:'Tugas Baru', myTasksEditTitle:'Edit Tugas',
-    myTasksFieldTitle:'Tugas', myTasksFieldTitlePh:'cth. Siapkan laporan Shopee Ads',
-    myTasksFieldNote:'Catatan', myTasksFieldNotePh:'Detail tambahan (opsional)',
-    myTasksFieldDate:'Tanggal Deadline', myTasksFieldTime:'Jam', myTasksFieldPriority:'Prioritas',
-    myTasksFillTitle:'Isi dulu nama tugasnya', myTasksAdded:'Tugas ditambahkan', myTasksUpdated:'Tugas diperbarui', myTasksDeleted:'Tugas dihapus',
-    myTasksDeleteTitle:'Hapus Tugas', myTasksDeleteMsg:'Catatan tugas ini akan dihapus permanen.',
-    myTasksReminderTitle:'Deadline 1 jam lagi', myTasksOverdueTitle:'Tugas terlambat',
-    mtPrioLow:'Rendah', mtPrioNormal:'Normal', mtPrioHigh:'Tinggi', mtPrioUrgent:'Mendesak',
-    myTasksCustomTitle:'Tugas Pribadi & Catatan Kerja', myTasksNotStarted:'Belum Mulai', myTasksInProgress:'Sedang Dikerjakan',
-    myTasksFieldStatus:'Status',
-    myTasksClearHistory:'Hapus Riwayat', myTasksClearAll:'Hapus Semua',
-    myTasksNoHistory:'Belum ada tugas selesai yang bisa dihapus', myTasksNothingToClear:'Belum ada tugas untuk dihapus',
-    myTasksClearHistoryTitle:'Hapus Riwayat', myTasksClearHistoryMsg:'Semua tugas yang sudah selesai akan dihapus permanen.',
-    myTasksClearAllTitle:'Hapus Semua Tugas', myTasksClearAllMsg:'Semua tugas pribadimu akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.',
-    myTasksHistoryCleared:'Riwayat dihapus', myTasksAllCleared:'Semua tugas dihapus',
-    myTasksMainTag:'Tugas Utama', myTasksFollowupMain:'Follow Up Customer Harian',
-    myTasksFollowupRemaining:'sisa hari ini', myTasksFollowupTotal:'total customer', myTasksOpenCRM:'Buka Database Customer',
-    myTasksMainModerator:'Sebagai moderator, tugas utamamu adalah memantau progress kerja seluruh tim setiap hari.',
-    myTasksOpenTeamTasks:'Buka Progress Tugas Tim',
-    myTasksMainContent:'Tugas utamamu adalah membuat & publish konten hari ini di Studio Konten.',
-    myTasksMainLive:'Tugas utamamu adalah menjalankan jadwal live hari ini di Studio Live.',
-    myTasksOpenStudio:'Buka Studio',
-    // Tugas Harian — CS Hunter (menggantikan halaman Tugas Saya untuk role ini)
-    dailyTask:'Tugas Harian', dailyTaskSub:'Catat setiap leads yang masuk hari ini, progress terupdate realtime — alurnya sama seperti Task Iklan.',
-    myTasksDailyMain:'Leads Hari Ini', myTasksDailyDesc:'Catat setiap leads yang kamu terima hari ini. Progress terupdate realtime, terlihat oleh kamu & moderator.',
-    myTasksDailyEntered:'leads hari ini', myTasksDailyTarget:'target harian', myTasksDailyBtn:'+ Tambah Leads',
-    myTasksDailyViewAll:'Lihat semua leads hari ini', myTasksDailyDone:'Target hari ini tercapai 🎉',
-    myTasksDailyEmpty:'Belum ada leads yang dicatat hari ini — tambahkan yang pertama.',
+    fuMainTag:'Tugas Utama',
     // v45: Follow Up — halaman tools khusus CS Hunter (tabel + target harian)
     navTools:'Tools', followupNav:'Follow Up',
     followupPageSub:'Daftar customer yang harus dihubungi hari ini, lengkap dengan chat WhatsApp siap kirim & target harian',
@@ -7913,11 +7747,7 @@ async function initDashboard() {
   const isCsHunterOnlyRole = can.isCsHunter(r) && !isMod;
   const isAdminNonMod = can.isAdminRole(r) && !isMod;
   const hideMyToolsRole = isCsHunterOnlyRole || isAdminNonMod;
-  navShow('n-mod-tasks',      true && !isOwner && !hideMyToolsRole);    // Tugas Saya — tidak relevan untuk Owner (tidak punya tugas pribadi)
-  // v41: label sidebar "Tugas Saya" → "Tugas Harian" khusus CS Hunter (non-mod),
-  // karena isinya diganti total jadi form isi leads harian.
-  { const lbl = document.getElementById('n-mod-tasks-label'); if (lbl) lbl.textContent = (can.isCsHunter(r) && !isMod) ? t('dailyTask') : t('myTasks'); }
-  navShow('n-my-performance', true && !isOwner && !hideMyToolsRole);    // Performa Saya — idem
+  navShow('n-my-performance', true && !isOwner && !hideMyToolsRole);    // Performa Saya
   navShow('n-cs-hunter',      can.isCsHunter(r) || isMod || isOwner);   // CS Hunter — level & progress (sendiri utk CS Hunter, semua tim utk Mod/Owner)
   navShow('ns-cs-tools',      can.canFollowup(r) || isMod || isOwner);   // v53: Section label "Tools" — kini juga muncul utk B2B Marketing
   navShow('n-followup',       can.canFollowup(r) || isMod || isOwner);   // v54: Follow Up — tabel customer + target harian (cs_hunter + b2b_marketing + admin)
@@ -7985,6 +7815,31 @@ async function initDashboard() {
   // Bell tampil untuk semua user — notif login/join terlihat oleh siapa pun.
   document.getElementById('notif-bell').style.display   = '';
 
+  // v55: Halaman "Tugas Saya" sudah dihapus total dari sistem (dulu jadi
+  // default landing page lewat class "active" statis di HTML). Sekarang
+  // begitu login, kita cari tombol menu paling atas yang memang terlihat
+  // untuk role ini (section-label ns-* dilewati, cuma tombol .nav-item asli)
+  // lalu langsung buka halaman itu sebagai tampilan utama — supaya tiap role
+  // selalu mendarat di fitur teratas miliknya, bukan halaman kosong.
+  {
+    document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const firstNav = Array.from(document.querySelectorAll('#sb-nav .nav-item')).find(btn => {
+      const style = window.getComputedStyle(btn);
+      return style.display !== 'none' && btn.offsetParent !== null;
+    }) || Array.from(document.querySelectorAll('#sb-nav .nav-item')).find(btn => btn.style.display !== 'none');
+    if (firstNav) {
+      const m = firstNav.getAttribute('onclick')?.match(/navTo\('([^']+)'/);
+      const page = m ? m[1] : null;
+      const target = page ? document.getElementById(`pg-${page}`) : null;
+      if (target) {
+        target.classList.add('active');
+        firstNav.classList.add('active');
+        loadPageData(page);
+      }
+    }
+  }
+
   // ─── Topbar greeting ───
   const g = getGreeting();
   document.getElementById('tg-icon').innerHTML = g.icon;
@@ -8032,8 +7887,7 @@ async function initDashboard() {
   // untuk data miliknya sendiri. Supaya progres terupdate tanpa refresh.
   if (isContent || isMod) { try { initContentCalendarRealtime(); } catch (e) { console.warn('[DHP] initContentCalendarRealtime gagal:', e); } }
   if (isLive || isMod)    { try { initLiveScheduleRealtime(); } catch (e) { console.warn('[DHP] initLiveScheduleRealtime gagal:', e); } }
-  // v34: to-do moderator (per device) + target omzet (moderator + host/admin/b2b pemilik target)
-  if (isMod) { try { initModTasksRealtime(currentUser.id); } catch (e) { console.warn('[DHP] initModTasksRealtime gagal:', e); } }
+  // v34: target omzet (moderator + host/admin/b2b pemilik target)
   if (isMod || isLive || canSeeAds) { try { initTargetsRealtime(); } catch (e) { console.warn('[DHP] initTargetsRealtime gagal:', e); } }
   // v45: KOL/Affiliate + Budget Marketing + Follow Up log — moderator, owner
   // (view-only), & admin/B2B (follow up log milik sendiri) perlu lihat
@@ -8064,10 +7918,6 @@ async function initDashboard() {
   if (isContent) renderContentStudio();
   if (isLive)    renderLiveStudio();
   if (isMod) { try { await renderTeamTasks(); } catch(e) { console.warn('[DHP] renderTeamTasks awal gagal:', e); } }
-  try {
-    await loadModTasks(); renderModTasks(); renderMtMainSection();
-    if (!window._mtDeadlineIv) window._mtDeadlineIv = setInterval(checkModTaskDeadlines, 60000);
-  } catch(e) { console.warn('[DHP] loadModTasks awal gagal:', e); }
 
   // Sovereign Moderator special toast
   if (isHead) {
@@ -13176,641 +13026,6 @@ async function renderTeamTasks() {
   }).join('');
 }
 
-/* ═══════════════════════════════════════════════════════════
-   ㉑ MY TASKS (Semua Role) — dipisah jadi 2 bagian:
-   (A) TUGAS UTAMA  — task bawaan sesuai role (mis. target follow up
-       50 customer/hari untuk Admin & B2B), auto-tracked, read-only,
-       BUKAN dibuat manual oleh user.
-   (B) TUGAS PRIBADI/CUSTOM — catatan kerja yang dibuat sendiri oleh
-       user (judul, deadline+waktu, prioritas), dengan alur status
-       Belum Mulai → Sedang Dikerjakan → Selesai, notifikasi mendekati
-       tenggat, dan opsi hapus semua / hapus riwayat.
-   ═══════════════════════════════════════════════════════════ */
-let modTasks = [];
-let modTaskFilter = 'all'; // all | not_started | in_progress | done
-const MT_STATUSES = ['not_started','in_progress','done'];
-
-function mtLocalKey() { return `dhp_mod_tasks_${currentUser?.id||'guest'}`; }
-function mtLoadLocal() { try { return JSON.parse(localStorage.getItem(mtLocalKey())) || []; } catch(_) { return []; } }
-function mtSaveLocal(list) { try { localStorage.setItem(mtLocalKey(), JSON.stringify(list)); } catch(_) {} }
-
-async function loadModTasks() {
-  if (db) {
-    const res = await dbQ(d => d.from('mod_tasks').select('*').eq('moderator_id', currentUser.id));
-    if (res?.data) { modTasks = res.data; return modTasks; }
-  }
-  modTasks = mtLoadLocal();
-  return modTasks;
-}
-
-function mtDeadlineOf(task) {
-  if (!task.deadline_date) return null;
-  const time = task.deadline_time || '23:59';
-  const d = new Date(`${task.deadline_date}T${time}`);
-  return isNaN(d) ? null : d;
-}
-
-function mtFmtDeadline(task) {
-  const d = mtDeadlineOf(task);
-  if (!d) return '';
-  const locale = currentLang === 'id' ? 'id-ID' : 'en-US';
-  const dateStr = d.toLocaleDateString(locale, { day:'2-digit', month:'short' });
-  const timeStr = task.deadline_time ? d.toLocaleTimeString(locale, { hour:'2-digit', minute:'2-digit' }) : '';
-  return timeStr ? `${dateStr} · ${timeStr}` : dateStr;
-}
-
-function mtStatusInfo(status) {
-  const st = MT_STATUSES.includes(status) ? status : 'not_started';
-  return {
-    not_started: { key:'not_started', lbl:t('myTasksNotStarted'), cls:'notstarted' },
-    in_progress: { key:'in_progress', lbl:t('myTasksInProgress'), cls:'inprogress' },
-    done:        { key:'done',        lbl:t('myTasksDoneTab'),    cls:'done' },
-  }[st];
-}
-
-function setModTaskFilter(f) {
-  modTaskFilter = f;
-  document.querySelectorAll('#mt-filter-tabs .mt-filter-tab').forEach(b => b.classList.toggle('active', b.dataset.f === f));
-  renderModTasks();
-}
-
-/* v24: acak urutan array (Fisher-Yates) — dipakai untuk daftar "Belum di-follow up" di My Task
-   supaya tidak selalu urut sama tiap dibuka, sesuai request: tidak perlu sequential. */
-function mtShuffle(arr) {
-  const a = arr.slice();
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-/* v39: kolom "Belum di-follow up" — search + tombol refresh (acak ulang urutan)
-   tanpa perlu render ulang seluruh kartu My Task (biar fokus input pencarian
-   tidak hilang tiap ngetik). State disimpan terpisah dari render utama. */
-let _mtFuMine = [];
-let _mtFuOrder = null;
-let _mtFuSearchQ = '';
-
-function _mtFuHeatOf(c) { return c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status)); }
-
-function mtFuBuildOrder() {
-  const pending = _mtFuMine.filter(c => !followupDoneTodayIds.has(_followupCustKey(c)));
-  const recommended = mtShuffle(pending.filter(c => ['Hot','Warm'].includes(_mtFuHeatOf(c))));
-  const rest = mtShuffle(pending.filter(c => !['Hot','Warm'].includes(_mtFuHeatOf(c))));
-  _mtFuOrder = [...recommended, ...rest];
-}
-
-function _mtFuItemHtml(c) {
-  const idx = crmData.indexOf(c);
-  const heat = _mtFuHeatOf(c);
-  const isReco = ['Hot','Warm'].includes(heat);
-  // v25: nomor WA divalidasi lewat crmFormatWaLink — kalau formatnya
-  // tidak terdeteksi sebagai nomor WA yang valid, nomornya disembunyikan
-  // sama sekali (tidak ditampilkan sebagai teks biasa).
-  const waInfo = crmFormatWaLink(c.wa);
-  return `<div class="mt-fu-list-item mt-fu-list-item-action">
-    <span class="mt-fu-item-info">
-      <span class="mt-fu-item-top">
-        ${isReco ? `<span class="mt-fu-reco-badge ${heat==='Hot'?'is-hot':'is-warm'}">${heat==='Hot'?'🔥':'☀'} Prioritas</span>` : ''}
-        <span class="mt-fu-item-name">${escHtml(c.nama||'—')}</span>
-      </span>
-      ${waInfo ? `<a href="${waInfo.href}" target="_blank" rel="noopener" class="mt-fu-item-wa" onclick="event.stopPropagation()">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 00-6 10.6L1 15l3.5-1a7 7 0 106.5-13zm4 9.9c-.2.5-1 1-1.4 1-.4 0-.9.1-2.9-.7-2.4-1-4-3.5-4.1-3.6-.1-.2-1-1.3-1-2.5s.6-1.8.8-2c.2-.2.5-.3.6-.3h.5c.2 0 .4 0 .5.4l.7 1.7c.1.2.1.3 0 .5l-.4.5c-.1.1-.2.3-.1.5.2.3.7 1.1 1.5 1.8.9.8 1.6 1 1.9 1.2.2.1.4.1.5-.1l.5-.6c.2-.2.3-.2.5-.1l1.5.7c.2.1.3.1.4.3.1.2.1.7 0 1.2z"/></svg>
-        ${escHtml(waInfo.display)}
-      </a>` : `<span class="mt-fu-item-wa mt-fu-item-wa-none">— tanpa nomor WA valid</span>`}
-    </span>
-    <button class="btn-g btn-sm mt-fu-item-btn" onclick="markFollowedUp(${idx})">Update</button>
-  </div>`;
-}
-
-function mtFuPendingHtml() {
-  if (!_mtFuOrder) mtFuBuildOrder();
-  let list = _mtFuOrder;
-  if (_mtFuSearchQ) {
-    const q = _mtFuSearchQ;
-    list = list.filter(c => (c.nama||'').toLowerCase().includes(q) || (c.wa||'').toLowerCase().includes(q) || (c.kota||'').toLowerCase().includes(q));
-  }
-  if (!list.length) return `<div class="mt-fu-list-empty">${_mtFuSearchQ ? 'Tidak ada hasil untuk pencarian ini.' : 'Semua sudah di-follow up 🎉'}</div>`;
-  return list.slice(0,30).map(_mtFuItemHtml).join('');
-}
-
-function mtFuRenderPendingBody() {
-  const bodyEl = document.getElementById('mt-fu-pending-body');
-  if (bodyEl) bodyEl.innerHTML = mtFuPendingHtml();
-}
-
-const mtFuDebouncedSearch = debounce((v) => { _mtFuSearchQ = (v||'').toLowerCase().trim(); mtFuRenderPendingBody(); }, 200);
-
-function mtFuReshuffle() {
-  const btn = document.getElementById('mt-fu-refresh-btn');
-  if (btn) btn.classList.add('is-spinning');
-  _mtFuOrder = null;
-  mtFuRenderPendingBody();
-  if (btn) setTimeout(() => btn.classList.remove('is-spinning'), 500);
-}
-
-/* ── (A) TUGAS UTAMA — task bawaan sesuai role, auto-tracked ── */
-async function renderMtMainSection() {
-  const el = document.getElementById('mt-main-section');
-  if (!el || !currentUser) return;
-  const r = currentUser.role;
-  const fuDashEl = document.getElementById('mt-followup-dash');
-  if (fuDashEl) fuDashEl.style.display = 'none';
-  const atCardEl = document.getElementById('mt-admin-target-card');
-  if (atCardEl) atCardEl.style.display = 'none';
-
-  // v41: judul halaman & bagian "Tugas Pribadi/Custom" — khusus CS Hunter
-  // (non-mod) diganti total jadi "Tugas Harian" isi leads, custom task disembunyikan.
-  const isCsHunterOnlyPage = can.isCsHunter(r) && !can.isMod(r);
-  const titleEl = document.getElementById('mt-page-title');
-  const subEl   = document.getElementById('mt-page-sub');
-  const customEl = document.getElementById('mt-custom-section');
-  if (titleEl) titleEl.textContent = isCsHunterOnlyPage ? t('dailyTask') : t('myTasks');
-  if (subEl)   subEl.textContent   = isCsHunterOnlyPage ? t('dailyTaskSub') : t('myTasksSub');
-  if (customEl) customEl.style.display = isCsHunterOnlyPage ? 'none' : '';
-
-  if (can.isB2B(r) || r === 'admin') {
-    if (crmUsesDB()) { try { await loadCRM(); } catch(e){} }
-    try { await loadFollowupLogsToday(); } catch(e){}
-    const mine = crmData.slice();
-    const doneCount = mine.filter(c => followupDoneTodayIds.has(_followupCustKey(c))).length;
-    const target = FOLLOWUP_DAILY_TARGET;
-    const pct = target ? Math.min(100, Math.round((doneCount/target)*100)) : 0;
-    const pendingCount = Math.max(0, mine.length - doneCount);
-    const circ = 2 * Math.PI * 34;
-    el.innerHTML = `
-      <div class="mt-main-card">
-        <div class="mt-main-head">
-          <span class="mt-main-tag">${t('myTasksMainTag')}</span>
-          <span class="mt-main-title">${t('myTasksFollowupMain')}</span>
-        </div>
-        <div class="mt-main-body">
-          <div class="mt-main-ring">
-            <svg viewBox="0 0 80 80" width="72" height="72">
-              <circle cx="40" cy="40" r="34" stroke="var(--border)" stroke-width="7" fill="none"/>
-              <circle cx="40" cy="40" r="34" stroke="${doneCount>=target?'var(--green)':'var(--gold)'}" stroke-width="7" fill="none"
-                stroke-dasharray="${circ}" stroke-dashoffset="${circ*(1-pct/100)}" stroke-linecap="round" transform="rotate(-90 40 40)"/>
-            </svg>
-            <div class="mt-main-ring-num">${doneCount}/${target}</div>
-          </div>
-          <div class="mt-main-stats">
-            <div><b style="color:var(--amber)">${pendingCount}</b><span>${t('myTasksFollowupRemaining')}</span></div>
-            <div><b>${mine.length}</b><span>${t('myTasksFollowupTotal')}</span></div>
-          </div>
-          <button class="btn-g btn-sm" onclick="navTo('crm', document.getElementById('n-crm'))">${t('myTasksOpenCRM')}</button>
-        </div>
-        <div class="mt-fu-lists">
-          <div class="mt-fu-list-col">
-            <div class="mt-fu-list-title" style="color:var(--green)">✓ Sudah di-follow up (${doneCount})</div>
-            <div class="mt-fu-list-body">
-              ${mine.filter(c => followupDoneTodayIds.has(_followupCustKey(c))).slice(0,30).map(c => `<div class="mt-fu-list-item">${escHtml(c.nama||'—')}</div>`).join('') || `<div class="mt-fu-list-empty">Belum ada yang di-follow up hari ini</div>`}
-            </div>
-          </div>
-          <div class="mt-fu-list-col">
-            <div class="mt-fu-col-head">
-              <div class="mt-fu-list-title" style="color:var(--amber);margin-bottom:0">○ Belum di-follow up (${pendingCount})</div>
-              <div class="mt-fu-toolbar">
-                <div class="mt-fu-search-wrap">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-                  <input type="text" id="mt-fu-search" class="mt-fu-search-input" placeholder="Cari nama / WA / kota…" oninput="mtFuDebouncedSearch(this.value)"/>
-                </div>
-                <button type="button" id="mt-fu-refresh-btn" class="mt-fu-refresh-btn" title="Acak ulang urutan" onclick="mtFuReshuffle()">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
-                </button>
-              </div>
-            </div>
-            <div class="mt-fu-list-body" id="mt-fu-pending-body">
-              ${(function(){
-                _mtFuMine = mine; _mtFuOrder = null; _mtFuSearchQ = '';
-                return mtFuPendingHtml();
-              })()}
-            </div>
-          </div>
-        </div>
-      </div>`;
-    const dashEl = document.getElementById('mt-followup-dash');
-    if (dashEl) { dashEl.style.display = ''; try { await renderFollowupMonthlyDashboard(); } catch(e){ console.warn('[DHP] followup monthly dashboard gagal:', e); } }
-    // v22: Target Omzet — hanya untuk role Admin, bukan B2B
-    if (r === 'admin') {
-      try { await loadAdminTargetProgress(currentUser.id); renderAdminTargetCard(); } catch(e) { console.warn('[DHP] admin target card gagal:', e); }
-    }
-  } else if (can.isMod(r)) {
-    el.innerHTML = `
-      <div class="mt-main-card mt-main-simple">
-        <span class="mt-main-tag">${t('myTasksMainTag')}</span>
-        <div class="mt-main-simple-text">${t('myTasksMainModerator')}</div>
-        <button class="btn-g btn-sm" onclick="navTo('team_tasks', document.getElementById('n-team-tasks'))">${t('myTasksOpenTeamTasks')}</button>
-      </div>`;
-  } else if (can.isContent(r)) {
-    el.innerHTML = `
-      <div class="mt-main-card mt-main-simple">
-        <span class="mt-main-tag">${t('myTasksMainTag')}</span>
-        <div class="mt-main-simple-text">${t('myTasksMainContent')}</div>
-        <button class="btn-g btn-sm" onclick="navTo('content_studio', document.getElementById('n-content-studio'))">${t('myTasksOpenStudio')}</button>
-      </div>`;
-  } else if (can.isHostLive(r)) {
-    el.innerHTML = `
-      <div class="mt-main-card mt-main-simple">
-        <span class="mt-main-tag">${t('myTasksMainTag')}</span>
-        <div class="mt-main-simple-text">${t('myTasksMainLive')}</div>
-        <button class="btn-g btn-sm" onclick="navTo('live_studio', document.getElementById('n-live-studio'))">${t('myTasksOpenStudio')}</button>
-      </div>`;
-  } else if (isCsHunterOnlyPage) {
-    await renderCsHunterDailyCard(el);
-  } else {
-    el.innerHTML = '';
-  }
-}
-
-/* ── (A-cs) TUGAS HARIAN CS HUNTER — isi leads yang masuk hari ini.
-   Memakai infrastruktur yang sama dengan Ads Task (tabel ad_tasks + leads,
-   modal openLeadsModal, realtime channel dhp_ads) supaya progress selalu
-   sinkron real-time — hanya saja task-nya "harian" (bukan terikat 1 iklan
-   tertentu), dibuat/di-ensure otomatis lewat RPC ensure_daily_task. ── */
-async function renderCsHunterDailyCard(el) {
-  el.innerHTML = `<div class="mt-main-card"><div class="myperf-empty" style="padding:20px 0">Memuat tugas harian…</div></div>`;
-  const taskId = await ensureCsHunterDailyTask();
-  if (!taskId) {
-    el.innerHTML = `
-      <div class="mt-main-card mt-main-simple">
-        <span class="mt-main-tag">${t('myTasksMainTag')}</span>
-        <div class="mt-main-simple-text">${t('myTasksDailyDesc')}</div>
-      </div>`;
-    return;
-  }
-  let leads = [];
-  try {
-    const res = await dbQ(d => d.from('leads').select('*').eq('task_id', taskId).order('created_at', { ascending:false }));
-    leads = res?.data || [];
-  } catch (e) { console.warn('[DHP] load leads harian gagal:', e); }
-  const target = CS_HUNTER_DAILY_LEAD_TARGET;
-  const count = leads.length;
-  const pct = target ? Math.min(100, Math.round((count/target)*100)) : 0;
-  const circ = 2 * Math.PI * 34;
-
-  // v42: Follow Up Ads Customer — customer yang SUDAH MASUK dari leads iklan
-  // (owner = CS Hunter ini sendiri, channel_is_ads = true) & perlu di-follow
-  // up hari ini. Pakai infrastruktur follow-up yang sama dengan Admin/B2B
-  // (crmData, followupDoneTodayIds, markFollowedUp, mtFu* helpers) supaya
-  // konsisten & tidak duplikat logika.
-  let fuHtml = '';
-  try {
-    if (crmUsesDB()) {
-      await loadCRM();
-      await loadFollowupLogsToday();
-      const mine = crmData.filter(c => c.channel_is_ads);
-      const doneToday = mine.filter(c => followupDoneTodayIds.has(_followupCustKey(c)));
-      const doneCount = doneToday.length;
-      const pendingCount = Math.max(0, mine.length - doneCount);
-      _mtFuMine = mine; _mtFuOrder = null; _mtFuSearchQ = '';
-      fuHtml = `
-        <div class="mt-main-card" style="margin-top:14px">
-          <div class="mt-main-head">
-            <span class="mt-main-tag">${t('myTasksMainTag')}</span>
-            <span class="mt-main-title">Follow Up Ads Customer</span>
-          </div>
-          <div class="mt-fu-lists">
-            <div class="mt-fu-list-col">
-              <div class="mt-fu-list-title" style="color:var(--green)">✓ Sudah di-follow up (${doneCount})</div>
-              <div class="mt-fu-list-body">
-                ${doneToday.slice(0,30).map(c => `<div class="mt-fu-list-item">${escHtml(c.nama||'—')}</div>`).join('') || `<div class="mt-fu-list-empty">Belum ada yang di-follow up hari ini</div>`}
-              </div>
-            </div>
-            <div class="mt-fu-list-col">
-              <div class="mt-fu-col-head">
-                <div class="mt-fu-list-title" style="color:var(--amber);margin-bottom:0">○ Belum di-follow up (${pendingCount})</div>
-                <div class="mt-fu-toolbar">
-                  <div class="mt-fu-search-wrap">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-                    <input type="text" id="mt-fu-search" class="mt-fu-search-input" placeholder="Cari nama / WA / kota…" oninput="mtFuDebouncedSearch(this.value)"/>
-                  </div>
-                  <button type="button" id="mt-fu-refresh-btn" class="mt-fu-refresh-btn" title="Acak ulang urutan" onclick="mtFuReshuffle()">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
-                  </button>
-                </div>
-              </div>
-              <div class="mt-fu-list-body" id="mt-fu-pending-body">${mtFuPendingHtml()}</div>
-            </div>
-          </div>
-        </div>`;
-    }
-  } catch(e) { console.warn('[DHP] follow up ads customer gagal:', e); }
-
-  el.innerHTML = `
-    <div class="mt-main-card">
-      <div class="mt-main-head">
-        <span class="mt-main-tag">${t('myTasksMainTag')}</span>
-        <span class="mt-main-title">${t('myTasksDailyMain')}</span>
-      </div>
-      <div class="mt-main-body">
-        <div class="mt-main-ring">
-          <svg viewBox="0 0 80 80" width="72" height="72">
-            <circle cx="40" cy="40" r="34" stroke="var(--border)" stroke-width="7" fill="none"/>
-            <circle cx="40" cy="40" r="34" stroke="${count>=target?'var(--green)':'var(--gold)'}" stroke-width="7" fill="none"
-              stroke-dasharray="${circ}" stroke-dashoffset="${circ*(1-pct/100)}" stroke-linecap="round" transform="rotate(-90 40 40)"/>
-          </svg>
-          <div class="mt-main-ring-num">${count}/${target}</div>
-        </div>
-        <div class="mt-main-stats">
-          <div><b style="color:${count>=target?'var(--green)':'var(--amber)'}">${count}</b><span>${t('myTasksDailyEntered')}</span></div>
-          <div><b>${target}</b><span>${t('myTasksDailyTarget')}</span></div>
-        </div>
-        <button class="btn-add btn-sm" onclick="openLeadsModal('${taskId}')">${t('myTasksDailyBtn')}</button>
-      </div>
-      ${count >= target ? `<div style="margin-top:10px;font-size:11px;color:var(--green);font-weight:600">${t('myTasksDailyDone')}</div>` : ''}
-      <div class="mt-fu-list-col" style="margin-top:14px">
-        <div class="mt-fu-list-title" style="color:var(--gold)">${t('myTasksDailyViewAll')} (${count})</div>
-        <div class="lead-list" style="max-height:260px">
-          ${count ? leads.slice(0,20).map(l => leadRowHtml(l)).join('') : `<div class="lead-empty">${t('myTasksDailyEmpty')}</div>`}
-        </div>
-      </div>
-    </div>
-    ${fuHtml}`;
-}
-
-/* Dashboard Progress Bulanan — Admin/B2B (follow-up), pakai RPC followup_monthly_daily
-   supaya angkanya konsisten sama sumber kebenaran server (bukan hitung ulang di client). */
-async function renderFollowupMonthlyDashboard() {
-  const ring = document.getElementById('fu-dash-ring-fg');
-  const ringNum = document.getElementById('fu-dash-ring-num');
-  const grid = document.getElementById('fu-dash-grid');
-  const bars = document.getElementById('fu-dash-bars');
-  const sub = document.getElementById('fu-dash-sub');
-  if (!ring || !grid || !bars || !currentUser || !db) return;
-
-  const now = new Date();
-  const ym = ymPeriodKey(now);
-  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
-  if (sub) sub.textContent = `Follow-up ${currentUser.name} — ${months[now.getMonth()]} ${now.getFullYear()}`;
-
-  const res = await dbQ(d => d.rpc('followup_monthly_daily', { p_user_id: currentUser.id, p_period_ym: ym }));
-  const daily = res?.data || [];
-  const target = FOLLOWUP_DAILY_TARGET;
-
-  const totalMonth = daily.reduce((sum, d) => sum + (d.cnt||0), 0);
-  const daysHitTarget = daily.filter(d => (d.cnt||0) >= target).length;
-  const daysWorked = daily.filter(d => (d.cnt||0) > 0).length;
-  const avgPerDay = daysWorked ? Math.round(totalMonth / daysWorked) : 0;
-  const pct = daily.length ? Math.round((daysHitTarget/daily.length)*100) : 0;
-
-  const circ = 2 * Math.PI * 34;
-  ring.setAttribute('stroke-dasharray', circ.toFixed(1));
-  ring.setAttribute('stroke-dashoffset', (circ*(1-pct/100)).toFixed(1));
-  ring.setAttribute('stroke', pct >= 100 ? 'var(--green)' : 'var(--gold)');
-  if (ringNum) ringNum.textContent = `${daysHitTarget}/${daily.length}`;
-
-  grid.innerHTML = `
-    <div class="dash-stat-card"><div class="dash-stat-num">${totalMonth}</div><div class="dash-stat-lbl">Total Follow-up Bulan Ini</div></div>
-    <div class="dash-stat-card"><div class="dash-stat-num" style="color:var(--green)">${daysHitTarget}</div><div class="dash-stat-lbl">Hari Capai Target</div></div>
-    <div class="dash-stat-card"><div class="dash-stat-num" style="color:var(--blue)">${daysWorked}</div><div class="dash-stat-lbl">Hari Aktif Follow-up</div></div>
-    <div class="dash-stat-card"><div class="dash-stat-num" style="color:var(--muted)">${avgPerDay}</div><div class="dash-stat-lbl">Rata-rata / Hari Aktif</div></div>`;
-
-  const maxCnt = Math.max(target, ...daily.map(d => d.cnt||0));
-  bars.innerHTML = daily.map(d => {
-    const dObj = new Date(d.day_date + 'T00:00:00');
-    const cnt = d.cnt||0;
-    const heightPct = cnt > 0 ? Math.max(4, Math.round((cnt/maxCnt)*100)) : 1;
-    const tip = `${dObj.getDate()} ${months[dObj.getMonth()]} · ${cnt}/${target}`;
-    return `<div class="dash-bar-col" data-tip="${tip}"><div class="dash-bar${cnt>=target?'':' dash-bar-libur'}" style="height:${heightPct}%"></div></div>`;
-  }).join('');
-}
-
-/* ── (B) TUGAS PRIBADI/CUSTOM — dibuat manual oleh user ── */
-function renderModTasks() {
-  const q = (document.getElementById('mt-search')?.value || '').toLowerCase().trim();
-  const now = Date.now();
-  let list = modTasks.slice();
-
-  const total = list.length;
-  const notStartedCount = list.filter(x => (x.status||'not_started') === 'not_started').length;
-  const inProgressCount = list.filter(x => x.status === 'in_progress').length;
-  const doneCount = list.filter(x => x.status === 'done').length;
-  const overdueCount = list.filter(x => x.status !== 'done' && mtDeadlineOf(x) && mtDeadlineOf(x).getTime() < now).length;
-  const sEl = document.getElementById('mt-summary');
-  if (sEl) {
-    sEl.innerHTML = `
-      <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-lbl">${t('myTasksTotal')}</div></div>
-      <div class="stat-card"><div class="stat-num" style="color:var(--muted)">${notStartedCount}</div><div class="stat-lbl">${t('myTasksNotStarted')}</div></div>
-      <div class="stat-card"><div class="stat-num" style="color:var(--blue)">${inProgressCount}</div><div class="stat-lbl">${t('myTasksInProgress')}</div></div>
-      <div class="stat-card" style="border-color:${overdueCount>0?'rgba(224,90,90,.35)':'var(--border)'}">
-        <div class="stat-num" style="color:${overdueCount>0?'var(--red)':'var(--gold-hi)'}">${overdueCount}</div>
-        <div class="stat-lbl">${t('myTasksOverdue')}</div>
-      </div>
-      <div class="stat-card"><div class="stat-num" style="color:var(--green)">${doneCount}</div><div class="stat-lbl">${t('myTasksDoneTab')}</div></div>`;
-  }
-
-  const badge = document.getElementById('mt-pending-badge');
-  if (badge) { const pend = notStartedCount + inProgressCount; badge.textContent = pend; badge.style.display = pend > 0 ? '' : 'none'; }
-
-  if (modTaskFilter !== 'all') list = list.filter(x => (x.status||'not_started') === modTaskFilter);
-  if (q) list = list.filter(x => (x.title||'').toLowerCase().includes(q) || (x.note||'').toLowerCase().includes(q));
-
-  const rank = s => s === 'done' ? 2 : 1;
-  list.sort((a, b) => {
-    const ra = rank(a.status||'not_started'), rb = rank(b.status||'not_started');
-    if (ra !== rb) return ra - rb;
-    const da = mtDeadlineOf(a), db_ = mtDeadlineOf(b);
-    if (da && db_) return da - db_;
-    if (da) return -1;
-    if (db_) return 1;
-    return new Date(b.created_at||0) - new Date(a.created_at||0);
-  });
-
-  const wrap = document.getElementById('mt-list'); if (!wrap) return;
-  if (!list.length) { wrap.innerHTML = `<div class="mt-empty">${t('myTasksEmpty')}</div>`; return; }
-
-  wrap.innerHTML = list.map(task => {
-    const d = mtDeadlineOf(task);
-    const st = task.status || 'not_started';
-    const isDone = st === 'done';
-    const isOverdue = !isDone && d && d.getTime() < now;
-    const isSoon = !isDone && !isOverdue && d && (d.getTime() - now) < 3600000;
-    const sInfo = mtStatusInfo(st);
-    const cls = ['mt-card', `mt-${sInfo.cls}`, isOverdue?'mt-overdue':'', isSoon?'mt-soon':''].filter(Boolean).join(' ');
-    const prio = task.priority || 'normal';
-    const prioLbl = { low:t('mtPrioLow'), normal:t('mtPrioNormal'), high:t('mtPrioHigh'), urgent:t('mtPrioUrgent') }[prio] || prio;
-    return `<div class="${cls}">
-      <div class="mt-body">
-        <div class="mt-title-row">
-          <span class="mt-title">${escHtml(task.title)}</span>
-          <span class="mt-prio ${prio}">${prioLbl}</span>
-        </div>
-        ${task.note ? `<div class="mt-note">${escHtml(task.note)}</div>` : ''}
-        <div class="mt-meta">
-          <select class="mt-status-select mt-status-${sInfo.cls}" onchange="setModTaskStatus('${task.id}', this.value)">
-            <option value="not_started" ${st==='not_started'?'selected':''}>${t('myTasksNotStarted')}</option>
-            <option value="in_progress" ${st==='in_progress'?'selected':''}>${t('myTasksInProgress')}</option>
-            <option value="done" ${st==='done'?'selected':''}>${t('myTasksDoneTab')}</option>
-          </select>
-          ${d ? `<span class="mt-deadline">⏰ ${isOverdue ? t('myTasksOverdueLbl')+' · ' : ''}${mtFmtDeadline(task)}</span>` : ''}
-        </div>
-      </div>
-      <div class="mt-acts">
-        <button class="mt-act-btn" onclick="openModTaskModal('${task.id}')" title="${currentLang==='id'?'Ubah':'Edit'}">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M11 2l3 3-8 8H3v-3l8-8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-        </button>
-        <button class="mt-act-btn mt-del" onclick="deleteModTask('${task.id}')" title="${t('cfmDelete')}">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4.5h10M6.5 4.5V3a1 1 0 011-1h1a1 1 0 011 1v1.5M4.5 4.5l.6 8.4a1 1 0 001 .9h3.8a1 1 0 001-.9l.6-8.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function openModTaskModal(id) {
-  const editing = !!id;
-  const task = editing ? (modTasks.find(x => String(x.id) === String(id)) || {}) : {};
-  document.getElementById('m-title').textContent = editing ? t('myTasksEditTitle') : t('myTasksNewTitle');
-  document.getElementById('m-body').innerHTML = `
-    <div class="fg"><label>${t('myTasksFieldTitle')} *</label><input class="fi" id="mt-f-title" value="${escHtml(task.title||'')}" placeholder="${t('myTasksFieldTitlePh')}"/></div>
-    <div class="fg"><label>${t('myTasksFieldNote')}</label><textarea class="fi" id="mt-f-note" rows="3" placeholder="${t('myTasksFieldNotePh')}">${escHtml(task.note||'')}</textarea></div>
-    <div style="display:flex;gap:10px">
-      <div class="fg" style="flex:1"><label>${t('myTasksFieldDate')}</label><input class="fi" id="mt-f-date" type="date" value="${task.deadline_date||''}"/></div>
-      <div class="fg" style="flex:1"><label>${t('myTasksFieldTime')}</label><input class="fi" id="mt-f-time" type="time" value="${task.deadline_time||''}"/></div>
-    </div>
-    <div style="display:flex;gap:10px">
-      <div class="fg" style="flex:1"><label>${t('myTasksFieldPriority')}</label>
-        <select class="fi" id="mt-f-priority">
-          <option value="low" ${task.priority==='low'?'selected':''}>${t('mtPrioLow')}</option>
-          <option value="normal" ${(!task.priority||task.priority==='normal')?'selected':''}>${t('mtPrioNormal')}</option>
-          <option value="high" ${task.priority==='high'?'selected':''}>${t('mtPrioHigh')}</option>
-          <option value="urgent" ${task.priority==='urgent'?'selected':''}>${t('mtPrioUrgent')}</option>
-        </select>
-      </div>
-      <div class="fg" style="flex:1"><label>${t('myTasksFieldStatus')}</label>
-        <select class="fi" id="mt-f-status">
-          <option value="not_started" ${(!task.status||task.status==='not_started')?'selected':''}>${t('myTasksNotStarted')}</option>
-          <option value="in_progress" ${task.status==='in_progress'?'selected':''}>${t('myTasksInProgress')}</option>
-          <option value="done" ${task.status==='done'?'selected':''}>${t('myTasksDoneTab')}</option>
-        </select>
-      </div>
-    </div>`;
-  document.getElementById('m-foot').innerHTML = `
-    <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>
-    <button class="btn-sm btn-gold" onclick="saveModTask(${editing?`'${task.id}'`:'null'})">${t('saveChanges')||'Save'}</button>`;
-  document.getElementById('modal-ov').classList.add('open');
-}
-
-async function saveModTask(id) {
-  const title = document.getElementById('mt-f-title').value.trim();
-  if (!title) { toast(t('myTasksFillTitle')); return; }
-  const status = document.getElementById('mt-f-status').value;
-  const rec = {
-    title,
-    note: document.getElementById('mt-f-note').value.trim(),
-    deadline_date: document.getElementById('mt-f-date').value || null,
-    deadline_time: document.getElementById('mt-f-time').value || null,
-    priority: document.getElementById('mt-f-priority').value,
-    status,
-    done_at: status === 'done' ? new Date().toISOString() : null,
-  };
-  const editing = !!id;
-
-  if (db) {
-    if (editing) {
-      await dbQ(d => d.from('mod_tasks').update({ ...rec, notified_1h:false, notified_overdue:false }).eq('id', id));
-    } else {
-      await dbQ(d => d.from('mod_tasks').insert({ ...rec, moderator_id: currentUser.id }));
-    }
-    await loadModTasks();
-  } else {
-    if (editing) {
-      const idx = modTasks.findIndex(x => String(x.id) === String(id));
-      if (idx >= 0) Object.assign(modTasks[idx], rec, { notified_1h:false, notified_overdue:false });
-    } else {
-      modTasks.unshift({ id:'local_'+Date.now(), moderator_id:currentUser.id, created_at:new Date().toISOString(), ...rec });
-    }
-    mtSaveLocal(modTasks);
-  }
-  closeModal();
-  renderModTasks();
-  toast(editing ? t('myTasksUpdated') : t('myTasksAdded'));
-}
-
-async function setModTaskStatus(id, status) {
-  const task = modTasks.find(x => String(x.id) === String(id));
-  if (!task) return;
-  task.status = status;
-  task.done_at = status === 'done' ? new Date().toISOString() : null;
-  if (db && !String(id).startsWith('local_')) {
-    await dbQ(d => d.from('mod_tasks').update({ status, done_at:task.done_at }).eq('id', id));
-  } else {
-    mtSaveLocal(modTasks);
-  }
-  renderModTasks();
-}
-
-async function deleteModTask(id) {
-  const ok = await uiConfirm({ title:t('myTasksDeleteTitle'), message:t('myTasksDeleteMsg'), icon:'danger', tone:'danger', okText:t('cfmDelete'), cancelText:t('cfmCancel') });
-  if (!ok) return;
-  modTasks = modTasks.filter(x => String(x.id) !== String(id));
-  if (db && !String(id).startsWith('local_')) {
-    await dbQ(d => d.from('mod_tasks').delete().eq('id', id));
-  } else {
-    mtSaveLocal(modTasks);
-  }
-  renderModTasks();
-  toast(t('myTasksDeleted'));
-}
-
-/* Hapus hanya riwayat (task berstatus Selesai) */
-async function clearModTaskHistory() {
-  const doneTasks = modTasks.filter(x => x.status === 'done');
-  if (!doneTasks.length) { toast(t('myTasksNoHistory')); return; }
-  const ok = await uiConfirm({ title:t('myTasksClearHistoryTitle'), message:t('myTasksClearHistoryMsg'), icon:'danger', tone:'danger', okText:t('cfmDelete'), cancelText:t('cfmCancel') });
-  if (!ok) return;
-  modTasks = modTasks.filter(x => x.status !== 'done');
-  if (db) {
-    const dbIds = doneTasks.filter(x => !String(x.id).startsWith('local_')).map(x => x.id);
-    if (dbIds.length) await dbQ(d => d.from('mod_tasks').delete().in('id', dbIds));
-  } else {
-    mtSaveLocal(modTasks);
-  }
-  renderModTasks();
-  toast(t('myTasksHistoryCleared'));
-}
-
-/* Hapus SEMUA tugas pribadi (tidak menyentuh Tugas Utama yang auto-tracked) */
-async function clearAllModTasks() {
-  if (!modTasks.length) { toast(t('myTasksNothingToClear')); return; }
-  const ok = await uiConfirm({ title:t('myTasksClearAllTitle'), message:t('myTasksClearAllMsg'), icon:'danger', tone:'danger', okText:t('cfmDelete'), cancelText:t('cfmCancel') });
-  if (!ok) return;
-  const allTasks = modTasks;
-  modTasks = [];
-  if (db) {
-    const dbIds = allTasks.filter(x => !String(x.id).startsWith('local_')).map(x => x.id);
-    if (dbIds.length) await dbQ(d => d.from('mod_tasks').delete().in('id', dbIds).eq('moderator_id', currentUser.id));
-  } else {
-    mtSaveLocal(modTasks);
-  }
-  renderModTasks();
-  toast(t('myTasksAllCleared'));
-}
-
-/* Cek deadline setiap menit — kirim notifikasi H-1 jam & saat lewat tenggat (semua role) */
-async function checkModTaskDeadlines() {
-  if (!currentUser || !modTasks.length) return;
-  const now = Date.now();
-  let changed = false;
-  for (const task of modTasks) {
-    if (task.status === 'done') continue;
-    const d = mtDeadlineOf(task);
-    if (!d) continue;
-    const diff = d.getTime() - now;
-    if (diff <= 3600000 && diff > 0 && !task.notified_1h) {
-      task.notified_1h = true; changed = true;
-      pushNotif({ type:'alert', title:t('myTasksReminderTitle'), body:`${task.title} — ${mtFmtDeadline(task)}` });
-      if (db && !String(task.id).startsWith('local_')) dbQ(d2 => d2.from('mod_tasks').update({ notified_1h:true }).eq('id', task.id));
-    } else if (diff <= 0 && !task.notified_overdue) {
-      task.notified_overdue = true; changed = true;
-      pushNotif({ type:'alert', title:t('myTasksOverdueTitle'), body:`${task.title} — ${mtFmtDeadline(task)}` });
-      if (db && !String(task.id).startsWith('local_')) dbQ(d2 => d2.from('mod_tasks').update({ notified_overdue:true }).eq('id', task.id));
-    }
-  }
-  if (changed) { if (!db) mtSaveLocal(modTasks); renderModTasks(); }
-}
-
 
 /* ═══════════════════════════════════════════════════════════
    ㉒ USER MANAGEMENT (Moderator only — full access)
@@ -15116,8 +14331,6 @@ function initAdRealtime() {
         if (isAdPageActive()) renderAdScheduler();
         if (document.getElementById('pg-ad_customers')?.classList.contains('active')) renderAdCustomers();
         if (isTaskPageActive()) renderAdTaskPage();
-        // v41: kartu "Tugas Harian" CS Hunter (leads hari ini) ikut realtime
-        if (document.getElementById('pg-mod_tasks')?.classList.contains('active')) renderMtMainSection();
       } catch (e) { console.warn('[DHP] realtime leads render error:', e); }
     })
     .subscribe(status => {
@@ -18032,7 +17245,6 @@ async function _confirmFollowup(idx, response) {
     toast(`✓ ${c.nama || 'Customer'} sudah di-follow up hari ini`);
   }
   if (document.getElementById('pg-crm')?.classList.contains('active')) renderCRM();
-  if (document.getElementById('pg-mod_tasks')?.classList.contains('active')) { try { await renderMtMainSection(); } catch(e){} }
   // v45: kalau halaman Follow Up sedang dibuka, render ulang supaya ring
   // target & tabel langsung update begitu progress dikonfirmasi.
   if (document.getElementById('pg-followup')?.classList.contains('active')) { try { await renderFollowupPage(); } catch(e){} }
@@ -18913,44 +18125,6 @@ async function _saveRoleTarget(roleKey, uid) {
 }
 window._saveRoleTarget = _saveRoleTarget;
 
-
-/* ── Admin: render kartu progress ring target omzet di kartu "Tugas Utama" ── */
-function renderAdminTargetCard() {
-  const wrap = document.getElementById('mt-admin-target-card');
-  if (!wrap) return;
-  const { target_amount, achieved_amount } = adminTargetCache;
-  const CIRC = 2 * Math.PI * 34;
-  const pct = target_amount > 0 ? Math.min(achieved_amount / target_amount, 1) : 0;
-  const over = target_amount > 0 && achieved_amount > target_amount;
-  let remark;
-  if (target_amount <= 0) remark = 'Belum ada target omzet diatur moderator bulan ini.';
-  else if (over) remark = `🎉 Melebihi target sebesar ${crmFmtRupiah(achieved_amount - target_amount)}!`;
-  else remark = `Kurang ${crmFmtRupiah(target_amount - achieved_amount)} lagi untuk mencapai target.`;
-
-  wrap.style.display = '';
-  wrap.innerHTML = `
-    <div class="mt-main-card">
-      <div class="mt-main-head">
-        <span class="mt-main-tag">${t('myTasksMainTag')}</span>
-        <span class="mt-main-title">Target Omzet Bulan Ini</span>
-      </div>
-      <div class="mt-main-body">
-        <div class="mt-main-ring">
-          <svg viewBox="0 0 80 80" width="72" height="72">
-            <circle cx="40" cy="40" r="34" stroke="var(--border)" stroke-width="7" fill="none"/>
-            <circle cx="40" cy="40" r="34" stroke="${over||pct>=1?'var(--green)':'var(--gold)'}" stroke-width="7" fill="none"
-              stroke-dasharray="${CIRC}" stroke-dashoffset="${CIRC*(1-pct)}" stroke-linecap="round" transform="rotate(-90 40 40)"/>
-          </svg>
-          <div class="mt-main-ring-num" style="font-size:9.5px">${target_amount>0?Math.round(pct*100)+'%':'—'}</div>
-        </div>
-        <div class="mt-main-stats">
-          <div><b style="color:var(--text)">${crmFmtRupiah(achieved_amount)}</b><span>tercapai</span></div>
-          <div><b>${crmFmtRupiah(target_amount)}</b><span>target</span></div>
-        </div>
-      </div>
-      <div style="font-size:10.5px;color:var(--text2);margin-top:8px">${remark}</div>
-    </div>`;
-}
 
 // ── Helper format & parsing ──
 function crmParseMoney(v) {
@@ -21504,7 +20678,6 @@ function navTo(page, btn) {
    manualRefresh() (saat klik tombol refresh global, tanpa pindah halaman),
    supaya semua page bisa "muat ulang" data terbaru tanpa perlu refresh tab. */
 function loadPageData(page) {
-  if (page === 'mod_tasks')       { renderModTasks(); renderMtMainSection(); }
   if (page === 'my_performance')  loadMyPerformance();
   if (page === 'team_tasks')      renderTeamTasks();
   if (page === 'mod_target')      renderModTargetPage();
@@ -22446,7 +21619,7 @@ async function renderFollowupPage() {
     ${modFlagBanner}
     <div class="mt-main-card">
       <div class="mt-main-head">
-        <span class="mt-main-tag">${t('myTasksMainTag')}</span>
+        <span class="mt-main-tag">${t('fuMainTag')}</span>
         <span class="mt-main-title" data-i18n="followupTableTitle">${t('followupTableTitle')}</span>
       </div>
       <div class="mt-main-body">
@@ -23693,7 +22866,6 @@ function fireStAchieveConfetti(ov) {
 
 /* ══════ ONBOARDING TUTORIAL ENGINE — game-style step-by-step guide ══════ */
 const TUT_STEPS_DEFS = [
-  { id:'n-mod-tasks',      title:'Tugas Saya',             desc:'Semua tugas yang ditugaskan ke kamu ada di sini. Tandai selesai begitu sudah kamu kerjakan.' },
   { id:'n-my-performance', title:'Performa Saya',          desc:'Dashboard performa bulananmu — grafik tren 6 bulan & capaian bulan ini, tersedia untuk semua role.' },
   { id:'n-cs-hunter',      title:'CS Hunter',               desc:'Level Bronze → Diamond & progress closing mingguan kamu ada di sini.' },
   { id:'n-followup',       title:'Follow Up',               desc:'Daftar customer yang harus kamu hubungi hari ini, lengkap dengan chat WhatsApp siap kirim & target 50 follow-up per hari.' },
