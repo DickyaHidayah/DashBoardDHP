@@ -21668,7 +21668,7 @@ async function csHunterDailyBreakdown(uid, wsStr, weStr) {
 /* ═══════════════════════════════════════════════════════════
    ㉕-b2 SISTEM TRACKING REPORT (v48) — laporan kinerja jam 12:00 (Siang) &
    17:00 (Sore) khusus role CS Hunter / Admin / B2B Marketing. Tiap slot
-   dicatat: Jumlah Leads Masuk, Leads Terlayani, Follow Up Leads Lama,
+   dicatat: Jumlah Leads Masuk, Leads Baru Terlayani, Follow Up Leads Lama,
    Total Cold, Total Warm, Total Hot & Total Nominal Closing. Kedua slot
    otomatis digabung jadi "Laporan Harian" oleh get_tracking_daily_recap()
    di database. Reminder H-45 menit & lewat-deadline dihitung di client
@@ -21856,7 +21856,7 @@ async function renderTrackingOwnView(root) {
     </div>
     <div class="trk-recap-strip">
       <div class="trk-recap-box"><div class="rb-ico tm-masuk" style="background:rgba(201,169,110,.18);color:var(--gold)">${TRK_ICO.masuk}</div><b>${row ? row.total_leads_masuk : 0}</b><span>Leads Masuk</span></div>
-      <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(122,191,142,.18);color:var(--green)">${TRK_ICO.terlayani}</div><b>${row ? row.total_leads_terlayani : 0}</b><span>Leads Terlayani</span></div>
+      <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(122,191,142,.18);color:var(--green)">${TRK_ICO.terlayani}</div><b>${row ? row.total_leads_terlayani : 0}</b><span>Leads Baru Terlayani</span></div>
       <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(126,168,201,.18);color:var(--blue)">${TRK_ICO.fulama}</div><b>${row ? row.total_fu_leads_lama : 0}</b><span>FU Leads Lama</span></div>
       <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(126,168,201,.22);color:#7ea8c9">${TRK_ICO.cold}</div><b>${row ? row.total_cold : 0}</b><span>Total Cold</span></div>
       <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(232,184,110,.22);color:#e8a840">${TRK_ICO.warm}</div><b>${row ? row.total_warm : 0}</b><span>Total Warm</span></div>
@@ -21881,7 +21881,7 @@ function trkSlotCardHtml(s, data) {
     ${filled ? `
     <div class="trk-mini-grid">
       <div class="trk-mini tm-masuk"><div class="tm-ico">${TRK_ICO.masuk}</div><div class="tm-body"><b>${data.leads_masuk}</b><span>Leads Masuk</span></div></div>
-      <div class="trk-mini tm-terlayani"><div class="tm-ico">${TRK_ICO.terlayani}</div><div class="tm-body"><b>${data.leads_terlayani}</b><span>Terlayani</span></div></div>
+      <div class="trk-mini tm-terlayani"><div class="tm-ico">${TRK_ICO.terlayani}</div><div class="tm-body"><b>${data.leads_terlayani}</b><span>Baru Terlayani</span></div></div>
       <div class="trk-mini tm-fulama"><div class="tm-ico">${TRK_ICO.fulama}</div><div class="tm-body"><b>${data.fu_leads_lama}</b><span>FU Lama</span></div></div>
       <div class="trk-mini tm-cold"><div class="tm-ico">${TRK_ICO.cold}</div><div class="tm-body"><b>${data.total_cold}</b><span>Cold</span></div></div>
       <div class="trk-mini tm-warm"><div class="tm-ico">${TRK_ICO.warm}</div><div class="tm-body"><b>${data.total_warm}</b><span>Warm</span></div></div>
@@ -21918,7 +21918,7 @@ function trkToggleForm(slotKey) {
   wrap.innerHTML = `
     <div class="trk-form-grid">
       <div class="trk-field"><label>${TRK_ICO.masuk} Jumlah Leads Masuk</label><input type="number" min="0" id="trk-in-${slotKey}-masuk" value="${d.leads_masuk||0}"></div>
-      <div class="trk-field"><label>${TRK_ICO.terlayani} Leads Terlayani</label><input type="number" min="0" id="trk-in-${slotKey}-terlayani" value="${d.leads_terlayani||0}"></div>
+      <div class="trk-field"><label>${TRK_ICO.terlayani} Leads Baru Terlayani</label><input type="number" min="0" id="trk-in-${slotKey}-terlayani" value="${d.leads_terlayani||0}"></div>
       <div class="trk-field"><label>${TRK_ICO.fulama} Follow Up Leads Lama</label><input type="number" min="0" id="trk-in-${slotKey}-fulama" value="${d.fu_leads_lama||0}"></div>
       <div class="trk-field"><label>${TRK_ICO.cold} Total Cold</label><input type="number" min="0" id="trk-in-${slotKey}-cold" value="${d.total_cold||0}"></div>
       <div class="trk-field"><label>${TRK_ICO.warm} Total Warm</label><input type="number" min="0" id="trk-in-${slotKey}-warm" value="${d.total_warm||0}"></div>
@@ -22050,7 +22050,7 @@ async function renderTrackingTeamView(root) {
         <table class="fu-table">
           <thead><tr>
             <th>Nama</th><th>Role</th><th>Siang (12:00)</th><th>Sore (17:00)</th>
-            <th>Leads Masuk</th><th>Terlayani</th><th>FU Lama</th>
+            <th>Leads Masuk</th><th>Baru Terlayani</th><th>FU Lama</th>
             <th>Cold</th><th>Warm</th><th>Hot</th><th>Nominal Closing</th><th></th>
           </tr></thead>
           <tbody id="trk-team-tbody"><tr><td colspan="12" style="text-align:center;color:var(--muted)">Memuat…</td></tr></tbody>
@@ -22085,7 +22085,7 @@ async function trkLoadTeamRecap() {
     summaryEl.innerHTML = `
     <div class="trk-recap-strip">
       <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(201,169,110,.18);color:var(--gold)">${TRK_ICO.masuk}</div><b>${grand.masuk}</b><span>Leads Masuk</span></div>
-      <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(122,191,142,.18);color:var(--green)">${TRK_ICO.terlayani}</div><b>${grand.terlayani}</b><span>Leads Terlayani</span></div>
+      <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(122,191,142,.18);color:var(--green)">${TRK_ICO.terlayani}</div><b>${grand.terlayani}</b><span>Leads Baru Terlayani</span></div>
       <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(126,168,201,.18);color:var(--blue)">${TRK_ICO.fulama}</div><b>${grand.fulama}</b><span>FU Leads Lama</span></div>
       <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(126,168,201,.22);color:#7ea8c9">${TRK_ICO.cold}</div><b>${grand.cold}</b><span>Total Cold</span></div>
       <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(232,184,110,.22);color:#e8a840">${TRK_ICO.warm}</div><b>${grand.warm}</b><span>Total Warm</span></div>
