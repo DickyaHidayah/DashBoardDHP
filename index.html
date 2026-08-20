@@ -7814,6 +7814,7 @@ function handleLogout() {
     if (crmChannel)  { try { crmChannel.unsubscribe(); } catch(e){} crmChannel = null; }
     if (notifChannel){ try { notifChannel.unsubscribe(); } catch(e){} notifChannel = null; }
     if (miscRtChannel){ try { miscRtChannel.unsubscribe(); } catch(e){} miscRtChannel = null; }
+    if (trackingChannel){ try { trackingChannel.unsubscribe(); } catch(e){} trackingChannel = null; }
     notifications = []; notifUnread = 0;
     // ── Cleanup brand channel & polling ──────────────────────────
     if (_brandChannel)  { try { _brandChannel.unsubscribe();  } catch(e){} _brandChannel  = null; }
@@ -8038,6 +8039,13 @@ async function initDashboard() {
   // (view-only), & admin/B2B (follow up log milik sendiri) perlu lihat
   // perubahan dari device lain tanpa refresh manual.
   if (isMod || isOwner || canSeeAds) { try { initMiscRealtime(); } catch (e) { console.warn('[DHP] initMiscRealtime gagal:', e); } }
+  // v48: Tracking Report — subscribe realtime langsung setelah login (bukan
+  // nunggu halaman Tracking Report dibuka dulu), persis pola halaman role
+  // lain di atas. Jadi begitu ada laporan baru masuk, siapa pun yang lagi
+  // login (mod/owner lihat rekap tim, cs_hunter/admin/b2b lihat punya
+  // sendiri) langsung ke-update tanpa perlu klik Muat Ulang — dan begitu
+  // mereka baru buka halaman ini pun datanya sudah pasti fresh.
+  if (can.canTrackingReport(r) || isMod || isOwner) { try { initTrackingRealtime(); } catch (e) { console.warn('[DHP] initTrackingRealtime gagal:', e); } }
 
   try { renderStats(); renderActivity(); }
   catch (e) { console.warn('[DHP] render awal gagal:', e); }
