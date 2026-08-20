@@ -2854,6 +2854,62 @@ body.light .adcust-stat .acs-num{color:#0d0d0d;font-weight:800}
 }
 body.light .ovt-owner-card{background:#f7f7f8}
 
+/* ── v56: FAQ — pusat bantuan CS Hunter/Admin/B2B, isi dikelola Moderator ── */
+.faq-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.faq-search-wrap{position:relative;flex:1;min-width:220px}
+.faq-search-wrap .search-box{width:100%;padding-left:34px}
+.faq-search-ic{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;display:flex}
+.faq-cat-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.faq-cat-tab{padding:6px 13px;border-radius:20px;font-size:11.5px;font-weight:600;background:var(--surface2);
+  border:1px solid var(--border);color:var(--text2);cursor:pointer;transition:var(--trans);white-space:nowrap}
+.faq-cat-tab:hover{border-color:var(--border-hi);color:var(--text)}
+.faq-cat-tab.active{background:linear-gradient(135deg,var(--gold),var(--gold-hi));color:var(--bg);border-color:transparent}
+.faq-list{display:flex;flex-direction:column;gap:10px}
+.faq-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:var(--trans)}
+.faq-item:hover{border-color:var(--border-hi)}
+.faq-item.open{border-color:rgba(201,169,110,.4)}
+.faq-q{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none}
+.faq-q-ic{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:rgba(201,169,110,.12);
+  color:var(--gold);display:flex;align-items:center;justify-content:center}
+.faq-q-text{flex:1;font-size:13px;font-weight:600;color:var(--text);line-height:1.4}
+.faq-q-cat{flex-shrink:0;font-size:10px;font-weight:700;color:var(--gold);background:rgba(201,169,110,.1);
+  padding:3px 9px;border-radius:10px;letter-spacing:.02em}
+.faq-q-chev{flex-shrink:0;color:var(--muted);transition:transform .25s ease}
+.faq-item.open .faq-q-chev{transform:rotate(180deg);color:var(--gold)}
+.faq-a-wrap{max-height:0;overflow:hidden;transition:max-height .3s cubic-bezier(.16,1,.3,1)}
+.faq-item.open .faq-a-wrap{max-height:600px}
+.faq-a{padding:0 16px 16px 54px;font-size:12.5px;line-height:1.7;color:var(--text2);white-space:pre-line}
+.faq-a-acts{display:flex;gap:8px;margin:0 16px 14px 54px}
+.faq-empty{padding:36px 10px;text-align:center;color:var(--text2);font-size:12.5px}
+.faq-empty svg{opacity:.35;margin-bottom:8px}
+
+/* ── v56: QUICK REPLY — template balasan chat siap pakai, isi dikelola Moderator ── */
+.qr-cat-block{margin-bottom:22px}
+.qr-cat-head{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.qr-cat-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);flex-shrink:0}
+.qr-cat-name{font-size:12.5px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.04em}
+.qr-cat-count{font-size:10.5px;color:var(--muted);font-weight:600}
+.qr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.qr-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;
+  display:flex;flex-direction:column;gap:9px;transition:var(--trans)}
+.qr-card:hover{border-color:var(--border-hi);box-shadow:0 4px 18px rgba(0,0,0,.18)}
+.qr-card-title{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--gold)}
+.qr-card-body{font-size:12px;line-height:1.6;color:var(--text2);white-space:pre-line;flex:1;
+  max-height:150px;overflow-y:auto}
+.qr-card-acts{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:8px;border-top:1px solid var(--border)}
+.qr-copy-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:16px;font-size:11px;font-weight:700;
+  background:rgba(201,169,110,.1);color:var(--gold);border:1px solid rgba(201,169,110,.28);cursor:pointer;transition:var(--trans)}
+.qr-copy-btn:hover{background:var(--gold);color:var(--bg)}
+.qr-copy-btn.copied{background:var(--green);color:#fff;border-color:var(--green)}
+.qr-card-edit-acts{display:flex;gap:6px}
+.qr-mini-btn{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  background:var(--surface2);color:var(--text2);border:1px solid var(--border);cursor:pointer;transition:var(--trans)}
+.qr-mini-btn:hover{color:var(--text);border-color:var(--border-hi)}
+.qr-empty{padding:36px 10px;text-align:center;color:var(--text2);font-size:12.5px}
+
+.help-mod-hint{display:flex;align-items:center;gap:8px;padding:9px 13px;border-radius:var(--r);
+  background:rgba(201,169,110,.07);border:1px solid var(--border);color:var(--text2);font-size:11.5px;margin-bottom:14px}
+
 /* Ads Task page — card grid */
 .adtask-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
 .adtask-card{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--border-hi);
@@ -4261,6 +4317,31 @@ body.light .kol-fin-val{color:#0d0d0d}
         <span>Tracking Report</span>
         <span class="nav-badge" id="trk-pending-badge" style="display:none">0</span>
       </button>
+      <!-- ══ v56: BANTUAN — FAQ & Quick Reply, khusus role cs_hunter/admin/b2b_marketing
+           (+ Mod/Owner lihat semua). Isi hanya bisa ditambah/diubah oleh Moderator. ══ -->
+      <div class="nav-sec-lbl" id="ns-help" style="display:none">
+        <span class="sec-name">Bantuan</span>
+        <span class="sec-scope">CS Hunter · Admin · B2B</span>
+      </div>
+      <button class="nav-item" onclick="navTo('faq',this)" id="n-faq" style="display:none">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M6.05 6.15c.15-.95.95-1.6 1.95-1.6 1.02 0 1.9.72 1.9 1.65 0 .82-.52 1.22-1.08 1.58-.52.33-.87.64-.87 1.32" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="7.98" cy="11.1" r=".95" fill="currentColor"/>
+          </svg>
+        </span>
+        <span>FAQ</span>
+      </button>
+      <button class="nav-item" onclick="navTo('quick_reply',this)" id="n-quick-reply" style="display:none">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M2.2 3.6h11.6v6.9H6.6l-3 2.6v-2.6H2.2V3.6z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+            <path d="M4.6 6.1h6.8M4.6 8.1h4.2" stroke="currentColor" stroke-width="1.15" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span>Quick Reply</span>
+      </button>
       <!-- ══ OVERVIEW TIM — khusus Moderator (lihat dashboard bulanan semua role) ══ -->
       <div class="nav-sec-lbl mod-only" id="ns-all-dash" style="display:none">
         <span class="sec-name">Overview Tim</span>
@@ -5663,6 +5744,33 @@ body.light .kol-fin-val{color:#0d0d0d}
         <div id="tracking-report-root"></div>
       </div>
 
+      <!-- ⑨-e v56: FAQ — pusat bantuan info yang sering ditanyakan/lupa, khusus
+           CS Hunter/Admin/B2B (+ Mod/Owner lihat semua). Tambah/ubah/hapus
+           hanya boleh Moderator. -->
+      <div class="sp" id="pg-faq">
+        <div class="ph">
+          <div class="ph-left">
+            <div class="pt">FAQ <span id="faq-mod-badge" class="mod-badge" style="display:none">♔ Kelola</span></div>
+            <div class="ps">Kumpulan jawaban resmi untuk pertanyaan yang paling sering muncul — biar tidak salah jawab ke customer</div>
+          </div>
+          <div class="ph-acts" id="faq-admin-acts"></div>
+        </div>
+        <div id="faq-root"></div>
+      </div>
+
+      <!-- ⑨-f v56: QUICK REPLY — template chat siap-copy, khusus CS Hunter/Admin/B2B
+           (+ Mod/Owner lihat semua). Tambah/ubah/hapus hanya boleh Moderator. -->
+      <div class="sp" id="pg-quick_reply">
+        <div class="ph">
+          <div class="ph-left">
+            <div class="pt">Quick Reply <span id="qr-mod-badge" class="mod-badge" style="display:none">♔ Kelola</span></div>
+            <div class="ps">Template balasan chat siap pakai — tinggal klik salin, tempel ke WhatsApp/chat customer</div>
+          </div>
+          <div class="ph-acts" id="qr-admin-acts"></div>
+        </div>
+        <div id="qr-root"></div>
+      </div>
+
       <!-- ⑩ PRESENCE PAGE -->
       <div class="sp" id="pg-presence">
         <div class="ph">
@@ -5909,6 +6017,10 @@ const can = {
   // Saya" & "Performa Saya" persis seperti CS Hunter non-mod, karena
   // kerja hariannya sekarang full lewat Tools → Follow Up.
   isAdminRole: r => r === 'admin',
+  // v56: role yang boleh MELIHAT halaman FAQ & Quick Reply (isi hanya bisa
+  // ditambah/diubah/dihapus oleh Moderator — dicek terpisah lewat can.isMod
+  // di setiap tombol tambah/ubah/hapus, persis pola canFollowup/canTrackingReport).
+  canFaqQuickReply: r => r === 'cs_hunter' || r === 'b2b_marketing' || r === 'admin',
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -7752,6 +7864,10 @@ async function initDashboard() {
   navShow('ns-cs-tools',      can.canFollowup(r) || isMod || isOwner);   // v53: Section label "Tools" — kini juga muncul utk B2B Marketing
   navShow('n-followup',       can.canFollowup(r) || isMod || isOwner);   // v54: Follow Up — tabel customer + target harian (cs_hunter + b2b_marketing + admin)
   navShow('n-tracking-report', can.canTrackingReport(r) || isMod || isOwner); // v47: Tracking Report — laporan jam 12:00 & 17:00 (cs_hunter + b2b_marketing + admin, + rekap tim utk Mod/Owner)
+  // v56: Bantuan — FAQ & Quick Reply (cs_hunter + b2b_marketing + admin lihat, Mod/Owner lihat semua; isi hanya editable Moderator)
+  navShow('ns-help',          can.canFaqQuickReply(r) || isMod || isOwner);
+  navShow('n-faq',            can.canFaqQuickReply(r) || isMod || isOwner);
+  navShow('n-quick-reply',    can.canFaqQuickReply(r) || isMod || isOwner);
   initCsHunterOwnBadge(); // pangkat CS Hunter tampil di sidebar, di manapun dashboard dibuka
   initFollowupBadge();    // v45: badge jumlah customer yang belum di-follow up hari ini
 
@@ -17525,6 +17641,316 @@ async function deleteBudgetEntry(id) {
 window.deleteBudgetEntry = deleteBudgetEntry;
 
 /* ═══════════════════════════════════════════════════════════
+   v56 — FAQ & QUICK REPLY MODULE
+   Pusat bantuan untuk CS Hunter / Admin / B2B Marketing: FAQ (cari +
+   accordion) dan Quick Reply (template chat siap-copy). Tabel Supabase:
+   faq_items & quick_replies. Semua role terkait boleh MELIHAT & MENYALIN,
+   tapi tambah/ubah/hapus isi hanya boleh Moderator (can.isMod) — dicek di
+   setiap fungsi tulis, persis pola Budget Marketing/KOL Affiliate.
+   ═══════════════════════════════════════════════════════════ */
+const FAQ_CATEGORIES = ['Produk & Stok','Harga & Pembayaran','Pengiriman & Retur','CRM & Sistem','B2B & Reseller','Lainnya'];
+const QR_CATEGORIES   = ['Pembuka (Intro)','Follow Up','Penawaran & Harga','Closing','Keberatan Customer','Ucapan Terima Kasih'];
+
+let faqCache = [];
+let faqSearchTerm = '';
+let faqActiveCat = 'all';
+let faqOpenId = null;
+let qrCache = [];
+
+async function loadFaqData() {
+  if (!db) return;
+  const res = await dbQ(d => d.from('faq_items').select('*').order('category').order('sort_order').order('created_at'));
+  faqCache = (res && res.data) ? res.data : faqCache;
+}
+
+async function renderFaqPage() {
+  const isAllowedMod = can.isMod(currentUser?.role);
+  const badge = document.getElementById('faq-mod-badge'); if (badge) badge.style.display = isAllowedMod ? '' : 'none';
+  const acts = document.getElementById('faq-admin-acts');
+  if (acts) acts.innerHTML = isAllowedMod
+    ? `<button class="btn-sm btn-gold" onclick="openFaqModal()">+ Tambah FAQ</button>
+       <button class="btn-sm" onclick="renderFaqPage()" title="Muat ulang">⟲</button>`
+    : `<button class="btn-sm" onclick="renderFaqPage()" title="Muat ulang">⟲</button>`;
+
+  await loadFaqData();
+  renderFaqBody();
+}
+window.renderFaqPage = renderFaqPage;
+
+function renderFaqBody() {
+  const root = document.getElementById('faq-root');
+  if (!root) return;
+  const isAllowedMod = can.isMod(currentUser?.role);
+
+  const cats = Array.from(new Set(faqCache.map(f => f.category || 'Lainnya')));
+  const term = faqSearchTerm.trim().toLowerCase();
+  let rows = faqCache.filter(f => faqActiveCat === 'all' || (f.category || 'Lainnya') === faqActiveCat);
+  if (term) {
+    rows = rows.filter(f =>
+      (f.question || '').toLowerCase().includes(term) ||
+      (f.answer   || '').toLowerCase().includes(term) ||
+      (f.keywords || '').toLowerCase().includes(term));
+  }
+
+  const tabsHtml = ['all', ...cats].map(c => `
+    <button class="faq-cat-tab ${faqActiveCat === c ? 'active' : ''}" onclick="faqSetCat('${escHtml(c)}')">${c === 'all' ? 'Semua' : escHtml(c)}</button>`).join('');
+
+  const listHtml = rows.length ? rows.map(f => `
+    <div class="faq-item ${faqOpenId === f.id ? 'open' : ''}" id="faq-item-${f.id}">
+      <div class="faq-q" onclick="faqToggle('${f.id}')">
+        <span class="faq-q-ic">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M6.05 6.15c.15-.95.95-1.6 1.95-1.6 1.02 0 1.9.72 1.9 1.65 0 .82-.52 1.22-1.08 1.58-.52.33-.87.64-.87 1.32" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <circle cx="7.98" cy="11.1" r=".9" fill="currentColor"/>
+          </svg>
+        </span>
+        <span class="faq-q-text">${escHtml(f.question)}</span>
+        <span class="faq-q-cat">${escHtml(f.category || 'Lainnya')}</span>
+        <span class="faq-q-chev">▾</span>
+      </div>
+      <div class="faq-a-wrap">
+        <div class="faq-a">${escHtml(f.answer)}</div>
+        ${isAllowedMod ? `
+        <div class="faq-a-acts">
+          <button class="qr-mini-btn" onclick="event.stopPropagation();openFaqModal('${f.id}')" title="Ubah">✎</button>
+          <button class="qr-mini-btn" onclick="event.stopPropagation();deleteFaqItem('${f.id}')" title="Hapus">🗑</button>
+        </div>` : ''}
+      </div>
+    </div>`).join('') : `
+    <div class="faq-empty">
+      <svg width="34" height="34" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.2"/><path d="M6.05 6.15c.15-.95.95-1.6 1.95-1.6 1.02 0 1.9.72 1.9 1.65 0 .82-.52 1.22-1.08 1.58-.52.33-.87.64-.87 1.32" stroke="currentColor" stroke-width="1.1"/></svg>
+      <div>${term || faqActiveCat !== 'all' ? 'Tidak ada FAQ yang cocok dengan pencarian/kategori ini.' : 'Belum ada FAQ. Moderator bisa menambahkan lewat tombol "+ Tambah FAQ".'}</div>
+    </div>`;
+
+  root.innerHTML = `
+    <div class="faq-toolbar">
+      <div class="faq-search-wrap">
+        <span class="faq-search-ic"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.4"/><path d="M11 11l3.3 3.3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+        <input class="search-box" id="faq-search-input" placeholder="Cari kata kunci... misal 'retur', 'minimal order', 'ganti status'" value="${escHtml(faqSearchTerm)}" oninput="faqSetSearch(this.value)"/>
+      </div>
+    </div>
+    <div class="faq-cat-tabs" style="margin-bottom:16px">${tabsHtml}</div>
+    <div class="faq-list">${listHtml}</div>`;
+
+  const inp = document.getElementById('faq-search-input');
+  if (inp && document.activeElement !== inp) { /* jangan curi fokus kalau user sedang mengetik di elemen lain */ }
+  if (inp && faqSearchTerm) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+}
+
+function faqSetSearch(v) { faqSearchTerm = v; renderFaqBody(); }
+window.faqSetSearch = faqSetSearch;
+function faqSetCat(c) { faqActiveCat = c; renderFaqBody(); }
+window.faqSetCat = faqSetCat;
+function faqToggle(id) { faqOpenId = (faqOpenId === id) ? null : id; renderFaqBody(); }
+window.faqToggle = faqToggle;
+
+function openFaqModal(id) {
+  if (blockIfOwner()) return;
+  if (!can.isMod(currentUser?.role)) { toast('Hanya Moderator yang bisa mengelola FAQ'); return; }
+  const row = id ? faqCache.find(r => r.id === id) : null;
+  document.getElementById('m-title').textContent = row ? 'Ubah FAQ' : 'Tambah FAQ';
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg"><label>Kategori</label>
+      <select class="fi" id="faq-ed-cat">
+        ${FAQ_CATEGORIES.map(c => `<option value="${escHtml(c)}" ${row?.category === c ? 'selected' : ''}>${escHtml(c)}</option>`).join('')}
+      </select>
+    </div>
+    <div class="fg"><label>Pertanyaan</label>
+      <input class="fi" id="faq-ed-q" placeholder="mis. Apa bedanya status Cold, Warm, dan Hot di CRM?" value="${escHtml(row?.question || '')}"/>
+    </div>
+    <div class="fg"><label>Jawaban</label>
+      <textarea class="fi" id="faq-ed-a" rows="5" placeholder="Tulis jawaban lengkap & jelas, bisa multi-baris">${escHtml(row?.answer || '')}</textarea>
+    </div>
+    <div class="fg"><label>Kata Kunci Tambahan (opsional, pisahkan koma)</label>
+      <input class="fi" id="faq-ed-kw" placeholder="mis. status lead, heat, tingkat keaktifan" value="${escHtml(row?.keywords || '')}"/>
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-gold" onclick="saveFaqItem(${row ? `'${row.id}'` : 'null'})">Simpan</button>
+    <button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+window.openFaqModal = openFaqModal;
+
+async function saveFaqItem(id) {
+  if (blockIfOwner()) return;
+  if (!can.isMod(currentUser?.role)) { toast('Hanya Moderator yang bisa mengelola FAQ'); return; }
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  const category = document.getElementById('faq-ed-cat').value;
+  const question = document.getElementById('faq-ed-q').value.trim();
+  const answer   = document.getElementById('faq-ed-a').value.trim();
+  const keywords = document.getElementById('faq-ed-kw').value.trim();
+  if (!question || !answer) { toast('Pertanyaan & jawaban wajib diisi'); return; }
+
+  const payload = { category, question, answer, keywords, updated_by: currentUser.id, updated_at: new Date().toISOString() };
+  let res;
+  if (id) res = await dbQ(d => d.from('faq_items').update(payload).eq('id', id));
+  else    res = await dbQ(d => d.from('faq_items').insert({ ...payload, created_by: currentUser.id }));
+
+  if (!res || res.error) { toast('Gagal menyimpan: ' + (res?.error?.message || 'periksa koneksi Supabase')); return; }
+  toast(id ? 'FAQ diperbarui' : 'FAQ ditambahkan');
+  pushActivity(`${id ? 'Mengubah' : 'Menambahkan'} FAQ: ${question}`, 'info');
+  closeModal();
+  renderFaqPage();
+}
+window.saveFaqItem = saveFaqItem;
+
+async function deleteFaqItem(id) {
+  if (blockIfOwner()) return;
+  if (!can.isMod(currentUser?.role)) { toast('Hanya Moderator yang bisa mengelola FAQ'); return; }
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  if (!confirm('Hapus FAQ ini? Tindakan ini tidak bisa dibatalkan.')) return;
+  const res = await dbQ(d => d.from('faq_items').delete().eq('id', id));
+  if (!res || res.error) { toast('Gagal menghapus: ' + (res?.error?.message || 'periksa koneksi Supabase')); return; }
+  toast('FAQ dihapus');
+  pushActivity('Menghapus 1 FAQ', 'info');
+  renderFaqPage();
+}
+window.deleteFaqItem = deleteFaqItem;
+
+/* ── QUICK REPLY ── */
+async function loadQrData() {
+  if (!db) return;
+  const res = await dbQ(d => d.from('quick_replies').select('*').order('category').order('sort_order').order('created_at'));
+  qrCache = (res && res.data) ? res.data : qrCache;
+}
+
+async function renderQuickReplyPage() {
+  const isAllowedMod = can.isMod(currentUser?.role);
+  const badge = document.getElementById('qr-mod-badge'); if (badge) badge.style.display = isAllowedMod ? '' : 'none';
+  const acts = document.getElementById('qr-admin-acts');
+  if (acts) acts.innerHTML = isAllowedMod
+    ? `<button class="btn-sm btn-gold" onclick="openQrModal()">+ Tambah Quick Reply</button>
+       <button class="btn-sm" onclick="renderQuickReplyPage()" title="Muat ulang">⟲</button>`
+    : `<button class="btn-sm" onclick="renderQuickReplyPage()" title="Muat ulang">⟲</button>`;
+
+  await loadQrData();
+  const root = document.getElementById('qr-root');
+  if (!root) return;
+
+  if (!qrCache.length) {
+    root.innerHTML = `<div class="qr-empty">Belum ada Quick Reply. Moderator bisa menambahkan lewat tombol "+ Tambah Quick Reply".</div>`;
+    return;
+  }
+
+  const byCat = {};
+  qrCache.forEach(q => { const c = q.category || 'Lainnya'; (byCat[c] = byCat[c] || []).push(q); });
+  const catOrder = [...QR_CATEGORIES.filter(c => byCat[c]), ...Object.keys(byCat).filter(c => !QR_CATEGORIES.includes(c))];
+
+  root.innerHTML = `<div class="help-mod-hint">💡 Klik <b>Salin</b> pada template, lalu tempel langsung ke chat WhatsApp/customer.</div>` +
+    catOrder.map(cat => `
+    <div class="qr-cat-block">
+      <div class="qr-cat-head">
+        <span class="qr-cat-dot"></span>
+        <span class="qr-cat-name">${escHtml(cat)}</span>
+        <span class="qr-cat-count">${byCat[cat].length} template</span>
+      </div>
+      <div class="qr-grid">
+        ${byCat[cat].map(q => `
+          <div class="qr-card" id="qr-card-${q.id}">
+            <div class="qr-card-title">${escHtml(q.title)}</div>
+            <div class="qr-card-body">${escHtml(q.body)}</div>
+            <div class="qr-card-acts">
+              <button class="qr-copy-btn" id="qr-copy-${q.id}" onclick="copyQuickReply('${q.id}')">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="5.5" y="5.5" width="8" height="8" rx="1.4" stroke="currentColor" stroke-width="1.3"/><path d="M3 10.3V3.7A1.2 1.2 0 0 1 4.2 2.5h6.6" stroke="currentColor" stroke-width="1.3"/></svg>
+                Salin
+              </button>
+              ${isAllowedMod ? `
+              <div class="qr-card-edit-acts">
+                <button class="qr-mini-btn" onclick="openQrModal('${q.id}')" title="Ubah">✎</button>
+                <button class="qr-mini-btn" onclick="deleteQrItem('${q.id}')" title="Hapus">🗑</button>
+              </div>` : ''}
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+window.renderQuickReplyPage = renderQuickReplyPage;
+
+async function copyQuickReply(id) {
+  const row = qrCache.find(q => q.id === id);
+  if (!row) return;
+  const text = row.body;
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch(e) {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(e2) {}
+    document.body.removeChild(ta);
+  }
+  const btn = document.getElementById(`qr-copy-${id}`);
+  if (btn) {
+    const orig = btn.innerHTML;
+    btn.classList.add('copied');
+    btn.innerHTML = '✓ Tersalin';
+    setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = orig; }, 1600);
+  }
+  toast('Template disalin ke clipboard');
+}
+window.copyQuickReply = copyQuickReply;
+
+function openQrModal(id) {
+  if (blockIfOwner()) return;
+  if (!can.isMod(currentUser?.role)) { toast('Hanya Moderator yang bisa mengelola Quick Reply'); return; }
+  const row = id ? qrCache.find(r => r.id === id) : null;
+  document.getElementById('m-title').textContent = row ? 'Ubah Quick Reply' : 'Tambah Quick Reply';
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg"><label>Kategori Flow</label>
+      <select class="fi" id="qr-ed-cat">
+        ${QR_CATEGORIES.map(c => `<option value="${escHtml(c)}" ${row?.category === c ? 'selected' : ''}>${escHtml(c)}</option>`).join('')}
+      </select>
+    </div>
+    <div class="fg"><label>Judul Singkat</label>
+      <input class="fi" id="qr-ed-title" placeholder="mis. Salam Pembuka Ramah" value="${escHtml(row?.title || '')}"/>
+    </div>
+    <div class="fg"><label>Isi Template Pesan</label>
+      <textarea class="fi" id="qr-ed-body" rows="5" placeholder="mis. Halo kak [Nama], terima kasih sudah menghubungi kami 🙏 Ada yang bisa kami bantu?">${escHtml(row?.body || '')}</textarea>
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-gold" onclick="saveQrItem(${row ? `'${row.id}'` : 'null'})">Simpan</button>
+    <button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+window.openQrModal = openQrModal;
+
+async function saveQrItem(id) {
+  if (blockIfOwner()) return;
+  if (!can.isMod(currentUser?.role)) { toast('Hanya Moderator yang bisa mengelola Quick Reply'); return; }
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  const category = document.getElementById('qr-ed-cat').value;
+  const title    = document.getElementById('qr-ed-title').value.trim();
+  const body     = document.getElementById('qr-ed-body').value.trim();
+  if (!title || !body) { toast('Judul & isi template wajib diisi'); return; }
+
+  const payload = { category, title, body, updated_by: currentUser.id, updated_at: new Date().toISOString() };
+  let res;
+  if (id) res = await dbQ(d => d.from('quick_replies').update(payload).eq('id', id));
+  else    res = await dbQ(d => d.from('quick_replies').insert({ ...payload, created_by: currentUser.id }));
+
+  if (!res || res.error) { toast('Gagal menyimpan: ' + (res?.error?.message || 'periksa koneksi Supabase')); return; }
+  toast(id ? 'Quick Reply diperbarui' : 'Quick Reply ditambahkan');
+  pushActivity(`${id ? 'Mengubah' : 'Menambahkan'} Quick Reply: ${title}`, 'info');
+  closeModal();
+  renderQuickReplyPage();
+}
+window.saveQrItem = saveQrItem;
+
+async function deleteQrItem(id) {
+  if (blockIfOwner()) return;
+  if (!can.isMod(currentUser?.role)) { toast('Hanya Moderator yang bisa mengelola Quick Reply'); return; }
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  if (!confirm('Hapus Quick Reply ini? Tindakan ini tidak bisa dibatalkan.')) return;
+  const res = await dbQ(d => d.from('quick_replies').delete().eq('id', id));
+  if (!res || res.error) { toast('Gagal menghapus: ' + (res?.error?.message || 'periksa koneksi Supabase')); return; }
+  toast('Quick Reply dihapus');
+  pushActivity('Menghapus 1 Quick Reply', 'info');
+  renderQuickReplyPage();
+}
+window.deleteQrItem = deleteQrItem;
+
+/* ═══════════════════════════════════════════════════════════
    KOL & AFFILIATE MODULE  (v46 — dibuka untuk Sovereign/Moderator)
    Kelola talent KOL/Affiliate: profil + link TikTok/Instagram + followers
    ⇒ tier otomatis (Nano/Micro/Macro/Mega), progress kerjasama (stepper),
@@ -20639,7 +21065,7 @@ function navTo(page, btn) {
   // Schedule, Manage Customer CRM, dan Budget Marketing. Di luar daftar
   // ini (halaman kerja mentah moderator seperti Progress Tugas Tim,
   // Target, Users, Settings, Ads Customers/Task) tetap terkunci.
-  const OWNER_ALLOWED_PAGES = ['all_dashboard','content_studio','live_studio','live_dashboard','ad_scheduler','crm','budget_marketing','cs_hunter','followup','tracking_report'];
+  const OWNER_ALLOWED_PAGES = ['all_dashboard','content_studio','live_studio','live_dashboard','ad_scheduler','crm','budget_marketing','cs_hunter','followup','tracking_report','faq','quick_reply'];
   if (isOwnerNav && !OWNER_ALLOWED_PAGES.includes(page)) {
     toast('👁 Akun Owner hanya bisa melihat halaman: Laporan Tim, Content Studio, Live Studio, Live Dashboard, Ads Schedule, Manage CRM & Budget Marketing.');
     return;
@@ -20662,6 +21088,8 @@ function navTo(page, btn) {
   if (page === 'cs_hunter'      && !can.isCsHunter(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Moderator access required'); return; }
   if (page === 'followup'       && !can.canFollowup(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / B2B Marketing / Moderator access required'); return; }
   if (page === 'tracking_report' && !can.canTrackingReport(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Admin / B2B Marketing / Moderator access required'); return; }
+  if (page === 'faq'            && !can.canFaqQuickReply(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Admin / B2B Marketing / Moderator access required'); return; }
+  if (page === 'quick_reply'    && !can.canFaqQuickReply(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Admin / B2B Marketing / Moderator access required'); return; }
 
   document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
   const target = document.getElementById(`pg-${page}`); if (target) target.classList.add('active');
@@ -20694,6 +21122,8 @@ function loadPageData(page) {
   if (page === 'cs_hunter')       loadCsHunterPage();
   if (page === 'followup')        renderFollowupPage();
   if (page === 'tracking_report') renderTrackingReportPage();
+  if (page === 'faq')             renderFaqPage();
+  if (page === 'quick_reply')     renderQuickReplyPage();
   if (page === 'ad_scheduler')    {
     // Non-mod: reload task dari DB setiap kali buka halaman (supaya selalu fresh)
     if (db && currentUser && !can.isMod(currentUser.role)) {
