@@ -21923,7 +21923,9 @@ function trkToggleForm(slotKey) {
       <div class="trk-field"><label>${TRK_ICO.cold} Total Cold</label><input type="number" min="0" id="trk-in-${slotKey}-cold" value="${d.total_cold||0}"></div>
       <div class="trk-field"><label>${TRK_ICO.warm} Total Warm</label><input type="number" min="0" id="trk-in-${slotKey}-warm" value="${d.total_warm||0}"></div>
       <div class="trk-field"><label>${TRK_ICO.hot} Total Hot</label><input type="number" min="0" id="trk-in-${slotKey}-hot" value="${d.total_hot||0}"></div>
-      <div class="trk-field full"><label>${TRK_ICO.closing} Total Nominal Closing (Rp)</label><input type="number" min="0" id="trk-in-${slotKey}-closing" value="${d.total_nominal_closing||0}"></div>
+      <div class="trk-field full"><label>${TRK_ICO.closing} Total Nominal Closing</label>
+        <div class="fi-rp-wrap"><span class="fi-rp-prefix">Rp</span><input class="fi fi-rp-input" type="text" inputmode="numeric" id="trk-in-${slotKey}-closing" value="${d.total_nominal_closing ? Number(d.total_nominal_closing).toLocaleString('id-ID') : ''}" placeholder="0" oninput="crmFormatRpInput(this)"></div>
+      </div>
       <div class="trk-field full"><label>Catatan (opsional)</label><textarea id="trk-in-${slotKey}-note" rows="2" placeholder="Catatan tambahan…"></textarea></div>
     </div>
     <div class="trk-form-acts">
@@ -21943,7 +21945,7 @@ async function trkSubmitSlot(slotKey) {
     p_leads_masuk: val(`trk-in-${slotKey}-masuk`), p_leads_terlayani: val(`trk-in-${slotKey}-terlayani`),
     p_fu_leads_lama: val(`trk-in-${slotKey}-fulama`), p_total_cold: val(`trk-in-${slotKey}-cold`),
     p_total_warm: val(`trk-in-${slotKey}-warm`), p_total_hot: val(`trk-in-${slotKey}-hot`),
-    p_total_nominal_closing: val(`trk-in-${slotKey}-closing`),
+    p_total_nominal_closing: crmParseInt(document.getElementById(`trk-in-${slotKey}-closing`)?.value),
     p_note: noteEl ? (noteEl.value || null) : null
   };
   const res = await dbQ(d => d.rpc('submit_tracking_report', payload));
