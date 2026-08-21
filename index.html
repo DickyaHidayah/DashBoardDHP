@@ -4092,9 +4092,21 @@ body.light .kol-fin-val{color:#0d0d0d}
 .lb-pod-card.r1{animation-delay:.18s;width:172px}
 .lb-pod-card.r3{animation-delay:.05s}
 @keyframes lbRise{to{opacity:1;transform:translateY(0)}}
-.lb-pod-crown{font-size:22px;margin-bottom:2px;animation:lbFloat 2.6s ease-in-out infinite}
+.lb-pod-crown{width:30px;height:30px;color:var(--gold-hi);margin-bottom:2px;filter:drop-shadow(0 2px 6px rgba(201,169,110,.55));animation:lbFloat 2.6s ease-in-out infinite}
+.lb-pod-crown svg{width:100%;height:100%;display:block}
 @keyframes lbFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 .lb-pod-avatar{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:24px;color:#0a0906;position:relative;box-shadow:0 6px 24px rgba(0,0,0,.4)}
+/* ── Laurel wreath — hanya juara #1, aksen kemewahan klasik ── */
+.lb-laurel{position:absolute;top:50%;width:26px;height:44px;color:var(--gold-hi);opacity:.85;pointer-events:none;transform-origin:center;z-index:-1}
+.lb-laurel svg{width:100%;height:100%;display:block}
+.lb-laurel-l{left:-20px;transform:translateY(-50%) scaleX(-1) rotate(6deg)}
+.lb-laurel-r{right:-20px;transform:translateY(-50%) rotate(-6deg)}
+.lb-pod-card.r1:hover .lb-laurel{opacity:1}
+/* ── Inline vector icon helper (pengganti emoji) ── */
+.lb-inline-ico{display:inline-flex;align-items:center;justify-content:center;width:12px;height:12px;margin-right:6px;vertical-align:-1.5px;flex-shrink:0}
+.lb-inline-ico svg{width:100%;height:100%;display:block}
+/* ── Live sync indicator — pengganti 🟢 ── */
+.lb-live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:6px;vertical-align:1px;animation:lbPulseDot 1.6s ease-in-out infinite}
 .lb-pod-card.r1 .lb-pod-avatar{width:78px;height:78px;font-size:28px;background:linear-gradient(150deg,#f5dfa0,var(--gold-hi) 45%,var(--gold) 100%);box-shadow:0 0 0 3px rgba(232,204,153,.25),0 8px 30px rgba(201,169,110,.45)}
 .lb-pod-card.r2 .lb-pod-avatar{background:linear-gradient(150deg,#dfe3e8,#aab2bd 60%,#8a929c 100%)}
 .lb-pod-card.r3 .lb-pod-avatar{background:linear-gradient(150deg,#e3b48a,#c98a52 60%,#a56a38 100%)}
@@ -4118,6 +4130,7 @@ body.light .kol-fin-val{color:#0d0d0d}
 .lb-ach-chip{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;transition:border-color var(--trans),transform var(--trans)}
 .lb-ach-chip:hover{border-color:var(--border-hi);transform:translateY(-1px)}
 .lb-ach-ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.lb-ach-ico svg{width:17px;height:17px;display:block}
 .lb-ach-txt{min-width:0}
 .lb-ach-lbl{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .lb-ach-name{font-size:12.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -4165,10 +4178,19 @@ body.light .kol-fin-val{color:#0d0d0d}
 body.light .lb-row,body.light .lb-diagram,body.light .lb-ach-chip{background:#ffffff}
 body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
 
-/* ── v62: interaksi & animasi lebih elegan ── */
-.lb-pod-card{cursor:default;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+/* ── v63: sentuhan eksklusif — foil glow, tilt 3D, kilau premium ── */
+.lb-pod-card{cursor:default;transition:transform .35s cubic-bezier(.2,.8,.2,1);will-change:transform;perspective:600px}
 .lb-pod-card:hover{transform:translateY(-5px)}
 .lb-pod-card.r1:hover{transform:translateY(-7px)}
+.lb-pod-card.r1{position:relative}
+.lb-pod-card.r1::before{
+  content:'';position:absolute;top:26px;left:50%;width:96px;height:96px;transform:translateX(-50%);
+  border-radius:50%;background:conic-gradient(from 0deg,rgba(232,204,153,0),rgba(232,204,153,.5),rgba(232,204,153,0) 40%);
+  animation:lbFoilSpin 3.6s linear infinite;opacity:.55;pointer-events:none;z-index:0;
+}
+@keyframes lbFoilSpin{to{transform:translateX(-50%) rotate(360deg)}}
+.lb-pod-card.r1 .lb-pod-avatar,.lb-pod-card.r1 .lb-pod-rank,.lb-pod-card.r1 .lb-pod-name,.lb-pod-card.r1 .lb-pod-sales{position:relative;z-index:1}
+.lb-pod-avatar-tilt{transform-style:preserve-3d}
 .lb-pod-avatar{transition:box-shadow .35s ease,transform .35s cubic-bezier(.2,.8,.2,1)}
 .lb-pod-card:hover .lb-pod-avatar{transform:scale(1.06)}
 .lb-pod-card.r1 .lb-pod-avatar::before{content:'';position:absolute;inset:-10px;border-radius:50%;background:radial-gradient(circle,rgba(232,204,153,.35),transparent 70%);animation:lbGlowPulse 2.4s ease-in-out infinite;z-index:-1}
@@ -24304,6 +24326,24 @@ function lbComputeAchievements(rows) {
 }
 
 /* ── RENDER ── */
+/* ══════════════════════════════════════════════════════════
+   LB_ICONS — vector eksklusif pengganti emoji (v63)
+   Line-art tipis, warna ikut currentColor, selaras gaya gold/dark
+   ══════════════════════════════════════════════════════════ */
+const LB_ICONS = {
+  crown: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 18h16l1.35-9.35-5.05 3.5L12 4.8 7.7 12.15l-5.05-3.5L4 18Z" fill="currentColor"/><circle cx="4.3" cy="7.35" r="1.15" fill="currentColor"/><circle cx="12" cy="4.1" r="1.3" fill="currentColor"/><circle cx="19.7" cy="7.35" r="1.15" fill="currentColor"/><rect x="4" y="18.7" width="16" height="1.7" rx="0.85" fill="currentColor"/></svg>`,
+  gem: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 9.4 12 21 19.5 9.4 16 3.4H8L4.5 9.4Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M4.5 9.4H19.5M9 9.4 12 21M15 9.4 12 21M8 3.4l1 6M16 3.4l-1 6" stroke="currentColor" stroke-width="1.05" stroke-linejoin="round"/></svg>`,
+  phone: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6.6 3.6 9 4.2c.5.13.85.55.87 1.06l.13 2.5a1.1 1.1 0 0 1-.32.84L8 10.2a13 13 0 0 0 5.8 5.8l1.6-1.68a1.1 1.1 0 0 1 .84-.32l2.5.13c.51.02.93.37 1.06.87l.6 2.4c.16.63-.25 1.26-.9 1.35C10.5 19.87 3.6 12.98 4.65 5.4c.09-.65.72-1.06 1.35-.9Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>`,
+  flame: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 21c-4 0-6.5-2.7-6.5-6.2 0-2.9 1.7-4.6 2.6-6.7.5 1 1.4 1.8 2.3 1.4-.5-2.4.2-5 2.4-6.5.2 2 1 3.4 2.4 4.7 2 1.9 3.3 3.6 3.3 6.7C18.5 18.3 16 21 12 21Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 18c-1.5 0-2.5-1-2.5-2.4 0-1.1.6-1.7 1-2.4.2.5.6.8 1 .6-.2-.9.1-1.8.9-2.4.1.8.5 1.3 1 1.8.7.7 1.1 1.3 1.1 2.4 0 1.4-1 2.4-2.5 2.4Z" fill="currentColor"/></svg>`,
+  card: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="5.5" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="8.5" cy="11" r="1.7" fill="none" stroke="currentColor" stroke-width="1.25"/><path d="M5.8 15.5c.4-1.4 1.5-2.1 2.7-2.1s2.3.7 2.7 2.1" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" fill="none"/><path d="M14.5 10h4M14.5 13h4M14.5 16h2.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>`,
+  megaphone: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 10.5v3a1 1 0 0 0 1 1h1.3l1 4.3a1 1 0 0 0 1 .77h1a1 1 0 0 0 .97-1.25L9.4 14.5H10l8 3.5V6.5l-8 3.5H5a1 1 0 0 0-1 .5Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/><path d="M20 9.5c1 .8 1 4.2 0 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>`,
+  chart: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 20V10M9.5 20V4M15 20V13M20 20V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+  calendar: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3.5" y="5" width="17" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3.5 9.5h17M8 3v3.5M16 3v3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8.2" cy="13.2" r="1" fill="currentColor"/><circle cx="12" cy="13.2" r="1" fill="currentColor"/><circle cx="15.8" cy="13.2" r="1" fill="currentColor"/></svg>`,
+  hourglass: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 3.5h12M6 20.5h12M7 3.5c0 4 3 5.5 5 6.5 2-1 5-2.5 5-6.5M7 20.5c0-4 3-5.5 5-6.5 2 1 5 2.5 5 6.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>`,
+  laurel: `<svg viewBox="0 0 24 40" xmlns="http://www.w3.org/2000/svg"><path d="M12 2c-5 4-8 12-6 26" fill="none" stroke="currentColor" stroke-width="1.3"/><g fill="currentColor"><ellipse cx="8.5" cy="9" rx="2.3" ry="1.25" transform="rotate(-35 8.5 9)"/><ellipse cx="6.5" cy="14.5" rx="2.3" ry="1.25" transform="rotate(-25 6.5 14.5)"/><ellipse cx="5.3" cy="20.5" rx="2.3" ry="1.25" transform="rotate(-15 5.3 20.5)"/><ellipse cx="5" cy="26.5" rx="2.3" ry="1.25" transform="rotate(-5 5 26.5)"/></g></svg>`,
+  warning: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 4 21.5 20H2.5L12 4Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 10v4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="17.3" r="1" fill="currentColor"/></svg>`,
+};
+
 async function renderLeaderboardPage() {
   const root = document.getElementById('leaderboard-root');
   if (!root) return;
@@ -24328,7 +24368,7 @@ function lbRenderContent(root, data) {
   if (rpcMissing) {
     root.innerHTML = `
       <div class="lb-empty-state" style="color:var(--red)">
-        ⚠️ Fungsi database <b>get_leaderboard_monthly</b> belum ditemukan.<br>
+        <span class="lb-inline-ico" style="width:15px;height:15px;display:inline-flex;vertical-align:-2px;margin-right:4px">${LB_ICONS.warning}</span>Fungsi database <b>get_leaderboard_monthly</b> belum ditemukan.<br>
         Jalankan file <b>migration_v61_leaderboard.sql</b> di Supabase SQL Editor terlebih dulu, lalu klik Muat Ulang.
       </div>`;
     return;
@@ -24342,9 +24382,9 @@ function lbRenderContent(root, data) {
   const topbarHtml = `
     <div class="lb-topbar">
       ${isCurrentMonth
-        ? `<div class="lb-countdown">⏳ Papan peringkat reset dalam <b id="lb-cd-txt">…</b></div>`
-        : `<div class="lb-countdown">📅 Melihat rekap ${lbYmLabel(lbCurrentYm)}</div>`}
-      <div class="lb-updated">🟢 Sinkron real-time · update terakhir ${generatedAt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</div>
+        ? `<div class="lb-countdown"><span class="lb-inline-ico">${LB_ICONS.hourglass}</span>Papan peringkat reset dalam <b id="lb-cd-txt">…</b></div>`
+        : `<div class="lb-countdown"><span class="lb-inline-ico">${LB_ICONS.calendar}</span>Melihat rekap ${lbYmLabel(lbCurrentYm)}</div>`}
+      <div class="lb-updated"><span class="lb-live-dot"></span>Sinkron real-time · update terakhir ${generatedAt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</div>
     </div>`;
 
   root.innerHTML = topbarHtml
@@ -24356,6 +24396,24 @@ function lbRenderContent(root, data) {
   if (isCurrentMonth) lbStartCountdown();
   lbAnimateBars();
   lbAnimateCountUps(root);
+  lbEnablePodiumTilt(root);
+}
+
+/* ── v63: tilt 3D halus saat hover kartu podium — kesan mewah & interaktif ── */
+function lbEnablePodiumTilt(root) {
+  root.querySelectorAll('.lb-pod-card').forEach(card => {
+    const avatar = card.querySelector('.lb-pod-avatar');
+    if (!avatar) return;
+    card.addEventListener('mousemove', (e) => {
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      avatar.style.transform = `rotateY(${px * 16}deg) rotateX(${-py * 16}deg)`;
+    });
+    card.addEventListener('mouseleave', () => { avatar.style.transform = ''; });
+    avatar.classList.add('lb-pod-avatar-tilt');
+    avatar.style.transition = 'transform .25s ease';
+  });
 }
 
 function lbPodiumHtml(top3) {
@@ -24370,8 +24428,10 @@ function lbPodiumHtml(top3) {
     if (!u) { html += `<div class="lb-pod-card r${rank}" style="visibility:hidden"></div>`; return; }
     html += `
       <div class="lb-pod-card r${rank}">
-        ${rank === 1 ? '<div class="lb-pod-crown">👑</div>' : ''}
-        <div class="lb-pod-avatar">${lbInitials(u.name)}<span class="lb-pod-rank">${rank}</span></div>
+        ${rank === 1 ? `<div class="lb-pod-crown">${LB_ICONS.crown}</div>` : ''}
+        <div class="lb-pod-avatar">
+          ${rank === 1 ? `<span class="lb-laurel lb-laurel-l">${LB_ICONS.laurel}</span><span class="lb-laurel lb-laurel-r">${LB_ICONS.laurel}</span>` : ''}
+          ${lbInitials(u.name)}<span class="lb-pod-rank">${rank}</span></div>
         <div class="lb-pod-name">${escHtml(u.name)}</div>
         <div class="lb-pod-role">${escHtml(rn(u.role))}</div>
         <div class="lb-pod-sales lb-countup" data-target="${u.sales}" data-fmt="rupiah">${crmFmtRupiah(0)}</div>
@@ -24386,11 +24446,11 @@ function lbPodiumHtml(top3) {
 function lbAchievementsHtml(ach) {
   if (!ach) return `<div class="lb-ach-row"><div class="lb-ach-empty">Belum ada pencapaian tercatat bulan ini.</div></div>`;
   const chips = [
-    { key: 'topSales',    icon: '💰', color: 'var(--gold)',  lbl: 'Top Sales',         val: (u) => crmFmtRupiah(u.sales) },
-    { key: 'topFollowup', icon: '📞', color: 'var(--blue)',  lbl: 'Rajin Follow Up',   val: (u) => `${u.followup}x follow up` },
-    { key: 'topHot',      icon: '🔥', color: 'var(--green)', lbl: 'Leads Terpanas',    val: (u) => `${u.hot} hot leads` },
-    { key: 'topCrm',      icon: '📇', color: 'var(--blue)',  lbl: 'CRM Terbanyak',     val: (u) => `${u.crmTotal} customer` },
-    { key: 'topAds',      icon: '📢', color: 'var(--amber)', lbl: 'Iklan Paling Aktif', val: (u) => `${u.adsDone} iklan jalan` },
+    { key: 'topSales',    icon: LB_ICONS.gem,       color: 'var(--gold)',  lbl: 'Top Sales',         val: (u) => crmFmtRupiah(u.sales) },
+    { key: 'topFollowup', icon: LB_ICONS.phone,     color: 'var(--blue)',  lbl: 'Rajin Follow Up',   val: (u) => `${u.followup}x follow up` },
+    { key: 'topHot',      icon: LB_ICONS.flame,     color: 'var(--green)', lbl: 'Leads Terpanas',    val: (u) => `${u.hot} hot leads` },
+    { key: 'topCrm',      icon: LB_ICONS.card,      color: 'var(--blue)',  lbl: 'CRM Terbanyak',     val: (u) => `${u.crmTotal} customer` },
+    { key: 'topAds',      icon: LB_ICONS.megaphone, color: 'var(--amber)', lbl: 'Iklan Paling Aktif', val: (u) => `${u.adsDone} iklan jalan` },
   ];
   let html = '<div class="lb-ach-row">';
   chips.forEach(c => {
@@ -24424,7 +24484,7 @@ function lbDiagramHtml(rows) {
   }).join('');
   return `
     <div class="lb-diagram">
-      <div class="lb-diagram-title">📊 Diagram Perbandingan Penjualan</div>
+      <div class="lb-diagram-title"><span class="lb-inline-ico">${LB_ICONS.chart}</span>Diagram Perbandingan Penjualan</div>
       <div class="lb-diagram-sub">Total nominal closing bulan ${lbYmLabel(lbCurrentYm)} — seluruh tim CS Hunter, Admin &amp; B2B Marketing</div>
       ${bars}
     </div>`;
