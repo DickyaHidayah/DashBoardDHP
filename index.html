@@ -4071,6 +4071,105 @@ body:not(.light) .theme-toggle.tt-sm .tt-knob{transform:translateX(19px)}
 body.light .kol-card{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
 body.light .kol-plat-row,body.light .kol-fin-box,body.light .kol-note,body.light .kol-report-item{background:#f7f7f8}
 body.light .kol-fin-val{color:#0d0d0d}
+
+/* ══════════════════════════════════════════════════════════════
+   🏆 LEADERBOARD — papan peringkat bulanan, elegan & animasi
+   ══════════════════════════════════════════════════════════════ */
+.lb-live-pill{background:rgba(122,191,142,.14) !important;color:var(--green) !important;border:1px solid rgba(122,191,142,.35) !important;margin-left:8px}
+.lb-live-pill .pill-dot{animation:lbPulseDot 1.6s ease-in-out infinite}
+@keyframes lbPulseDot{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(122,191,142,.5)}50%{opacity:.55;box-shadow:0 0 0 4px rgba(122,191,142,0)}}
+
+.lb-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.lb-countdown{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border-hi);border-radius:20px;padding:7px 14px;font-size:11.5px;color:var(--text2)}
+.lb-countdown b{color:var(--gold-hi);font-variant-numeric:tabular-nums}
+.lb-updated{font-size:10px;color:var(--muted);white-space:nowrap}
+
+/* ── PODIUM ── */
+.lb-podium{display:flex;align-items:flex-end;justify-content:center;gap:14px;padding:34px 10px 0;margin-bottom:22px;position:relative}
+.lb-podium::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,rgba(201,169,110,.10),transparent 65%);pointer-events:none}
+.lb-pod-card{position:relative;display:flex;flex-direction:column;align-items:center;width:150px;opacity:0;transform:translateY(24px);animation:lbRise .6s cubic-bezier(.2,.8,.3,1) forwards}
+.lb-pod-card.r2{animation-delay:.05s}
+.lb-pod-card.r1{animation-delay:.18s;width:172px}
+.lb-pod-card.r3{animation-delay:.05s}
+@keyframes lbRise{to{opacity:1;transform:translateY(0)}}
+.lb-pod-crown{font-size:22px;margin-bottom:2px;animation:lbFloat 2.6s ease-in-out infinite}
+@keyframes lbFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.lb-pod-avatar{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:24px;color:#0a0906;position:relative;box-shadow:0 6px 24px rgba(0,0,0,.4)}
+.lb-pod-card.r1 .lb-pod-avatar{width:78px;height:78px;font-size:28px;background:linear-gradient(150deg,#f5dfa0,var(--gold-hi) 45%,var(--gold) 100%);box-shadow:0 0 0 3px rgba(232,204,153,.25),0 8px 30px rgba(201,169,110,.45)}
+.lb-pod-card.r2 .lb-pod-avatar{background:linear-gradient(150deg,#dfe3e8,#aab2bd 60%,#8a929c 100%)}
+.lb-pod-card.r3 .lb-pod-avatar{background:linear-gradient(150deg,#e3b48a,#c98a52 60%,#a56a38 100%)}
+.lb-pod-rank{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:24px;height:24px;border-radius:50%;background:var(--bg2);border:2px solid var(--gold);color:var(--gold-hi);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.lb-pod-card.r1 .lb-pod-rank{border-color:var(--gold-hi);background:var(--gold-hi);color:#0a0906}
+.lb-pod-name{margin-top:14px;font-size:13px;font-weight:700;color:var(--text);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.lb-pod-role{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-top:1px}
+.lb-pod-sales{margin-top:8px;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:19px;color:var(--gold-hi);font-variant-numeric:tabular-nums}
+.lb-pod-card.r1 .lb-pod-sales{font-size:23px}
+.lb-pod-sub{font-size:9.5px;color:var(--muted);margin-top:1px}
+.lb-pod-bar{width:100%;border-radius:10px 10px 0 0;margin-top:14px;background:linear-gradient(180deg,var(--surface2),var(--bg3));border:1px solid var(--border-hi);border-top:2px solid var(--gold);position:relative;overflow:hidden}
+.lb-pod-bar::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.08) 45%,transparent 60%);background-size:220% 100%;animation:lbShine 3.2s ease-in-out infinite}
+@keyframes lbShine{0%{background-position:160% 0}100%{background-position:-60% 0}}
+.lb-pod-card.r1 .lb-pod-bar{height:92px;border-top-color:var(--gold-hi)}
+.lb-pod-card.r2 .lb-pod-bar{height:64px}
+.lb-pod-card.r3 .lb-pod-bar{height:46px}
+.lb-pod-empty{color:var(--muted);font-size:12px;text-align:center;padding:30px 0;width:100%}
+
+/* ── ACHIEVEMENT CHIPS ── */
+.lb-ach-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px;margin-bottom:22px}
+.lb-ach-chip{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;transition:border-color var(--trans),transform var(--trans)}
+.lb-ach-chip:hover{border-color:var(--border-hi);transform:translateY(-1px)}
+.lb-ach-ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.lb-ach-txt{min-width:0}
+.lb-ach-lbl{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.lb-ach-name{font-size:12.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-ach-val{font-size:10.5px;color:var(--gold-hi);font-variant-numeric:tabular-nums}
+.lb-ach-empty{color:var(--muted)}
+
+/* ── COMPARISON DIAGRAM (bar chart antar staff) ── */
+.lb-diagram{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px 8px;margin-bottom:22px}
+.lb-diagram-title{font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:2px;display:flex;align-items:center;gap:6px}
+.lb-diagram-sub{font-size:10.5px;color:var(--muted);margin-bottom:14px}
+.lb-dbar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.lb-dbar-name{width:84px;flex-shrink:0;font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-dbar-track{flex:1;height:16px;background:var(--bg3);border-radius:8px;overflow:hidden;position:relative}
+.lb-dbar-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--gold-lo),var(--gold) 55%,var(--gold-hi));width:0;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.lb-dbar-fill.me{background:linear-gradient(90deg,#5b8fae,var(--blue) 55%,#9bc4dd)}
+.lb-dbar-val{width:92px;flex-shrink:0;text-align:right;font-size:11px;font-weight:700;color:var(--gold-hi);font-variant-numeric:tabular-nums}
+
+/* ── RANKING TABLE / CARDS ── */
+.lb-list{display:flex;flex-direction:column;gap:10px}
+.lb-row{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:grid;grid-template-columns:34px 40px 1fr auto;align-items:center;gap:12px;opacity:0;transform:translateX(-8px);animation:lbSlideIn .4s ease forwards;transition:border-color var(--trans)}
+@keyframes lbSlideIn{to{opacity:1;transform:translateX(0)}}
+.lb-row.me{border-color:var(--blue);background:rgba(126,168,201,.06)}
+.lb-row:hover{border-color:var(--border-hi)}
+.lb-row-rank{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:17px;color:var(--muted);text-align:center}
+.lb-row-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#0a0906;background:linear-gradient(150deg,var(--gold-hi),var(--gold))}
+.lb-row-mid{min-width:0}
+.lb-row-name{font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
+.lb-row-name .you-tag{font-size:8.5px;font-weight:800;letter-spacing:.05em;color:var(--blue);background:rgba(126,168,201,.14);border:1px solid rgba(126,168,201,.35);border-radius:6px;padding:1px 5px}
+.lb-row-metrics{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.lb-metric{display:flex;flex-direction:column;gap:2px;min-width:66px}
+.lb-metric-lbl{font-size:8.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.lb-metric-val{font-size:11.5px;font-weight:700;color:var(--text2);font-variant-numeric:tabular-nums}
+.lb-metric-bar{width:64px;height:4px;border-radius:3px;background:var(--bg3);overflow:hidden;margin-top:1px}
+.lb-metric-bar i{display:block;height:100%;border-radius:3px}
+.lb-heat-stack{display:flex;height:6px;width:76px;border-radius:3px;overflow:hidden;background:var(--bg3);margin-top:2px}
+.lb-heat-stack span{height:100%}
+.lb-row-right{text-align:right}
+.lb-row-sales{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:16.5px;color:var(--gold-hi);font-variant-numeric:tabular-nums;white-space:nowrap}
+.lb-row-sales-lbl{font-size:8.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+
+.lb-empty-state{text-align:center;padding:40px 20px;color:var(--muted);font-size:12.5px}
+.lb-skel{background:var(--surface);border:1px solid var(--border);border-radius:12px;height:64px;margin-bottom:10px;position:relative;overflow:hidden}
+.lb-skel::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.05) 50%,transparent 70%);background-size:200% 100%;animation:lbShine 1.4s ease-in-out infinite}
+
+body.light .lb-row,body.light .lb-diagram,body.light .lb-ach-chip{background:#ffffff}
+body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
+@media (max-width:640px){
+  .lb-podium{gap:6px}
+  .lb-pod-card,.lb-pod-card.r1{width:31%}
+  .lb-row{grid-template-columns:26px 32px 1fr;grid-template-areas:"a b c" ". . d";row-gap:6px}
+  .lb-row-right{grid-column:1/-1;text-align:left;padding-left:58px}
+}
 </style>
 </head>
 <body class="light">
@@ -4316,6 +4415,18 @@ body.light .kol-fin-val{color:#0d0d0d}
         </span>
         <span>Tracking Report</span>
         <span class="nav-badge" id="trk-pending-badge" style="display:none">0</span>
+      </button>
+      <!-- ══ LEADERBOARD — papan peringkat bulanan CS Hunter/Admin/B2B Marketing,
+           reset otomatis tiap awal bulan. Sinkron real-time dari Tracking Report,
+           CRM Customer & Ad Task. ══ -->
+      <button class="nav-item" onclick="navTo('leaderboard',this)" id="n-leaderboard" style="display:none">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M4 14.5V8.2M8 14.5V3M12 14.5V6.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M3 3.6l1.9 1.9L8.4 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span>Leaderboard</span>
       </button>
       <!-- ══ v56: BANTUAN — FAQ & Quick Reply, khusus role cs_hunter/admin/b2b_marketing
            (+ Mod/Owner lihat semua). Isi hanya bisa ditambah/diubah oleh Moderator. ══ -->
@@ -5742,6 +5853,27 @@ body.light .kol-fin-val{color:#0d0d0d}
           </div>
         </div>
         <div id="tracking-report-root"></div>
+      </div>
+
+      <!-- ⑨-d2 LEADERBOARD — papan peringkat bulanan, reset tiap awal bulan.
+           Sinkron real-time dari tracking_reports, crm_customers & ad_tasks. -->
+      <div class="sp" id="pg-leaderboard">
+        <div class="ph">
+          <div class="ph-left">
+            <div class="pt">
+              <span>🏆 Leaderboard</span>
+              <span class="role-pill lb-live-pill" id="lb-live-pill">
+                <span class="pill-dot" style="background:#7abf8e"></span> Live
+              </span>
+            </div>
+            <div class="ps">Papan peringkat performa tim bulan ini — reset otomatis tiap tanggal 1, sinkron real-time</div>
+          </div>
+          <div class="ph-acts">
+            <select class="fi" id="lb-period-sel" onchange="lbPeriodChange(this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:12px"></select>
+            <button class="btn-sm btn-gold" onclick="renderLeaderboardPage()" title="Muat ulang">⟲ Muat Ulang</button>
+          </div>
+        </div>
+        <div id="leaderboard-root"></div>
       </div>
 
       <!-- ⑨-e v56: FAQ — pusat bantuan info yang sering ditanyakan/lupa, khusus
@@ -7864,6 +7996,7 @@ async function initDashboard() {
   navShow('ns-cs-tools',      can.canFollowup(r) || isMod || isOwner);   // v53: Section label "Tools" — kini juga muncul utk B2B Marketing
   navShow('n-followup',       can.canFollowup(r) || isMod || isOwner);   // v54: Follow Up — tabel customer + target harian (cs_hunter + b2b_marketing + admin)
   navShow('n-tracking-report', can.canTrackingReport(r) || isMod || isOwner); // v47: Tracking Report — laporan jam 12:00 & 17:00 (cs_hunter + b2b_marketing + admin, + rekap tim utk Mod/Owner)
+  navShow('n-leaderboard',    can.canFollowup(r) || isMod || isOwner); // Leaderboard bulanan — cs_hunter + b2b_marketing + admin, + Mod/Owner lihat semua
   // v56: Bantuan — FAQ & Quick Reply (cs_hunter + b2b_marketing + admin lihat, Mod/Owner lihat semua; isi hanya editable Moderator)
   navShow('ns-help',          can.canFaqQuickReply(r) || isMod || isOwner);
   navShow('n-faq',            can.canFaqQuickReply(r) || isMod || isOwner);
@@ -8016,6 +8149,10 @@ async function initDashboard() {
   // sendiri) langsung ke-update tanpa perlu klik Muat Ulang — dan begitu
   // mereka baru buka halaman ini pun datanya sudah pasti fresh.
   if (can.canTrackingReport(r) || isMod || isOwner) { try { initTrackingRealtime(); } catch (e) { console.warn('[DHP] initTrackingRealtime gagal:', e); } }
+  // Leaderboard — subscribe realtime langsung setelah login, pola sama seperti
+  // Tracking Report: begitu ada tracking_reports/crm_customers/ad_tasks berubah,
+  // papan peringkat ikut ter-refresh tanpa perlu klik Muat Ulang.
+  if (can.canFollowup(r) || isMod || isOwner) { try { initLeaderboardRealtime(); } catch (e) { console.warn('[DHP] initLeaderboardRealtime gagal:', e); } }
 
   try { renderStats(); renderActivity(); }
   catch (e) { console.warn('[DHP] render awal gagal:', e); }
@@ -21095,7 +21232,7 @@ function navTo(page, btn) {
   // Schedule, Manage Customer CRM, dan Budget Marketing. Di luar daftar
   // ini (halaman kerja mentah moderator seperti Progress Tugas Tim,
   // Target, Users, Settings, Ads Customers/Task) tetap terkunci.
-  const OWNER_ALLOWED_PAGES = ['all_dashboard','content_studio','live_studio','live_dashboard','ad_scheduler','crm','budget_marketing','cs_hunter','followup','tracking_report','faq','quick_reply'];
+  const OWNER_ALLOWED_PAGES = ['all_dashboard','content_studio','live_studio','live_dashboard','ad_scheduler','crm','budget_marketing','cs_hunter','followup','tracking_report','faq','quick_reply','leaderboard'];
   if (isOwnerNav && !OWNER_ALLOWED_PAGES.includes(page)) {
     toast('👁 Akun Owner hanya bisa melihat halaman: Laporan Tim, Content Studio, Live Studio, Live Dashboard, Ads Schedule, Manage CRM & Budget Marketing.');
     return;
@@ -21120,6 +21257,7 @@ function navTo(page, btn) {
   if (page === 'tracking_report' && !can.canTrackingReport(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Admin / B2B Marketing / Moderator access required'); return; }
   if (page === 'faq'            && !can.canFaqQuickReply(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Admin / B2B Marketing / Moderator access required'); return; }
   if (page === 'quick_reply'    && !can.canFaqQuickReply(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Admin / B2B Marketing / Moderator access required'); return; }
+  if (page === 'leaderboard'    && !can.canFollowup(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Admin / B2B Marketing / Moderator access required'); return; }
 
   document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
   const target = document.getElementById(`pg-${page}`); if (target) target.classList.add('active');
@@ -21154,6 +21292,7 @@ function loadPageData(page) {
   if (page === 'tracking_report') renderTrackingReportPage();
   if (page === 'faq')             renderFaqPage();
   if (page === 'quick_reply')     renderQuickReplyPage();
+  if (page === 'leaderboard')     renderLeaderboardPage();
   if (page === 'ad_scheduler')    {
     // Non-mod: reload task dari DB setiap kali buka halaman (supaya selalu fresh)
     if (db && currentUser && !can.isMod(currentUser.role)) {
@@ -24023,6 +24162,335 @@ window.addEventListener('resize', () => {
   const ov = document.getElementById('tut-overlay');
   if (ov && ov.classList.contains('show')) renderTutStep();
 });
+</script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   🏆 LEADERBOARD BULANAN — CS Hunter / Admin / B2B Marketing
+   ───────────────────────────────────────────────────────────────────────
+   100% baca langsung dari tabel yang sudah ada (tidak perlu migrasi SQL
+   tambahan): tracking_reports (nominal closing, follow up, hot/warm/cold),
+   crm_customers (total customer yang dikelola tiap orang), ad_tasks
+   (iklan yang sudah berjalan). Reset otomatis tiap tanggal 1 karena semua
+   angka selalu difilter per bulan (p_period_ym) — bulan baru = mulai dari 0.
+   Realtime lewat Supabase channel, sama pola seperti Tracking Report.
+   ═══════════════════════════════════════════════════════════════════════ */
+const LB_ROLES = ['cs_hunter', 'admin', 'b2b_marketing'];
+const LB_MONTHS_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+let lbChannel = null;
+let lbCurrentYm = null;
+let lbCache = null;
+let lbRealtimeTimer = null;
+
+function lbTodayJakarta() {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+}
+function lbYmNow() {
+  const d = lbTodayJakarta();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+function lbYmLabel(ym) {
+  const [y, m] = ym.split('-').map(Number);
+  return (LB_MONTHS_ID[m - 1] || '') + ' ' + y;
+}
+function lbMonthBounds(ym) {
+  const [y, m] = ym.split('-').map(Number);
+  const start = ym + '-01';
+  const lastDay = new Date(y, m, 0).getDate();
+  const end = y + '-' + String(m).padStart(2, '0') + '-' + String(lastDay).padStart(2, '0');
+  return { start, end };
+}
+function lbInitials(name) {
+  if (!name) return '?';
+  const parts = String(name).trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '?';
+  return ((parts[0][0] || '') + (parts[1]?.[0] || '')).toUpperCase();
+}
+function lbPopulatePeriodSelect() {
+  const sel = document.getElementById('lb-period-sel');
+  if (!sel || sel.options.length) return;
+  const now = lbTodayJakarta();
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const ym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    const opt = document.createElement('option');
+    opt.value = ym;
+    opt.textContent = lbYmLabel(ym) + (i === 0 ? ' (Bulan Ini)' : '');
+    sel.appendChild(opt);
+  }
+  sel.value = lbYmNow();
+}
+function lbPeriodChange(ym) {
+  lbCurrentYm = ym;
+  renderLeaderboardPage();
+}
+
+/* ── AMBIL & OLAH DATA (langsung dari tabel, sudah RLS permissive) ── */
+async function lbFetchData(ym) {
+  const { start, end } = lbMonthBounds(ym);
+
+  const [uRes, tRes, cRes, aRes] = await Promise.all([
+    dbQ(d => d.from('users').select('user_id,full_name,role').eq('is_active', true).in('role', LB_ROLES)),
+    dbQ(d => d.from('tracking_reports').select('user_id,leads_masuk,leads_terlayani,fu_leads_lama,total_cold,total_warm,total_hot,total_nominal_closing,report_date,status').gte('report_date', start).lte('report_date', end)),
+    dbQ(d => d.from('crm_customers').select('owner_id')),
+    dbQ(d => d.from('ad_tasks').select('assignee_id,status,ad_date').gte('ad_date', start).lte('ad_date', end)),
+  ]);
+
+  const users = uRes?.data || [];
+  const trackRows = (tRes?.data || []).filter(r => r.status !== 'rejected');
+  const crmRows = cRes?.data || [];
+  const adRows = aRes?.data || [];
+
+  const byUser = {};
+  users.forEach(u => {
+    byUser[u.user_id] = {
+      id: u.user_id, name: u.full_name, role: u.role,
+      sales: 0, followup: 0, hot: 0, warm: 0, cold: 0,
+      crmTotal: 0, adsTotal: 0, adsDone: 0,
+    };
+  });
+
+  trackRows.forEach(r => {
+    const u = byUser[r.user_id];
+    if (!u) return;
+    u.sales += Number(r.total_nominal_closing) || 0;
+    u.followup += (Number(r.leads_terlayani) || 0) + (Number(r.fu_leads_lama) || 0);
+    u.hot += Number(r.total_hot) || 0;
+    u.warm += Number(r.total_warm) || 0;
+    u.cold += Number(r.total_cold) || 0;
+  });
+  crmRows.forEach(c => {
+    if (!c.owner_id || !byUser[c.owner_id]) return;
+    byUser[c.owner_id].crmTotal += 1;
+  });
+  adRows.forEach(a => {
+    if (!a.assignee_id || !byUser[a.assignee_id]) return;
+    byUser[a.assignee_id].adsTotal += 1;
+    if (a.status === 'done') byUser[a.assignee_id].adsDone += 1;
+  });
+
+  const rows = Object.values(byUser);
+  rows.sort((a, b) => b.sales - a.sales || b.hot - a.hot || b.followup - a.followup);
+  rows.forEach((r, i) => { r.rank = i + 1; });
+
+  return { rows, generatedAt: new Date() };
+}
+
+function lbComputeAchievements(rows) {
+  if (!rows.length) return null;
+  const pick = (key) => rows.reduce((best, r) => (r[key] > (best?.[key] ?? -1) ? r : best), null);
+  const topSales = rows[0] && rows[0].sales > 0 ? rows[0] : null;
+  const fu = pick('followup');
+  const hot = pick('hot');
+  const crm = pick('crmTotal');
+  const ads = pick('adsDone');
+  return {
+    topSales,
+    topFollowup: fu && fu.followup > 0 ? fu : null,
+    topHot: hot && hot.hot > 0 ? hot : null,
+    topCrm: crm && crm.crmTotal > 0 ? crm : null,
+    topAds: ads && ads.adsDone > 0 ? ads : null,
+  };
+}
+
+/* ── RENDER ── */
+async function renderLeaderboardPage() {
+  const root = document.getElementById('leaderboard-root');
+  if (!root) return;
+  lbPopulatePeriodSelect();
+  const sel = document.getElementById('lb-period-sel');
+  if (!lbCurrentYm) lbCurrentYm = sel?.value || lbYmNow();
+  if (sel && sel.value !== lbCurrentYm) sel.value = lbCurrentYm;
+
+  root.innerHTML = `
+    <div class="lb-topbar">
+      <div class="lb-updated">Memuat data leaderboard…</div>
+    </div>
+    <div class="lb-skel"></div><div class="lb-skel"></div><div class="lb-skel"></div>`;
+
+  const data = await lbFetchData(lbCurrentYm);
+  lbCache = data;
+  lbRenderContent(root, data);
+}
+
+function lbRenderContent(root, data) {
+  const { rows, generatedAt } = data;
+  const ach = lbComputeAchievements(rows);
+  const top3 = rows.slice(0, 3);
+  const rest = rows.slice(3);
+  const meId = currentUser?.id;
+  const isCurrentMonth = lbCurrentYm === lbYmNow();
+
+  const topbarHtml = `
+    <div class="lb-topbar">
+      ${isCurrentMonth
+        ? `<div class="lb-countdown">⏳ Papan peringkat reset dalam <b id="lb-cd-txt">…</b></div>`
+        : `<div class="lb-countdown">📅 Melihat rekap ${lbYmLabel(lbCurrentYm)}</div>`}
+      <div class="lb-updated">🟢 Sinkron real-time · update terakhir ${generatedAt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</div>
+    </div>`;
+
+  root.innerHTML = topbarHtml
+    + lbPodiumHtml(top3)
+    + lbAchievementsHtml(ach)
+    + lbDiagramHtml(rows)
+    + lbListHtml(rest, top3.length, meId, rows.length);
+
+  if (isCurrentMonth) lbStartCountdown();
+  lbAnimateBars();
+}
+
+function lbPodiumHtml(top3) {
+  if (!top3.length || top3.every(u => !u || u.sales === 0)) {
+    return `<div class="lb-podium"><div class="lb-pod-empty">Belum ada data penjualan bulan ini — papan peringkat akan terisi begitu Tracking Report mulai diisi.</div></div>`;
+  }
+  const order = [top3[1], top3[0], top3[2]];
+  const ranks = [2, 1, 3];
+  let html = '<div class="lb-podium">';
+  order.forEach((u, idx) => {
+    const rank = ranks[idx];
+    if (!u) { html += `<div class="lb-pod-card r${rank}" style="visibility:hidden"></div>`; return; }
+    html += `
+      <div class="lb-pod-card r${rank}">
+        ${rank === 1 ? '<div class="lb-pod-crown">👑</div>' : ''}
+        <div class="lb-pod-avatar">${lbInitials(u.name)}<span class="lb-pod-rank">${rank}</span></div>
+        <div class="lb-pod-name">${escHtml(u.name)}</div>
+        <div class="lb-pod-role">${escHtml(rn(u.role))}</div>
+        <div class="lb-pod-sales">${crmFmtRupiah(u.sales)}</div>
+        <div class="lb-pod-sub">${u.followup} follow up · ${u.hot} hot leads</div>
+        <div class="lb-pod-bar"></div>
+      </div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+function lbAchievementsHtml(ach) {
+  if (!ach) return `<div class="lb-ach-row"><div class="lb-ach-empty">Belum ada pencapaian tercatat bulan ini.</div></div>`;
+  const chips = [
+    { key: 'topSales',    icon: '💰', color: 'var(--gold)',  lbl: 'Top Sales',         val: (u) => crmFmtRupiah(u.sales) },
+    { key: 'topFollowup', icon: '📞', color: 'var(--blue)',  lbl: 'Rajin Follow Up',   val: (u) => `${u.followup}x follow up` },
+    { key: 'topHot',      icon: '🔥', color: 'var(--green)', lbl: 'Leads Terpanas',    val: (u) => `${u.hot} hot leads` },
+    { key: 'topCrm',      icon: '📇', color: 'var(--blue)',  lbl: 'CRM Terbanyak',     val: (u) => `${u.crmTotal} customer` },
+    { key: 'topAds',      icon: '📢', color: 'var(--amber)', lbl: 'Iklan Paling Aktif', val: (u) => `${u.adsDone} iklan jalan` },
+  ];
+  let html = '<div class="lb-ach-row">';
+  chips.forEach(c => {
+    const u = ach[c.key];
+    html += `
+      <div class="lb-ach-chip">
+        <div class="lb-ach-ico" style="background:${c.color}22;color:${c.color}">${c.icon}</div>
+        <div class="lb-ach-txt">
+          <div class="lb-ach-lbl">${c.lbl}</div>
+          <div class="lb-ach-name">${u ? escHtml(u.name) : '—'}</div>
+          <div class="lb-ach-val">${u ? c.val(u) : 'Belum ada data'}</div>
+        </div>
+      </div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+function lbDiagramHtml(rows) {
+  if (!rows.length) return '';
+  const maxSales = Math.max(...rows.map(r => r.sales), 1);
+  const meId = currentUser?.id;
+  const bars = rows.map(u => {
+    const pct = u.sales > 0 ? Math.max(3, Math.round((u.sales / maxSales) * 100)) : 0;
+    return `
+      <div class="lb-dbar-row">
+        <div class="lb-dbar-name" title="${escHtml(u.name)}">${escHtml(u.name)}</div>
+        <div class="lb-dbar-track"><div class="lb-dbar-fill ${u.id === meId ? 'me' : ''}" data-pct="${pct}" style="width:0"></div></div>
+        <div class="lb-dbar-val">${crmFmtRupiah(u.sales)}</div>
+      </div>`;
+  }).join('');
+  return `
+    <div class="lb-diagram">
+      <div class="lb-diagram-title">📊 Diagram Perbandingan Penjualan</div>
+      <div class="lb-diagram-sub">Total nominal closing bulan ${lbYmLabel(lbCurrentYm)} — seluruh tim CS Hunter, Admin &amp; B2B Marketing</div>
+      ${bars}
+    </div>`;
+}
+
+function lbListHtml(rest, startRank, meId, totalCount) {
+  if (!rest.length) {
+    if (totalCount > 0) return '';
+    return `<div class="lb-empty-state">Belum ada anggota tim CS Hunter / Admin / B2B Marketing yang aktif.</div>`;
+  }
+  const rowsHtml = rest.map((u, i) => {
+    const rank = startRank + i + 1;
+    const isMe = u.id === meId;
+    const totalHeat = u.hot + u.warm + u.cold || 1;
+    const hotPct = Math.round((u.hot / totalHeat) * 100);
+    const warmPct = Math.round((u.warm / totalHeat) * 100);
+    const coldPct = Math.max(0, 100 - hotPct - warmPct);
+    return `
+      <div class="lb-row ${isMe ? 'me' : ''}" style="animation-delay:${Math.min(i * 0.05, 0.4)}s">
+        <div class="lb-row-rank">#${rank}</div>
+        <div class="lb-row-avatar" style="background:${ROLE_COLORS[u.role] || 'var(--gold)'}">${lbInitials(u.name)}</div>
+        <div class="lb-row-mid">
+          <div class="lb-row-name">${escHtml(u.name)} ${isMe ? '<span class="you-tag">KAMU</span>' : ''}</div>
+          <div class="lb-row-metrics">
+            <div class="lb-metric"><span class="lb-metric-lbl">Follow Up</span><span class="lb-metric-val">${u.followup}</span></div>
+            <div class="lb-metric"><span class="lb-metric-lbl">CRM</span><span class="lb-metric-val">${u.crmTotal}</span></div>
+            <div class="lb-metric"><span class="lb-metric-lbl">Iklan Jalan</span><span class="lb-metric-val">${u.adsDone}/${u.adsTotal}</span></div>
+            <div class="lb-metric">
+              <span class="lb-metric-lbl">Hot · Warm · Cold</span>
+              <div class="lb-heat-stack" title="Hot ${u.hot} · Warm ${u.warm} · Cold ${u.cold}">
+                <span style="width:${hotPct}%;background:var(--green)"></span><span style="width:${warmPct}%;background:var(--amber)"></span><span style="width:${coldPct}%;background:var(--red)"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="lb-row-right">
+          <div class="lb-row-sales">${crmFmtRupiah(u.sales)}</div>
+          <div class="lb-row-sales-lbl">Total Penjualan</div>
+        </div>
+      </div>`;
+  }).join('');
+  return `<div class="lb-list">${rowsHtml}</div>`;
+}
+
+function lbAnimateBars() {
+  requestAnimationFrame(() => {
+    document.querySelectorAll('#leaderboard-root .lb-dbar-fill[data-pct]').forEach(el => {
+      el.style.width = el.dataset.pct + '%';
+    });
+  });
+}
+
+function lbStartCountdown() {
+  clearInterval(window._lbCdTimer);
+  const tick = () => {
+    const el = document.getElementById('lb-cd-txt');
+    if (!el) { clearInterval(window._lbCdTimer); return; }
+    const now = lbTodayJakarta();
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0);
+    const diff = Math.max(0, nextMonth - now);
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    el.textContent = `${days} hari ${hours} jam`;
+  };
+  tick();
+  window._lbCdTimer = setInterval(tick, 60000);
+}
+
+/* ── REALTIME — tracking_reports / crm_customers / ad_tasks berubah → refresh ── */
+function initLeaderboardRealtime() {
+  if (!db || lbChannel || !currentUser) return;
+  try {
+    lbChannel = db.channel('dhp_leaderboard')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tracking_reports' }, lbHandleRealtimeChange)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'crm_customers' }, lbHandleRealtimeChange)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ad_tasks' }, lbHandleRealtimeChange)
+      .subscribe();
+  } catch (e) { console.warn('[DHP] initLeaderboardRealtime gagal:', e); }
+}
+function lbHandleRealtimeChange() {
+  const pg = document.getElementById('pg-leaderboard');
+  if (!pg || !pg.classList.contains('active')) return;
+  clearTimeout(lbRealtimeTimer);
+  lbRealtimeTimer = setTimeout(() => { renderLeaderboardPage(); }, 800);
+}
 </script>
 
 </body>
