@@ -24225,55 +24225,35 @@ function lbPeriodChange(ym) {
   renderLeaderboardPage();
 }
 
-/* ── AMBIL & OLAH DATA (langsung dari tabel, sudah RLS permissive) ── */
+/* ── AMBIL & OLAH DATA ── lewat RPC get_leaderboard_monthly (SECURITY
+   DEFINER), persis pola get_tracking_recap_team/host_dashboard_stats di
+   sistem ini — BUKAN select langsung ke tabel, supaya tidak diblok RLS. ── */
 async function lbFetchData(ym) {
-  const { start, end } = lbMonthBounds(ym);
+  const res = await dbQ(d => d.rpc('get_leaderboard_monthly', { p_period_ym: ym }));
 
-  const [uRes, tRes, cRes, aRes] = await Promise.all([
-    dbQ(d => d.from('users').select('user_id,full_name,role').eq('is_active', true).in('role', LB_ROLES)),
-    dbQ(d => d.from('tracking_reports').select('user_id,leads_masuk,leads_terlayani,fu_leads_lama,total_cold,total_warm,total_hot,total_nominal_closing,report_date,status').gte('report_date', start).lte('report_date', end)),
-    dbQ(d => d.from('crm_customers').select('owner_id')),
-    dbQ(d => d.from('ad_tasks').select('assignee_id,status,ad_date').gte('ad_date', start).lte('ad_date', end)),
-  ]);
+  if (!res || res.error) {
+    console.warn('[DHP] get_leaderboard_monthly gagal / belum ada di database:', res?.error?.message);
+    return { rows: [], generatedAt: new Date(), rpcMissing: true };
+  }
 
-  const users = uRes?.data || [];
-  const trackRows = (tRes?.data || []).filter(r => r.status !== 'rejected');
-  const crmRows = cRes?.data || [];
-  const adRows = aRes?.data || [];
-
-  const byUser = {};
-  users.forEach(u => {
-    byUser[u.user_id] = {
-      id: u.user_id, name: u.full_name, role: u.role,
-      sales: 0, followup: 0, hot: 0, warm: 0, cold: 0,
-      crmTotal: 0, adsTotal: 0, adsDone: 0,
-    };
-  });
-
-  trackRows.forEach(r => {
-    const u = byUser[r.user_id];
-    if (!u) return;
-    u.sales += Number(r.total_nominal_closing) || 0;
-    u.followup += (Number(r.leads_terlayani) || 0) + (Number(r.fu_leads_lama) || 0);
-    u.hot += Number(r.total_hot) || 0;
-    u.warm += Number(r.total_warm) || 0;
-    u.cold += Number(r.total_cold) || 0;
-  });
-  crmRows.forEach(c => {
-    if (!c.owner_id || !byUser[c.owner_id]) return;
-    byUser[c.owner_id].crmTotal += 1;
-  });
-  adRows.forEach(a => {
-    if (!a.assignee_id || !byUser[a.assignee_id]) return;
-    byUser[a.assignee_id].adsTotal += 1;
-    if (a.status === 'done') byUser[a.assignee_id].adsDone += 1;
-  });
-
-  const rows = Object.values(byUser);
+  const data = res.data || [];
+  const rows = data.map(r => ({
+    id: r.user_id,
+    name: r.full_name,
+    role: r.role,
+    sales: Number(r.total_sales) || 0,
+    followup: Number(r.total_followup) || 0,
+    hot: Number(r.total_hot) || 0,
+    warm: Number(r.total_warm) || 0,
+    cold: Number(r.total_cold) || 0,
+    crmTotal: Number(r.total_crm_customer) || 0,
+    adsTotal: Number(r.total_ads_total) || 0,
+    adsDone: Number(r.total_ads_done) || 0,
+  }));
   rows.sort((a, b) => b.sales - a.sales || b.hot - a.hot || b.followup - a.followup);
   rows.forEach((r, i) => { r.rank = i + 1; });
 
-  return { rows, generatedAt: new Date() };
+  return { rows, generatedAt: new Date(), rpcMissing: false };
 }
 
 function lbComputeAchievements(rows) {
@@ -24314,7 +24294,15 @@ async function renderLeaderboardPage() {
 }
 
 function lbRenderContent(root, data) {
-  const { rows, generatedAt } = data;
+  const { rows, generatedAt, rpcMissing } = data;
+  if (rpcMissing) {
+    root.innerHTML = `
+      <div class="lb-empty-state" style="color:var(--red)">
+        ⚠️ Fungsi database <b>get_leaderboard_monthly</b> belum ditemukan.<br>
+        Jalankan file <b>migration_v61_leaderboard.sql</b> di Supabase SQL Editor terlebih dulu, lalu klik Muat Ulang.
+      </div>`;
+    return;
+  }
   const ach = lbComputeAchievements(rows);
   const top3 = rows.slice(0, 3);
   const rest = rows.slice(3);
