@@ -4092,12 +4092,12 @@ body.light .kol-fin-val{color:#0d0d0d}
 .lb-pod-card.r1{animation-delay:.18s;width:172px}
 .lb-pod-card.r3{animation-delay:.05s}
 @keyframes lbRise{to{opacity:1;transform:translateY(0)}}
-.lb-pod-crown{width:30px;height:30px;color:var(--gold-hi);margin-bottom:2px;filter:drop-shadow(0 2px 6px rgba(201,169,110,.55));animation:lbFloat 2.6s ease-in-out infinite}
+.lb-pod-crown{width:30px;height:30px;color:var(--gold-hi);margin-bottom:2px;filter:drop-shadow(0 2px 6px rgba(201,169,110,.55));animation:lbFloat 2.6s ease-in-out infinite;position:relative;z-index:2}
 .lb-pod-crown svg{width:100%;height:100%;display:block}
 @keyframes lbFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 .lb-pod-avatar{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:24px;color:#0a0906;position:relative;box-shadow:0 6px 24px rgba(0,0,0,.4)}
 /* ── Laurel wreath — hanya juara #1, aksen kemewahan klasik ── */
-.lb-laurel{position:absolute;top:50%;width:26px;height:44px;color:var(--gold-hi);opacity:.85;pointer-events:none;transform-origin:center;z-index:-1}
+.lb-laurel{position:absolute;top:50%;width:26px;height:44px;color:var(--gold-hi);opacity:.85;pointer-events:none;transform-origin:center;z-index:1}
 .lb-laurel svg{width:100%;height:100%;display:block}
 .lb-laurel-l{left:-20px;transform:translateY(-50%) scaleX(-1) rotate(6deg)}
 .lb-laurel-r{right:-20px;transform:translateY(-50%) rotate(-6deg)}
@@ -4186,10 +4186,9 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
 .lb-pod-card.r1::before{
   content:'';position:absolute;top:26px;left:50%;width:96px;height:96px;transform:translateX(-50%);
   border-radius:50%;background:conic-gradient(from 0deg,rgba(232,204,153,0),rgba(232,204,153,.5),rgba(232,204,153,0) 40%);
-  animation:lbFoilSpin 3.6s linear infinite;opacity:.55;pointer-events:none;z-index:0;
+  animation:lbFoilSpin 3.6s linear infinite;opacity:.55;pointer-events:none;z-index:-1;
 }
 @keyframes lbFoilSpin{to{transform:translateX(-50%) rotate(360deg)}}
-.lb-pod-card.r1 .lb-pod-avatar,.lb-pod-card.r1 .lb-pod-rank,.lb-pod-card.r1 .lb-pod-name,.lb-pod-card.r1 .lb-pod-sales{position:relative;z-index:1}
 .lb-pod-avatar-tilt{transform-style:preserve-3d}
 .lb-pod-avatar{transition:box-shadow .35s ease,transform .35s cubic-bezier(.2,.8,.2,1)}
 .lb-pod-card:hover .lb-pod-avatar{transform:scale(1.06)}
@@ -4217,10 +4216,43 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
 .lb-heat-stack span{transition:width .8s cubic-bezier(.2,.8,.2,1)}
 
 @media (max-width:640px){
-  .lb-podium{gap:6px}
-  .lb-pod-card,.lb-pod-card.r1{width:31%}
+  /* ── Podium: perkecil avatar/crown, matikan laurel (terlalu detail utk layar sempit → numpuk) ── */
+  .lb-podium{gap:6px;padding-top:26px}
+  .lb-pod-card,.lb-pod-card.r1{width:30.5%}
+  .lb-pod-crown{width:18px;height:18px}
+  .lb-pod-avatar{width:42px;height:42px;font-size:15px}
+  .lb-pod-card.r1 .lb-pod-avatar{width:52px;height:52px;font-size:18px}
+  .lb-pod-rank{width:17px;height:17px;font-size:8.5px;bottom:-4px}
+  .lb-laurel{display:none}
+  .lb-pod-card.r1::before{width:60px;height:60px;top:16px}
+  .lb-pod-name{margin-top:8px;font-size:10px}
+  .lb-pod-role{font-size:7px}
+  .lb-pod-sales{margin-top:4px;font-size:12.5px}
+  .lb-pod-card.r1 .lb-pod-sales{font-size:14.5px}
+  .lb-pod-sub{font-size:7px}
+  .lb-pod-card.r1 .lb-pod-bar{height:60px}
+  .lb-pod-card.r2 .lb-pod-bar{height:44px}
+  .lb-pod-card.r3 .lb-pod-bar{height:32px}
+
+  /* ── Achievement chips: 2 kolom, ikon & teks diperkecil ── */
+  .lb-ach-row{grid-template-columns:repeat(2,1fr);gap:8px}
+  .lb-ach-chip{padding:9px 10px;gap:8px}
+  .lb-ach-ico{width:28px;height:28px;border-radius:8px}
+  .lb-ach-ico svg{width:14px;height:14px}
+  .lb-ach-lbl{font-size:7.5px}
+  .lb-ach-name{font-size:11px}
+  .lb-ach-val{font-size:9.5px}
+
+  /* ── Diagram perbandingan: nama & nominal dipersempit agar muat ── */
+  .lb-diagram{padding:12px 12px 6px}
+  .lb-dbar-name{width:56px;font-size:9.5px}
+  .lb-dbar-val{width:66px;font-size:9.5px}
+
+  /* ── List ranking ── */
   .lb-row{grid-template-columns:26px 32px 1fr;grid-template-areas:"a b c" ". . d";row-gap:6px}
   .lb-row-right{grid-column:1/-1;text-align:left;padding-left:58px}
+  .lb-topbar{gap:8px}
+  .lb-countdown,.lb-updated{font-size:10px;padding:6px 11px}
 }
 </style>
 </head>
