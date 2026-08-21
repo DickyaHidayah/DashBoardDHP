@@ -4164,6 +4164,36 @@ body.light .kol-fin-val{color:#0d0d0d}
 
 body.light .lb-row,body.light .lb-diagram,body.light .lb-ach-chip{background:#ffffff}
 body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
+
+/* ── v62: interaksi & animasi lebih elegan ── */
+.lb-pod-card{cursor:default;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.lb-pod-card:hover{transform:translateY(-5px)}
+.lb-pod-card.r1:hover{transform:translateY(-7px)}
+.lb-pod-avatar{transition:box-shadow .35s ease,transform .35s cubic-bezier(.2,.8,.2,1)}
+.lb-pod-card:hover .lb-pod-avatar{transform:scale(1.06)}
+.lb-pod-card.r1 .lb-pod-avatar::before{content:'';position:absolute;inset:-10px;border-radius:50%;background:radial-gradient(circle,rgba(232,204,153,.35),transparent 70%);animation:lbGlowPulse 2.4s ease-in-out infinite;z-index:-1}
+@keyframes lbGlowPulse{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.14)}}
+.lb-pod-sales,.lb-row-sales,.lb-dbar-val{transition:color .3s ease}
+
+.lb-ach-chip{position:relative;overflow:hidden}
+.lb-ach-chip:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(0,0,0,.28)}
+.lb-ach-chip:hover .lb-ach-ico{transform:scale(1.12) rotate(-4deg)}
+.lb-ach-ico{transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+
+.lb-dbar-row{cursor:default}
+.lb-dbar-track{transition:box-shadow .25s ease}
+.lb-dbar-row:hover .lb-dbar-track{box-shadow:0 0 0 1px var(--border-hi)}
+.lb-dbar-row:hover .lb-dbar-name{color:var(--gold-hi)}
+.lb-dbar-fill{position:relative}
+.lb-dbar-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);background-size:220% 100%;animation:lbShine 2.6s ease-in-out infinite}
+
+.lb-row{transition:transform .3s cubic-bezier(.2,.8,.2,1),border-color var(--trans),box-shadow .3s ease}
+.lb-row:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(0,0,0,.28);border-color:var(--border-hi)}
+.lb-row.me:hover{box-shadow:0 12px 28px rgba(126,168,201,.25)}
+.lb-row-avatar{transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.lb-row:hover .lb-row-avatar{transform:scale(1.08)}
+.lb-heat-stack span{transition:width .8s cubic-bezier(.2,.8,.2,1)}
+
 @media (max-width:640px){
   .lb-podium{gap:6px}
   .lb-pod-card,.lb-pod-card.r1{width:31%}
@@ -24325,6 +24355,7 @@ function lbRenderContent(root, data) {
 
   if (isCurrentMonth) lbStartCountdown();
   lbAnimateBars();
+  lbAnimateCountUps(root);
 }
 
 function lbPodiumHtml(top3) {
@@ -24343,7 +24374,7 @@ function lbPodiumHtml(top3) {
         <div class="lb-pod-avatar">${lbInitials(u.name)}<span class="lb-pod-rank">${rank}</span></div>
         <div class="lb-pod-name">${escHtml(u.name)}</div>
         <div class="lb-pod-role">${escHtml(rn(u.role))}</div>
-        <div class="lb-pod-sales">${crmFmtRupiah(u.sales)}</div>
+        <div class="lb-pod-sales lb-countup" data-target="${u.sales}" data-fmt="rupiah">${crmFmtRupiah(0)}</div>
         <div class="lb-pod-sub">${u.followup} follow up · ${u.hot} hot leads</div>
         <div class="lb-pod-bar"></div>
       </div>`;
@@ -24388,7 +24419,7 @@ function lbDiagramHtml(rows) {
       <div class="lb-dbar-row">
         <div class="lb-dbar-name" title="${escHtml(u.name)}">${escHtml(u.name)}</div>
         <div class="lb-dbar-track"><div class="lb-dbar-fill ${u.id === meId ? 'me' : ''}" data-pct="${pct}" style="width:0"></div></div>
-        <div class="lb-dbar-val">${crmFmtRupiah(u.sales)}</div>
+        <div class="lb-dbar-val lb-countup" data-target="${u.sales}" data-fmt="rupiah">${crmFmtRupiah(0)}</div>
       </div>`;
   }).join('');
   return `
@@ -24430,7 +24461,7 @@ function lbListHtml(rest, startRank, meId, totalCount) {
           </div>
         </div>
         <div class="lb-row-right">
-          <div class="lb-row-sales">${crmFmtRupiah(u.sales)}</div>
+          <div class="lb-row-sales lb-countup" data-target="${u.sales}" data-fmt="rupiah">${crmFmtRupiah(0)}</div>
           <div class="lb-row-sales-lbl">Total Penjualan</div>
         </div>
       </div>`;
@@ -24443,6 +24474,28 @@ function lbAnimateBars() {
     document.querySelectorAll('#leaderboard-root .lb-dbar-fill[data-pct]').forEach(el => {
       el.style.width = el.dataset.pct + '%';
     });
+  });
+}
+
+/* ── v62: animasi count-up angka (podium, list, diagram) ── */
+function lbCountUpOne(el, target, fmt) {
+  const dur = 850;
+  const t0 = performance.now();
+  function tick(now) {
+    const p = Math.min(1, (now - t0) / dur);
+    const eased = 1 - Math.pow(1 - p, 3); // ease-out cubic
+    const val = Math.round(target * eased);
+    el.textContent = fmt === 'rupiah' ? crmFmtRupiah(val) : val.toLocaleString('id-ID');
+    if (p < 1) requestAnimationFrame(tick);
+    else el.textContent = fmt === 'rupiah' ? crmFmtRupiah(target) : target.toLocaleString('id-ID');
+  }
+  requestAnimationFrame(tick);
+}
+function lbAnimateCountUps(root) {
+  root.querySelectorAll('.lb-countup[data-target]').forEach((el, i) => {
+    const target = Number(el.dataset.target) || 0;
+    const fmt = el.dataset.fmt || 'int';
+    setTimeout(() => lbCountUpOne(el, target, fmt), Math.min(i * 40, 300));
   });
 }
 
