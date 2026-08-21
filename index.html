@@ -17148,6 +17148,16 @@ function initCRMRealtime() {
           adCustomersCache = [];
           try { renderAdCustomers(); } catch(e){}
         }
+        // v55-FIX: halaman Follow Up sebelumnya TIDAK ikut disegarkan di sini
+        // sama sekali — jadi tiap kali crm_customers berubah (termasuk gara-gara
+        // progress yang baru saja disimpan dari halaman ini sendiri), daftar &
+        // tombol "Progress" di halaman Follow Up jadi basi sampai di-refresh
+        // manual. Sekarang ikut disegarkan langsung, TANPA mengganggu kotak
+        // pencarian yang sedang diketik user (fuRefreshLive cuma menyusun
+        // ulang isi tabel dari data terbaru, bukan render ulang seluruh halaman).
+        if (document.getElementById('pg-followup')?.classList.contains('active')) {
+          try { fuRefreshLive(); } catch(e){}
+        }
       })
       // v34: label/tag CRM dibuat & dipakai bareng-bareng lintas admin —
       // tanpa ini, admin lain baru lihat label baru setelah reload manual.
@@ -17228,6 +17238,24 @@ function daysSinceFollowup(c) {
 }
 function _followupCustKey(c) { return c._uuid || c.id_customer || ''; }
 
+/* v55-FIX: sebelumnya tombol "Progress" di Follow Up (dan tombol follow-up
+   di CRM) memakai posisi array (crmData.indexOf(c)) yang di-"bakar" jadi
+   angka literal di onclick saat baris di-render. Begitu crmData diganti
+   total oleh loadCRM() — misalnya lewat channel realtime dhp_crm yang
+   otomatis reload setiap ada perubahan crm_customers (termasuk perubahan
+   dari progress yang BARU SAJA disimpan) — array lama diganti objek BARU,
+   jadi index/reference lama jadi basi. Klik berikutnya (mis. cari nama lain
+   lalu isi progress lagi) gagal diam-diam karena crmData[idx] sudah bukan
+   customer yang dimaksud, atau indexOf mengembalikan -1. Solusinya: jangan
+   simpan posisi, simpan KEY unik (_uuid/id_customer) lalu selalu cari ulang
+   di crmData yang PALING BARU saat tombol benar-benar diklik. Ini bikin
+   tombol selalu tepat sasaran walau data sudah di-reload oleh realtime di
+   belakang layar, tanpa perlu refresh manual. */
+function _crmFindByKey(key) {
+  if (key === undefined || key === null || key === '') return null;
+  return crmData.find(x => _followupCustKey(x) === key) || null;
+}
+
 async function loadFollowupLogsToday() {
   followupDoneTodayIds = new Set();
   if (crmUsesDB() && currentUser) {
@@ -17249,9 +17277,9 @@ async function loadFollowupLogsToday() {
   } catch(e) {}
 }
 
-async function markFollowedUp(idx) {
-  const c = crmData[idx];
-  if (!c || !currentUser) return;
+async function markFollowedUp(key) {
+  const c = _crmFindByKey(key);
+  if (!c || !currentUser) { if (key !== undefined && key !== null) toast('Data customer ini sudah berubah — memuat ulang…'); if (document.getElementById('pg-followup')?.classList.contains('active')) { try { await renderFollowupPage(); } catch(e){} } else if (document.getElementById('pg-crm')?.classList.contains('active')) { try { await loadCRM(); renderCRM(); } catch(e){} } return; }
 
   // v20: Moderator tidak follow-up customer secara langsung — tugas itu
   // milik role yang menginput customernya (admin/b2b). Moderator cukup
@@ -17278,18 +17306,20 @@ async function markFollowedUp(idx) {
     return;
   }
 
-  openFollowupResponseModal(idx);
+  openFollowupResponseModal(key);
 }
 window.openFollowupResponseModal = openFollowupResponseModal;
 
 /* v23: Sebelum log follow-up beneran disimpan, tanya dulu apakah ada respon
    dari customer & apakah heat-nya naik (Cold→Warm→Hot). Ini juga jadi
    momen "kuncian harian" — sesudah salah satu tombol di modal ini ditekan,
-   customer otomatis masuk daftar followupDoneTodayIds & tombol di tabel terkunci. */
-function openFollowupResponseModal(idx) {
-  const c = crmData[idx];
+   customer otomatis masuk daftar followupDoneTodayIds & tombol di tabel terkunci.
+   v55-FIX: pakai key (bukan idx array) — lihat catatan di _crmFindByKey. */
+function openFollowupResponseModal(key) {
+  const c = _crmFindByKey(key);
   if (!c) return;
   const heatNow = c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status));
+  const kJs = escHtml(key).replace(/'/g,"\\'");
   document.getElementById('m-title').textContent = `Follow Up — ${c.nama || 'Customer'}`;
   document.getElementById('m-body').innerHTML = `
     <div style="font-size:12px;color:var(--text2);margin-bottom:14px">
@@ -17297,13 +17327,13 @@ function openFollowupResponseModal(idx) {
       Apakah ada respon dari customer ini hari ini?
     </div>
     <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="btn-sm btn-g" style="justify-content:flex-start" onclick="_confirmFollowup(${idx},'none')">
+      <button class="btn-sm btn-g" style="justify-content:flex-start" onclick="_confirmFollowup('${kJs}','none')">
         Tidak ada respon — catat follow-up saja
       </button>
-      <button class="btn-sm" style="justify-content:flex-start;background:rgba(232,184,110,.14);color:var(--amber);border:1px solid rgba(232,184,110,.35)" onclick="_confirmFollowup(${idx},'warm')">
+      <button class="btn-sm" style="justify-content:flex-start;background:rgba(232,184,110,.14);color:var(--amber);border:1px solid rgba(232,184,110,.35)" onclick="_confirmFollowup('${kJs}','warm')">
         Ada respon — naikkan ke Warm
       </button>
-      <button class="btn-sm" style="justify-content:flex-start;background:rgba(232,112,112,.14);color:var(--red);border:1px solid rgba(232,112,112,.35)" onclick="_confirmFollowup(${idx},'hot')">
+      <button class="btn-sm" style="justify-content:flex-start;background:rgba(232,112,112,.14);color:var(--red);border:1px solid rgba(232,112,112,.35)" onclick="_confirmFollowup('${kJs}','hot')">
         Sangat tertarik / closing — naikkan ke Hot
       </button>
     </div>`;
@@ -17311,9 +17341,9 @@ function openFollowupResponseModal(idx) {
   document.getElementById('modal-ov').classList.add('open');
 }
 
-async function _confirmFollowup(idx, response) {
-  const c = crmData[idx];
-  if (!c || !currentUser) { closeModal(); return; }
+async function _confirmFollowup(key, response) {
+  const c = _crmFindByKey(key);
+  if (!c || !currentUser) { closeModal(); if (c === null) toast('Data customer ini sudah berubah — coba cari & klik lagi'); return; }
   closeModal();
 
   const heatBefore = c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status));
@@ -17323,7 +17353,7 @@ async function _confirmFollowup(idx, response) {
   const hasResponse = response !== 'none';
 
   const now = new Date().toISOString();
-  const key = _followupCustKey(c);
+  const custKey = _followupCustKey(c);
 
   if (crmUsesDB() && c._uuid) {
     try {
@@ -17344,7 +17374,7 @@ async function _confirmFollowup(idx, response) {
     try {
       const k = _followupTodayKey();
       const arr = JSON.parse(localStorage.getItem(k) || '[]');
-      if (!arr.includes(key)) { arr.push(key); localStorage.setItem(k, JSON.stringify(arr)); }
+      if (!arr.includes(custKey)) { arr.push(custKey); localStorage.setItem(k, JSON.stringify(arr)); }
     } catch(e) {}
   }
 
@@ -17352,7 +17382,7 @@ async function _confirmFollowup(idx, response) {
   c.last_followup_by  = currentUser.id;
   if (heatAfter !== heatBefore) c.heat_category = heatAfter;
   if (c.fu_flag) c.fu_flag = false;
-  followupDoneTodayIds.add(key);
+  followupDoneTodayIds.add(custKey);
   saveCRM();
 
   if (heatAfter !== heatBefore) {
@@ -19684,7 +19714,7 @@ async function renderCRM(reload = true) {
           <button class="crm-ico-btn" onclick="openCRMModal(${idx})" title="Edit">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5l2 2L6 12l-2.5.5L4 10l7.5-7.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
           </button>
-          <button class="crm-ico-btn${(!isModRow && rowDoneToday) ? ' crm-fu-locked' : ''}" onclick="markFollowedUp(${idx})" title="${isModRow ? 'Moderator: klik untuk lihat siapa yang harus follow-up' : (rowDoneToday ? 'Sudah di-follow up hari ini — terkunci sampai besok' : 'Tandai sudah di-follow up hari ini')}" style="${isModRow ? 'opacity:.55' : (rowDoneToday ? 'opacity:.5;cursor:not-allowed' : '')}">
+          <button class="crm-ico-btn${(!isModRow && rowDoneToday) ? ' crm-fu-locked' : ''}" onclick="markFollowedUp('${escHtml(custKey).replace(/'/g,"\\'")}')" title="${isModRow ? 'Moderator: klik untuk lihat siapa yang harus follow-up' : (rowDoneToday ? 'Sudah di-follow up hari ini — terkunci sampai besok' : 'Tandai sudah di-follow up hari ini')}" style="${isModRow ? 'opacity:.55' : (rowDoneToday ? 'opacity:.5;cursor:not-allowed' : '')}">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3 3 7-7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
           <button class="crm-ico-btn del" onclick="deleteCRM(${idx})" title="Hapus">
@@ -22137,7 +22167,8 @@ function fuDaysAgoLabel(c) {
 }
 
 function fuRowHtml(c) {
-  const idx = crmData.indexOf(c);
+  const custKey = _followupCustKey(c);
+  const custKeyJs = escHtml(custKey).replace(/'/g,"\\'");
   const heat = fuHeatOf(c);
   const doneToday = followupDoneTodayIds.has(_followupCustKey(c));
   const wa = fuWaTemplate(c);
@@ -22170,7 +22201,7 @@ function fuRowHtml(c) {
         ${wa ? `<a href="${wa.href}" target="_blank" rel="noopener" class="fu-wa-btn" onclick="event.stopPropagation()">${FU_WA_ICON}<span>${t('followupChatWa')}</span></a>` : `<span class="fu-wa-none">${t('followupNoWa')}</span>`}
         ${doneToday
           ? `<button type="button" class="fu-progress-done" disabled>${FU_CHECK_ICON}${t('followupBtnDone')}</button>`
-          : `<button type="button" class="fu-progress-btn" onclick="markFollowedUp(${idx})">${t('followupBtnProgress')}</button>`}
+          : `<button type="button" class="fu-progress-btn" onclick="markFollowedUp('${custKeyJs}')">${t('followupBtnProgress')}</button>`}
       </div>
     </td>
   </tr>`;
@@ -22219,6 +22250,48 @@ function fuRenderBody() {
 }
 
 const fuDebouncedSearch = debounce((v) => { _fuSearchQ = (v||'').toLowerCase().trim(); fuRenderBody(); }, 200);
+
+/* v55-FIX: refresh ringan buat halaman Follow Up dipanggil dari realtime
+   (channel dhp_crm) — menyusun ulang _fuMine/_fuOrder dari crmData yang
+   PALING BARU lalu render ulang isi tabel & angka ring/statistik, TANPA
+   menyentuh/mereset kotak pencarian (beda dari renderFollowupPage() yang
+   render ulang seluruh halaman & selalu mengosongkan pencarian). Ini juga
+   yang membuat data selalu realtime tanpa perlu tombol "Muat Ulang" atau
+   refresh browser, sekaligus jadi jaring pengaman kalau ada baris yang
+   sempat merujuk ke customer versi lama (lihat _crmFindByKey). */
+function fuRefreshLive() {
+  if (!currentUser || !document.getElementById('followup-root')) return;
+  _fuMine = crmData.slice();
+  _fuOrder = null;
+  const groupCounts = fuBuildOrder();
+  fuRenderBody();
+
+  const doneCount = _fuMine.filter(c => followupDoneTodayIds.has(_followupCustKey(c))).length;
+  const target = FOLLOWUP_DAILY_TARGET;
+  const pendingCount = Math.max(0, _fuMine.length - doneCount);
+  const pct = target ? Math.min(100, Math.round((doneCount/target)*100)) : 0;
+  const hit = doneCount >= target;
+  const circ = 2 * Math.PI * 34;
+
+  const ringNum = document.querySelector('#followup-root .mt-main-ring-num');
+  if (ringNum) ringNum.textContent = `${doneCount}/${target}`;
+  const ringCircle = document.querySelector('#followup-root .mt-main-ring svg circle:nth-child(2)');
+  if (ringCircle) {
+    ringCircle.setAttribute('stroke', hit ? 'var(--green)' : 'var(--gold)');
+    ringCircle.setAttribute('stroke-dashoffset', String(circ*(1-pct/100)));
+  }
+  const statBoxes = document.querySelectorAll('#followup-root .mt-main-stats > div > b');
+  if (statBoxes[0]) statBoxes[0].textContent = doneCount;
+  if (statBoxes[1]) statBoxes[1].textContent = pendingCount;
+  if (statBoxes[2]) statBoxes[2].textContent = _fuMine.length;
+  const tblTitle = document.querySelector('#followup-root .tbl-title');
+  if (tblTitle) tblTitle.textContent = `${t('followupTableTitle')} (${_fuMine.length})`;
+
+  const badge = document.getElementById('fu-pending-badge');
+  if (badge) { badge.textContent = pendingCount; badge.style.display = pendingCount > 0 ? '' : 'none'; }
+
+  maybeNotifySystemFollowup(groupCounts.sysHeat, groupCounts.sysOverdue);
+}
 
 function fuReshuffle() {
   const btn = document.getElementById('fu-refresh-btn');
