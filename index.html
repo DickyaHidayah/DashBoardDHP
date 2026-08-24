@@ -21674,6 +21674,8 @@ function trackingReportStyleOnce() {
   .trk-progress-missing{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
   .trk-missing-chip{font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:20px;
     background:rgba(232,112,112,.1);border:1px solid rgba(232,112,112,.3);color:var(--red)}
+  .trk-wait-note{display:inline-flex;align-items:center;gap:5px}
+  .trk-wait-note svg{width:12px;height:12px;flex-shrink:0}
   `;
   const s = document.createElement('style'); s.id = 'trk-style'; s.textContent = css;
   document.head.appendChild(s);
@@ -22142,7 +22144,7 @@ async function trkLoadTeamRecap() {
         <td>${trkStatusPillHtml(r.siang_filled, r.siang_status, r.siang_is_late)}</td>
         <td>${trkStatusPillHtml(r.sore_filled, r.sore_status, r.sore_is_late)}</td>
         ${missing
-          ? `<td colspan="7" style="text-align:center;color:var(--muted);font-size:11.5px">${TRK_ICO.clock} ${waitLabel} — total harian menunggu slot ini masuk</td>`
+          ? `<td colspan="7" style="text-align:center;color:var(--muted);font-size:11.5px"><span class="trk-wait-note">${TRK_ICO.clock} ${waitLabel} — total harian menunggu slot ini masuk</span></td>`
           : `<td>${r.total_leads_masuk}</td><td>${r.total_leads_terlayani}</td><td>${r.total_fu_leads_lama}</td>
              <td>${r.total_cold}</td><td>${r.total_warm}</td>
              <td><b style="color:#e87070">${r.total_hot}</b></td>
