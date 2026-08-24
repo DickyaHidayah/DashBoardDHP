@@ -21743,8 +21743,73 @@ async function renderTrackingOwnView(root) {
       <div class="trk-recap-box hi" style="grid-column:span 2"><div class="rb-ico" style="background:rgba(122,191,142,.2);color:var(--green)">${TRK_ICO.closing}</div><b style="font-size:17px">${crmFmtRupiah(row ? row.total_nominal_closing : 0)}</b><span>Total Nominal Closing</span></div>
     </div>
     <div style="font-size:11px;color:var(--muted);text-align:center">Laporan harian di atas otomatis digabung dari slot Siang (12:00) &amp; Sore (17:00).</div>
+
+    <div class="trk-section-title" style="margin-top:22px"><span class="st-ico">${TRK_ICO.compare}</span> Riwayat Laporan Saya</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+      <label style="font-size:12px;color:var(--muted)">Tampilkan:</label>
+      <select id="trk-hist-limit" onchange="trkLoadOwnHistory(this.value)"
+        style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:13px">
+        <option value="30">30 laporan terakhir</option>
+        <option value="60">60 laporan terakhir</option>
+        <option value="90">90 laporan terakhir</option>
+      </select>
+      <button class="btn-sm btn-gold" onclick="trkLoadOwnHistory()">⟲ Muat Ulang</button>
+    </div>
+    <div class="tbl-wrap"><div class="tbl-scroll">
+      <table class="fu-table"><thead><tr>
+        <th>Tanggal</th><th>Siang</th><th>Sore</th>
+        <th>Leads Masuk</th><th>Baru Terlayani</th><th>FU Lama</th>
+        <th>Cold</th><th>Warm</th><th>Hot</th><th>Nominal Closing</th>
+      </tr></thead><tbody id="trk-hist-tbody"><tr><td colspan="10" style="text-align:center;color:var(--muted)">Memuat…</td></tr></tbody></table>
+    </div></div>
   `;
   trkTickReminder();
+  trkLoadOwnHistory();
+}
+
+/* ── RIWAYAT LAPORAN SENDIRI (CS Hunter / Admin / B2B Marketing) ──
+   v65: tabel semua tanggal yang pernah staff isi (bukan cuma hari ini),
+   lewat RPC get_tracking_report_history — sama pola tampilan dengan
+   baris "Laporan Harian" di rekap tim, tapi khusus milik sendiri &
+   bisa lihat tanggal-tanggal lain, bukan cuma hari ini. */
+async function trkLoadOwnHistory(limit) {
+  const tbody = document.getElementById('trk-hist-tbody');
+  if (!tbody || !currentUser) return;
+  const n = Number(limit || document.getElementById('trk-hist-limit')?.value || 30);
+  tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--muted)">Memuat…</td></tr>`;
+  let rows = [];
+  try {
+    const res = await dbQ(d => d.rpc('get_tracking_report_history', { p_user_id: currentUser.id, p_limit: n }));
+    rows = (res && res.data) || [];
+  } catch (e) { console.warn('[DHP] get_tracking_report_history gagal:', e); }
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--muted)">Belum ada riwayat laporan.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(r => {
+    const missing = !r.siang_filled || !r.sore_filled;
+    const waitLabel = (!r.siang_filled && !r.sore_filled) ? 'Belum lapor Siang & Sore'
+      : !r.siang_filled ? 'Menunggu Laporan Siang'
+      : 'Menunggu Laporan Sore';
+    return `<tr class="${missing ? 'trk-team-row missing' : ''}">
+      <td>${trkFmtDMY(r.report_date)}</td>
+      <td>${trkStatusPillHtml(r.siang_filled, r.siang_status, r.siang_is_late)}</td>
+      <td>${trkStatusPillHtml(r.sore_filled, r.sore_status, r.sore_is_late)}</td>
+      ${missing
+        ? `<td colspan="7" style="text-align:center;color:var(--muted);font-size:11.5px"><span class="trk-wait-note">${TRK_ICO.clock} ${waitLabel}</span></td>`
+        : `<td>${r.total_leads_masuk}</td><td>${r.total_leads_terlayani}</td><td>${r.total_fu_leads_lama}</td>
+           <td>${r.total_cold}</td><td>${r.total_warm}</td>
+           <td><b style="color:#e87070">${r.total_hot}</b></td>
+           <td><b style="color:var(--green)">${crmFmtRupiah(r.total_nominal_closing)}</b></td>`}
+    </tr>`;
+  }).join('');
+}
+
+function trkFmtDMY(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr + 'T00:00:00');
+  const bulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  return `${String(d.getDate()).padStart(2,'0')} ${bulan[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 function trkSlotCardHtml(s, data) {
