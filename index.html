@@ -4079,10 +4079,18 @@ body.light .kol-fin-val{color:#0d0d0d}
 .lb-live-pill .pill-dot{animation:lbPulseDot 1.6s ease-in-out infinite}
 @keyframes lbPulseDot{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(122,191,142,.5)}50%{opacity:.55;box-shadow:0 0 0 4px rgba(122,191,142,0)}}
 
-.lb-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.lb-title-row{display:inline-flex;align-items:center;gap:8px}
+.lb-title-ico{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;background:linear-gradient(150deg,rgba(232,204,153,.22),rgba(201,169,110,.1));color:var(--gold-hi);border:1px solid var(--border-hi)}
+.lb-title-ico svg{width:14px;height:14px}
+.lb-live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(122,191,142,.55);animation:lbDotPulse 1.8s ease-out infinite;flex-shrink:0}
+@keyframes lbDotPulse{0%{box-shadow:0 0 0 0 rgba(122,191,142,.5)}70%{box-shadow:0 0 0 6px rgba(122,191,142,0)}100%{box-shadow:0 0 0 0 rgba(122,191,142,0)}}
+.lb-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px}
+.lb-countdown,.lb-updated-wrap{display:flex;align-items:center;gap:7px}
+.lb-icotxt{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;color:var(--gold-hi);flex-shrink:0}
+.lb-icotxt svg{width:13px;height:13px;display:block}
 .lb-countdown{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border-hi);border-radius:20px;padding:7px 14px;font-size:11.5px;color:var(--text2)}
 .lb-countdown b{color:var(--gold-hi);font-variant-numeric:tabular-nums}
-.lb-updated{font-size:10px;color:var(--muted);white-space:nowrap}
+.lb-updated{font-size:10px;color:var(--muted);white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
 
 /* ── PODIUM ── */
 .lb-podium{display:flex;align-items:flex-end;justify-content:center;gap:14px;padding:34px 10px 0;margin-bottom:22px;position:relative}
@@ -4092,7 +4100,8 @@ body.light .kol-fin-val{color:#0d0d0d}
 .lb-pod-card.r1{animation-delay:.18s;width:172px}
 .lb-pod-card.r3{animation-delay:.05s}
 @keyframes lbRise{to{opacity:1;transform:translateY(0)}}
-.lb-pod-crown{font-size:22px;margin-bottom:2px;animation:lbFloat 2.6s ease-in-out infinite}
+.lb-pod-crown{width:22px;height:22px;margin-bottom:2px;color:var(--gold-hi);animation:lbFloat 2.6s ease-in-out infinite}
+.lb-pod-crown svg{width:100%;height:100%;display:block}
 @keyframes lbFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 .lb-pod-avatar{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:24px;color:#0a0906;position:relative;box-shadow:0 6px 24px rgba(0,0,0,.4)}
 .lb-pod-card.r1 .lb-pod-avatar{width:78px;height:78px;font-size:28px;background:linear-gradient(150deg,#f5dfa0,var(--gold-hi) 45%,var(--gold) 100%);box-shadow:0 0 0 3px rgba(232,204,153,.25),0 8px 30px rgba(201,169,110,.45)}
@@ -4117,7 +4126,10 @@ body.light .kol-fin-val{color:#0d0d0d}
 .lb-ach-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px;margin-bottom:22px}
 .lb-ach-chip{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;transition:border-color var(--trans),transform var(--trans)}
 .lb-ach-chip:hover{border-color:var(--border-hi);transform:translateY(-1px)}
-.lb-ach-ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.lb-ach-ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;border:1px solid currentColor}
+.lb-ach-ico svg{width:16px;height:16px;display:block}
+.lb-ach-chip{border-radius:14px}
+.lb-ach-lbl{font-weight:600}
 .lb-ach-txt{min-width:0}
 .lb-ach-lbl{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .lb-ach-name{font-size:12.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -4125,9 +4137,11 @@ body.light .kol-fin-val{color:#0d0d0d}
 .lb-ach-empty{color:var(--muted)}
 
 /* ── COMPARISON DIAGRAM (bar chart antar staff) ── */
-.lb-diagram{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px 8px;margin-bottom:22px}
-.lb-diagram-title{font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:2px;display:flex;align-items:center;gap:6px}
-.lb-diagram-sub{font-size:10.5px;color:var(--muted);margin-bottom:14px}
+.lb-diagram{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px 10px;margin-bottom:22px}
+.lb-diagram-title{font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:2px;display:flex;align-items:center;gap:8px;letter-spacing:.01em}
+.lb-diagram-title .lb-icotxt{width:22px;height:22px;border-radius:50%;background:rgba(201,169,110,.14);color:var(--gold)}
+.lb-diagram-title .lb-icotxt svg{width:12px;height:12px}
+.lb-diagram-sub{font-size:10.5px;color:var(--muted);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
 .lb-dbar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .lb-dbar-name{width:84px;flex-shrink:0;font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lb-dbar-track{flex:1;height:16px;background:var(--bg3);border-radius:8px;overflow:hidden;position:relative}
@@ -4137,7 +4151,7 @@ body.light .kol-fin-val{color:#0d0d0d}
 
 /* ── RANKING TABLE / CARDS ── */
 .lb-list{display:flex;flex-direction:column;gap:10px}
-.lb-row{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:grid;grid-template-columns:34px 40px 1fr auto;align-items:center;gap:12px;opacity:0;transform:translateX(-8px);animation:lbSlideIn .4s ease forwards;transition:border-color var(--trans)}
+.lb-row{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px 16px;display:grid;grid-template-columns:34px 40px 1fr auto;align-items:center;gap:12px;opacity:0;transform:translateX(-8px);animation:lbSlideIn .4s ease forwards;transition:border-color var(--trans),background var(--trans)}
 @keyframes lbSlideIn{to{opacity:1;transform:translateX(0)}}
 .lb-row.me{border-color:var(--blue);background:rgba(126,168,201,.06)}
 .lb-row:hover{border-color:var(--border-hi)}
@@ -5891,7 +5905,7 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
         <div class="ph">
           <div class="ph-left">
             <div class="pt">
-              <span>🏆 Leaderboard</span>
+              <span class="lb-title-row"><span class="lb-title-ico"><svg viewBox="0 0 16 16" fill="none"><path d="M5 2.6h6v2.1c0 2.2-1.3 3.9-3 3.9s-3-1.7-3-3.9V2.6Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M5 3.4H3.2a1 1 0 0 0-1 1.2c.24 1.3 1.1 2.5 2.5 2.9M11 3.4h1.8a1 1 0 0 1 1 1.2c-.24 1.3-1.1 2.5-2.5 2.9" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M8 8.6v2M6.1 13.4h3.8M6.6 10.8h2.8l.5 2.6H6.1l.5-2.6Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg></span>Leaderboard</span>
               <span class="role-pill lb-live-pill" id="lb-live-pill">
                 <span class="pill-dot" style="background:#7abf8e"></span> Live
               </span>
@@ -21746,14 +21760,11 @@ async function renderTrackingOwnView(root) {
 
     <div class="trk-section-title" style="margin-top:22px"><span class="st-ico">${TRK_ICO.compare}</span> Riwayat Laporan Saya</div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
-      <label style="font-size:12px;color:var(--muted)">Tampilkan:</label>
-      <select id="trk-hist-limit" onchange="trkLoadOwnHistory(this.value)"
-        style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:13px">
-        <option value="30">30 laporan terakhir</option>
-        <option value="60">60 laporan terakhir</option>
-        <option value="90">90 laporan terakhir</option>
-      </select>
+      <label style="font-size:12px;color:var(--muted)">Bulan:</label>
+      <select id="trk-hist-period-sel" onchange="trkHistPeriodChange(this.value)"
+        style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:13px"></select>
       <button class="btn-sm btn-gold" onclick="trkLoadOwnHistory()">⟲ Muat Ulang</button>
+      <span id="trk-hist-count" style="font-size:11px;color:var(--muted)"></span>
     </div>
     <div class="tbl-wrap"><div class="tbl-scroll">
       <table class="fu-table"><thead><tr>
@@ -21768,22 +21779,55 @@ async function renderTrackingOwnView(root) {
 }
 
 /* ── RIWAYAT LAPORAN SENDIRI (CS Hunter / Admin / B2B Marketing) ──
-   v65: tabel semua tanggal yang pernah staff isi (bukan cuma hari ini),
-   lewat RPC get_tracking_report_history — sama pola tampilan dengan
-   baris "Laporan Harian" di rekap tim, tapi khusus milik sendiri &
-   bisa lihat tanggal-tanggal lain, bukan cuma hari ini. */
-async function trkLoadOwnHistory(limit) {
+   v67: tabel SEMUA tanggal dalam 1 bulan kalender yang dipilih (bukan lagi
+   dibatasi jumlah baris 30/60/90), lewat RPC get_tracking_report_history_month
+   — pola pemilih bulan sama seperti Leaderboard (lbPopulatePeriodSelect/
+   lbPeriodChange), supaya konsisten & staff bisa lihat bulan-bulan lain. */
+let trkHistCurrentYm = null;
+function trkHistYmNow() {
+  const d = trkNowJakarta();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+function trkHistYmLabel(ym) {
+  const [y, m] = ym.split('-').map(Number);
+  return (LB_MONTHS_ID[m - 1] || '') + ' ' + y;
+}
+function trkPopulateHistPeriodSelect() {
+  const sel = document.getElementById('trk-hist-period-sel');
+  if (!sel || sel.options.length) return;
+  const now = trkNowJakarta();
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const ym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    const opt = document.createElement('option');
+    opt.value = ym;
+    opt.textContent = trkHistYmLabel(ym) + (i === 0 ? ' (Bulan Ini)' : '');
+    sel.appendChild(opt);
+  }
+  sel.value = trkHistYmNow();
+}
+function trkHistPeriodChange(ym) {
+  trkHistCurrentYm = ym;
+  trkLoadOwnHistory();
+}
+async function trkLoadOwnHistory() {
   const tbody = document.getElementById('trk-hist-tbody');
+  const countEl = document.getElementById('trk-hist-count');
   if (!tbody || !currentUser) return;
-  const n = Number(limit || document.getElementById('trk-hist-limit')?.value || 30);
+  trkPopulateHistPeriodSelect();
+  const sel = document.getElementById('trk-hist-period-sel');
+  if (!trkHistCurrentYm) trkHistCurrentYm = sel?.value || trkHistYmNow();
+  if (sel && sel.value !== trkHistCurrentYm) sel.value = trkHistCurrentYm;
   tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--muted)">Memuat…</td></tr>`;
+  if (countEl) countEl.textContent = '';
   let rows = [];
   try {
-    const res = await dbQ(d => d.rpc('get_tracking_report_history', { p_user_id: currentUser.id, p_limit: n }));
+    const res = await dbQ(d => d.rpc('get_tracking_report_history_month', { p_user_id: currentUser.id, p_period_ym: trkHistCurrentYm }));
     rows = (res && res.data) || [];
-  } catch (e) { console.warn('[DHP] get_tracking_report_history gagal:', e); }
+  } catch (e) { console.warn('[DHP] get_tracking_report_history_month gagal:', e); }
+  if (countEl) countEl.textContent = rows.length ? `${rows.length} laporan di ${trkHistYmLabel(trkHistCurrentYm)}` : '';
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--muted)">Belum ada riwayat laporan.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--muted)">Belum ada riwayat laporan di ${trkHistYmLabel(trkHistCurrentYm)}.</td></tr>`;
     return;
   }
   tbody.innerHTML = rows.map(r => {
@@ -24332,6 +24376,19 @@ window.addEventListener('resize', () => {
    ═══════════════════════════════════════════════════════════════════════ */
 const LB_ROLES = ['cs_hunter', 'admin', 'b2b_marketing'];
 const LB_MONTHS_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+/* v67: set ikon vector (garis tipis, currentColor) — menggantikan emoji supaya
+   tampilan Leaderboard konsisten dengan gaya "corporate elegant" di TRK_ICO. */
+const LB_ICO = {
+  trophy: '<svg viewBox="0 0 16 16" fill="none"><path d="M5 2.6h6v2.1c0 2.2-1.3 3.9-3 3.9s-3-1.7-3-3.9V2.6Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M5 3.4H3.2a1 1 0 0 0-1 1.2c.24 1.3 1.1 2.5 2.5 2.9M11 3.4h1.8a1 1 0 0 1 1 1.2c-.24 1.3-1.1 2.5-2.5 2.9" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M8 8.6v2M6.1 13.4h3.8M6.6 10.8h2.8l.5 2.6H6.1l.5-2.6Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg>',
+  crown: '<svg viewBox="0 0 16 16" fill="none"><path d="M2.4 6.2 4.6 7.6 8 3.4l3.4 4.2 2.2-1.4-.9 5.4H3.3l-.9-5.4Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round" stroke-linecap="round"/><path d="M3.6 13.2h8.8" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>',
+  trendUp: '<svg viewBox="0 0 16 16" fill="none"><path d="M2 11.5 6.2 7.3l2.4 2.4L14 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.4 4.5H14v3.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  phone: '<svg viewBox="0 0 16 16" fill="none"><path d="M4.3 2.6h1.9l1 2.6-1.4 1.2a7.6 7.6 0 0 0 3.8 3.8l1.2-1.4 2.6 1v1.9c0 .7-.6 1.2-1.3 1.1-5-.5-8.9-4.4-9.4-9.4-.1-.7.4-1.3 1.1-1.3Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg>',
+  users: '<svg viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5.4" r="2.2" stroke="currentColor" stroke-width="1.25"/><path d="M1.8 13c.4-2.4 2.1-3.8 4.2-3.8s3.8 1.4 4.2 3.8" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M10.4 3.4a2.2 2.2 0 0 1 0 4.24M12.2 13c-.3-1.9-1.3-3.2-2.7-3.7" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>',
+  megaphone: '<svg viewBox="0 0 16 16" fill="none"><path d="M2.4 6.4v3.2h1.9L9 12.4V3.6L4.3 6.4H2.4Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M11 6.2a2.1 2.1 0 0 1 0 3.6M9 12.4v1.3a1 1 0 0 1-1.9.4l-1-1.7" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  hourglass: '<svg viewBox="0 0 16 16" fill="none"><path d="M4 2.4h8M4 13.6h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M4.6 2.4v1.7c0 1.5.9 2.6 2.3 3.1-1.4.5-2.3 1.7-2.3 3.1v1.7M11.4 2.4v1.7c0 1.5-.9 2.6-2.3 3.1 1.4.5 2.3 1.7 2.3 3.1v1.7" stroke="currentColor" stroke-width="1.15" stroke-linejoin="round"/></svg>',
+  calendar: '<svg viewBox="0 0 16 16" fill="none"><rect x="2.2" y="3.4" width="11.6" height="10" rx="1.4" stroke="currentColor" stroke-width="1.25"/><path d="M2.2 6.4h11.6M5.4 2v2.8M10.6 2v2.8" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>',
+  barChart: '<svg viewBox="0 0 16 16" fill="none"><path d="M2.6 13.4V9M6.2 13.4V5.6M9.8 13.4V7.4M13.4 13.4V2.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+};
 let lbChannel = null;
 let lbCurrentYm = null;
 let lbCache = null;
@@ -24467,9 +24524,9 @@ function lbRenderContent(root, data) {
   const topbarHtml = `
     <div class="lb-topbar">
       ${isCurrentMonth
-        ? `<div class="lb-countdown">⏳ Papan peringkat reset dalam <b id="lb-cd-txt">…</b></div>`
-        : `<div class="lb-countdown">📅 Melihat rekap ${lbYmLabel(lbCurrentYm)}</div>`}
-      <div class="lb-updated">🟢 Sinkron real-time · update terakhir ${generatedAt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</div>
+        ? `<div class="lb-countdown"><span class="lb-icotxt">${LB_ICO.hourglass}</span> Papan peringkat reset dalam <b id="lb-cd-txt">…</b></div>`
+        : `<div class="lb-countdown"><span class="lb-icotxt">${LB_ICO.calendar}</span> Melihat rekap ${lbYmLabel(lbCurrentYm)}</div>`}
+      <div class="lb-updated"><span class="lb-live-dot"></span> Sinkron real-time · update terakhir ${generatedAt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</div>
     </div>`;
 
   root.innerHTML = topbarHtml
@@ -24495,7 +24552,7 @@ function lbPodiumHtml(top3) {
     if (!u) { html += `<div class="lb-pod-card r${rank}" style="visibility:hidden"></div>`; return; }
     html += `
       <div class="lb-pod-card r${rank}">
-        ${rank === 1 ? '<div class="lb-pod-crown">👑</div>' : ''}
+        ${rank === 1 ? `<div class="lb-pod-crown">${LB_ICO.crown}</div>` : ''}
         <div class="lb-pod-avatar">${lbInitials(u.name)}<span class="lb-pod-rank">${rank}</span></div>
         <div class="lb-pod-name">${escHtml(u.name)}</div>
         <div class="lb-pod-role">${escHtml(rn(u.role))}</div>
@@ -24511,11 +24568,11 @@ function lbPodiumHtml(top3) {
 function lbAchievementsHtml(ach) {
   if (!ach) return `<div class="lb-ach-row"><div class="lb-ach-empty">Belum ada pencapaian tercatat bulan ini.</div></div>`;
   const chips = [
-    { key: 'topSales',    icon: '💰', color: 'var(--gold)',  lbl: 'Top Sales',         val: (u) => crmFmtRupiah(u.sales) },
-    { key: 'topFollowup', icon: '📞', color: 'var(--blue)',  lbl: 'Rajin Follow Up',   val: (u) => `${u.followup}x follow up` },
-    { key: 'topHot',      icon: '🔥', color: 'var(--green)', lbl: 'Leads Terpanas',    val: (u) => `${u.hot} hot leads` },
-    { key: 'topCrm',      icon: '📇', color: 'var(--blue)',  lbl: 'CRM Terbanyak',     val: (u) => `${u.crmTotal} customer` },
-    { key: 'topAds',      icon: '📢', color: 'var(--amber)', lbl: 'Iklan Paling Aktif', val: (u) => `${u.adsDone} iklan jalan` },
+    { key: 'topSales',    icon: LB_ICO.trendUp,   color: 'var(--gold)',  lbl: 'Top Sales',         val: (u) => crmFmtRupiah(u.sales) },
+    { key: 'topFollowup', icon: LB_ICO.phone,     color: 'var(--blue)',  lbl: 'Rajin Follow Up',   val: (u) => `${u.followup}x follow up` },
+    { key: 'topHot',      icon: TRK_ICO.hot,      color: 'var(--green)', lbl: 'Leads Terpanas',    val: (u) => `${u.hot} hot leads` },
+    { key: 'topCrm',      icon: LB_ICO.users,     color: 'var(--blue)',  lbl: 'CRM Terbanyak',     val: (u) => `${u.crmTotal} customer` },
+    { key: 'topAds',      icon: LB_ICO.megaphone, color: 'var(--amber)', lbl: 'Iklan Paling Aktif', val: (u) => `${u.adsDone} iklan jalan` },
   ];
   let html = '<div class="lb-ach-row">';
   chips.forEach(c => {
@@ -24549,7 +24606,7 @@ function lbDiagramHtml(rows) {
   }).join('');
   return `
     <div class="lb-diagram">
-      <div class="lb-diagram-title">📊 Diagram Perbandingan Penjualan</div>
+      <div class="lb-diagram-title"><span class="lb-icotxt">${LB_ICO.barChart}</span> Diagram Perbandingan Penjualan</div>
       <div class="lb-diagram-sub">Total nominal closing bulan ${lbYmLabel(lbCurrentYm)} — seluruh tim CS Hunter, Admin &amp; B2B Marketing</div>
       ${bars}
     </div>`;
