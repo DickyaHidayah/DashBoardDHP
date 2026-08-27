@@ -17420,6 +17420,20 @@ function initCRMRealtime() {
         if (document.getElementById('pg-followup')?.classList.contains('active')) {
           try { fuRefreshLive(); } catch(e){}
         }
+        // v71: badge "Follow Up" di sidebar staff — ikut ter-update real-time
+        // (sebelumnya cuma dihitung 1x saat login, jadi basi kalau moderator
+        // kirim/lepas follow up saat staff sedang online).
+        try { initFollowupBadge(); } catch(e){}
+        // v71: halaman "Nomor Ditandai" — kalau sedang dibuka, muat ulang
+        // otomatis begitu ada perubahan (staff menandai baru, atau moderator
+        // lain sudah menindaklanjuti duluan). Badge di sidebar ikut disegarkan
+        // di halaman mana pun moderator sedang berada, tanpa perlu pindah
+        // halaman dulu untuk lihat ada yang baru masuk.
+        if (document.getElementById('pg-crm_unreach')?.classList.contains('active')) {
+          try { renderCrmUnreachPage(true); } catch(e){}
+        } else if (can.isMod(currentUser?.role)) {
+          try { crmRefreshUnreachNavBadge(); } catch(e){}
+        }
       })
       // v34: label/tag CRM dibuat & dipakai bareng-bareng lintas admin —
       // tanpa ini, admin lain baru lihat label baru setelah reload manual.
@@ -20276,12 +20290,15 @@ async function crmRefreshUnreachNavBadge() {
   } catch(e) { /* diam-diam, badge bukan fitur kritikal */ }
 }
 
-async function renderCrmUnreachPage() {
+async function renderCrmUnreachPage(silent) {
   const root = document.getElementById('crm-unreach-page-list');
   if (!root || !currentUser) return;
-  root.innerHTML = `<div class="myperf-empty" style="padding:20px 0">Memuat data…</div>`;
+  // v71: refresh diam-diam (dipicu realtime) tidak menampilkan "Memuat
+  // data…" supaya tidak berkedip kalau moderator sedang membaca daftarnya —
+  // hanya kunjungan awal / klik "Muat Ulang" manual yang tampilkan loading.
+  if (!silent) root.innerHTML = `<div class="myperf-empty" style="padding:20px 0">Memuat data…</div>`;
   try { await crmLoadUnreachable(); }
-  catch(e) { console.warn('[DHP] renderCrmUnreachPage gagal:', e); root.innerHTML = `<div class="myperf-empty">Gagal memuat data — coba muat ulang.</div>`; return; }
+  catch(e) { console.warn('[DHP] renderCrmUnreachPage gagal:', e); if (!silent) root.innerHTML = `<div class="myperf-empty">Gagal memuat data — coba muat ulang.</div>`; return; }
 
   const pageBadge = document.getElementById('crm-unreach-page-badge');
   if (pageBadge) { pageBadge.textContent = _crmUnreachList.length; pageBadge.style.display = _crmUnreachList.length ? '' : 'none'; }
