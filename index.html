@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="dhp-build" content="2026-08-27T00-00-00-v73"/>
 <title>DHP Creative — Command Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Shippori+Mincho:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
@@ -2033,6 +2034,7 @@ body.light .ni-time{color:rgba(13,13,13,.45)}
 .modal{background:var(--surface);border:1px solid var(--border-hi);border-radius:12px;width:100%;max-width:460px;overflow:hidden;box-shadow:var(--shadow);max-height:90vh;display:flex;flex-direction:column}
 .modal-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .modal-title{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold-hi);letter-spacing:.04em}
+.modal-title svg{width:16px;height:16px;vertical-align:-2px;margin-right:2px}
 .modal-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:6px;border-radius:4px;min-width:32px;min-height:32px;display:flex;align-items:center;justify-content:center}
 .modal-close:hover{color:var(--text);background:rgba(255,255,255,.05)}
 .modal-body{padding:20px 22px;overflow-y:auto;flex:1}
@@ -22219,7 +22221,7 @@ async function trkLoadOwnHistory() {
    is_late=true kalau p_report_date < hari ini, jadi tidak perlu RPC baru. ── */
 function trkOpenCatchup(dateStr, slotKey) {
   const label = slotKey === 'siang' ? 'Siang (12:00)' : 'Sore (17:00)';
-  document.getElementById('m-title').innerHTML = `${TRK_ICO.clock} Laporan Susulan — ${label}`;
+  document.getElementById('m-title').textContent = `Laporan Susulan — ${label}`;
   document.getElementById('m-body').innerHTML = `
     <div style="font-size:11.5px;color:var(--text2);margin-bottom:14px;padding:10px 12px;background:var(--surface2);
       border:1px solid var(--border);border-radius:8px;line-height:1.5">
@@ -25160,6 +25162,159 @@ function lbHandleRealtimeChange() {
   clearTimeout(lbRealtimeTimer);
   lbRealtimeTimer = setTimeout(() => { renderLeaderboardPage(); }, 800);
 }
+</script>
+
+<!-- ══════════════════════════════════════════════════════════
+     DHP UPDATE WATCHER — mendeteksi kalau ada versi baru file
+     ter-deploy sementara user masih buka versi lama di browser-nya,
+     lalu menampilkan notifikasi elegan supaya semua orang gampang
+     pindah ke versi terbaru (nggak ada yang "nyangkut" di tampilan
+     lama). Cara kerja: polling ringan mengambil ulang HTML halaman
+     ini sendiri (no-store, jadi selalu ambil versi server terbaru),
+     lalu membandingkan meta tag <meta name="dhp-build"> di server
+     vs yang sedang dipakai browser. 100% independen dari Supabase —
+     jalan di hosting statis apa pun (GitHub Pages dsb).
+     ══════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+  const LOCAL_BUILD = document.querySelector('meta[name="dhp-build"]')?.content || '';
+  const CHECK_INTERVAL_MS = 4 * 60 * 1000;   // cek tiap 4 menit
+  const FIRST_CHECK_DELAY_MS = 45 * 1000;    // tunggu 45 detik biar gak false-positive pas baru deploy
+  let dupdShown = false;
+  let dupdMinimized = false;
+  let dupdRecheckTimer = null;
+
+  function dupdStyleOnce() {
+    if (document.getElementById('dupd-style')) return;
+    const css = `
+    #dhp-update-toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(140%);
+      z-index:99999;display:flex;align-items:flex-start;gap:12px;max-width:420px;width:calc(100% - 32px);
+      background:linear-gradient(160deg,var(--surface2,#252018),var(--surface,#1e1b17));
+      border:1px solid var(--border-hi,rgba(201,169,110,.28));border-radius:14px;
+      box-shadow:0 14px 50px rgba(0,0,0,.45),0 0 0 1px rgba(201,169,110,.06);
+      padding:16px 16px 14px;transition:transform .45s cubic-bezier(.16,1,.3,1),opacity .3s ease;opacity:0}
+    #dhp-update-toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+    #dhp-update-toast .dupd-ico{flex-shrink:0;width:34px;height:34px;border-radius:50%;
+      background:linear-gradient(135deg,rgba(201,169,110,.22),rgba(122,191,142,.14));
+      color:var(--gold,#c9a96e);display:flex;align-items:center;justify-content:center}
+    #dhp-update-toast .dupd-ico svg{width:17px;height:17px;animation:dupdSpin 2.6s linear infinite}
+    @keyframes dupdSpin{100%{transform:rotate(360deg)}}
+    #dhp-update-toast .dupd-body{flex:1;min-width:0}
+    #dhp-update-toast .dupd-title{font-family:'Cormorant Garamond',serif;font-size:16px;
+      color:var(--gold-hi,#e8cc99);letter-spacing:.02em;margin-bottom:3px;display:flex;align-items:center;gap:7px}
+    #dhp-update-toast .dupd-dot{width:6px;height:6px;border-radius:50%;background:var(--green,#7abf8e);
+      display:inline-block;flex-shrink:0;box-shadow:0 0 0 3px rgba(122,191,142,.18);animation:dupdPulse 1.8s ease-in-out infinite}
+    @keyframes dupdPulse{0%,100%{opacity:1}50%{opacity:.4}}
+    #dhp-update-toast .dupd-desc{font-size:12px;color:var(--text2,rgba(232,228,220,.65));line-height:1.5}
+    #dhp-update-toast .dupd-acts{display:flex;gap:8px;margin-top:11px}
+    #dhp-update-toast .dupd-btn{padding:7px 14px;font-size:10.5px;font-weight:700;letter-spacing:.06em;
+      text-transform:uppercase;border-radius:7px;cursor:pointer;transition:.2s ease;border:1px solid transparent;white-space:nowrap}
+    #dhp-update-toast .dupd-btn.primary{background:linear-gradient(135deg,var(--gold,#c9a96e),var(--gold-lo,#a06840));
+      color:#181410;box-shadow:0 3px 14px rgba(201,169,110,.3)}
+    #dhp-update-toast .dupd-btn.primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
+    #dhp-update-toast .dupd-btn.ghost{background:transparent;border-color:var(--border-hi,rgba(201,169,110,.28));color:var(--text2,rgba(232,228,220,.65))}
+    #dhp-update-toast .dupd-btn.ghost:hover{background:var(--surface3,rgba(255,255,255,.05));color:var(--text,#e8e4dc)}
+    #dhp-update-toast .dupd-close{position:absolute;top:8px;right:9px;background:none;border:none;
+      color:var(--muted,rgba(232,228,220,.32));cursor:pointer;font-size:14px;line-height:1;padding:4px;border-radius:5px}
+    #dhp-update-toast .dupd-close:hover{color:var(--text,#e8e4dc);background:rgba(255,255,255,.06)}
+    body.light #dhp-update-toast{box-shadow:0 14px 50px rgba(0,0,0,.16),0 0 0 1px rgba(0,0,0,.04)}
+    #dhp-update-pill{position:fixed;right:18px;bottom:18px;z-index:99999;display:flex;align-items:center;gap:7px;
+      padding:9px 14px 9px 11px;border-radius:30px;background:linear-gradient(135deg,var(--gold,#c9a96e),var(--gold-lo,#a06840));
+      color:#181410;font-size:11px;font-weight:700;letter-spacing:.03em;cursor:pointer;box-shadow:0 6px 22px rgba(201,169,110,.35);
+      transform:scale(0);opacity:0;transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .25s ease}
+    #dhp-update-pill.show{transform:scale(1);opacity:1}
+    #dhp-update-pill svg{width:13px;height:13px;animation:dupdSpin 2.6s linear infinite}
+    @media(max-width:480px){
+      #dhp-update-toast{bottom:14px;width:calc(100% - 20px);padding:14px 14px 12px;border-radius:12px}
+      #dhp-update-toast .dupd-title{font-size:14.5px}
+      #dhp-update-toast .dupd-desc{font-size:11.5px}
+      #dhp-update-toast .dupd-btn{padding:8px 12px;font-size:10px;flex:1;text-align:center}
+      #dhp-update-toast .dupd-acts{flex-direction:row}
+      #dhp-update-pill{right:14px;bottom:14px}
+    }
+    `;
+    const s = document.createElement('style'); s.id = 'dupd-style'; s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  const REFRESH_ICO = '<svg viewBox="0 0 16 16" fill="none"><path d="M13.6 8a5.6 5.6 0 1 1-1.7-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M13.6 2.6V6h-3.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function dupdShowToast() {
+    if (document.getElementById('dhp-update-toast')) return;
+    dupdStyleOnce();
+    const el = document.createElement('div');
+    el.id = 'dhp-update-toast';
+    el.innerHTML = `
+      <button class="dupd-close" onclick="window.__dupdMinimize()" title="Nanti saja">✕</button>
+      <div class="dupd-ico">${REFRESH_ICO}</div>
+      <div class="dupd-body">
+        <div class="dupd-title"><span class="dupd-dot"></span> Versi Baru Tersedia</div>
+        <div class="dupd-desc">Ada pembaruan tampilan &amp; fitur di portal ini. Refresh untuk memuat versi terbaru — perubahan yang belum tersimpan (kalau ada) mohon disimpan dulu.</div>
+        <div class="dupd-acts">
+          <button class="dupd-btn primary" onclick="window.__dupdRefresh()">⟳ Refresh Sekarang</button>
+          <button class="dupd-btn ghost" onclick="window.__dupdMinimize()">Nanti</button>
+        </div>
+      </div>`;
+    document.body.appendChild(el);
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('show')));
+    dupdShown = true;
+  }
+
+  function dupdShowPill() {
+    dupdStyleOnce();
+    let el = document.getElementById('dhp-update-pill');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'dhp-update-pill';
+      el.title = 'Versi baru tersedia — klik untuk refresh';
+      el.innerHTML = `${REFRESH_ICO}<span>Update tersedia</span>`;
+      el.onclick = () => { el.remove(); dupdShowToast(); };
+      document.body.appendChild(el);
+    }
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('show')));
+  }
+
+  window.__dupdRefresh = function () { location.reload(); };
+  window.__dupdMinimize = function () {
+    const el = document.getElementById('dhp-update-toast');
+    if (el) { el.classList.remove('show'); setTimeout(() => el.remove(), 400); }
+    dupdMinimized = true;
+    dupdShowPill();
+  };
+
+  async function dupdCheck() {
+    try {
+      const res = await fetch(location.pathname + location.search + (location.search ? '&' : '?') + '_dupd=' + Date.now(),
+        { cache: 'no-store' });
+      if (!res.ok) return;
+      const text = await res.text();
+      const m = text.match(/<meta\s+name=["']dhp-build["']\s+content=["']([^"']+)["']/i);
+      if (!m || !m[1] || !LOCAL_BUILD) return;
+      if (m[1] !== LOCAL_BUILD) {
+        clearInterval(dupdPoller);
+        if (dupdMinimized) dupdShowPill(); else dupdShowToast();
+      }
+    } catch (e) { /* offline/gagal fetch — diam saja, coba lagi nanti */ }
+  }
+
+  let dupdPoller = null;
+  function dupdStart() {
+    if (!LOCAL_BUILD) return; // safety: kalau meta tag tidak ada, fitur ini nonaktif diam-diam
+    setTimeout(() => {
+      dupdCheck();
+      dupdPoller = setInterval(dupdCheck, CHECK_INTERVAL_MS);
+    }, FIRST_CHECK_DELAY_MS);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) dupdCheck(); });
+    window.addEventListener('focus', dupdCheck);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', dupdStart);
+  } else {
+    dupdStart();
+  }
+})();
 </script>
 
 </body>
