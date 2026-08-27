@@ -3568,6 +3568,7 @@ body.light .crm-table tr.crm-row-selected td{background:rgba(201,169,110,.14)}
 /* v69: badge "tidak bisa di-follow up" — nada merah muted, beda jelas
    dari badge emas "Dari Moderator" supaya langsung kebedain sekilas. */
 .crm-fu-unreach-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;background:rgba(232,112,112,.13);color:var(--red);border:1px solid rgba(232,112,112,.35);white-space:nowrap;margin-top:3px}
+body.light .crm-fu-unreach-badge{background:rgba(232,112,112,.1)}
 
 /* v69: tombol "Tidak Bisa Follow Up" di baris tabel Follow Up milik staff —
    ikon bulat tipis, sengaja diberi jarak dari tombol utama supaya tidak
@@ -3575,35 +3576,28 @@ body.light .crm-table tr.crm-row-selected td{background:rgba(201,169,110,.14)}
 .fu-unreach-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;flex-shrink:0;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all var(--trans)}
 .fu-unreach-btn:hover{border-color:var(--red);color:var(--red);background:rgba(232,112,112,.08)}
 
-/* v69: tombol toggle & badge jumlah untuk panel moderator "Tidak Bisa
-   Follow Up" — nempel di toolbar "lainnya" bareng "Kelola Label". */
-.crm-unreach-count-badge{display:inline-flex;align-items:center;justify-content:center;min-width:15px;height:15px;padding:0 4px;margin-left:5px;border-radius:20px;background:var(--red);color:#fff;font-size:9px;font-weight:700;line-height:1}
-#crm-unreach-toggle-btn.is-active{color:var(--red);border-color:rgba(232,112,112,.4);background:rgba(232,112,112,.08)}
+/* v70: badge merah kecil di judul halaman "Nomor Ditandai" & di nav
+   sidebar — jumlah customer yang sedang menunggu ditinjau. */
+.crm-unreach-page-badge{display:inline-flex;align-items:center;justify-content:center;min-width:19px;height:19px;padding:0 6px;border-radius:20px;background:var(--red);color:#fff;font-size:11px;font-weight:700;line-height:1}
 
-/* v69: panel review "Tidak Bisa Follow Up" — kartu elegan, konsisten
+/* v70: daftar baris di halaman "Nomor Ditandai" — kartu elegan, konsisten
    dengan bahasa visual CRM (radius, border, spacing yang sama). */
-.crm-unreach-panel{background:var(--surface);border:1px solid rgba(232,112,112,.3);border-radius:12px;padding:16px 18px;margin-bottom:14px;animation:crmBulkIn .18s ease}
-.crm-unreach-panel-head{display:flex;flex-direction:column;gap:2px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
-.crm-unreach-panel-title{font-size:13px;font-weight:700;color:var(--red)}
-.crm-unreach-panel-sub{font-size:10.5px;color:var(--muted)}
-.crm-unreach-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 12px;border:1px solid var(--border);border-radius:9px;margin-bottom:8px;transition:border-color var(--trans)}
-.crm-unreach-row:hover{border-color:var(--border-hi)}
-.crm-unreach-row:last-child{margin-bottom:0}
+.crm-unreach-page-list{display:flex;flex-direction:column;gap:8px}
+.crm-unreach-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 16px;border:1px solid var(--border);border-radius:12px;background:var(--surface);transition:border-color var(--trans)}
+.crm-unreach-row:hover{border-color:rgba(232,112,112,.35)}
 .crm-unreach-info{min-width:0}
-.crm-unreach-name{font-size:12.5px;font-weight:600;color:var(--text)}
+.crm-unreach-name{font-size:13px;font-weight:600;color:var(--text)}
 .crm-unreach-code{font-size:10px;font-weight:400;color:var(--muted);margin-left:4px}
-.crm-unreach-meta{font-size:10.5px;color:var(--text2);margin-top:2px}
-.crm-unreach-note{font-size:10.5px;color:var(--muted);font-style:italic;margin-top:3px}
+.crm-unreach-meta{font-size:11px;color:var(--text2);margin-top:3px}
+.crm-unreach-note{font-size:11px;color:var(--muted);font-style:italic;margin-top:4px}
 .crm-unreach-acts{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .crm-unreach-acts .btn-sm{white-space:nowrap}
-.crm-unreach-empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:24px 0;color:var(--muted);font-size:12px;text-align:center}
-.crm-unreach-empty svg{opacity:.5}
+.crm-unreach-empty{display:flex;flex-direction:column;align-items:center;gap:10px;padding:60px 0;color:var(--muted);font-size:13px;text-align:center}
+.crm-unreach-empty svg{opacity:.4;width:28px;height:28px}
 @media (max-width:720px){
   .crm-unreach-row{flex-direction:column;align-items:stretch}
   .crm-unreach-acts{justify-content:flex-end}
 }
-body.light .crm-fu-unreach-badge{background:rgba(232,112,112,.1)}
-body.light .crm-unreach-panel{background:#fff}
 
 /* Bar aksi massal mengambang — muncul begitu ada baris yang dicentang */
 .crm-bulk-bar{display:none;align-items:center;gap:12px;padding:10px 16px;margin-bottom:10px;border-radius:10px;background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.35);animation:crmBulkIn .18s ease}
@@ -4650,6 +4644,20 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
         </span>
         <span data-i18n="crmDatabaseCustomer">Database Customer</span>
         <span class="nav-badge" id="crm-badge" style="display:none">0</span>
+      </button>
+
+      <!-- v70: halaman terpisah — dulu panel kecil nempel di dropdown Database
+           Customer, sekarang menu sendiri supaya moderator punya ruang
+           khusus meninjau nomor yang ditandai staf. -->
+      <button class="nav-item mod-only" onclick="navTo('crm_unreach',this)" id="n-crm-unreach" style="display:none">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M3.8 3.8l8.4 8.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span>Nomor Ditandai</span>
+        <span class="nav-badge" id="crm-unreach-nav-badge" style="display:none">0</span>
       </button>
 
       <!-- ══ ADMINISTRASI — Moderator only (paling privileged, taruh paling bawah) ══ -->
@@ -5823,22 +5831,9 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
                     <button onclick="openCrmLabelManageModal();crmToggleMoreMenu(true)" title="Buat / edit label warna milikmu">
                       <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8.6 1.8H2.6a.8.8 0 00-.8.8v6l7 7 6.2-6.2-7-7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="5" cy="5" r="1" fill="currentColor"/></svg><span>Kelola Label</span>
                     </button>
-                    <!-- v69: panel moderator — customer yang ditandai staff "tidak bisa di-follow up" -->
-                    <button id="crm-unreach-toggle-btn" onclick="crmToggleUnreachablePanel();crmToggleMoreMenu(true)" title="Customer yang ditandai tidak bisa di-follow up" style="display:none;position:relative">
-                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M3.8 3.8l8.4 8.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span>Tidak Bisa Follow Up</span>
-                      <span id="crm-unreach-count-badge" class="crm-unreach-count-badge" style="display:none">0</span>
-                    </button>
                   </div>
                 </div>
               </div>
-            </div>
-            <!-- v69: panel review "Tidak Bisa Follow Up" — moderator saja -->
-            <div id="crm-unreach-panel" class="crm-unreach-panel" style="display:none">
-              <div class="crm-unreach-panel-head">
-                <span class="crm-unreach-panel-title">Ditandai Tidak Bisa Follow Up</span>
-                <span class="crm-unreach-panel-sub">Tinjau lalu hapus permanen, atau batalkan tanda kalau masih relevan</span>
-              </div>
-              <div id="crm-unreach-list"></div>
             </div>
             <!-- v48: bar aksi massal — moderator pilih beberapa customer lalu kirim
                  kepemilikannya ke Admin/B2B/CS Hunter supaya masuk daftar Follow Up
@@ -5906,6 +5901,29 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
             <div class="crm-foot-note" id="crm-foot-note"></div>
           </div>
         </div>
+      </div>
+
+      <!-- v70: HALAMAN TERPISAH — Nomor Ditandai (moderator) — dulunya panel
+           kecil nempel di dropdown Database Customer, sekarang jadi halaman
+           sendiri supaya lebih rapi & moderator punya ruang khusus untuk
+           meninjau nomor yang ditandai staff "tidak bisa di-follow up". -->
+      <div class="sp" id="pg-crm_unreach">
+        <div class="ph">
+          <div class="ph-left">
+            <div class="pt">
+              <span class="lb-title-row"><span class="lb-title-ico" style="color:var(--red);background:linear-gradient(150deg,rgba(232,112,112,.22),rgba(232,112,112,.08));border-color:rgba(232,112,112,.35)"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M3.8 3.8l8.4 8.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></span>Nomor Ditandai</span>
+              <span class="crm-unreach-page-badge" id="crm-unreach-page-badge" style="display:none">0</span>
+            </div>
+            <div class="ps">Customer yang ditandai staf sebagai tidak bisa/tidak mau di-follow up — tinjau lalu hapus permanen, atau kembalikan kalau ternyata masih relevan</div>
+          </div>
+          <div class="ph-acts">
+            <button class="btn-g btn-sm" onclick="renderCrmUnreachPage()" title="Muat ulang">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:3px"><path d="M13.6 8A5.6 5.6 0 1 1 11.9 4M13.6 2v3.2h-3.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Muat Ulang
+            </button>
+          </div>
+        </div>
+        <div id="crm-unreach-page-list" class="crm-unreach-page-list"></div>
       </div>
 
       <!-- ⑨-b CS HUNTER — dashboard level & progress mingguan CS Hunter -->
@@ -8131,6 +8149,9 @@ async function initDashboard() {
   // seluruh data customer tim).
   navShow('ns-crm',           canSeeAds || isOwner);
   navShow('n-crm',            canSeeAds || isOwner);
+  // v70: "Nomor Ditandai" — HANYA Moderator asli (bukan Owner view-only),
+  // karena isinya aksi hapus permanen yang tidak boleh dipegang Owner.
+  navShow('n-crm-unreach',    isMod);
 
   // v40: OWNER (view-only) — satu-satunya halaman yang dia lihat adalah
   // Laporan Tim (all_dashboard), diberi label & ikon berbeda supaya jelas
@@ -19564,13 +19585,9 @@ async function renderCRM(reload = true) {
     pb.style.color = isMod ? 'var(--gold)' : (ROLE_COLORS[currentUser.role] || '#888');
   }
 
-  // v69: badge jumlah customer "Tidak Bisa Follow Up" — moderator/owner
-  // saja, biar langsung terlihat tanpa perlu buka panelnya dulu.
-  const unreachToggleBtn = document.getElementById('crm-unreach-toggle-btn');
-  if (unreachToggleBtn) {
-    unreachToggleBtn.style.display = can.viewAll(currentUser?.role) ? '' : 'none';
-    if (can.viewAll(currentUser?.role)) crmRefreshUnreachBadgeCount();
-  }
+  // v70: badge jumlah "Nomor Ditandai" di sidebar — cek tiap kali halaman
+  // Database Customer dibuka (moderator asli saja, sama seperti nav item-nya).
+  if (can.isMod(currentUser?.role)) crmRefreshUnreachNavBadge();
 
   // Owner filter dropdown — moderator + Owner (view-only)
   const ownerFilterEl = document.getElementById('crm-owner-filter');
@@ -20230,13 +20247,14 @@ async function crmBulkRemoveFollowup() {
 window.crmBulkRemoveFollowup = crmBulkRemoveFollowup;
 
 /* ═══════════════════════════════════════════════════════════════════════
-   v69: PANEL MODERATOR — "Tidak Bisa Follow Up"
+   v70: HALAMAN MODERATOR — "Nomor Ditandai"
    ───────────────────────────────────────────────────────────────────────
-   Daftar semua customer (lintas semua staff) yang ditandai fu_unreachable
-   oleh pemiliknya lewat halaman Follow Up. Moderator tinjau di sini:
-   HAPUS PERMANEN dari CRM, atau BATALKAN tanda-nya (kembali normal). ═══ */
+   Dulunya panel kecil nempel di dropdown Database Customer (v69), sekarang
+   halaman tersendiri di sidebar — supaya moderator punya ruang khusus buat
+   meninjau customer (lintas semua staff) yang ditandai fu_unreachable lewat
+   halaman Follow Up masing-masing. Dua aksi per baris: HAPUS PERMANEN dari
+   CRM, atau BATALKAN tanda-nya (customer kembali normal, tidak terhapus). */
 let _crmUnreachList = [];
-let _crmUnreachOpen = false;
 
 async function crmLoadUnreachable() {
   if (!crmUsesDB()) { _crmUnreachList = crmData.filter(c => c.fu_unreachable); return _crmUnreachList; }
@@ -20245,25 +20263,11 @@ async function crmLoadUnreachable() {
   return _crmUnreachList;
 }
 
-async function crmToggleUnreachablePanel() {
-  _crmUnreachOpen = !_crmUnreachOpen;
-  const wrap = document.getElementById('crm-unreach-panel');
-  const btn = document.getElementById('crm-unreach-toggle-btn');
-  if (!wrap) return;
-  if (_crmUnreachOpen) {
-    wrap.style.display = '';
-    if (btn) btn.classList.add('is-active');
-    await crmLoadUnreachable();
-    crmRenderUnreachablePanel();
-  } else {
-    wrap.style.display = 'none';
-    if (btn) btn.classList.remove('is-active');
-  }
-}
-window.crmToggleUnreachablePanel = crmToggleUnreachablePanel;
-
-async function crmRefreshUnreachBadgeCount() {
-  const badge = document.getElementById('crm-unreach-count-badge');
+/* Badge kecil di sidebar (n-crm-unreach) — dipanggil tiap kali Database
+   Customer atau halaman ini sendiri dibuka, biar moderator langsung lihat
+   ada berapa yang perlu ditinjau tanpa harus buka halamannya dulu. */
+async function crmRefreshUnreachNavBadge() {
+  const badge = document.getElementById('crm-unreach-nav-badge');
   if (!badge || !crmUsesDB()) return;
   try {
     const res = await dbQ(d => d.from('crm_customers').select('id', { count: 'exact', head: true }).eq('fu_unreachable', true));
@@ -20272,16 +20276,22 @@ async function crmRefreshUnreachBadgeCount() {
   } catch(e) { /* diam-diam, badge bukan fitur kritikal */ }
 }
 
-function crmRenderUnreachablePanel() {
-  const wrap = document.getElementById('crm-unreach-list');
-  if (!wrap) return;
-  const countEl = document.getElementById('crm-unreach-count-badge');
-  if (countEl) { countEl.textContent = _crmUnreachList.length; countEl.style.display = _crmUnreachList.length ? '' : 'none'; }
+async function renderCrmUnreachPage() {
+  const root = document.getElementById('crm-unreach-page-list');
+  if (!root || !currentUser) return;
+  root.innerHTML = `<div class="myperf-empty" style="padding:20px 0">Memuat data…</div>`;
+  try { await crmLoadUnreachable(); }
+  catch(e) { console.warn('[DHP] renderCrmUnreachPage gagal:', e); root.innerHTML = `<div class="myperf-empty">Gagal memuat data — coba muat ulang.</div>`; return; }
+
+  const pageBadge = document.getElementById('crm-unreach-page-badge');
+  if (pageBadge) { pageBadge.textContent = _crmUnreachList.length; pageBadge.style.display = _crmUnreachList.length ? '' : 'none'; }
+  crmRefreshUnreachNavBadge();
+
   if (!_crmUnreachList.length) {
-    wrap.innerHTML = `<div class="crm-unreach-empty">${FU_ICO.inbox}<span>Tidak ada customer yang ditandai "tidak bisa di-follow up" saat ini.</span></div>`;
+    root.innerHTML = `<div class="crm-unreach-empty">${FU_ICO.inbox}<span>Belum ada customer yang ditandai "tidak bisa di-follow up" — semua bersih ✓</span></div>`;
     return;
   }
-  wrap.innerHTML = _crmUnreachList.map(c => {
+  root.innerHTML = _crmUnreachList.map(c => {
     const key = c._uuid || c.id_customer;
     const keyJs = escHtml(key).replace(/'/g,"\\'");
     const owner = getUserMeta(c.owner_id);
@@ -20300,6 +20310,7 @@ function crmRenderUnreachablePanel() {
     </div>`;
   }).join('');
 }
+window.renderCrmUnreachPage = renderCrmUnreachPage;
 
 async function crmUnmarkUnreachable(key) {
   const c = _crmUnreachList.find(x => (x._uuid||x.id_customer) === key);
@@ -20307,8 +20318,7 @@ async function crmUnmarkUnreachable(key) {
   try { await dbQ(d => d.rpc('unmark_crm_unreachable', { p_id: c._uuid, p_user_id: currentUser.id })); }
   catch(e) { console.warn('[DHP] unmark_crm_unreachable gagal:', e); toast('Gagal membatalkan tanda — coba lagi'); return; }
   toast(`✓ Tanda pada ${c.nama || 'customer'} dibatalkan — kembali normal`);
-  await crmLoadUnreachable();
-  crmRenderUnreachablePanel();
+  renderCrmUnreachPage();
 }
 window.crmUnmarkUnreachable = crmUnmarkUnreachable;
 
@@ -20320,9 +20330,7 @@ async function crmDeleteUnreachable(key) {
   try { await dbQ(d => d.rpc('delete_crm_customer', { p_id: c._uuid, p_user_id: currentUser.id })); }
   catch(e) { console.warn('[DHP] delete_crm_customer gagal:', e); toast('Gagal menghapus — coba lagi'); return; }
   toast(`🗑 ${c.nama || 'Customer'} dihapus permanen`);
-  await crmLoadUnreachable();
-  crmRenderUnreachablePanel();
-  await loadCRM(); renderCRM();
+  renderCrmUnreachPage();
 }
 window.crmDeleteUnreachable = crmDeleteUnreachable;
 
@@ -21566,6 +21574,7 @@ function navTo(page, btn) {
   if (page === 'faq'            && !can.canFaqQuickReply(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Admin / B2B Marketing / Moderator access required'); return; }
   if (page === 'quick_reply'    && !can.canFaqQuickReply(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Admin / B2B Marketing / Moderator access required'); return; }
   if (page === 'leaderboard'    && !can.canFollowup(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Admin / B2B Marketing / Moderator access required'); return; }
+  if (page === 'crm_unreach'    && !can.isMod(r)) { toast('Moderator access required'); return; } // v70: khusus moderator, bukan Owner
 
   document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
   const target = document.getElementById(`pg-${page}`); if (target) target.classList.add('active');
@@ -21611,6 +21620,7 @@ function loadPageData(page) {
   }
   if (page === 'ad_customers')    renderAdCustomers();
   if (page === 'crm')             renderCRM();
+  if (page === 'crm_unreach')     renderCrmUnreachPage();
   if (page === 'ad_task')         {
     // Non-mod: reload task dari DB setiap kali buka halaman
     if (db && currentUser && !can.isMod(currentUser.role)) {
