@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<meta name="dhp-build" content="2026-08-27T00-00-00-v73"/>
+<meta name="dhp-build" content="2026-08-27T01-30-00-v74"/>
 <title>DHP Creative — Command Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Shippori+Mincho:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
@@ -2749,9 +2749,12 @@ body.light .target-card{background:#ffffff}
 .fu-done-check{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(122,191,142,.18);color:var(--green);flex-shrink:0}
 .fu-done-check svg{width:9px;height:9px}
 .fu-act-cell{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
-.fu-wa-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:11px;font-weight:600;color:#fff;background:#25D366;text-decoration:none;white-space:nowrap;padding:7px 12px;border-radius:7px;transition:filter .15s,transform .15s;box-shadow:0 1px 4px rgba(37,211,102,.25)}
+.fu-wa-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:11px;font-weight:600;color:#fff;background:#25D366;text-decoration:none;white-space:nowrap;padding:7px 10px 7px 12px;border-radius:7px;transition:filter .15s,transform .15s;box-shadow:0 1px 4px rgba(37,211,102,.25);border:none;cursor:pointer;font-family:'Inter',sans-serif;position:relative}
 .fu-wa-btn:hover{filter:brightness(1.08);transform:translateY(-1px);text-decoration:none}
 .fu-wa-btn svg{flex-shrink:0}
+.fu-wa-btn.is-open{filter:brightness(1.1);box-shadow:0 0 0 2px rgba(37,211,102,.3),0 1px 4px rgba(37,211,102,.25)}
+.fu-wa-chevron{opacity:.85;transition:transform .22s cubic-bezier(.16,1,.3,1)}
+.fu-wa-btn.is-open .fu-wa-chevron{transform:rotate(180deg)}
 .fu-wa-none{font-size:10.5px;color:var(--muted);font-style:italic;white-space:nowrap}
 .fu-progress-btn{padding:7px 14px;font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border-radius:6px;border:1px solid var(--border-hi);background:transparent;color:var(--text2);cursor:pointer;transition:all var(--trans);white-space:nowrap;font-family:'Inter',sans-serif}
 .fu-progress-btn:hover{border-color:var(--gold);color:var(--text);background:rgba(201,169,110,.08);transform:translateY(-1px)}
@@ -2761,6 +2764,40 @@ body.light .fu-wa-btn{box-shadow:0 1px 6px rgba(37,211,102,.3)}
 @media (max-width:720px){
   .fu-act-cell{flex-direction:column;align-items:stretch}
 }
+
+/* ══ FOLLOW UP — MENU TEMPLATE CHAT WA (v74) ══════════════════════════
+   Tombol "Chat WA" sekarang membuka menu pilihan template alih-alih
+   langsung mengirim satu template baku: Leads Baru / Customer Lama /
+   Masih Ragu (masing-masing dengan pesan siap pakai) & Manual (langsung
+   ke WA tanpa teks, staff ketik sendiri). Satu menu global dipakai
+   ulang utk semua baris (persis pola #ls-attn-menu di Jadwal Live),
+   position:fixed dihitung JS supaya tidak pernah ke-clip oleh
+   overflow:hidden .tbl-wrap, aman di HP maupun desktop. ══════════════ */
+.fu-wa-menu{position:fixed;min-width:236px;max-width:min(280px,calc(100vw - 16px));background:var(--surface);
+  border:1px solid var(--border-hi);border-radius:11px;padding:7px;z-index:2500;
+  box-shadow:0 16px 38px rgba(0,0,0,.45),0 0 0 1px rgba(37,211,102,.08);
+  opacity:0;transform:translateY(-8px) scale(.96);pointer-events:none;transform-origin:top right;
+  transition:opacity .2s cubic-bezier(.16,1,.3,1),transform .2s cubic-bezier(.16,1,.3,1)}
+.fu-wa-menu.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.fu-wa-item{display:flex;align-items:flex-start;gap:10px;width:100%;padding:9px 10px;border-radius:8px;
+  background:transparent;border:none;cursor:pointer;text-align:left;font-family:'Inter',sans-serif;
+  color:var(--text);transition:background .14s ease,padding-left .18s cubic-bezier(.16,1,.3,1),transform .14s ease}
+.fu-wa-item:hover{background:rgba(37,211,102,.1);padding-left:14px}
+.fu-wa-item:active{transform:scale(.98)}
+.fu-wa-item-ico{flex:none;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:rgba(37,211,102,.12);color:#1ea952;margin-top:0;transition:transform .18s ease}
+.fu-wa-item:hover .fu-wa-item-ico{transform:scale(1.1)}
+.fu-wa-item.is-manual .fu-wa-item-ico{background:var(--surface3);color:var(--muted)}
+.fu-wa-label-row{display:flex;flex-direction:column;gap:2px;min-width:0;padding-top:2px}
+.fu-wa-label-row>span:first-child{font-size:12.5px;font-weight:600;letter-spacing:.01em}
+.fu-wa-item-sub{font-size:10px;color:var(--text2);line-height:1.35;font-weight:400}
+.fu-wa-sep{height:1px;background:var(--border);margin:6px 3px}
+@keyframes fuWaFadeIn{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}
+.fu-wa-menu.open .fu-wa-item{animation:fuWaFadeIn .2s ease both}
+.fu-wa-menu.open .fu-wa-item:nth-child(2){animation-delay:.03s}
+.fu-wa-menu.open .fu-wa-item:nth-child(3){animation-delay:.06s}
+.fu-wa-menu.open .fu-wa-item:nth-child(4){animation-delay:.09s}
+body.light .fu-wa-menu{box-shadow:0 16px 38px rgba(0,0,0,.14),0 0 0 1px rgba(37,211,102,.1)}
 
 /* Section head — pemisah antara Tugas Utama & Tugas Pribadi/Custom */
 .mt-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
@@ -6147,6 +6184,9 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
     <div class="modal-foot" id="m-foot"></div>
   </div>
 </div>
+
+<!-- ══ FOLLOW UP — menu pilihan template Chat WA (global, dipakai ulang semua baris) ══ -->
+<div class="fu-wa-menu" id="fu-wa-menu"></div>
 
 <!-- ══ MY PROFILE MODAL ══ -->
 <div id="profile-modal-ov" onclick="if(event.target===this)closeProfileModal()" style="position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9000;display:none;align-items:center;justify-content:center;padding:16px">
@@ -22805,23 +22845,177 @@ async function loadFollowupMine() {
 let _fuOrder = null;
 let _fuSearchQ = '';
 
-// Template chat WA follow-up yang profesional & otomatis memanggil nama customer.
-function fuWaTemplate(c) {
+// Nomor WA customer (dipakai tombol menu template follow-up di bawah).
+function fuWaInfo(c) {
   const waInfo = crmFormatWaLink(c.wa);
   if (!waInfo) return null;
   const firstName = (c.nama || '').trim().split(/\s+/)[0] || '';
-  const greet = firstName ? `Halo Kak ${firstName}` : 'Halo Kak';
+  return { waRaw: waInfo.href.replace('https://wa.me/', ''), name: firstName };
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   v74 — MENU TEMPLATE CHAT WA (Follow Up)
+   Tombol "Chat WA" tidak lagi langsung mengirim 1 template baku — sekarang
+   membuka menu pilihan 4 skenario, biar staff tinggal pilih sesuai kondisi
+   leads-nya tanpa perlu mengetik ulang dari nol:
+     1) Leads Baru      — perkenalan produk (template sesuai brief owner)
+     2) Customer Lama   — sapa ulang pelanggan yang pernah beli
+     3) Masih Ragu      — yakinkan yang belum memutuskan
+     4) Manual          — TANPA template, langsung buka chat WA kosong
+   Satu menu global dipakai ulang utk semua baris (persis pola
+   #ls-attn-menu di halaman Jadwal Live) — position:fixed dihitung JS
+   supaya tidak ke-clip oleh overflow:hidden .tbl-wrap & aman di HP. ══════ */
+function fuGreetingWord() {
+  const h = (typeof cshTodayJakarta === 'function' ? cshTodayJakarta() : new Date()).getHours();
+  if (h < 11) return 'pagi';
+  if (h < 15) return 'siang';
+  return 'sore';
+}
+const FU_WA_MENU_ICO = {
+  baru: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="5.6" r="2.3" stroke="currentColor" stroke-width="1.3"/><path d="M1.6 13.5c.6-2.6 2.4-4.1 4.4-4.1s3.8 1.5 4.4 4.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M12.3 5v3.3M10.6 6.65h3.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
+  lama: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 8a5.4 5.4 0 1 1 1.7 3.9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M2.4 11.6V8.2h3.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 5.2v2.9l1.9 1.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  ragu: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 8a6 6 0 1 1 2.2 4.6L2 13.4l.8-2.4A5.96 5.96 0 0 1 2 8Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M6.3 6.2c.2-.9 1-1.5 1.9-1.4.9.1 1.5.8 1.4 1.6-.1.7-.6 1-1.1 1.3-.4.3-.7.5-.7 1.1" stroke="currentColor" stroke-width="1.15" stroke-linecap="round"/><circle cx="8" cy="11" r=".7" fill="currentColor"/></svg>',
+  manual: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.6 2.4l3 3-7.8 7.8-3.5.5.5-3.5 7.8-7.8Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M9.4 3.6l3 3" stroke="currentColor" stroke-width="1.25"/></svg>'
+};
+const FU_WA_TEMPLATES = {
+  baru: {
+    label: 'Leads Baru', sub: 'Perkenalan produk ke leads baru', icon: FU_WA_MENU_ICO.baru,
+    build: (name, agent) => {
+      const call = name ? `Kak ${name}` : 'Kak';
+      return [
+        `Selamat ${fuGreetingWord()}, saya ${agent} dari *Confetti Sprei Kaos Premium*`,
+        `🥇 Kami adalah _Pionir_ sprei kaos premium di Indonesia`,
+        `💎 \`10 tahun\` pengalaman`,
+        `✅ Telah dipakai oleh \`> 100.000\` keluarga di Indonesia`,
+        `🎨 30+ warna & motif bisa mix & match`,
+        `💟 *Bahan 100% cotton*, lembut dan nyaman`,
+        `♾️ _Full karet keliling_, tidak perlu disetrika, langsung rapi saat dipasang.`,
+        ``,
+        `Bisa saya bantu, ${call} perlu sprei ukuran single, queen atau king?`
+      ].join('\n');
+    }
+  },
+  lama: {
+    label: 'Customer Lama', sub: 'Sapa ulang pelanggan yang pernah beli', icon: FU_WA_MENU_ICO.lama,
+    build: (name, agent) => {
+      const call = name ? `Kak ${name}` : 'Kak';
+      return [
+        `Selamat ${fuGreetingWord()} ${call} 🙏`,
+        `Saya ${agent} dari *Confetti Sprei Kaos Premium*.`,
+        `Terima kasih banyak sudah pernah belanja bersama kami sebelumnya 💛`,
+        ``,
+        `Kebetulan ada motif & koleksi *terbaru* yang baru rilis, siapa tahu ${call} tertarik menambah koleksi sprei di rumah 🏠`,
+        `✨ Motif baru tiap bulan`,
+        `🎁 Ada promo khusus untuk pelanggan setia seperti ${call}`,
+        ``,
+        `Kalau berkenan, boleh saya kirimkan katalog terbarunya? 😊`
+      ].join('\n');
+    }
+  },
+  ragu: {
+    label: 'Masih Ragu', sub: 'Yakinkan yang belum memutuskan', icon: FU_WA_MENU_ICO.ragu,
+    build: (name, agent) => {
+      const call = name ? `Kak ${name}` : 'Kak';
+      return [
+        `Halo ${call}, saya ${agent} dari *Confetti Sprei Kaos Premium* 🙏`,
+        `Saya lihat ${call} sempat tanya-tanya sebelumnya — mungkin masih ada yang dipertimbangkan ya? Wajar banget kok 😊`,
+        ``,
+        `Biar makin yakin, ini beberapa hal yang sering ditanyakan pelanggan kami:`,
+        `✅ Garansi *kualitas bahan* — 100% cotton, tidak gampang pudar`,
+        `✅ Sudah dipercaya \`> 100.000\` keluarga di Indonesia`,
+        `✅ Bisa konsultasi ukuran & motif dulu sebelum order`,
+        `✅ Proses pengiriman rapi & aman`,
+        ``,
+        `Ada yang bisa saya bantu jelaskan lebih detail, ${call}? Saya siap bantu sampai ${call} yakin 🙏`
+      ].join('\n');
+    }
+  },
+  manual: { label: 'Manual', sub: 'Tanpa template, ketik pesan sendiri', icon: FU_WA_MENU_ICO.manual, build: null }
+};
+
+let _fuWaBtnEl = null;   // tombol trigger yg sedang aktif
+let _fuWaData  = null;   // { wa, name } milik baris yg sedang dibuka
+
+function fuWaOutsideHandler(e) {
+  const menu = document.getElementById('fu-wa-menu');
+  if (menu && !menu.contains(e.target) && _fuWaBtnEl && !_fuWaBtnEl.contains(e.target)) closeFuWaMenu();
+}
+function fuWaEscHandler(e) { if (e.key === 'Escape') closeFuWaMenu(); }
+function fuWaRepositionHandler() { positionFuWaMenu(); }
+
+function positionFuWaMenu() {
+  const btn = _fuWaBtnEl, menu = document.getElementById('fu-wa-menu');
+  if (!btn || !menu) return;
+  const r = btn.getBoundingClientRect();
+  const menuW = Math.max(menu.offsetWidth || 236, 200);
+  const menuH = menu.offsetHeight || 0;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  let left = r.right - menuW;
+  left = Math.max(8, Math.min(left, vw - menuW - 8));
+  let top = r.bottom + 8;
+  if (menuH && top + menuH > vh - 8) {
+    const above = r.top - menuH - 8;
+    top = above > 8 ? above : Math.max(8, vh - menuH - 8);
+  }
+  menu.style.left = left + 'px';
+  menu.style.top = top + 'px';
+}
+
+function closeFuWaMenu() {
+  const menu = document.getElementById('fu-wa-menu');
+  if (menu) menu.classList.remove('open');
+  if (_fuWaBtnEl) _fuWaBtnEl.classList.remove('is-open');
+  _fuWaBtnEl = null;
+  _fuWaData = null;
+  document.removeEventListener('click', fuWaOutsideHandler, true);
+  document.removeEventListener('keydown', fuWaEscHandler, true);
+  window.removeEventListener('resize', fuWaRepositionHandler);
+  document.querySelector('.main')?.removeEventListener('scroll', fuWaRepositionHandler, true);
+}
+
+function renderFuWaMenu() {
+  const menu = document.getElementById('fu-wa-menu');
+  if (!menu) return;
+  menu.innerHTML = Object.keys(FU_WA_TEMPLATES).map((key, i) => {
+    const tpl = FU_WA_TEMPLATES[key];
+    const sepBefore = key === 'manual' ? '<div class="fu-wa-sep"></div>' : '';
+    return `${sepBefore}<button type="button" class="fu-wa-item${key === 'manual' ? ' is-manual' : ''}" onclick="fuWaPick('${key}')">
+      <span class="fu-wa-item-ico">${tpl.icon}</span>
+      <span class="fu-wa-label-row"><span>${tpl.label}</span><span class="fu-wa-item-sub">${tpl.sub}</span></span>
+    </button>`;
+  }).join('');
+}
+
+function toggleFuWaMenu(e, btn) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById('fu-wa-menu');
+  if (!menu || !btn) return;
+  if (menu.classList.contains('open') && _fuWaBtnEl === btn) { closeFuWaMenu(); return; }
+  closeFuWaMenu();
+  _fuWaBtnEl = btn;
+  _fuWaData = { wa: btn.dataset.wa || '', name: btn.dataset.name || '' };
+  btn.classList.add('is-open');
+  renderFuWaMenu();
+  positionFuWaMenu();
+  menu.classList.add('open');
+  requestAnimationFrame(() => positionFuWaMenu());
+  setTimeout(() => {
+    document.addEventListener('click', fuWaOutsideHandler, true);
+    document.addEventListener('keydown', fuWaEscHandler, true);
+    window.addEventListener('resize', fuWaRepositionHandler);
+    document.querySelector('.main')?.addEventListener('scroll', fuWaRepositionHandler, true);
+  }, 0);
+}
+
+function fuWaPick(key) {
+  const data = _fuWaData;
+  const tpl = FU_WA_TEMPLATES[key];
+  if (!data || !data.wa || !tpl) { closeFuWaMenu(); return; }
   const agent = (currentUser && currentUser.name) ? currentUser.name : 'tim kami';
-  const productLine = c.produk_fav ? ` mengenai ${c.produk_fav}` : '';
-  const text = [
-    `${greet}, mohon maaf mengganggu waktunya 🙏`,
-    ``,
-    `Perkenalkan saya ${agent}. Saya ingin menindaklanjuti (follow up) minat/pesanan Kakak sebelumnya${productLine}.`,
-    `Apakah Kakak masih berkenan untuk melanjutkan, atau ada yang bisa kami bantu informasikan lebih lanjut?`,
-    ``,
-    `Kami siap membantu kapan saja ya, Kak. Terima kasih banyak 🙏`
-  ].join('\n');
-  return { href: `${waInfo.href}?text=${encodeURIComponent(text)}`, display: waInfo.display };
+  const text = tpl.build ? tpl.build(data.name, agent) : null;
+  const href = `https://wa.me/${data.wa}` + (text ? `?text=${encodeURIComponent(text)}` : '');
+  closeFuWaMenu();
+  window.open(href, '_blank', 'noopener');
 }
 
 function fuHeatOf(c) { return c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status)); }
@@ -22952,7 +23146,7 @@ function fuRowHtml(c) {
   const custKeyJs = escHtml(custKey).replace(/'/g,"\\'");
   const heat = fuHeatOf(c);
   const doneToday = followupDoneTodayIds.has(_followupCustKey(c));
-  const wa = fuWaTemplate(c);
+  const wa = fuWaInfo(c);
   const group = _fuGroupMap.get(_followupCustKey(c));
   let rowBadge = '';
   if (!doneToday && group === 'mod') {
@@ -22979,7 +23173,7 @@ function fuRowHtml(c) {
     <td>${fuDaysAgoLabel(c)}</td>
     <td>
       <div class="fu-act-cell">
-        ${wa ? `<a href="${wa.href}" target="_blank" rel="noopener" class="fu-wa-btn" onclick="event.stopPropagation()">${FU_WA_ICON}<span>${t('followupChatWa')}</span></a>` : `<span class="fu-wa-none">${t('followupNoWa')}</span>`}
+        ${wa ? `<button type="button" class="fu-wa-btn" data-wa="${escHtml(wa.waRaw)}" data-name="${escHtml(wa.name)}" onclick="event.stopPropagation();toggleFuWaMenu(event,this)">${FU_WA_ICON}<span>${t('followupChatWa')}</span><svg class="fu-wa-chevron" width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6l4.5 4.5L12.5 6"/></svg></button>` : `<span class="fu-wa-none">${t('followupNoWa')}</span>`}
         ${doneToday
           ? `<button type="button" class="fu-progress-done" disabled>${FU_CHECK_ICON}${t('followupBtnDone')}</button>`
           : `<button type="button" class="fu-progress-btn" onclick="markFollowedUp('${custKeyJs}')">${t('followupBtnProgress')}</button>`}
