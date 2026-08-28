@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<meta name="dhp-build" content="2026-08-27T01-30-00-v74"/>
+<meta name="dhp-build" content="2026-08-27T03-00-00-v75"/>
 <title>DHP Creative — Command Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Shippori+Mincho:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
@@ -4148,6 +4148,25 @@ body.light .kol-card{background:#ffffff;border:1.5px solid rgba(0,0,0,.1)}
 body.light .kol-plat-row,body.light .kol-fin-box,body.light .kol-note,body.light .kol-report-item{background:#f7f7f8}
 body.light .kol-fin-val{color:#0d0d0d}
 
+/* ══ v75 — Progress Konten (target video vs. sudah dilaporkan) ══ */
+.kol-video-progress{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:9px 11px}
+.kvp-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.kvp-lbl{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--text2);font-weight:700}
+.kvp-lbl svg{width:12px;height:12px;color:var(--gold);flex-shrink:0}
+.kvp-count{font-size:12px;font-weight:800;color:var(--gold-hi);font-variant-numeric:tabular-nums;white-space:nowrap}
+.kvp-count.is-complete{color:var(--green)}
+.kvp-bar{height:6px;border-radius:20px;background:rgba(255,255,255,.06);overflow:hidden}
+body.light .kvp-bar{background:rgba(0,0,0,.07)}
+.kvp-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--gold-lo,#a06840),var(--gold,#c9a96e));
+  transition:width .5s cubic-bezier(.16,1,.3,1)}
+.kvp-fill.is-complete{background:linear-gradient(90deg,#5a9c6e,var(--green))}
+
+/* Header section platform di form (TikTok/Instagram/Shopee) — ikon + label,
+   biar langsung kebaca platform mana tanpa perlu baca teks dulu. */
+.kol-plat-section-hd{display:flex;align-items:center;gap:8px;font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px}
+.kol-plat-section-hd .plat-badge{width:20px;height:20px;border-radius:6px}
+
 /* ══════════════════════════════════════════════════════════════
    🏆 LEADERBOARD — papan peringkat bulanan, elegan & animasi
    ══════════════════════════════════════════════════════════════ */
@@ -4999,6 +5018,12 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
               <option value="Micro">Micro</option>
               <option value="Macro">Macro</option>
               <option value="Mega">Mega</option>
+            </select>
+            <select class="ads-select" id="kol-plat-filter" onchange="renderKolAffiliate()">
+              <option value="all">Semua Platform</option>
+              <option value="tiktok">TikTok</option>
+              <option value="instagram">Instagram</option>
+              <option value="shopee">Shopee</option>
             </select>
             <select class="ads-select" id="kol-status-filter" onchange="renderKolAffiliate()">
               <option value="all">Semua Status</option>
@@ -18356,14 +18381,47 @@ function kolRoi(modal, sales) {
 function kolInitials(name) {
   return (name || '?').trim().split(/\s+/).slice(0,2).map(w => w[0]).join('').toUpperCase();
 }
+const KOL_IG_ICON = '<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="4" stroke="#fff" stroke-width="1.3"/><circle cx="8" cy="8" r="3.1" stroke="#fff" stroke-width="1.3"/><circle cx="11.6" cy="4.4" r="0.9" fill="#fff"/></svg>';
+function kolPlatBadge(key, size) {
+  if (key === 'instagram') {
+    return `<span class="plat-badge plat-badge-${size||'md'}" style="background:linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7);display:inline-flex;align-items:center;justify-content:center">${KOL_IG_ICON}</span>`;
+  }
+  return platBadge(key, size);
+}
+const KOL_CLAPPER_ICON = '<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 6.6h12v6.4a1 1 0 01-1 1H3a1 1 0 01-1-1V6.6z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M2 6.6l.7-3.1a1 1 0 011-.78l8.7 1.5a1 1 0 01.8 1.16l-.3 1.22" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M4.3 3.1l1.6 3M7.6 3.6l1.6 3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>';
+
+/* Progres konten = jumlah report performa yg sudah masuk dibanding target
+   jumlah video yang disepakati (video_target). Dihitung OTOMATIS dari data
+   report yang benar-benar ada (bukan dicentang manual) — supaya selalu
+   akurat & terukur, dan tidak bisa "dicurangi" tanpa report sungguhan. */
+function kolVideoProgressHtml(r) {
+  const target = Math.max(0, Number(r.video_target) || 0);
+  if (!target) return '';
+  const done = kolReportCountMap[r.id] || 0;
+  const pct = Math.min(100, Math.round((done / target) * 100));
+  const complete = done >= target;
+  return `<div class="kol-video-progress">
+    <div class="kvp-top">
+      <span class="kvp-lbl">${KOL_CLAPPER_ICON} Progress Konten</span>
+      <span class="kvp-count ${complete ? 'is-complete' : ''}">${done}/${target} Video${complete ? ' ✓' : ''}</span>
+    </div>
+    <div class="kvp-bar"><div class="kvp-fill ${complete ? 'is-complete' : ''}" style="width:${pct}%"></div></div>
+  </div>`;
+}
 
 let kolCache = [];
 let kolReportsCache = [];
+let kolReportCountMap = {}; // { kol_id: jumlah_report } — dasar hitung Progress Konten n/target
 
 async function loadKolAffiliatePage() {
   if (!db) { toast('Supabase tidak aktif'); return; }
-  const res = await dbQ(d => d.from('kol_affiliates').select('*').order('created_at', { ascending:false }));
-  kolCache = res?.data || [];
+  const [kolRes, repCountRes] = await Promise.all([
+    dbQ(d => d.from('kol_affiliates').select('*').order('created_at', { ascending:false })),
+    dbQ(d => d.from('kol_affiliate_reports').select('id,kol_id'))
+  ]);
+  kolCache = kolRes?.data || [];
+  kolReportCountMap = {};
+  (repCountRes?.data || []).forEach(rp => { kolReportCountMap[rp.kol_id] = (kolReportCountMap[rp.kol_id] || 0) + 1; });
   renderKolAffiliate();
 }
 window.loadKolAffiliatePage = loadKolAffiliatePage;
@@ -18376,12 +18434,19 @@ function renderKolAffiliate() {
   const q      = (document.getElementById('kol-search')?.value || '').trim().toLowerCase();
   const catF   = document.getElementById('kol-cat-filter')?.value || 'all';
   const tierF  = document.getElementById('kol-tier-filter')?.value || 'all';
+  const platF  = document.getElementById('kol-plat-filter')?.value || 'all';
   const statF  = document.getElementById('kol-status-filter')?.value || 'all';
 
   let rows = kolCache.slice();
   if (q) rows = rows.filter(r => (r.name || '').toLowerCase().includes(q));
   if (catF !== 'all') rows = rows.filter(r => r.category === catF);
-  if (tierF !== 'all') rows = rows.filter(r => r.tiktok_tier === tierF || r.instagram_tier === tierF);
+  if (tierF !== 'all') rows = rows.filter(r => r.tiktok_tier === tierF || r.instagram_tier === tierF || r.shopee_tier === tierF);
+  if (platF !== 'all') rows = rows.filter(r => {
+    if (platF === 'tiktok') return !!(r.tiktok_username || r.tiktok_followers);
+    if (platF === 'instagram') return !!(r.instagram_username || r.instagram_followers);
+    if (platF === 'shopee') return !!(r.shopee_username || r.shopee_followers);
+    return true;
+  });
   if (statF !== 'all') rows = rows.filter(r => (r.progress_status || 'Nego') === statF);
 
   // Stats — dihitung dari SELURUH data (bukan hasil filter) supaya konsisten
@@ -18415,7 +18480,7 @@ function renderKolAffiliate() {
     const platRows = [];
     if (r.tiktok_username || r.tiktok_followers) {
       platRows.push(`<div class="kol-plat-row">
-        ${platBadge('tiktok','sm')}
+        ${kolPlatBadge('tiktok','sm')}
         <div class="kol-plat-meta">
           <div class="kol-plat-handle">${r.tiktok_link ? `<a href="${escHtml(r.tiktok_link)}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">@${escHtml(r.tiktok_username||'')}</a>` : '@'+escHtml(r.tiktok_username||'—')}</div>
           <div class="kol-plat-followers">${(Number(r.tiktok_followers)||0).toLocaleString('id-ID')} followers</div>
@@ -18425,14 +18490,22 @@ function renderKolAffiliate() {
     }
     if (r.instagram_username || r.instagram_followers) {
       platRows.push(`<div class="kol-plat-row">
-        <span class="plat-badge plat-badge-sm" style="background:linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7);display:inline-flex;align-items:center;justify-content:center">
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="4" stroke="#fff" stroke-width="1.3"/><circle cx="8" cy="8" r="3.1" stroke="#fff" stroke-width="1.3"/><circle cx="11.6" cy="4.4" r="0.9" fill="#fff"/></svg>
-        </span>
+        ${kolPlatBadge('instagram','sm')}
         <div class="kol-plat-meta">
           <div class="kol-plat-handle">${r.instagram_link ? `<a href="${escHtml(r.instagram_link)}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">@${escHtml(r.instagram_username||'')}</a>` : '@'+escHtml(r.instagram_username||'—')}</div>
           <div class="kol-plat-followers">${(Number(r.instagram_followers)||0).toLocaleString('id-ID')} followers</div>
         </div>
         ${kolTierBadgeHtml(r.instagram_tier)}
+      </div>`);
+    }
+    if (r.shopee_username || r.shopee_followers) {
+      platRows.push(`<div class="kol-plat-row">
+        ${kolPlatBadge('shopee','sm')}
+        <div class="kol-plat-meta">
+          <div class="kol-plat-handle">${r.shopee_link ? `<a href="${escHtml(r.shopee_link)}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">@${escHtml(r.shopee_username||'')}</a>` : '@'+escHtml(r.shopee_username||'—')}</div>
+          <div class="kol-plat-followers">${(Number(r.shopee_followers)||0).toLocaleString('id-ID')} followers</div>
+        </div>
+        ${kolTierBadgeHtml(r.shopee_tier)}
       </div>`);
     }
 
@@ -18454,6 +18527,8 @@ function renderKolAffiliate() {
 
       ${kolStepperHtml(r.progress_status || 'Nego')}
 
+      ${kolVideoProgressHtml(r)}
+
       <div class="kol-fin-row">
         <div class="kol-fin-box"><div class="kol-fin-lbl">Modal/HPP</div><div class="kol-fin-val">${crmFmtRupiah(r.hpp_modal||0)}</div></div>
         <div class="kol-fin-box"><div class="kol-fin-lbl">Penjualan</div><div class="kol-fin-val">${crmFmtRupiah(r.total_sales||0)}</div></div>
@@ -18466,6 +18541,7 @@ function renderKolAffiliate() {
         <span class="kol-status-pill ${statusCls}">${overall}</span>
         ${r.tiktok_video_link ? `<a href="${escHtml(r.tiktok_video_link)}" target="_blank" rel="noopener" class="btn-sm" style="text-decoration:none">▶ Video TikTok</a>` : ''}
         ${r.instagram_video_link ? `<a href="${escHtml(r.instagram_video_link)}" target="_blank" rel="noopener" class="btn-sm" style="text-decoration:none">▶ Video Instagram</a>` : ''}
+        ${r.shopee_video_link ? `<a href="${escHtml(r.shopee_video_link)}" target="_blank" rel="noopener" class="btn-sm" style="text-decoration:none">▶ Video Shopee</a>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -18500,7 +18576,7 @@ function openKolModal(id) {
     </div>
 
     <div style="border-top:1px solid var(--border);margin:14px 0 12px;padding-top:12px">
-      <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px">TikTok</div>
+      <div class="kol-plat-section-hd">${kolPlatBadge('tiktok','sm')} TikTok</div>
       <div class="fg"><label>Username TikTok</label>
         <input class="fi" id="kol-ed-tiktok-username" type="text" value="${escHtml(row?.tiktok_username || '')}" placeholder="tanpa @"/>
       </div>
@@ -18517,7 +18593,7 @@ function openKolModal(id) {
     </div>
 
     <div style="border-top:1px solid var(--border);margin:14px 0 12px;padding-top:12px">
-      <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px">Instagram</div>
+      <div class="kol-plat-section-hd">${kolPlatBadge('instagram','sm')} Instagram</div>
       <div class="fg"><label>Username Instagram</label>
         <input class="fi" id="kol-ed-instagram-username" type="text" value="${escHtml(row?.instagram_username || '')}" placeholder="tanpa @"/>
       </div>
@@ -18530,6 +18606,31 @@ function openKolModal(id) {
       </div>
       <div class="fg"><label>Link Video/Konten Instagram (setelah upload)</label>
         <input class="fi" id="kol-ed-instagram-video" type="text" value="${escHtml(row?.instagram_video_link || '')}" placeholder="https://instagram.com/reel/..."/>
+      </div>
+    </div>
+
+    <div style="border-top:1px solid var(--border);margin:14px 0 12px;padding-top:12px">
+      <div class="kol-plat-section-hd">${kolPlatBadge('shopee','sm')} Shopee</div>
+      <div class="fg"><label>Username / Nama Toko Shopee</label>
+        <input class="fi" id="kol-ed-shopee-username" type="text" value="${escHtml(row?.shopee_username || '')}" placeholder="tanpa @"/>
+      </div>
+      <div class="fg"><label>Link Profil/Video Shopee</label>
+        <input class="fi" id="kol-ed-shopee-link" type="text" value="${escHtml(row?.shopee_link || '')}" placeholder="https://shopee.co.id/..."/>
+      </div>
+      <div class="fg"><label>Jumlah Followers Shopee</label>
+        <input class="fi" id="kol-ed-shopee-followers" type="number" min="0" value="${row?.shopee_followers ?? ''}" placeholder="0" oninput="kolPreviewTier('shopee')"/>
+        <div style="margin-top:6px" id="kol-tier-preview-shopee">${kolTierBadgeHtml(row?.shopee_tier || kolComputeTier(row?.shopee_followers))}</div>
+      </div>
+      <div class="fg"><label>Link Video/Konten Shopee (setelah upload)</label>
+        <input class="fi" id="kol-ed-shopee-video" type="text" value="${escHtml(row?.shopee_video_link || '')}" placeholder="https://shopee.co.id/.../video/..."/>
+      </div>
+    </div>
+
+    <div style="border-top:1px solid var(--border);margin:14px 0 12px;padding-top:12px">
+      <div class="kol-plat-section-hd"><span style="display:inline-flex;width:20px;height:20px;align-items:center;justify-content:center;color:var(--gold)">${KOL_CLAPPER_ICON}</span> Target Konten</div>
+      <div class="fg"><label>Berapa Video yang Disepakati?</label>
+        <input class="fi" id="kol-ed-video-target" type="number" min="0" step="1" value="${row?.video_target ?? 1}" placeholder="mis. 2"/>
+        <div style="font-size:10px;color:var(--text2);margin-top:5px;line-height:1.4">Progress <b>${kolReportCountMap[row?.id]||0}/${row?.video_target ?? 1} Video</b> dihitung otomatis dari jumlah Report Performa yang sudah dimasukkan — bukan dicentang manual, jadi selalu akurat.</div>
       </div>
     </div>
 
@@ -18572,6 +18673,7 @@ async function saveKolEntry(id) {
 
   const tiktokFollowers    = crmParseInt(document.getElementById('kol-ed-tiktok-followers').value) || null;
   const instagramFollowers = crmParseInt(document.getElementById('kol-ed-instagram-followers').value) || null;
+  const shopeeFollowers    = crmParseInt(document.getElementById('kol-ed-shopee-followers').value) || null;
 
   const payload = {
     name,
@@ -18586,6 +18688,12 @@ async function saveKolEntry(id) {
     instagram_followers: instagramFollowers,
     instagram_tier: kolComputeTier(instagramFollowers),
     instagram_video_link: document.getElementById('kol-ed-instagram-video').value.trim() || null,
+    shopee_username: document.getElementById('kol-ed-shopee-username').value.trim() || null,
+    shopee_link: document.getElementById('kol-ed-shopee-link').value.trim() || null,
+    shopee_followers: shopeeFollowers,
+    shopee_tier: kolComputeTier(shopeeFollowers),
+    shopee_video_link: document.getElementById('kol-ed-shopee-video').value.trim() || null,
+    video_target: Math.max(0, crmParseInt(document.getElementById('kol-ed-video-target').value)),
     progress_status: document.getElementById('kol-ed-progress').value,
     hpp_modal: crmParseInt(document.getElementById('kol-ed-modal').value) || 0,
     total_sales: crmParseInt(document.getElementById('kol-ed-sales').value) || 0,
@@ -18663,8 +18771,18 @@ async function openKolReportModal(kolId) {
   const platOptions = [];
   if (kol.tiktok_username || kol.tiktok_followers) platOptions.push({ v:'tiktok', l:'TikTok', followers:kol.tiktok_followers, link:kol.tiktok_video_link });
   if (kol.instagram_username || kol.instagram_followers) platOptions.push({ v:'instagram', l:'Instagram', followers:kol.instagram_followers, link:kol.instagram_video_link });
+  if (kol.shopee_username || kol.shopee_followers) platOptions.push({ v:'shopee', l:'Shopee', followers:kol.shopee_followers, link:kol.shopee_video_link });
+
+  const vTarget = Math.max(0, Number(kol.video_target) || 0);
+  const vDone = kolReportCountMap[kolId] || 0;
+  const progressNote = vTarget ? `<div class="kol-video-progress" style="margin-bottom:14px">
+      <div class="kvp-top"><span class="kvp-lbl">${KOL_CLAPPER_ICON} Report ini akan jadi</span>
+        <span class="kvp-count ${vDone+1>=vTarget?'is-complete':''}">Video ke-${vDone+1} dari ${vTarget}</span></div>
+      <div class="kvp-bar"><div class="kvp-fill ${vDone>=vTarget?'is-complete':''}" style="width:${Math.min(100,Math.round((vDone/vTarget)*100))}%"></div></div>
+    </div>` : '';
 
   document.getElementById('m-body').innerHTML = `
+    ${progressNote}
     <div class="fg"><label>Platform</label>
       <select class="fi" id="kol-rep-platform" onchange="kolReportPlatformChange()">
         ${platOptions.map(p => `<option value="${p.v}">${p.l}</option>`).join('') || '<option value="tiktok">TikTok</option>'}
@@ -18705,7 +18823,7 @@ async function openKolReportModal(kolId) {
       ${kolReportsCache.map(rp => `
         <div class="kol-report-item">
           <div class="kri-l">
-            <div class="kri-plat">${rp.platform === 'tiktok' ? 'TikTok' : 'Instagram'} · ${rp.report_date || ''}</div>
+            <div class="kri-plat">${rp.platform === 'tiktok' ? 'TikTok' : rp.platform === 'shopee' ? 'Shopee' : 'Instagram'} · ${rp.report_date || ''}</div>
             <div class="kri-nums">👁 ${(rp.views||0).toLocaleString('id-ID')} · ❤ ${(rp.likes||0).toLocaleString('id-ID')} · 💬 ${(rp.comments||0).toLocaleString('id-ID')} · ↗ ${(rp.shares||0).toLocaleString('id-ID')}</div>
           </div>
           <div class="kri-er">${rp.er_followers!=null ? rp.er_followers.toFixed(2)+'%' : '—'}</div>
@@ -18786,6 +18904,7 @@ async function deleteKolReport(reportId, kolId) {
   const res = await dbQ(d => d.from('kol_affiliate_reports').delete().eq('id', reportId));
   if (res?.error) { toast('Gagal menghapus report: ' + res.error.message); return; }
   toast('Report dihapus');
+  await loadKolAffiliatePage();
   openKolReportModal(kolId);
 }
 window.deleteKolReport = deleteKolReport;
