@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<meta name="dhp-build" content="2026-08-27T03-00-00-v75"/>
+<meta name="dhp-build" content="2026-08-28T04-30-00-v76"/>
 <title>DHP Creative — Command Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Shippori+Mincho:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
@@ -4166,6 +4166,76 @@ body.light .kvp-bar{background:rgba(0,0,0,.07)}
 .kol-plat-section-hd{display:flex;align-items:center;gap:8px;font-size:9px;letter-spacing:.1em;
   text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px}
 .kol-plat-section-hd .plat-badge{width:20px;height:20px;border-radius:6px}
+
+/* ══ v76 — Quick Links (klik langsung ke TikTok/IG/Shopee/WA profil KOL) ══ */
+.kol-quick-links{display:flex;align-items:center;gap:7px;margin:11px 0 12px}
+.kol-qlink{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;border:1px solid var(--border-hi);background:var(--bg3);color:var(--text2);
+  cursor:pointer;transition:all .18s cubic-bezier(.16,1,.3,1);text-decoration:none;position:relative}
+.kol-qlink svg{width:15px;height:15px}
+.kol-qlink:hover{transform:translateY(-2px) scale(1.06);box-shadow:0 6px 14px rgba(0,0,0,.28)}
+.kol-qlink.ql-tiktok:hover{background:#0d0d10;border-color:#0d0d10;color:#25f4ee}
+.kol-qlink.ql-instagram:hover{background:linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7);border-color:transparent;color:#fff}
+.kol-qlink.ql-shopee:hover{background:#ee4d2d;border-color:#ee4d2d;color:#fff}
+.kol-qlink.ql-wa:hover{background:#25D366;border-color:#25D366;color:#fff}
+.kol-qlink-empty{font-size:10px;color:var(--muted);font-style:italic}
+
+/* ══ v76 — Task Kerjasama (multi-platform, target × progress per task) ══ */
+.kol-task-section{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 11px;margin-bottom:2px}
+.kol-task-summary{display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;user-select:none}
+.kts-left{display:flex;align-items:center;gap:7px;min-width:0}
+.kts-left svg{width:13px;height:13px;color:var(--gold);flex-shrink:0}
+.kts-lbl{font-size:10.5px;font-weight:700;color:var(--text);white-space:nowrap}
+.kts-sub{font-size:9.5px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kts-right{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.kts-count{font-size:11.5px;font-weight:800;color:var(--gold-hi);font-variant-numeric:tabular-nums;white-space:nowrap}
+.kts-count.is-complete{color:var(--green)}
+.kts-chevron{width:9px;height:9px;color:var(--muted);transition:transform .22s cubic-bezier(.16,1,.3,1)}
+.kol-task-section.expanded .kts-chevron{transform:rotate(180deg)}
+.kts-bar{height:5px;border-radius:20px;background:rgba(255,255,255,.06);overflow:hidden;margin-top:8px}
+body.light .kts-bar{background:rgba(0,0,0,.07)}
+.kts-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--gold-lo,#a06840),var(--gold,#c9a96e));transition:width .5s cubic-bezier(.16,1,.3,1)}
+.kts-fill.is-complete{background:linear-gradient(90deg,#5a9c6e,var(--green))}
+.kol-task-list{max-height:0;overflow:hidden;transition:max-height .3s cubic-bezier(.16,1,.3,1)}
+.kol-task-section.expanded .kol-task-list{max-height:900px}
+.kol-task-list-inner{display:flex;flex-direction:column;gap:7px;padding-top:10px;margin-top:10px;border-top:1px dashed var(--border)}
+.kol-task-row{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:8px 9px}
+body.light .kol-task-row{background:#fff}
+.ktr-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ktr-plats{display:flex;align-items:center;gap:4px}
+.ktr-plats .plat-badge{width:18px;height:18px;border-radius:5px}
+.ktr-title{font-size:10.5px;font-weight:600;color:var(--text);margin-left:2px}
+.ktr-note{font-size:9.5px;color:var(--text2);margin-top:3px;line-height:1.4}
+.ktr-acts{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.ktr-btn{width:20px;height:20px;border-radius:6px;border:1px solid var(--border-hi);background:transparent;
+  color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;
+  line-height:1;transition:all .15s ease;flex-shrink:0}
+.ktr-btn:hover{border-color:var(--gold);color:var(--gold);background:rgba(201,169,110,.08)}
+.ktr-btn:disabled{opacity:.3;cursor:default;pointer-events:none}
+.ktr-btn.ktr-del:hover{border-color:var(--red);color:var(--red);background:rgba(232,112,112,.08)}
+.ktr-count{font-size:10.5px;font-weight:800;color:var(--gold-hi);min-width:30px;text-align:center;font-variant-numeric:tabular-nums}
+.ktr-count.is-complete{color:var(--green)}
+.ktr-bar{height:4px;border-radius:20px;background:rgba(255,255,255,.06);overflow:hidden;margin-top:7px}
+body.light .ktr-bar{background:rgba(0,0,0,.06)}
+.ktr-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--gold-lo,#a06840),var(--gold,#c9a96e));transition:width .35s ease}
+.ktr-fill.is-complete{background:linear-gradient(90deg,#5a9c6e,var(--green))}
+.kol-task-empty{font-size:10px;color:var(--muted);text-align:center;padding:6px 0}
+.kol-task-add-btn{display:flex;align-items:center;justify-content:center;gap:5px;width:100%;padding:7px;
+  margin-top:2px;border:1px dashed var(--border-hi);border-radius:8px;background:transparent;color:var(--text2);
+  font-size:10px;font-weight:600;cursor:pointer;transition:all .15s ease}
+.kol-task-add-btn:hover{border-color:var(--gold);color:var(--gold);background:rgba(201,169,110,.06)}
+.kol-task-add-btn svg{width:11px;height:11px}
+
+/* Pilihan platform di modal Tambah Task — pill checkbox multi-select */
+.kol-task-plat-pills{display:flex;flex-wrap:wrap;gap:8px}
+.kol-task-plat-pill{display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:9px;
+  border:1.5px solid var(--border-hi);background:var(--bg3);cursor:pointer;transition:all .15s ease;flex:1;min-width:110px}
+.kol-task-plat-pill input{display:none}
+.kol-task-plat-pill .plat-badge{width:20px;height:20px;border-radius:6px}
+.kol-task-plat-pill span.ktp-lbl{font-size:11.5px;font-weight:600;color:var(--text2)}
+.kol-task-plat-pill.checked{border-color:var(--gold);background:rgba(201,169,110,.1)}
+.kol-task-plat-pill.checked span.ktp-lbl{color:var(--gold-hi)}
+.kol-task-plat-pill:hover{border-color:var(--gold)}
 
 /* ══════════════════════════════════════════════════════════════
    🏆 LEADERBOARD — papan peringkat bulanan, elegan & animasi
@@ -18394,6 +18464,10 @@ const KOL_CLAPPER_ICON = '<svg viewBox="0 0 16 16" fill="none" xmlns="http://www
    jumlah video yang disepakati (video_target). Dihitung OTOMATIS dari data
    report yang benar-benar ada (bukan dicentang manual) — supaya selalu
    akurat & terukur, dan tidak bisa "dicurangi" tanpa report sungguhan. */
+/* Progres video lama (v75, target tunggal per KOL) — digantikan sistem Task
+   Kerjasama multi-platform (v76) di bawah, fungsi ini disisakan tak terpakai
+   supaya kompatibel kalau ada data video_target lama, tapi tidak lagi
+   dipanggil di render kartu. */
 function kolVideoProgressHtml(r) {
   const target = Math.max(0, Number(r.video_target) || 0);
   if (!target) return '';
@@ -18409,19 +18483,245 @@ function kolVideoProgressHtml(r) {
   </div>`;
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   v76 — TASK KERJASAMA (multi-platform, target × progress per task)
+   Satu KOL bisa punya banyak "task": tiap task bebas pilih kombinasi
+   platform (TikTok saja / Instagram saja / Shopee saja / gabungan) dan
+   target "berapa kali" konten yang disepakati. Progress di-bump manual
+   oleh moderator (tombol − / +) tiap kali satu konten selesai — ini
+   sengaja terpisah dari sistem Report Performa/ER (yang tetap dipakai
+   utk analitik engagement), supaya satu task boleh menggabungkan
+   platform tanpa ambiguitas laporan itu punya task yang mana. ══════════ */
+const KOL_TASK_PLAT_KEYS = ['tiktok', 'instagram', 'shopee'];
+const KOL_TASK_PLAT_LABELS = { tiktok: 'TikTok', instagram: 'Instagram', shopee: 'Shopee' };
+
+function kolAvailablePlatforms(kol) {
+  const list = [];
+  if (kol?.tiktok_username || kol?.tiktok_followers) list.push('tiktok');
+  if (kol?.instagram_username || kol?.instagram_followers) list.push('instagram');
+  if (kol?.shopee_username || kol?.shopee_followers) list.push('shopee');
+  return list;
+}
+
+function kolTaskAgg(kolId) {
+  const tasks = (kolTasksCache[kolId] || []).filter(t => t.status !== 'Batal');
+  const totalTarget = tasks.reduce((s, t) => s + (Number(t.target_count) || 0), 0);
+  const totalDone = tasks.reduce((s, t) => s + Math.min(Number(t.done_count) || 0, Number(t.target_count) || 0), 0);
+  const completedTasks = tasks.filter(t => (Number(t.done_count) || 0) >= (Number(t.target_count) || 0) && (Number(t.target_count) || 0) > 0).length;
+  return { count: tasks.length, completedTasks, totalTarget, totalDone };
+}
+
+function kolTaskRowHtml(t, kolId) {
+  const target = Math.max(1, Number(t.target_count) || 1);
+  const done = Math.max(0, Math.min(Number(t.done_count) || 0, target));
+  const complete = done >= target;
+  const pct = Math.round((done / target) * 100);
+  const plats = Array.isArray(t.platforms) ? t.platforms : [];
+  const platIcons = plats.map(p => kolPlatBadge(p, 'sm')).join('');
+  return `<div class="kol-task-row">
+    <div class="ktr-top">
+      <div style="display:flex;align-items:center;min-width:0;flex:1">
+        <div class="ktr-plats">${platIcons}</div>
+        <span class="ktr-title">${escHtml(t.title || plats.map(p => KOL_TASK_PLAT_LABELS[p] || p).join(' + ') || 'Task')}</span>
+      </div>
+      <div class="ktr-acts">
+        <button class="ktr-btn" onclick="kolTaskBump('${t.id}','${kolId}',-1)" ${done<=0?'disabled':''} title="Kurangi">−</button>
+        <span class="ktr-count ${complete?'is-complete':''}">${done}/${target}</span>
+        <button class="ktr-btn" onclick="kolTaskBump('${t.id}','${kolId}',1)" ${done>=target?'disabled':''} title="Tambah progress">+</button>
+        <button class="ktr-btn ktr-del" onclick="kolDeleteTask('${t.id}','${kolId}')" title="Hapus task">🗑</button>
+      </div>
+    </div>
+    ${t.note ? `<div class="ktr-note">${escHtml(t.note)}</div>` : ''}
+    <div class="ktr-bar"><div class="ktr-fill ${complete?'is-complete':''}" style="width:${pct}%"></div></div>
+  </div>`;
+}
+
+function kolTaskSectionHtml(kol) {
+  const tasks = kolTasksCache[kol.id] || [];
+  const agg = kolTaskAgg(kol.id);
+  const expanded = kolExpandedTaskIds.has(kol.id);
+  const complete = agg.totalTarget > 0 && agg.totalDone >= agg.totalTarget;
+  return `<div class="kol-task-section ${expanded ? 'expanded' : ''}" id="kol-task-sec-${kol.id}">
+    <div class="kol-task-summary" onclick="kolToggleTaskSection('${kol.id}')">
+      <div class="kts-left">
+        ${KOL_CLAPPER_ICON}
+        <span class="kts-lbl">Task Kerjasama</span>
+        <span class="kts-sub">${agg.count ? `${agg.count} task · ${agg.completedTasks} selesai` : 'belum ada task'}</span>
+      </div>
+      <div class="kts-right">
+        ${agg.totalTarget ? `<span class="kts-count ${complete?'is-complete':''}">${agg.totalDone}/${agg.totalTarget}</span>` : ''}
+        <svg class="kts-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+      </div>
+    </div>
+    ${agg.totalTarget ? `<div class="kts-bar"><div class="kts-fill ${complete?'is-complete':''}" style="width:${Math.min(100,Math.round((agg.totalDone/agg.totalTarget)*100))}%"></div></div>` : ''}
+    <div class="kol-task-list">
+      <div class="kol-task-list-inner">
+        ${tasks.length ? tasks.map(t => kolTaskRowHtml(t, kol.id)).join('') : '<div class="kol-task-empty">Belum ada task untuk KOL ini</div>'}
+        <button type="button" class="kol-task-add-btn" onclick="event.stopPropagation();openKolTaskModal('${kol.id}')">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>
+          Tambah Task
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function kolToggleTaskSection(kolId) {
+  const el = document.getElementById(`kol-task-sec-${kolId}`);
+  if (!el) return;
+  if (kolExpandedTaskIds.has(kolId)) { kolExpandedTaskIds.delete(kolId); el.classList.remove('expanded'); }
+  else { kolExpandedTaskIds.add(kolId); el.classList.add('expanded'); }
+}
+window.kolToggleTaskSection = kolToggleTaskSection;
+
+function openKolTaskModal(kolId, taskId) {
+  if (!can.isMod(currentUser?.role)) return;
+  const kol = kolCache.find(r => r.id === kolId);
+  if (!kol) return;
+  const task = taskId ? (kolTasksCache[kolId] || []).find(t => t.id === taskId) : null;
+  const avail = kolAvailablePlatforms(kol);
+  const preSelected = task ? (Array.isArray(task.platforms) ? task.platforms : []) : [];
+
+  document.getElementById('m-title').textContent = task ? `Edit Task — ${kol.name}` : `Task Baru — ${kol.name}`;
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg"><label>Platform Kerjasama (bisa pilih lebih dari satu)</label>
+      <div class="kol-task-plat-pills" id="kol-task-plat-pills">
+        ${(avail.length ? avail : KOL_TASK_PLAT_KEYS).map(p => `
+          <label class="kol-task-plat-pill ${preSelected.includes(p) ? 'checked' : ''}" onclick="kolTaskPlatToggle(this)">
+            <input type="checkbox" value="${p}" ${preSelected.includes(p) ? 'checked' : ''}/>
+            ${kolPlatBadge(p, 'sm')}
+            <span class="ktp-lbl">${KOL_TASK_PLAT_LABELS[p]}</span>
+          </label>`).join('')}
+      </div>
+      ${!avail.length ? '<div style="font-size:10px;color:var(--amber);margin-top:7px">Belum ada profil platform (TikTok/IG/Shopee) diisi untuk KOL ini — task tetap bisa dibuat, isi profilnya lewat tombol ✎ Edit kapan saja.</div>' : ''}
+    </div>
+    <div class="fg"><label>Berapa Kali Task (target konten)</label>
+      <input class="fi" id="kol-task-target" type="number" min="1" step="1" value="${task?.target_count ?? 1}" placeholder="mis. 2"/>
+    </div>
+    <div class="fg"><label>Judul Task (opsional)</label>
+      <input class="fi" id="kol-task-title" type="text" value="${escHtml(task?.title || '')}" placeholder="mis. Konten Ramadan, Live Kolaborasi, dll"/>
+    </div>
+    <div class="fg"><label>Catatan (opsional)</label>
+      <textarea class="fi" id="kol-task-note" rows="2" placeholder="brief konten, deadline, dll">${escHtml(task?.note || '')}</textarea>
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-gold" onclick="saveKolTask('${kolId}'${task ? `,'${task.id}'` : ''})">💾 Simpan Task</button>
+    <button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+window.openKolTaskModal = openKolTaskModal;
+
+function kolTaskPlatToggle(label) {
+  label.classList.toggle('checked', label.querySelector('input').checked);
+}
+window.kolTaskPlatToggle = kolTaskPlatToggle;
+
+async function saveKolTask(kolId, taskId) {
+  if (!can.isMod(currentUser?.role)) return;
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  const platforms = Array.from(document.querySelectorAll('#kol-task-plat-pills input:checked')).map(i => i.value);
+  if (!platforms.length) { toast('Pilih minimal 1 platform untuk task ini'); return; }
+  const target = Math.max(1, crmParseInt(document.getElementById('kol-task-target').value) || 1);
+
+  const payload = {
+    kol_id: kolId,
+    platforms,
+    target_count: target,
+    title: document.getElementById('kol-task-title').value.trim() || null,
+    note: document.getElementById('kol-task-note').value.trim() || null,
+    updated_by: currentUser.id,
+    updated_at: new Date().toISOString(),
+  };
+
+  let res;
+  if (taskId) {
+    const existing = (kolTasksCache[kolId] || []).find(t => t.id === taskId);
+    // Kalau target diturunkan di bawah progress yang sudah tercapai, clamp done_count ikut turun.
+    if (existing && Number(existing.done_count) > target) payload.done_count = target;
+    payload.status = (payload.done_count ?? existing?.done_count ?? 0) >= target ? 'Selesai' : 'Aktif';
+    res = await dbQ(d => d.from('kol_tasks').update(payload).eq('id', taskId));
+  } else {
+    payload.created_by = currentUser.id;
+    payload.done_count = 0;
+    payload.status = 'Aktif';
+    res = await dbQ(d => d.from('kol_tasks').insert(payload));
+  }
+  if (res?.error) { toast('Gagal menyimpan task: ' + res.error.message); return; }
+
+  toast(taskId ? 'Task diperbarui' : 'Task baru ditambahkan');
+  closeModal();
+  kolExpandedTaskIds.add(kolId);
+  await loadKolAffiliatePage();
+}
+window.saveKolTask = saveKolTask;
+
+async function kolTaskBump(taskId, kolId, delta) {
+  if (!can.isMod(currentUser?.role)) return;
+  const task = (kolTasksCache[kolId] || []).find(t => t.id === taskId);
+  if (!task) return;
+  const target = Math.max(1, Number(task.target_count) || 1);
+  const next = Math.max(0, Math.min(target, (Number(task.done_count) || 0) + delta));
+  if (next === task.done_count) return;
+  // Update optimis di cache + DOM dulu biar terasa instan, baru sinkron ke server.
+  task.done_count = next;
+  task.status = next >= target ? 'Selesai' : 'Aktif';
+  kolExpandedTaskIds.add(kolId);
+  renderKolAffiliate();
+  const res = await dbQ(d => d.from('kol_tasks').update({ done_count: next, status: task.status, updated_by: currentUser.id, updated_at: new Date().toISOString() }).eq('id', taskId));
+  if (res?.error) { toast('Gagal menyimpan progress: ' + res.error.message); await loadKolAffiliatePage(); return; }
+  if (next >= target) toast(`Task selesai ✓ (${next}/${target})`);
+}
+window.kolTaskBump = kolTaskBump;
+
+async function kolDeleteTask(taskId, kolId) {
+  if (!can.isMod(currentUser?.role)) return;
+  const ok = await uiConfirm({ title:'Hapus Task?', message:'Task kerjasama ini akan dihapus permanen.', icon:'warn', okText:'Hapus', cancelText:'Batal' });
+  if (!ok) return;
+  const res = await dbQ(d => d.from('kol_tasks').delete().eq('id', taskId));
+  if (res?.error) { toast('Gagal menghapus task: ' + res.error.message); return; }
+  toast('Task dihapus');
+  kolExpandedTaskIds.add(kolId);
+  await loadKolAffiliatePage();
+}
+window.kolDeleteTask = kolDeleteTask;
+
+/* ══ v76 — Quick Links (klik langsung ke TikTok/IG/Shopee/WA profil KOL) ══ */
+const KOL_QLINK_ICO = {
+  tiktok: '<svg viewBox="0 0 20 20" fill="currentColor"><path d="M13.5 2.3c.35 1.9 1.5 3.15 3.4 3.35v2.35c-1.2.08-2.35-.3-3.4-1.02v5.1a4.55 4.55 0 11-3.9-4.5v2.5a2.05 2.05 0 101.6 2V2.3h2.3z"/></svg>',
+  instagram: '<svg viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="4" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="8" r="3.1" stroke="currentColor" stroke-width="1.4"/><circle cx="11.6" cy="4.4" r="0.9" fill="currentColor"/></svg>',
+  shopee: LSP_ICON_SHOPEE,
+  wa: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.3a6.7 6.7 0 00-5.7 10.2L1.3 14.7l3.3-1a6.7 6.7 0 106.6-11.6A6.6 6.6 0 008 1.3zm0 1.4c.9 0 1.8.2 2.6.7a5.3 5.3 0 01-1.5 9.7 5.2 5.2 0 01-3-.4l-.3-.1-2 .5.5-1.9-.2-.3A5.3 5.3 0 018 2.7zm-1.9 2.7c-.2 0-.4 0-.5.3-.2.2-.7.7-.7 1.7s.7 2 .8 2.1c.1.1 1.4 2.2 3.4 3 .4.2.8.3 1 .4.5.1.9.1 1.2 0 .4 0 1.1-.4 1.3-.9.1-.4.1-.8.1-.9-.1-.1-.2-.2-.4-.3l-1.5-.7c-.2-.1-.3-.1-.5.1l-.6.7c-.1.1-.2.2-.4.1a4.3 4.3 0 01-1.3-.8 5 5 0 01-.9-1.1c-.1-.2 0-.3.1-.4l.4-.5c.1-.1.1-.3 0-.4L7 5.6c-.1-.2-.3-.2-.4-.2h-.5z"/></svg>'
+};
+function kolQuickLinksHtml(r) {
+  const links = [];
+  if (r.tiktok_link || r.tiktok_username) links.push({ key:'tiktok', href: r.tiktok_link || `https://tiktok.com/@${r.tiktok_username}`, title:'Buka profil TikTok' });
+  if (r.instagram_link || r.instagram_username) links.push({ key:'instagram', href: r.instagram_link || `https://instagram.com/${r.instagram_username}`, title:'Buka profil Instagram' });
+  if (r.shopee_link) links.push({ key:'shopee', href: r.shopee_link, title:'Buka profil Shopee' });
+  const waInfo = crmFormatWaLink(r.wa_number);
+  if (waInfo) links.push({ key:'wa', href: waInfo.href, title:`Chat WhatsApp — ${waInfo.display}` });
+  if (!links.length) return `<div class="kol-qlink-empty">Belum ada link kontak/profil diisi</div>`;
+  return `<div class="kol-quick-links">${links.map(l => `
+    <a class="kol-qlink ql-${l.key}" href="${escHtml(l.href)}" target="_blank" rel="noopener" title="${escHtml(l.title)}" onclick="event.stopPropagation()">${KOL_QLINK_ICO[l.key]}</a>`).join('')}</div>`;
+}
+
 let kolCache = [];
 let kolReportsCache = [];
 let kolReportCountMap = {}; // { kol_id: jumlah_report } — dasar hitung Progress Konten n/target
+let kolTasksCache = {};     // { kol_id: [task, task, ...] } — v76 Task Kerjasama multi-platform
+let kolExpandedTaskIds = new Set(); // kol_id yang panel Task-nya lagi dibuka (biar gak collapse pas re-render)
 
 async function loadKolAffiliatePage() {
   if (!db) { toast('Supabase tidak aktif'); return; }
-  const [kolRes, repCountRes] = await Promise.all([
+  const [kolRes, repCountRes, taskRes] = await Promise.all([
     dbQ(d => d.from('kol_affiliates').select('*').order('created_at', { ascending:false })),
-    dbQ(d => d.from('kol_affiliate_reports').select('id,kol_id'))
+    dbQ(d => d.from('kol_affiliate_reports').select('id,kol_id')),
+    dbQ(d => d.from('kol_tasks').select('*').order('created_at', { ascending:true }))
   ]);
   kolCache = kolRes?.data || [];
   kolReportCountMap = {};
   (repCountRes?.data || []).forEach(rp => { kolReportCountMap[rp.kol_id] = (kolReportCountMap[rp.kol_id] || 0) + 1; });
+  kolTasksCache = {};
+  (taskRes?.data || []).forEach(tk => { (kolTasksCache[tk.kol_id] ||= []).push(tk); });
   renderKolAffiliate();
 }
 window.loadKolAffiliatePage = loadKolAffiliatePage;
@@ -18523,11 +18823,13 @@ function renderKolAffiliate() {
         </div>
       </div>
 
+      ${kolQuickLinksHtml(r)}
+
       <div class="kol-plat-rows">${platRows.join('') || '<div style="font-size:10.5px;color:var(--muted)">Belum ada link platform diisi</div>'}</div>
 
       ${kolStepperHtml(r.progress_status || 'Nego')}
 
-      ${kolVideoProgressHtml(r)}
+      ${kolTaskSectionHtml(r)}
 
       <div class="kol-fin-row">
         <div class="kol-fin-box"><div class="kol-fin-lbl">Modal/HPP</div><div class="kol-fin-val">${crmFmtRupiah(r.hpp_modal||0)}</div></div>
@@ -18573,6 +18875,9 @@ function openKolModal(id) {
         <option value="Affiliate" ${row?.category==='Affiliate'?'selected':''}>Affiliate (Komisi Penjualan)</option>
         <option value="Both" ${row?.category==='Both'?'selected':''}>KOL &amp; Affiliate</option>
       </select>
+    </div>
+    <div class="fg"><label>Nomor WhatsApp KOL (utk quick-link chat di kartu)</label>
+      <input class="fi" id="kol-ed-wa" type="text" value="${escHtml(row?.wa_number || '')}" placeholder="mis. 08123456789"/>
     </div>
 
     <div style="border-top:1px solid var(--border);margin:14px 0 12px;padding-top:12px">
@@ -18626,12 +18931,8 @@ function openKolModal(id) {
       </div>
     </div>
 
-    <div style="border-top:1px solid var(--border);margin:14px 0 12px;padding-top:12px">
-      <div class="kol-plat-section-hd"><span style="display:inline-flex;width:20px;height:20px;align-items:center;justify-content:center;color:var(--gold)">${KOL_CLAPPER_ICON}</span> Target Konten</div>
-      <div class="fg"><label>Berapa Video yang Disepakati?</label>
-        <input class="fi" id="kol-ed-video-target" type="number" min="0" step="1" value="${row?.video_target ?? 1}" placeholder="mis. 2"/>
-        <div style="font-size:10px;color:var(--text2);margin-top:5px;line-height:1.4">Progress <b>${kolReportCountMap[row?.id]||0}/${row?.video_target ?? 1} Video</b> dihitung otomatis dari jumlah Report Performa yang sudah dimasukkan — bukan dicentang manual, jadi selalu akurat.</div>
-      </div>
+    <div style="border-top:1px solid var(--border);margin:14px 0 12px;padding-top:12px;font-size:10px;color:var(--text2);line-height:1.5">
+      ${KOL_CLAPPER_ICON} <b>Task &amp; target konten</b> (mis. "2 video TikTok+IG") sekarang diatur langsung lewat kartu KOL di halaman utama — simpan profil ini dulu, lalu buka bagian <b>"Task Kerjasama"</b> di kartunya.
     </div>
 
     <div style="border-top:1px solid var(--border);margin:14px 0 12px;padding-top:12px">
@@ -18678,6 +18979,7 @@ async function saveKolEntry(id) {
   const payload = {
     name,
     category: document.getElementById('kol-ed-category').value,
+    wa_number: document.getElementById('kol-ed-wa').value.trim() || null,
     tiktok_username: document.getElementById('kol-ed-tiktok-username').value.trim() || null,
     tiktok_link: document.getElementById('kol-ed-tiktok-link').value.trim() || null,
     tiktok_followers: tiktokFollowers,
@@ -18693,7 +18995,6 @@ async function saveKolEntry(id) {
     shopee_followers: shopeeFollowers,
     shopee_tier: kolComputeTier(shopeeFollowers),
     shopee_video_link: document.getElementById('kol-ed-shopee-video').value.trim() || null,
-    video_target: Math.max(0, crmParseInt(document.getElementById('kol-ed-video-target').value)),
     progress_status: document.getElementById('kol-ed-progress').value,
     hpp_modal: crmParseInt(document.getElementById('kol-ed-modal').value) || 0,
     total_sales: crmParseInt(document.getElementById('kol-ed-sales').value) || 0,
@@ -18773,12 +19074,18 @@ async function openKolReportModal(kolId) {
   if (kol.instagram_username || kol.instagram_followers) platOptions.push({ v:'instagram', l:'Instagram', followers:kol.instagram_followers, link:kol.instagram_video_link });
   if (kol.shopee_username || kol.shopee_followers) platOptions.push({ v:'shopee', l:'Shopee', followers:kol.shopee_followers, link:kol.shopee_video_link });
 
-  const vTarget = Math.max(0, Number(kol.video_target) || 0);
-  const vDone = kolReportCountMap[kolId] || 0;
-  const progressNote = vTarget ? `<div class="kol-video-progress" style="margin-bottom:14px">
-      <div class="kvp-top"><span class="kvp-lbl">${KOL_CLAPPER_ICON} Report ini akan jadi</span>
-        <span class="kvp-count ${vDone+1>=vTarget?'is-complete':''}">Video ke-${vDone+1} dari ${vTarget}</span></div>
-      <div class="kvp-bar"><div class="kvp-fill ${vDone>=vTarget?'is-complete':''}" style="width:${Math.min(100,Math.round((vDone/vTarget)*100))}%"></div></div>
+  const kolTasks = (kolTasksCache[kolId] || []).filter(t => t.status === 'Aktif');
+  const progressNote = kolTasks.length ? `<div class="kol-task-section" style="margin-bottom:14px">
+      <div class="kts-left" style="margin-bottom:2px">${KOL_CLAPPER_ICON}<span class="kts-lbl">Task Aktif untuk ${escHtml(kol.name)}</span></div>
+      <div style="display:flex;flex-direction:column;gap:5px;margin-top:8px">
+        ${kolTasks.map(t => {
+          const tgt = Math.max(1, Number(t.target_count)||1), dn = Math.min(Number(t.done_count)||0, tgt);
+          return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10.5px;color:var(--text2)">
+            <span style="display:flex;align-items:center;gap:5px">${(t.platforms||[]).map(p=>kolPlatBadge(p,'sm')).join('')} ${escHtml(t.title || (t.platforms||[]).map(p=>KOL_TASK_PLAT_LABELS[p]||p).join(' + '))}</span>
+            <b style="color:var(--gold-hi)">${dn}/${tgt}</b>
+          </div>`;
+        }).join('')}
+      </div>
     </div>` : '';
 
   document.getElementById('m-body').innerHTML = `
