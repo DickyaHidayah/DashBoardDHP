@@ -4347,6 +4347,21 @@ body.light .ktr-bar{background:rgba(0,0,0,.06)}
 .lb-row-sales{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:16.5px;color:var(--gold-hi);font-variant-numeric:tabular-nums;white-space:nowrap}
 .lb-row-sales-lbl{font-size:8.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 
+/* ── v70: elemen baru — persentase target, lencana, tombol atur target ── */
+.lb-pod-target-track{width:100%;height:5px;border-radius:3px;background:var(--bg3);overflow:hidden;margin-top:6px}
+.lb-pod-target-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold-lo),var(--gold) 60%,var(--gold-hi));transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.lb-pod-target-fill.over{background:linear-gradient(90deg,var(--green),#8fd6a4)}
+.lb-row-target-track{width:100%;max-width:220px;height:5px;border-radius:3px;background:var(--bg3);overflow:hidden;margin-top:6px}
+.lb-row-target-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold-lo),var(--gold) 60%,var(--gold-hi));transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.lb-row-target-fill.over{background:linear-gradient(90deg,var(--green),#8fd6a4)}
+.lb-row-sales.over{color:var(--green)}
+.lb-dbar-fill.over{background:linear-gradient(90deg,var(--green),#8fd6a4)}
+.lb-badge-over,.lb-badge-close{font-size:8.5px;font-weight:800;letter-spacing:.03em;border-radius:6px;padding:2px 6px;white-space:nowrap}
+.lb-badge-over{color:var(--green);background:rgba(122,191,142,.14);border:1px solid rgba(122,191,142,.35)}
+.lb-badge-close{color:var(--amber);background:rgba(232,184,110,.14);border:1px solid rgba(232,184,110,.35)}
+.lb-target-edit-btn{margin-top:8px;font-size:9.5px;font-weight:700;color:var(--gold-hi);background:var(--bg3);border:1px solid var(--border-hi);border-radius:8px;padding:4px 9px;cursor:pointer;white-space:nowrap;transition:background var(--trans),transform var(--trans)}
+.lb-target-edit-btn:hover{background:var(--surface2);transform:translateY(-1px)}
+
 .lb-empty-state{text-align:center;padding:40px 20px;color:var(--muted);font-size:12.5px}
 .lb-skel{background:var(--surface);border:1px solid var(--border);border-radius:12px;height:64px;margin-bottom:10px;position:relative;overflow:hidden}
 .lb-skel::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.05) 50%,transparent 70%);background-size:200% 100%;animation:lbShine 1.4s ease-in-out infinite}
@@ -25665,8 +25680,20 @@ async function lbFetchData(ym) {
     crmTotal: Number(r.total_crm_customer) || 0,
     adsTotal: Number(r.total_ads_total) || 0,
     adsDone: Number(r.total_ads_done) || 0,
+    target: Number(r.target_amount) || 0,
   }));
-  rows.sort((a, b) => b.sales - a.sales || b.hot - a.hot || b.followup - a.followup);
+  // v70: peringkat sekarang berdasar PERSENTASE pencapaian terhadap target
+  // masing-masing orang (bukan nominal mentah) — siapa yang paling dekat/
+  // sudah melewati target sendiri, itu yang naik ke atas. Orang yang belum
+  // punya target diatur (target = 0) selalu ditaruh di bawah orang yang
+  // sudah punya target, diurutkan berdasar nominal sebagai fallback.
+  rows.forEach(r => { r.pct = r.target > 0 ? (r.sales / r.target) : null; });
+  rows.sort((a, b) => {
+    const ap = a.pct == null ? -1 : a.pct;
+    const bp = b.pct == null ? -1 : b.pct;
+    if (bp !== ap) return bp - ap;
+    return b.sales - a.sales || b.hot - a.hot || b.followup - a.followup;
+  });
   rows.forEach((r, i) => { r.rank = i + 1; });
 
   return { rows, generatedAt: new Date(), rpcMissing: false };
@@ -25675,12 +25702,20 @@ async function lbFetchData(ym) {
 function lbComputeAchievements(rows) {
   if (!rows.length) return null;
   const pick = (key) => rows.reduce((best, r) => (r[key] > (best?.[key] ?? -1) ? r : best), null);
+  // v70: "Top Sales" jadi "Paling Dekat Target" — orang dengan persentase
+  // capaian tertinggi (butuh target diatur & ada penjualan), bukan lagi
+  // sekadar nominal terbesar.
+  const withTarget = rows.filter(r => r.target > 0);
+  const topPct = withTarget.length
+    ? withTarget.reduce((best, r) => (r.pct > (best?.pct ?? -1) ? r : best), null)
+    : null;
   const topSales = rows[0] && rows[0].sales > 0 ? rows[0] : null;
   const fu = pick('followup');
   const hot = pick('hot');
   const crm = pick('crmTotal');
   const ads = pick('adsDone');
   return {
+    topPct: topPct && topPct.pct > 0 ? topPct : null,
     topSales,
     topFollowup: fu && fu.followup > 0 ? fu : null,
     topHot: hot && hot.hot > 0 ? hot : null,
@@ -25725,11 +25760,17 @@ function lbRenderContent(root, data) {
   const meId = currentUser?.id;
   const isCurrentMonth = lbCurrentYm === lbYmNow();
 
+  // v70: ringkasan cepat berapa orang yang sudah punya target & berapa
+  // yang sudah mencapainya bulan ini — dilihat sekilas tanpa scroll.
+  const withTargetCount = rows.filter(r => r.target > 0).length;
+  const achievedCount   = rows.filter(r => r.target > 0 && r.pct >= 1).length;
+
   const topbarHtml = `
     <div class="lb-topbar">
       ${isCurrentMonth
         ? `<div class="lb-countdown"><span class="lb-icotxt">${LB_ICO.hourglass}</span> Papan peringkat reset dalam <b id="lb-cd-txt">…</b></div>`
         : `<div class="lb-countdown"><span class="lb-icotxt">${LB_ICO.calendar}</span> Melihat rekap ${lbYmLabel(lbCurrentYm)}</div>`}
+      ${withTargetCount > 0 ? `<div class="lb-countdown"><span class="lb-icotxt">${LB_ICO.trophy}</span> <b>${achievedCount}</b>/${withTargetCount} sudah capai target bulan ini</div>` : ''}
       <div class="lb-updated"><span class="lb-live-dot"></span> Sinkron real-time · update terakhir ${generatedAt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</div>
     </div>`;
 
@@ -25754,14 +25795,24 @@ function lbPodiumHtml(top3) {
   order.forEach((u, idx) => {
     const rank = ranks[idx];
     if (!u) { html += `<div class="lb-pod-card r${rank}" style="visibility:hidden"></div>`; return; }
+    // v70: angka besar di podium sekarang PERSENTASE dari target sendiri —
+    // nominal jadi keterangan kecil di bawahnya. Kalau target belum diatur,
+    // tetap tampilkan nominal sebagai fallback supaya tidak kosong.
+    const hasTarget = u.target > 0;
+    const pctShown = hasTarget ? Math.round(u.pct * 100) : null;
     html += `
       <div class="lb-pod-card r${rank}">
         ${rank === 1 ? `<div class="lb-pod-crown">${LB_ICO.crown}</div>` : ''}
         <div class="lb-pod-avatar">${lbInitials(u.name)}<span class="lb-pod-rank">${rank}</span></div>
         <div class="lb-pod-name">${escHtml(u.name)}</div>
-        <div class="lb-pod-role">${escHtml(rn(u.role))}</div>
-        <div class="lb-pod-sales lb-countup" data-target="${u.sales}" data-fmt="rupiah">${crmFmtRupiah(0)}</div>
-        <div class="lb-pod-sub">${u.followup} follow up · ${u.hot} hot leads</div>
+        <div class="lb-pod-role">${escHtml(rn(roleFromDb(u.role)))}</div>
+        ${hasTarget
+          ? `<div class="lb-pod-sales lb-countup" data-target="${pctShown}" data-fmt="pct">0%</div>
+             <div class="lb-pod-target-track"><div class="lb-pod-target-fill${pctShown>=100?' over':''}" style="width:${Math.min(100,pctShown)}%"></div></div>
+             <div class="lb-pod-sub">${crmFmtRupiah(u.sales)} dari ${crmFmtRupiah(u.target)}</div>`
+          : `<div class="lb-pod-sales lb-countup" data-target="${u.sales}" data-fmt="rupiah">${crmFmtRupiah(0)}</div>
+             <div class="lb-pod-sub">Target belum diatur</div>`}
+        <div class="lb-pod-sub" style="margin-top:2px">${u.followup} follow up · ${u.hot} hot leads</div>
         <div class="lb-pod-bar"></div>
       </div>`;
   });
@@ -25772,7 +25823,7 @@ function lbPodiumHtml(top3) {
 function lbAchievementsHtml(ach) {
   if (!ach) return `<div class="lb-ach-row"><div class="lb-ach-empty">Belum ada pencapaian tercatat bulan ini.</div></div>`;
   const chips = [
-    { key: 'topSales',    icon: LB_ICO.trendUp,   color: 'var(--gold)',  lbl: 'Top Sales',         val: (u) => crmFmtRupiah(u.sales) },
+    { key: 'topPct',      icon: LB_ICO.trendUp,   color: 'var(--gold)',  lbl: 'Paling Dekat Target', val: (u) => `${Math.round(u.pct*100)}% · ${crmFmtRupiah(u.sales)}` },
     { key: 'topFollowup', icon: LB_ICO.phone,     color: 'var(--blue)',  lbl: 'Rajin Follow Up',   val: (u) => `${u.followup}x follow up` },
     { key: 'topHot',      icon: TRK_ICO.hot,      color: 'var(--green)', lbl: 'Leads Terpanas',    val: (u) => `${u.hot} hot leads` },
     { key: 'topCrm',      icon: LB_ICO.users,     color: 'var(--blue)',  lbl: 'CRM Terbanyak',     val: (u) => `${u.crmTotal} customer` },
@@ -25797,21 +25848,30 @@ function lbAchievementsHtml(ach) {
 
 function lbDiagramHtml(rows) {
   if (!rows.length) return '';
-  const maxSales = Math.max(...rows.map(r => r.sales), 1);
   const meId = currentUser?.id;
+  // v70: sumbu diagram sekarang PERSENTASE dari target masing-masing
+  // (bukan relatif terhadap penjualan tertinggi) — supaya adil dibanding
+  // walau target tiap orang beda jauh (mis. Rp10jt vs Rp300jt). Skala
+  // maksimum bar mengikuti pencapaian tertinggi (min. 100%) supaya orang
+  // yang sudah lewat target tetap kelihatan menonjol.
+  const withTarget = rows.filter(r => r.target > 0);
+  const maxPct = Math.max(100, ...withTarget.map(r => Math.round(r.pct * 100)), 100);
   const bars = rows.map(u => {
-    const pct = u.sales > 0 ? Math.max(3, Math.round((u.sales / maxSales) * 100)) : 0;
+    const hasTarget = u.target > 0;
+    const pctVal = hasTarget ? Math.round(u.pct * 100) : 0;
+    const barPct = hasTarget ? Math.max(3, Math.round((pctVal / maxPct) * 100)) : 0;
+    const over = pctVal >= 100;
     return `
       <div class="lb-dbar-row">
         <div class="lb-dbar-name" title="${escHtml(u.name)}">${escHtml(u.name)}</div>
-        <div class="lb-dbar-track"><div class="lb-dbar-fill ${u.id === meId ? 'me' : ''}" data-pct="${pct}" style="width:0"></div></div>
-        <div class="lb-dbar-val lb-countup" data-target="${u.sales}" data-fmt="rupiah">${crmFmtRupiah(0)}</div>
+        <div class="lb-dbar-track"><div class="lb-dbar-fill ${u.id === meId ? 'me' : ''}${over ? ' over' : ''}" data-pct="${barPct}" style="width:0"></div></div>
+        <div class="lb-dbar-val">${hasTarget ? pctVal + '%' : '—'}</div>
       </div>`;
   }).join('');
   return `
     <div class="lb-diagram">
-      <div class="lb-diagram-title"><span class="lb-icotxt">${LB_ICO.barChart}</span> Diagram Perbandingan Penjualan</div>
-      <div class="lb-diagram-sub">Total nominal closing bulan ${lbYmLabel(lbCurrentYm)} — seluruh tim CS Hunter, Admin &amp; B2B Marketing</div>
+      <div class="lb-diagram-title"><span class="lb-icotxt">${LB_ICO.barChart}</span> Diagram Perbandingan Persentase Target</div>
+      <div class="lb-diagram-sub">Persentase pencapaian terhadap target masing-masing, bulan ${lbYmLabel(lbCurrentYm)} — seluruh tim CS Hunter, Admin &amp; B2B Marketing</div>
       ${bars}
     </div>`;
 }
@@ -25821,6 +25881,7 @@ function lbListHtml(rest, startRank, meId, totalCount) {
     if (totalCount > 0) return '';
     return `<div class="lb-empty-state">Belum ada anggota tim CS Hunter / Admin / B2B Marketing yang aktif.</div>`;
   }
+  const isModView = can.isMod(currentUser?.role);
   const rowsHtml = rest.map((u, i) => {
     const rank = startRank + i + 1;
     const isMe = u.id === meId;
@@ -25828,12 +25889,21 @@ function lbListHtml(rest, startRank, meId, totalCount) {
     const hotPct = Math.round((u.hot / totalHeat) * 100);
     const warmPct = Math.round((u.warm / totalHeat) * 100);
     const coldPct = Math.max(0, 100 - hotPct - warmPct);
+    // v70: bagian kanan kartu sekarang menonjolkan PERSENTASE capaian
+    // target, dengan progress bar & lencana "Hampir Capai Target" kalau
+    // sudah ≥80%. Moderator/Chief Moderator dapat tombol kecil "Atur
+    // Target" utk ubah target orang ini langsung dari Leaderboard.
+    const hasTarget = u.target > 0;
+    const pctVal = hasTarget ? Math.round(u.pct * 100) : 0;
+    const over = pctVal >= 100;
+    const closeToTarget = hasTarget && pctVal >= 80 && pctVal < 100;
     return `
       <div class="lb-row ${isMe ? 'me' : ''}" style="animation-delay:${Math.min(i * 0.05, 0.4)}s">
         <div class="lb-row-rank">#${rank}</div>
-        <div class="lb-row-avatar" style="background:${ROLE_COLORS[u.role] || 'var(--gold)'}">${lbInitials(u.name)}</div>
+        <div class="lb-row-avatar" style="background:${ROLE_COLORS[roleFromDb(u.role)] || 'var(--gold)'}">${lbInitials(u.name)}</div>
         <div class="lb-row-mid">
-          <div class="lb-row-name">${escHtml(u.name)} ${isMe ? '<span class="you-tag">KAMU</span>' : ''}</div>
+          <div class="lb-row-name">${escHtml(u.name)} ${isMe ? '<span class="you-tag">KAMU</span>' : ''}${over ? '<span class="lb-badge-over">🏁 Target Tercapai</span>' : ''}${closeToTarget ? '<span class="lb-badge-close">🔥 Hampir Capai Target</span>' : ''}</div>
+          ${hasTarget ? `<div class="lb-row-target-track"><div class="lb-row-target-fill${over ? ' over' : ''}" style="width:${Math.min(100,pctVal)}%"></div></div>` : ''}
           <div class="lb-row-metrics">
             <div class="lb-metric"><span class="lb-metric-lbl">Follow Up</span><span class="lb-metric-val">${u.followup}</span></div>
             <div class="lb-metric"><span class="lb-metric-lbl">CRM</span><span class="lb-metric-val">${u.crmTotal}</span></div>
@@ -25847,13 +25917,63 @@ function lbListHtml(rest, startRank, meId, totalCount) {
           </div>
         </div>
         <div class="lb-row-right">
-          <div class="lb-row-sales lb-countup" data-target="${u.sales}" data-fmt="rupiah">${crmFmtRupiah(0)}</div>
-          <div class="lb-row-sales-lbl">Total Penjualan</div>
+          ${hasTarget
+            ? `<div class="lb-row-sales lb-countup${over ? ' over' : ''}" data-target="${pctVal}" data-fmt="pct">0%</div>
+               <div class="lb-row-sales-lbl">${crmFmtRupiah(u.sales)} / ${crmFmtRupiah(u.target)}</div>`
+            : `<div class="lb-row-sales">—</div>
+               <div class="lb-row-sales-lbl">Target belum diatur · ${crmFmtRupiah(u.sales)}</div>`}
+          ${isModView ? `<button type="button" class="lb-target-edit-btn" onclick="event.stopPropagation();lbOpenTargetModal('${u.id}','${u.role}','${escHtml(u.name).replace(/'/g,"\\'")}',${u.target})">🎯 Atur Target</button>` : ''}
         </div>
       </div>`;
   }).join('');
   return `<div class="lb-list">${rowsHtml}</div>`;
 }
+
+/* ── v70: MODERATOR — atur target omzet bulanan langsung dari Leaderboard ──
+   role yang dikirim ke sini adalah nilai role ASLI dari database (hasil
+   get_leaderboard_monthly): 'admin', 'b2b-marketing' (strip), atau
+   'cs_hunter' (underscore) — dipetakan ke RPC & nama parameter yang sesuai. */
+const LB_TARGET_RPC = {
+  'admin':         { rpc: 'moderator_set_admin_target',     param: 'p_admin_user' },
+  'b2b-marketing': { rpc: 'moderator_set_b2b_target',        param: 'p_b2b_user' },
+  'cs_hunter':      { rpc: 'moderator_set_cs_hunter_target', param: 'p_cs_hunter_user' },
+};
+
+function lbOpenTargetModal(uid, role, name, currentTarget) {
+  if (!can.isMod(currentUser?.role)) return;
+  if (!LB_TARGET_RPC[role]) { toast('Role ini belum didukung utk atur target'); return; }
+  document.getElementById('m-title').textContent = `Atur Target Omzet — ${name} · ${lbYmLabel(lbCurrentYm)}`;
+  document.getElementById('m-body').innerHTML = `
+    <div style="font-size:11px;color:var(--text2);margin-bottom:10px">
+      Target akan berlaku utk periode <b style="color:var(--text)">${lbYmLabel(lbCurrentYm)}</b> dan otomatis
+      terbawa ke bulan berikutnya kalau belum diubah lagi.
+    </div>
+    <div class="fg"><label>Target Omzet Bulan Ini (Rp)</label>
+      <input class="fi" id="lb-target-input" type="number" min="0" step="100000" value="${currentTarget || ''}" placeholder="mis. 82080000"/>
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-gold" onclick="lbSaveTarget('${uid}','${role}','${name.replace(/'/g,"\\'")}')">${t('save')||'Simpan'}</button>
+    <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')||'Batal'}</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+window.lbOpenTargetModal = lbOpenTargetModal;
+
+async function lbSaveTarget(uid, role, name) {
+  if (!can.isMod(currentUser?.role)) return;
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  const cfg = LB_TARGET_RPC[role];
+  if (!cfg) { toast('Role ini belum didukung utk atur target'); return; }
+  const amount = Math.max(0, crmParseInt(document.getElementById('lb-target-input')?.value) || 0);
+  const res = await dbQ(d => d.rpc(cfg.rpc, {
+    p_moderator_id: currentUser.id, [cfg.param]: uid, p_period_ym: lbCurrentYm, p_target_amount: amount
+  }));
+  if (res?.error) { toast('Gagal menyimpan target: ' + res.error.message); return; }
+  closeModal();
+  toast(`Target ${name} diatur: ${crmFmtRupiah(amount)}`);
+  pushActivity(`Target omzet ${name} (${lbCurrentYm}) diatur ${crmFmtRupiah(amount)}`, 'info');
+  renderLeaderboardPage();
+}
+window.lbSaveTarget = lbSaveTarget;
 
 function lbAnimateBars() {
   requestAnimationFrame(() => {
@@ -25871,9 +25991,9 @@ function lbCountUpOne(el, target, fmt) {
     const p = Math.min(1, (now - t0) / dur);
     const eased = 1 - Math.pow(1 - p, 3); // ease-out cubic
     const val = Math.round(target * eased);
-    el.textContent = fmt === 'rupiah' ? crmFmtRupiah(val) : val.toLocaleString('id-ID');
+    el.textContent = fmt === 'rupiah' ? crmFmtRupiah(val) : fmt === 'pct' ? (val + '%') : val.toLocaleString('id-ID');
     if (p < 1) requestAnimationFrame(tick);
-    else el.textContent = fmt === 'rupiah' ? crmFmtRupiah(target) : target.toLocaleString('id-ID');
+    else el.textContent = fmt === 'rupiah' ? crmFmtRupiah(target) : fmt === 'pct' ? (target + '%') : target.toLocaleString('id-ID');
   }
   requestAnimationFrame(tick);
 }
@@ -25909,6 +26029,10 @@ function initLeaderboardRealtime() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tracking_reports' }, lbHandleRealtimeChange)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'crm_customers' }, lbHandleRealtimeChange)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'ad_tasks' }, lbHandleRealtimeChange)
+      // v70: perubahan target (diatur moderator) ikut memicu refresh realtime.
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'admin_sales_target' }, lbHandleRealtimeChange)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'b2b_sales_target' }, lbHandleRealtimeChange)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'cs_hunter_sales_target' }, lbHandleRealtimeChange)
       .subscribe();
   } catch (e) { console.warn('[DHP] initLeaderboardRealtime gagal:', e); }
 }
