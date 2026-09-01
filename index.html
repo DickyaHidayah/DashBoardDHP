@@ -9861,28 +9861,19 @@ async function submitLateRequest(sessionId) {
    peringkat pencapaian (gold/silver/bronze), diagram batang
    penjualan vs target, dan tabel rekap lengkap.
    ═══════════════════════════════════════════════════════════ */
-let _ldashSelectedYm = ymPeriodKey(new Date());
-
-async function loadLiveDashboard(targetYm) {
+async function loadLiveDashboard() {
   const wrap = document.getElementById('ldash-view');
   const ids = hostLiveIds();
   if (!wrap) return;
   if (!ids.length) { wrap.innerHTML = `<div class="tbl-wrap"><div class="tbl-empty" style="padding:28px">Belum ada Host Live terdaftar.</div></div>`; return; }
 
-  // v72: bisa pilih bulan yang mau dilihat (bulan ini / bulan kemarin / bulan
-  // lain) — bukan cuma terkunci ke bulan berjalan. targetYm dari nav bulan
-  // di layar; kalau tidak dikirim, pakai bulan yang terakhir dipilih user
-  // (default bulan berjalan saat pertama kali dibuka).
-  _ldashSelectedYm = targetYm || _ldashSelectedYm || ymPeriodKey(new Date());
-  const ym = _ldashSelectedYm;
-  const [ymY, ymM] = ym.split('-').map(Number);
-  const refDate = new Date(ymY, ymM - 1, 1);
-
   wrap.innerHTML = `<div class="ldash-loading">Memuat data seluruh host…</div>`;
-  const first = ymdKey(refDate);
-  const last  = ymdKey(new Date(ymY, ymM, 0));
+  const now = new Date();
+  const ym = ymPeriodKey(now);
+  const first = ymdKey(new Date(now.getFullYear(), now.getMonth(), 1));
+  const last  = ymdKey(new Date(now.getFullYear(), now.getMonth() + 1, 0));
 
-  const [rowsBase, platRes, attRes] = await Promise.all([
+  const [rowsBase, platRes] = await Promise.all([
     Promise.all(ids.map(async id => {
       let target = 0, achieved = 0, sessionsCount = 0, libur = 0, pending = 0, totalHours = 0, sakit = 0, izin = 0;
       if (db) {
@@ -9908,47 +9899,14 @@ async function loadLiveDashboard(targetYm) {
     db ? dbQ(d => d.from('live_schedule')
         .select('host_user_id,schedule_date,gmv_amount,viewers_count,products_sold,shopee_gmv_amount,shopee_viewers_count,shopee_products_sold,tiktok_gmv_amount,tiktok_viewers_count,tiktok_products_sold')
         .in('host_user_id', ids).gte('schedule_date', first).lte('schedule_date', last))
-      : Promise.resolve(null),
-    // v70: rincian absensi PER HOST langsung dari tabel `attendance` (sumber
-    // kebenaran yang sama dipakai halaman Absensi) — dipakai utk tabel
-    // "Absensi per Host" di layar & export, supaya angkanya sesuai data asli
-    // (Hadir/WFH/Izin/Sakit/Alpha/Libur), bukan cuma turunan RPC penjualan.
-    db ? dbQ(d => d.from('attendance').select('user_id,att_date,status,note')
-        .in('user_id', ids).gte('att_date', first).lte('att_date', last))
       : Promise.resolve(null)
   ]);
 
   const platformByHost = _ldashAggregatePlatform(platRes?.data || [], ids);
   const rows = rowsBase.map(r => ({ ...r, ...(platformByHost[r.id] || {}) }));
   const dailyRows = _ldashDailyBreakdown(platRes?.data || [], ids);
-  const { attendanceByHost, attendanceByDate } = _ldashAggregateAttendance(attRes?.data || [], ids);
 
-  renderLiveDashboard(rows, dailyRows, attendanceByHost, attendanceByDate);
-}
-
-/* v70: rekap absensi asli per host dari tabel `attendance` — dipakai supaya
-   angka Hadir/WFH/Izin/Sakit/Alpha/Libur di export & tabel harian selalu
-   sesuai dengan data yang tercatat di halaman Absensi (bukan hasil hitungan
-   tidak langsung dari sesi live). attendanceByDate dipakai utk lookup cepat
-   status host di tanggal tertentu (dasar "Rincian Harian" yang bisa
-   dinavigasi mundur — lihat lagi data hari kemarin, dst). */
-function _ldashAggregateAttendance(records, ids) {
-  const STATUSES = ['Hadir', 'WFH', 'Izin', 'Sakit', 'Alpha', 'Libur'];
-  const attendanceByHost = {};
-  ids.forEach(id => {
-    attendanceByHost[id] = { name: LOCAL_USERS[id]?.name || id, total: 0 };
-    STATUSES.forEach(s => { attendanceByHost[id][s] = 0; });
-  });
-  const attendanceByDate = {};
-  (records || []).forEach(r => {
-    if (!ids.includes(r.user_id) || !r.att_date || !r.status) return;
-    if (attendanceByHost[r.user_id] && STATUSES.includes(r.status)) {
-      attendanceByHost[r.user_id][r.status]++;
-      attendanceByHost[r.user_id].total++;
-    }
-    attendanceByDate[r.att_date + '|' + r.user_id] = { status: r.status, note: r.note || '' };
-  });
-  return { attendanceByHost, attendanceByDate };
+  renderLiveDashboard(rows, dailyRows);
 }
 
 /* v46: rincian PER HARI per host — dasar tabel "Rincian Harian" di export
@@ -10033,13 +9991,11 @@ function _ldashDestroyCharts() {
   _ldashCharts = {};
 }
 
-function renderLiveDashboard(rows, dailyRows, attendanceByHost, attendanceByDate) {
+function renderLiveDashboard(rows, dailyRows) {
   const wrap = document.getElementById('ldash-view');
   if (!wrap) return;
   const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
   const now = new Date();
-  const [selY, selM] = (_ldashSelectedYm || ymPeriodKey(now)).split('-').map(Number);
-  const selRefDate = new Date(selY, selM - 1, 1);
 
   const pctOf = r => r.target > 0 ? r.achieved / r.target : (r.achieved > 0 ? 1 : 0);
   const ranked = [...rows].sort((a,b) => pctOf(b) - pctOf(a) || b.achieved - a.achieved);
@@ -10167,30 +10123,10 @@ function renderLiveDashboard(rows, dailyRows, attendanceByHost, attendanceByDate
       <div class="lsp-card-sub">${products.toLocaleString('id-ID')} produk terjual bulan ini, seluruh host</div>
     </div>`;
 
-  const ATT_STATUSES = ['Hadir', 'WFH', 'Izin', 'Sakit', 'Alpha', 'Libur'];
-  const attRowsHtml = (rows || []).map(r => {
-    const a = (attendanceByHost || {})[r.id] || {};
-    return `<tr>
-      <td style="font-weight:600;color:var(--text)">${escHtml(r.name)}</td>
-      ${ATT_STATUSES.map(s => `<td${a[s] ? ' style="font-weight:600"' : ''}>${a[s] || 0}</td>`).join('')}
-      <td style="font-weight:600">${a.total || 0}</td>
-    </tr>`;
-  }).join('');
-
   wrap.innerHTML = `
-    <div class="hs-compare-head" style="flex-wrap:wrap;gap:12px;align-items:center">
-      <div>
-        <div class="hs-compare-title">Perbandingan Host Live</div>
-        <div class="hs-compare-sub">${months[selRefDate.getMonth()]} ${selRefDate.getFullYear()} — seluruh host dibandingkan sekaligus</div>
-      </div>
-      <div class="ldash-month-nav" style="display:flex;align-items:center;gap:6px;margin-left:auto">
-        <button class="btn-sm btn-g" onclick="_ldashMonthNav(-1)" title="Bulan sebelumnya">‹</button>
-        <select id="ldash-month-select" class="fi" style="width:170px" onchange="_ldashMonthPick(this.value)">
-          ${_ldashMonthOptions(_ldashSelectedYm)}
-        </select>
-        <button class="btn-sm btn-g" onclick="_ldashMonthNav(1)" title="Bulan berikutnya">›</button>
-        ${_ldashSelectedYm !== ymPeriodKey(now) ? `<button class="btn-sm btn-gold" onclick="_ldashMonthCurrent()">Bulan Ini</button>` : ''}
-      </div>
+    <div class="hs-compare-head">
+      <div class="hs-compare-title">Perbandingan Host Live</div>
+      <div class="hs-compare-sub">${months[now.getMonth()]} ${now.getFullYear()} — seluruh host dibandingkan sekaligus</div>
     </div>
 
     ${summary}
@@ -10244,43 +10180,6 @@ function renderLiveDashboard(rows, dailyRows, attendanceByHost, attendanceByDate
           <tbody>${tableRows}</tbody>
         </table>
       </div>
-    </div>
-
-    <!-- v70: Absensi per Host — sumber data langsung tabel attendance,
-         supaya jumlah Hadir/WFH/Izin/Sakit/Alpha/Libur akurat sesuai data
-         asli (dipakai juga di export Excel & PDF). -->
-    <div class="tbl-wrap" style="margin-top:18px">
-      <div class="tbl-head">
-        <div class="tbl-title">Absensi per Host</div>
-        <div style="font-size:11px;color:var(--text2)">${months[selRefDate.getMonth()]} ${selRefDate.getFullYear()} — dari data absensi asli tiap host</div>
-      </div>
-      <div class="tbl-scroll">
-        <table>
-          <thead><tr><th>Host</th>${ATT_STATUSES.map(s=>`<th>${s}</th>`).join('')}<th>Total Tercatat</th></tr></thead>
-          <tbody>${attRowsHtml || `<tr><td colspan="${ATT_STATUSES.length+2}" class="tbl-empty">Belum ada data absensi bulan ini.</td></tr>`}</tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- v70: Rincian Harian — bisa dinavigasi mundur (Kemarin, tanggal lain)
-         supaya data hari-hari sebelumnya bisa dilihat lagi, tidak cuma
-         ringkasan bulanan. Data sudah tersedia di client (dailyRows &amp;
-         attendanceByDate bulan berjalan), jadi navigasi tanggal tidak perlu
-         query ulang ke server. -->
-    <div class="tbl-wrap" style="margin-top:18px" id="ldash-daily-wrap">
-      <div class="tbl-head" style="flex-wrap:wrap;gap:10px">
-        <div>
-          <div class="tbl-title">Rincian Harian per Host</div>
-          <div style="font-size:11px;color:var(--text2)">Lihat performa &amp; absensi tiap host di tanggal tertentu — termasuk hari-hari sebelumnya</div>
-        </div>
-        <div class="ldash-daily-nav" style="display:flex;align-items:center;gap:6px;margin-left:auto">
-          <button class="btn-sm btn-g" onclick="_ldashDailyNav(-1)" title="Hari sebelumnya">‹ Kemarin</button>
-          <input type="date" id="ldash-daily-date" class="fi" style="width:150px" onchange="_ldashDailyPick(this.value)">
-          <button class="btn-sm btn-g" onclick="_ldashDailyNav(1)" title="Hari berikutnya">Besok ›</button>
-          <button class="btn-sm btn-gold" onclick="_ldashDailyToday()">Hari Ini</button>
-        </div>
-      </div>
-      <div id="ldash-daily-body"></div>
     </div>`;
 
   // ── Render chart Chart.js: elegan, warna konsisten tema gold + brand platform ──
@@ -10345,160 +10244,15 @@ function renderLiveDashboard(rows, dailyRows, attendanceByHost, attendanceByDate
   // memakai angka yang identik dengan yang tampil di layar (bukan query ulang).
   _ldashLastData = {
     generatedAt: new Date(),
-    monthLabel: `${months[selRefDate.getMonth()]} ${selRefDate.getFullYear()}`,
-    ym: _ldashSelectedYm,
+    monthLabel: `${months[now.getMonth()]} ${now.getFullYear()}`,
     ranked, rows, dailyRows: dailyRows || [],
-    attendanceByHost: attendanceByHost || {}, attendanceByDate: attendanceByDate || {},
     totalTarget, totalAchieved, totalSessions, totalPending, totalHoursAll,
     totalSakitAll, totalIzinAll, overallPct, achievedCount, totalHariMasukAll,
     totalShopeeGmv, totalTiktokGmv, totalShopeeViewers, totalTiktokViewers,
     totalShopeeProducts, totalTiktokProducts, totalUnsplitGmv, shopeeSharePct
   };
-
-  // v70: render blok "Rincian Harian" pada tanggal yang sedang dipilih
-  // (default hari ini) — dipisah dari render utama supaya navigasi
-  // Kemarin/Besok/pilih tanggal tidak perlu query ulang ke server.
-  _ldashSelectedDate = _ldashClampDate(_ldashSelectedDate || ymdKey(new Date()));
-  _ldashRenderDailyBlock();
 }
 let _ldashLastData = null;
-let _ldashSelectedDate = ymdKey(new Date());
-
-/* v70: batasi tanggal yang bisa dilihat di "Rincian Harian" supaya tetap di
-   dalam rentang BULAN YANG SEDANG DIPILIH (_ldashSelectedYm) — bukan selalu
-   bulan berjalan, supaya konsisten dengan navigasi bulan v72. Tidak bisa
-   maju melewati hari ini kalau bulan yang dipilih adalah bulan berjalan. */
-function _ldashClampDate(dateStr) {
-  const ym = _ldashSelectedYm || ymPeriodKey(new Date());
-  const [y, m] = ym.split('-').map(Number);
-  const first = ymdKey(new Date(y, m - 1, 1));
-  const last  = ymdKey(new Date(y, m, 0));
-  const todayStr = ymdKey(new Date());
-  if (dateStr < first) return first;
-  if (dateStr > last) return last;
-  if (ym === ymPeriodKey(new Date()) && dateStr > todayStr) return todayStr;
-  return dateStr;
-}
-
-/* v72: pilihan navigasi BULAN di Live Dashboard — "bulan ini", "bulan
-   kemarin/lalu", atau bulan lain lewat dropdown/panah, tidak lagi terkunci
-   ke bulan berjalan saja. */
-function _ldashMonthOptions(selectedYm) {
-  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
-  const now = new Date();
-  const opts = [];
-  for (let i = 11; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const ym = ymPeriodKey(d);
-    const label = `${months[d.getMonth()]} ${d.getFullYear()}`;
-    opts.push(`<option value="${ym}"${ym === selectedYm ? ' selected' : ''}>${label}</option>`);
-  }
-  // Jaga-jaga: kalau bulan yg lagi dipilih di luar 12 bulan terakhir (mis.
-  // dari export lama / state lain), tetap tampilkan supaya tidak "nyasar".
-  if (!opts.some(o => o.includes(`value="${selectedYm}"`))) {
-    const [y, m] = selectedYm.split('-').map(Number);
-    const label = `${months[m - 1]} ${y}`;
-    opts.push(`<option value="${selectedYm}" selected>${label}</option>`);
-  }
-  return opts.join('');
-}
-function _ldashGoToMonth(ym) {
-  ym = ym > ymPeriodKey(new Date()) ? ymPeriodKey(new Date()) : ym; // tidak boleh maju ke bulan depan (belum ada data)
-  _ldashSelectedYm = ym;
-  // Reset tanggal terpilih di blok harian: bulan berjalan → hari ini,
-  // bulan lain → hari terakhir bulan itu (data paling baru di bulan tsb).
-  const [y, m] = ym.split('-').map(Number);
-  _ldashSelectedDate = (ym === ymPeriodKey(new Date()))
-    ? ymdKey(new Date())
-    : ymdKey(new Date(y, m, 0));
-  loadLiveDashboard(ym);
-}
-function _ldashMonthNav(delta) {
-  const [y, m] = _ldashSelectedYm.split('-').map(Number);
-  const d = new Date(y, m - 1 + delta, 1);
-  _ldashGoToMonth(ymPeriodKey(d));
-}
-function _ldashMonthPick(val) { if (val) _ldashGoToMonth(val); }
-function _ldashMonthCurrent() { _ldashGoToMonth(ymPeriodKey(new Date())); }
-window._ldashMonthNav = _ldashMonthNav;
-window._ldashMonthPick = _ldashMonthPick;
-window._ldashMonthCurrent = _ldashMonthCurrent;
-
-// Gabungkan data penjualan per-platform (dailyRows) + status absensi
-// (attendanceByDate) utk SATU tanggal, seluruh host — dasar tabel navigasi.
-function _ldashDayData(dateStr) {
-  const d = _ldashLastData;
-  if (!d) return [];
-  return (d.rows || []).map(r => {
-    const dr = (d.dailyRows || []).find(x => x.date === dateStr && x.hostId === r.id);
-    const att = (d.attendanceByDate || {})[dateStr + '|' + r.id];
-    return {
-      hostId: r.id, hostName: r.name,
-      shopeeGmv: dr?.shopeeGmv || 0, shopeeViewers: dr?.shopeeViewers || 0,
-      tiktokGmv: dr?.tiktokGmv || 0, tiktokViewers: dr?.tiktokViewers || 0,
-      totalGmv: dr?.totalGmv || 0,
-      attStatus: att?.status || null, attNote: att?.note || ''
-    };
-  });
-}
-
-function _ldashRenderDailyBlock() {
-  const dateInput = document.getElementById('ldash-daily-date');
-  const body = document.getElementById('ldash-daily-body');
-  if (!body) return;
-  const dateStr = _ldashSelectedDate;
-  if (dateInput) dateInput.value = dateStr;
-
-  const now = new Date();
-  const todayStr = ymdKey(now);
-  const dObj = new Date(dateStr + 'T00:00:00');
-  const label = dObj.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  const isToday = dateStr === todayStr;
-  const isYesterday = dateStr === ymdKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1));
-
-  const day = _ldashDayData(dateStr);
-  const dayTotal = day.reduce((s, r) => s + r.totalGmv, 0);
-  const rowsHtml = day.map(r => `
-    <tr>
-      <td style="font-weight:600;color:var(--text)">${escHtml(r.hostName)}</td>
-      <td>${r.attStatus ? `<div class="att-day-tag att-${r.attStatus}" style="display:inline-flex">${r.attStatus}</div>` : '<span style="color:var(--text2)">— belum diisi</span>'}</td>
-      <td><span style="display:inline-flex;align-items:center;gap:6px">${platBadge('shopee','sm')}${crmFmtRupiah(r.shopeeGmv)}</span></td>
-      <td>${r.shopeeViewers.toLocaleString('id-ID')}</td>
-      <td><span style="display:inline-flex;align-items:center;gap:6px">${platBadge('tiktok','sm')}${crmFmtRupiah(r.tiktokGmv)}</span></td>
-      <td>${r.tiktokViewers.toLocaleString('id-ID')}</td>
-      <td style="font-weight:600">${crmFmtRupiah(r.totalGmv)}</td>
-    </tr>`).join('');
-
-  body.innerHTML = `
-    <div style="padding:10px 16px 0;font-size:12.5px;color:var(--text2)">
-      ${label}${isToday ? ' <span style="color:var(--gold-hi);font-weight:600">· Hari Ini</span>' : ''}${isYesterday ? ' <span style="color:var(--gold-hi);font-weight:600">· Kemarin</span>' : ''}
-      — total pendapatan seluruh host: <b style="color:var(--text)">${crmFmtRupiah(dayTotal)}</b>
-    </div>
-    <div class="tbl-scroll">
-      <table>
-        <thead><tr><th>Host</th><th>Absensi</th><th>Pendapatan Shopee</th><th>Penonton Shopee</th><th>Pendapatan TikTok</th><th>Penonton TikTok</th><th>Total Hari Itu</th></tr></thead>
-        <tbody>${rowsHtml || `<tr><td colspan="7" class="tbl-empty">Tidak ada data untuk tanggal ini.</td></tr>`}</tbody>
-      </table>
-    </div>`;
-}
-function _ldashDailyNav(deltaDays) {
-  const dObj = new Date(_ldashSelectedDate + 'T00:00:00');
-  dObj.setDate(dObj.getDate() + deltaDays);
-  _ldashSelectedDate = _ldashClampDate(ymdKey(dObj));
-  _ldashRenderDailyBlock();
-}
-function _ldashDailyToday() {
-  _ldashSelectedDate = _ldashClampDate(ymdKey(new Date()));
-  _ldashRenderDailyBlock();
-}
-function _ldashDailyPick(val) {
-  if (!val) return;
-  _ldashSelectedDate = _ldashClampDate(val);
-  _ldashRenderDailyBlock();
-}
-window._ldashDailyNav = _ldashDailyNav;
-window._ldashDailyToday = _ldashDailyToday;
-window._ldashDailyPick = _ldashDailyPick;
 
 /* ═══════════════════════════════════════════════════════════
    v45 — EXPORT "Live Dashboard" (perbandingan seluruh Host Live)
@@ -10662,24 +10416,6 @@ async function exportLiveDashboardExcel() {
       ['C','D','F','G'].forEach(col => { const c = col+r; if (wsDaily[c]) wsDaily[c].z = num; });
     });
     XLSX.utils.book_append_sheet(wb, wsDaily, '📅 Detail Harian');
-
-    // ── SHEET 5 — ABSENSI PER HOST (v70: sumber data langsung tabel
-    //    `attendance`, sama persis dengan yang dipakai halaman Absensi,
-    //    supaya jumlah Hadir/WFH/Izin/Sakit/Alpha/Libur akurat & konsisten) ──
-    const ATT_STATUSES = ['Hadir', 'WFH', 'Izin', 'Sakit', 'Alpha', 'Libur'];
-    const attByHost = d.attendanceByHost || {};
-    const attAoa = [
-      ['DHP CREATIVE — ABSENSI PER HOST'], [`Export: ${stamp}`], [`Periode: ${d.monthLabel}`], [],
-      ['Host', ...ATT_STATUSES, 'Total Hari Tercatat'],
-      ...d.ranked.map(r => {
-        const a = attByHost[r.id] || {};
-        return [r.name, ...ATT_STATUSES.map(s => a[s] || 0), a.total || 0];
-      }),
-    ];
-    const wsAtt = XLSX.utils.aoa_to_sheet(attAoa);
-    wsAtt['!cols'] = [{wch:20}, ...ATT_STATUSES.map(()=>({wch:9})), {wch:16}];
-    wsAtt['!merges'] = [{s:{r:0,c:0},e:{r:0,c:ATT_STATUSES.length+1}}];
-    XLSX.utils.book_append_sheet(wb, wsAtt, '📋 Absensi per Host');
 
     const fname = `DHP_Live_Dashboard_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.xlsx`;
     XLSX.writeFile(wb, fname);
@@ -10848,27 +10584,6 @@ async function exportLiveDashboardPDF() {
         } catch (e) { console.warn('[PDF] gagal menyisipkan grafik platform:', e); }
       }
     }
-
-    // ── v70: Absensi per Host — sumber data langsung tabel `attendance`,
-    //    sama persis dgn halaman Absensi, supaya angkanya akurat & konsisten. ──
-    const ATT_STATUSES = ['Hadir', 'WFH', 'Izin', 'Sakit', 'Alpha', 'Libur'];
-    const attByHostPdf = d.attendanceByHost || {};
-    if (y > pageH - 140) { doc.addPage(); y = 40; }
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(11.5); doc.setTextColor(30,30,30);
-    doc.text('Absensi per Host', marginX, y); y += 8;
-    doc.autoTable({
-      head: [['Host', ...ATT_STATUSES, 'Total Tercatat']],
-      body: d.ranked.map(r => {
-        const a = attByHostPdf[r.id] || {};
-        return [r.name, ...ATT_STATUSES.map(s => String(a[s] || 0)), String(a.total || 0)];
-      }),
-      startY: y + 6, margin: { left: marginX, right: marginX },
-      styles: { font: 'helvetica', fontSize: 8, cellPadding: 4.5, textColor: [40,40,40], overflow: 'linebreak', valign: 'middle' },
-      headStyles: { fillColor: [26,26,30], textColor: [230,208,166], fontStyle: 'bold', fontSize: 8 },
-      alternateRowStyles: { fillColor: [248,246,241] },
-      theme: 'grid'
-    });
-    y = doc.lastAutoTable.finalY + 22;
 
     // ── Rincian Harian — dipisah per host, subtotal di bawah tiap host ──
     const dailyGroups = _ldashGroupDaily(d);
