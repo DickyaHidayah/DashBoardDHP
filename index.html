@@ -9861,17 +9861,26 @@ async function submitLateRequest(sessionId) {
    peringkat pencapaian (gold/silver/bronze), diagram batang
    penjualan vs target, dan tabel rekap lengkap.
    ═══════════════════════════════════════════════════════════ */
-async function loadLiveDashboard() {
+let _ldashSelectedYm = ymPeriodKey(new Date());
+
+async function loadLiveDashboard(targetYm) {
   const wrap = document.getElementById('ldash-view');
   const ids = hostLiveIds();
   if (!wrap) return;
   if (!ids.length) { wrap.innerHTML = `<div class="tbl-wrap"><div class="tbl-empty" style="padding:28px">Belum ada Host Live terdaftar.</div></div>`; return; }
 
+  // v72: bisa pilih bulan yang mau dilihat (bulan ini / bulan kemarin / bulan
+  // lain) — bukan cuma terkunci ke bulan berjalan. targetYm dari nav bulan
+  // di layar; kalau tidak dikirim, pakai bulan yang terakhir dipilih user
+  // (default bulan berjalan saat pertama kali dibuka).
+  _ldashSelectedYm = targetYm || _ldashSelectedYm || ymPeriodKey(new Date());
+  const ym = _ldashSelectedYm;
+  const [ymY, ymM] = ym.split('-').map(Number);
+  const refDate = new Date(ymY, ymM - 1, 1);
+
   wrap.innerHTML = `<div class="ldash-loading">Memuat data seluruh host…</div>`;
-  const now = new Date();
-  const ym = ymPeriodKey(now);
-  const first = ymdKey(new Date(now.getFullYear(), now.getMonth(), 1));
-  const last  = ymdKey(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+  const first = ymdKey(refDate);
+  const last  = ymdKey(new Date(ymY, ymM, 0));
 
   const [rowsBase, platRes, attRes] = await Promise.all([
     Promise.all(ids.map(async id => {
@@ -10029,6 +10038,8 @@ function renderLiveDashboard(rows, dailyRows, attendanceByHost, attendanceByDate
   if (!wrap) return;
   const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
   const now = new Date();
+  const [selY, selM] = (_ldashSelectedYm || ymPeriodKey(now)).split('-').map(Number);
+  const selRefDate = new Date(selY, selM - 1, 1);
 
   const pctOf = r => r.target > 0 ? r.achieved / r.target : (r.achieved > 0 ? 1 : 0);
   const ranked = [...rows].sort((a,b) => pctOf(b) - pctOf(a) || b.achieved - a.achieved);
@@ -10167,9 +10178,19 @@ function renderLiveDashboard(rows, dailyRows, attendanceByHost, attendanceByDate
   }).join('');
 
   wrap.innerHTML = `
-    <div class="hs-compare-head">
-      <div class="hs-compare-title">Perbandingan Host Live</div>
-      <div class="hs-compare-sub">${months[now.getMonth()]} ${now.getFullYear()} — seluruh host dibandingkan sekaligus</div>
+    <div class="hs-compare-head" style="flex-wrap:wrap;gap:12px;align-items:center">
+      <div>
+        <div class="hs-compare-title">Perbandingan Host Live</div>
+        <div class="hs-compare-sub">${months[selRefDate.getMonth()]} ${selRefDate.getFullYear()} — seluruh host dibandingkan sekaligus</div>
+      </div>
+      <div class="ldash-month-nav" style="display:flex;align-items:center;gap:6px;margin-left:auto">
+        <button class="btn-sm btn-g" onclick="_ldashMonthNav(-1)" title="Bulan sebelumnya">‹</button>
+        <select id="ldash-month-select" class="fi" style="width:170px" onchange="_ldashMonthPick(this.value)">
+          ${_ldashMonthOptions(_ldashSelectedYm)}
+        </select>
+        <button class="btn-sm btn-g" onclick="_ldashMonthNav(1)" title="Bulan berikutnya">›</button>
+        ${_ldashSelectedYm !== ymPeriodKey(now) ? `<button class="btn-sm btn-gold" onclick="_ldashMonthCurrent()">Bulan Ini</button>` : ''}
+      </div>
     </div>
 
     ${summary}
@@ -10231,7 +10252,7 @@ function renderLiveDashboard(rows, dailyRows, attendanceByHost, attendanceByDate
     <div class="tbl-wrap" style="margin-top:18px">
       <div class="tbl-head">
         <div class="tbl-title">Absensi per Host</div>
-        <div style="font-size:11px;color:var(--text2)">${months[now.getMonth()]} ${now.getFullYear()} — dari data absensi asli tiap host</div>
+        <div style="font-size:11px;color:var(--text2)">${months[selRefDate.getMonth()]} ${selRefDate.getFullYear()} — dari data absensi asli tiap host</div>
       </div>
       <div class="tbl-scroll">
         <table>
@@ -10324,7 +10345,8 @@ function renderLiveDashboard(rows, dailyRows, attendanceByHost, attendanceByDate
   // memakai angka yang identik dengan yang tampil di layar (bukan query ulang).
   _ldashLastData = {
     generatedAt: new Date(),
-    monthLabel: `${months[now.getMonth()]} ${now.getFullYear()}`,
+    monthLabel: `${months[selRefDate.getMonth()]} ${selRefDate.getFullYear()}`,
+    ym: _ldashSelectedYm,
     ranked, rows, dailyRows: dailyRows || [],
     attendanceByHost: attendanceByHost || {}, attendanceByDate: attendanceByDate || {},
     totalTarget, totalAchieved, totalSessions, totalPending, totalHoursAll,
@@ -10343,18 +10365,64 @@ let _ldashLastData = null;
 let _ldashSelectedDate = ymdKey(new Date());
 
 /* v70: batasi tanggal yang bisa dilihat di "Rincian Harian" supaya tetap di
-   dalam rentang bulan yang datanya sudah dimuat (dailyRows/attendanceByDate),
-   dan tidak bisa maju melewati hari ini. */
+   dalam rentang BULAN YANG SEDANG DIPILIH (_ldashSelectedYm) — bukan selalu
+   bulan berjalan, supaya konsisten dengan navigasi bulan v72. Tidak bisa
+   maju melewati hari ini kalau bulan yang dipilih adalah bulan berjalan. */
 function _ldashClampDate(dateStr) {
-  const now = new Date();
-  const first = ymdKey(new Date(now.getFullYear(), now.getMonth(), 1));
-  const last  = ymdKey(new Date(now.getFullYear(), now.getMonth() + 1, 0));
-  const todayStr = ymdKey(now);
+  const ym = _ldashSelectedYm || ymPeriodKey(new Date());
+  const [y, m] = ym.split('-').map(Number);
+  const first = ymdKey(new Date(y, m - 1, 1));
+  const last  = ymdKey(new Date(y, m, 0));
+  const todayStr = ymdKey(new Date());
   if (dateStr < first) return first;
   if (dateStr > last) return last;
-  if (dateStr > todayStr) return todayStr;
+  if (ym === ymPeriodKey(new Date()) && dateStr > todayStr) return todayStr;
   return dateStr;
 }
+
+/* v72: pilihan navigasi BULAN di Live Dashboard — "bulan ini", "bulan
+   kemarin/lalu", atau bulan lain lewat dropdown/panah, tidak lagi terkunci
+   ke bulan berjalan saja. */
+function _ldashMonthOptions(selectedYm) {
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const now = new Date();
+  const opts = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const ym = ymPeriodKey(d);
+    const label = `${months[d.getMonth()]} ${d.getFullYear()}`;
+    opts.push(`<option value="${ym}"${ym === selectedYm ? ' selected' : ''}>${label}</option>`);
+  }
+  // Jaga-jaga: kalau bulan yg lagi dipilih di luar 12 bulan terakhir (mis.
+  // dari export lama / state lain), tetap tampilkan supaya tidak "nyasar".
+  if (!opts.some(o => o.includes(`value="${selectedYm}"`))) {
+    const [y, m] = selectedYm.split('-').map(Number);
+    const label = `${months[m - 1]} ${y}`;
+    opts.push(`<option value="${selectedYm}" selected>${label}</option>`);
+  }
+  return opts.join('');
+}
+function _ldashGoToMonth(ym) {
+  ym = ym > ymPeriodKey(new Date()) ? ymPeriodKey(new Date()) : ym; // tidak boleh maju ke bulan depan (belum ada data)
+  _ldashSelectedYm = ym;
+  // Reset tanggal terpilih di blok harian: bulan berjalan → hari ini,
+  // bulan lain → hari terakhir bulan itu (data paling baru di bulan tsb).
+  const [y, m] = ym.split('-').map(Number);
+  _ldashSelectedDate = (ym === ymPeriodKey(new Date()))
+    ? ymdKey(new Date())
+    : ymdKey(new Date(y, m, 0));
+  loadLiveDashboard(ym);
+}
+function _ldashMonthNav(delta) {
+  const [y, m] = _ldashSelectedYm.split('-').map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  _ldashGoToMonth(ymPeriodKey(d));
+}
+function _ldashMonthPick(val) { if (val) _ldashGoToMonth(val); }
+function _ldashMonthCurrent() { _ldashGoToMonth(ymPeriodKey(new Date())); }
+window._ldashMonthNav = _ldashMonthNav;
+window._ldashMonthPick = _ldashMonthPick;
+window._ldashMonthCurrent = _ldashMonthCurrent;
 
 // Gabungkan data penjualan per-platform (dailyRows) + status absensi
 // (attendanceByDate) utk SATU tanggal, seluruh host — dasar tabel navigasi.
