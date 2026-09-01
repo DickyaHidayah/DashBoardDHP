@@ -2238,6 +2238,16 @@ body.light .ads-select{background:#ffffff;color:#0d0d0d;border:1.5px solid rgba(
 .ads-vt-btn.active{background:rgba(201,169,110,.14);color:var(--gold)}
 .ads-vt-btn:not(.active):hover{color:var(--text2)}
 
+/* ── Live Dashboard: toggle periode Bulan Ini / Bulan Lalu ── */
+.ldash-period-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.ldash-period-toggle{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.ldash-period-btn{background:none;border:none;color:var(--muted);padding:8px 16px;font-size:10.5px;font-weight:700;
+    letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all var(--trans);min-height:36px;font-family:'Inter',sans-serif}
+.ldash-period-btn.active{background:rgba(201,169,110,.14);color:var(--gold)}
+.ldash-period-btn:not(.active):hover{color:var(--text2)}
+.ldash-period-note{font-size:11px;color:var(--text2)}
+body.light .ldash-period-btn.active{background:#0d0d0d;color:#ffffff}
+
 /* Calendar grid */
 .cal-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
 .cal-title-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
@@ -5702,6 +5712,13 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px"><path d="M4 1.6h5.2L12.4 4.8V13.4a1 1 0 01-1 1H4a1 1 0 01-1-1V2.6a1 1 0 011-1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M9.2 1.6V4.8H12.4" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M4.6 8h5.2M4.6 10.2h5.2M4.6 5.8h2.4" stroke="currentColor" stroke-width="1"/></svg>Export PDF
             </button>
           </div>
+        </div>
+        <div id="ldash-period-row" class="ldash-period-row">
+          <div class="ldash-period-toggle">
+            <button class="ldash-period-btn active" id="ldash-per-cur" onclick="ldashSetPeriod(0,this)">Bulan Ini</button>
+            <button class="ldash-period-btn" id="ldash-per-prev" onclick="ldashSetPeriod(-1,this)">Bulan Lalu</button>
+          </div>
+          <span class="ldash-period-note" id="ldash-period-note"></span>
         </div>
         <div id="ldash-view"></div>
       </div>
@@ -9861,6 +9878,21 @@ async function submitLateRequest(sessionId) {
    peringkat pencapaian (gold/silver/bronze), diagram batang
    penjualan vs target, dan tabel rekap lengkap.
    ═══════════════════════════════════════════════════════════ */
+/* v64: periode Live Dashboard — 0 = bulan berjalan, -1 = bulan lalu.
+   Satu state ini jadi acuan tunggal buat summary, kartu, chart, tabel,
+   DAN export (Excel/PDF) — semuanya query ulang berdasarkan periode yang
+   sama supaya nggak ada yang beda sendiri ("harus singkron semua"). */
+let ldashPeriodOffset = 0;
+
+function ldashSetPeriod(offset, btn) {
+  if (ldashPeriodOffset === offset) return;
+  ldashPeriodOffset = offset;
+  document.querySelectorAll('.ldash-period-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  loadLiveDashboard();
+}
+window.ldashSetPeriod = ldashSetPeriod;
+
 async function loadLiveDashboard() {
   const wrap = document.getElementById('ldash-view');
   const ids = hostLiveIds();
@@ -9869,11 +9901,17 @@ async function loadLiveDashboard() {
 
   wrap.innerHTML = `<div class="ldash-loading">Memuat data seluruh host…</div>`;
   const now = new Date();
-  const ym = ymPeriodKey(now);
-  const first = ymdKey(new Date(now.getFullYear(), now.getMonth(), 1));
-  const last  = ymdKey(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+  // v64: refDate = bulan yang dipilih (bulan ini / bulan lalu), dipakai
+  // konsisten ke semua query di bawah — RPC stat bulanan, rentang tanggal
+  // live_schedule, dan rentang tanggal absensi.
+  const refDate = new Date(now.getFullYear(), now.getMonth() + ldashPeriodOffset, 1);
+  const ym = ymPeriodKey(refDate);
+  const first = ymdKey(new Date(refDate.getFullYear(), refDate.getMonth(), 1));
+  const last  = ymdKey(new Date(refDate.getFullYear(), refDate.getMonth() + 1, 0));
+  const noteEl = document.getElementById('ldash-period-note');
+  if (noteEl) noteEl.textContent = ldashPeriodOffset === 0 ? 'Menampilkan data bulan berjalan' : 'Menampilkan rekap bulan lalu';
 
-  const [rowsBase, platRes] = await Promise.all([
+  const [rowsBase, platRes, attRes] = await Promise.all([
     Promise.all(ids.map(async id => {
       let target = 0, achieved = 0, sessionsCount = 0, libur = 0, pending = 0, totalHours = 0, sakit = 0, izin = 0;
       if (db) {
@@ -9889,7 +9927,10 @@ async function loadLiveDashboard() {
         totalHours     = Number(st?.total_hours) || 0;
         sakit          = Number(st?.total_sakit) || 0;
         izin           = Number(st?.total_izin) || 0;
-        pending        = (pendRes?.data || []).length;
+        // v64: laporan menunggu ACC cuma relevan buat bulan berjalan — kalau
+        // sedang melihat bulan lalu, jangan hitung antrean hari ini sebagai
+        // "menunggu" di rekap bulan lalu (bisa bikin data historis salah baca).
+        pending        = ldashPeriodOffset === 0 ? (pendRes?.data || []).length : 0;
       }
       return { id, name: LOCAL_USERS[id]?.name || id, target, achieved, sessionsCount, libur, pending, totalHours, sakit, izin };
     })),
@@ -9899,14 +9940,34 @@ async function loadLiveDashboard() {
     db ? dbQ(d => d.from('live_schedule')
         .select('host_user_id,schedule_date,gmv_amount,viewers_count,products_sold,shopee_gmv_amount,shopee_viewers_count,shopee_products_sold,tiktok_gmv_amount,tiktok_viewers_count,tiktok_products_sold')
         .in('host_user_id', ids).gte('schedule_date', first).lte('schedule_date', last))
+      : Promise.resolve(null),
+    // v64: rincian absensi (Libur/Sakit/Izin/dst) per host, per tanggal, utk
+    // periode yang sama — dasar sheet/section "Absensi per Host" di export.
+    db ? dbQ(d => d.from('attendance').select('user_id,att_date,status,note')
+        .in('user_id', ids).gte('att_date', first).lte('att_date', last))
       : Promise.resolve(null)
   ]);
 
   const platformByHost = _ldashAggregatePlatform(platRes?.data || [], ids);
   const rows = rowsBase.map(r => ({ ...r, ...(platformByHost[r.id] || {}) }));
   const dailyRows = _ldashDailyBreakdown(platRes?.data || [], ids);
+  const attendanceRows = _ldashAttendanceBreakdown(attRes?.data || [], ids);
 
-  renderLiveDashboard(rows, dailyRows);
+  renderLiveDashboard(rows, dailyRows, refDate, attendanceRows);
+}
+
+/* v64: rincian ABSENSI per host (Libur/Sakit/Izin/WFH/Alpha), diurut per
+   tanggal — sumbernya tabel attendance yang sama dipakai fitur Absensi &
+   Live Schedule, jadi datanya pasti sesuai/singkron dengan yang lain. */
+function _ldashAttendanceBreakdown(records, ids) {
+  const map = {};
+  (records || []).forEach(a => {
+    if (!a.att_date || !ids.includes(a.user_id)) return;
+    if (!map[a.user_id]) map[a.user_id] = [];
+    map[a.user_id].push({ date: a.att_date, status: a.status, note: a.note || '' });
+  });
+  ids.forEach(id => { if (map[id]) map[id].sort((x,y) => x.date.localeCompare(y.date)); });
+  return map; // { hostId: [{date,status,note}, ...] }
 }
 
 /* v46: rincian PER HARI per host — dasar tabel "Rincian Harian" di export
@@ -9991,11 +10052,12 @@ function _ldashDestroyCharts() {
   _ldashCharts = {};
 }
 
-function renderLiveDashboard(rows, dailyRows) {
+function renderLiveDashboard(rows, dailyRows, refDate, attendanceRows) {
   const wrap = document.getElementById('ldash-view');
   if (!wrap) return;
   const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
-  const now = new Date();
+  const now = refDate || new Date();
+  const isPrevMonth = ldashPeriodOffset !== 0;
 
   const pctOf = r => r.target > 0 ? r.achieved / r.target : (r.achieved > 0 ? 1 : 0);
   const ranked = [...rows].sort((a,b) => pctOf(b) - pctOf(a) || b.achieved - a.achieved);
@@ -10126,7 +10188,7 @@ function renderLiveDashboard(rows, dailyRows) {
   wrap.innerHTML = `
     <div class="hs-compare-head">
       <div class="hs-compare-title">Perbandingan Host Live</div>
-      <div class="hs-compare-sub">${months[now.getMonth()]} ${now.getFullYear()} — seluruh host dibandingkan sekaligus</div>
+      <div class="hs-compare-sub">${months[now.getMonth()]} ${now.getFullYear()}${isPrevMonth ? ' — Bulan Lalu' : ''} — seluruh host dibandingkan sekaligus</div>
     </div>
 
     ${summary}
@@ -10244,8 +10306,9 @@ function renderLiveDashboard(rows, dailyRows) {
   // memakai angka yang identik dengan yang tampil di layar (bukan query ulang).
   _ldashLastData = {
     generatedAt: new Date(),
-    monthLabel: `${months[now.getMonth()]} ${now.getFullYear()}`,
-    ranked, rows, dailyRows: dailyRows || [],
+    monthLabel: `${months[now.getMonth()]} ${now.getFullYear()}${isPrevMonth ? ' (Bulan Lalu)' : ''}`,
+    periodOffset: ldashPeriodOffset, refDate: now,
+    ranked, rows, dailyRows: dailyRows || [], attendanceRows: attendanceRows || {},
     totalTarget, totalAchieved, totalSessions, totalPending, totalHoursAll,
     totalSakitAll, totalIzinAll, overallPct, achievedCount, totalHariMasukAll,
     totalShopeeGmv, totalTiktokGmv, totalShopeeViewers, totalTiktokViewers,
@@ -10290,6 +10353,19 @@ function _ldashGroupDaily(d) {
       totalGmv: t.totalGmv + (r.totalGmv||0)
     }), { shopeeGmv:0, shopeeViewers:0, shopeeProducts:0, tiktokGmv:0, tiktokViewers:0, tiktokProducts:0, totalGmv:0 });
     return { hostName, rows, totals };
+  });
+}
+
+// v64: kelompokkan rincian ABSENSI per host (Libur/Sakit/Izin/dst), urut
+// sesuai ranking pencapaian — dipakai bareng export Excel & PDF, konsisten
+// dengan pola _ldashGroupDaily di atas.
+function _ldashGroupAttendance(d) {
+  const statusLbl = { Hadir:'Hadir', WFH:'WFH', Izin:'Izin', Sakit:'Sakit', Alpha:'Alpha', Libur:'Libur' };
+  return (d.ranked || []).map(r => {
+    const recs = (d.attendanceRows && d.attendanceRows[r.id]) || [];
+    const counts = { Hadir:0, WFH:0, Izin:0, Sakit:0, Alpha:0, Libur:0 };
+    recs.forEach(a => { if (counts[a.status] !== undefined) counts[a.status]++; });
+    return { hostId: r.id, hostName: r.name, recs, counts, statusLbl };
   });
 }
 
@@ -10417,7 +10493,34 @@ async function exportLiveDashboardExcel() {
     });
     XLSX.utils.book_append_sheet(wb, wsDaily, '📅 Detail Harian');
 
-    const fname = `DHP_Live_Dashboard_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.xlsx`;
+    // ── SHEET 5 — ABSENSI PER HOST (v64: rincian Libur/Sakit/Izin/dst per
+    //    tanggal, sumbernya tabel attendance yang sama dgn fitur Absensi,
+    //    jadi datanya pasti sesuai/singkron dengan periode yang dipilih) ──
+    const attGroups = _ldashGroupAttendance(d);
+    const attAoa = [
+      ['DHP CREATIVE — ABSENSI PER HOST'], [`Export: ${stamp}`], [`Periode: ${d.monthLabel}`], [],
+    ];
+    const hasAnyAtt = attGroups.some(g => g.recs.length);
+    if (!hasAnyAtt) {
+      attAoa.push(['— Tidak ada catatan absensi (Libur/Sakit/Izin/dst) pada periode ini —']);
+    } else {
+      attGroups.forEach(g => {
+        attAoa.push([`👤 ${g.hostName.toUpperCase()}`, '', `Hadir:${g.counts.Hadir}  WFH:${g.counts.WFH}  Izin:${g.counts.Izin}  Sakit:${g.counts.Sakit}  Alpha:${g.counts.Alpha}  Libur:${g.counts.Libur}`]);
+        if (!g.recs.length) {
+          attAoa.push(['— Tidak ada catatan absensi bulan ini —']);
+        } else {
+          attAoa.push(['Tanggal', 'Status', 'Keterangan']);
+          g.recs.forEach(a => { attAoa.push([_pdfFmtDate(a.date), g.statusLbl[a.status] || a.status, a.note || '']); });
+        }
+        attAoa.push([]); // pemisah antar host
+      });
+    }
+    const wsAtt = XLSX.utils.aoa_to_sheet(attAoa);
+    wsAtt['!cols'] = [{wch:24},{wch:14},{wch:46}];
+    wsAtt['!merges'] = [{s:{r:0,c:0},e:{r:0,c:2}}];
+    XLSX.utils.book_append_sheet(wb, wsAtt, '📋 Absensi per Host');
+
+    const fname = `DHP_Live_Dashboard_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${d.periodOffset ? '_BulanLalu' : ''}.xlsx`;
     XLSX.writeFile(wb, fname);
     toast('✓ Export Excel Live Dashboard selesai');
     pushActivity?.('Live Dashboard: export Excel', 'info');
@@ -10477,7 +10580,7 @@ async function exportLiveDashboardPDF() {
     };
 
     doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(30,30,30);
-    doc.text('Ringkasan Bulan Ini', marginX, y); y += 14;
+    doc.text(`Ringkasan ${d.periodOffset ? 'Bulan Lalu' : 'Bulan Ini'}`, marginX, y); y += 14;
     y = kpiCard([
       [crmFmtRupiah(d.totalAchieved), `Total Pencapaian (target ${crmFmtRupiah(d.totalTarget)})`],
       [`${d.totalTarget>0?Math.round(d.overallPct*100):0}%`, 'Progress Gabungan'],
@@ -10621,6 +10724,39 @@ async function exportLiveDashboardPDF() {
           footStyles: { fillColor: [240,232,214], textColor: [90,68,26], fontStyle: 'bold', fontSize: 7.8 },
           alternateRowStyles: { fillColor: [248,246,241] },
           columnStyles: { 1: { textColor: [178,80,40] }, 3: { textColor: [20,140,140] }, 5: { fontStyle: 'bold' } },
+          theme: 'grid'
+        });
+        y = doc.lastAutoTable.finalY + 20;
+      });
+    }
+
+    // ── v64: Absensi per Host — rincian Libur/Sakit/Izin/dst per tanggal,
+    //    dari sumber data yang sama dgn fitur Absensi, sesuai periode terpilih ──
+    const attGroups = _ldashGroupAttendance(d);
+    if (attGroups.some(g => g.recs.length)) {
+      doc.addPage();
+      doc.setFillColor(20, 20, 24);
+      doc.rect(0, 0, pageW, 50, 'F');
+      doc.setTextColor(201, 169, 110); doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+      doc.text('Absensi per Host', marginX, 32);
+      doc.setTextColor(0, 0, 0);
+      y = 66;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(90,90,90);
+      doc.text(`Rincian Libur, Sakit, Izin, dan status kehadiran lain tiap host — periode ${d.monthLabel}.`, marginX, y); y += 14;
+      doc.setTextColor(0,0,0);
+
+      attGroups.forEach(g => {
+        if (!g.recs.length) return;
+        if (y > pageH - 110) { doc.addPage(); y = 40; }
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5); doc.setTextColor(30,30,30);
+        doc.text(`👤 ${g.hostName}  —  Hadir ${g.counts.Hadir} · WFH ${g.counts.WFH} · Izin ${g.counts.Izin} · Sakit ${g.counts.Sakit} · Alpha ${g.counts.Alpha} · Libur ${g.counts.Libur}`, marginX, y); y += 6;
+        doc.autoTable({
+          head: [['Tanggal', 'Status', 'Keterangan']],
+          body: g.recs.map(a => [_pdfFmtDate(a.date), g.statusLbl[a.status] || a.status, a.note || '—']),
+          startY: y + 4, margin: { left: marginX, right: marginX },
+          styles: { font: 'helvetica', fontSize: 7.8, cellPadding: 4, textColor: [40,40,40], overflow: 'linebreak', valign: 'middle' },
+          headStyles: { fillColor: [26,26,30], textColor: [230,208,166], fontStyle: 'bold', fontSize: 7.8 },
+          alternateRowStyles: { fillColor: [248,246,241] },
           theme: 'grid'
         });
         y = doc.lastAutoTable.finalY + 20;
