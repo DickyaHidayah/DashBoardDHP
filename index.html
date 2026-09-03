@@ -3776,6 +3776,83 @@ body.light .crm-date-input{color-scheme:light}
   .crm-tbl-filters .crm-filter{flex:1 1 auto}
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   v71 — Database Customer di HP: tabel lebar (min-width:1180px) diubah
+   jadi tumpukan KARTU yang rapi, satu customer satu kartu. Label kolom
+   (data-label di tiap <td>) yang sebelumnya cuma dipakai desktop, di sini
+   dijadikan label kiri tiap baris info. Tidak mengubah apapun di desktop
+   (semua di dalam media query ≤640px) dan tidak mengubah data/logic JS —
+   murni transformasi tampilan.
+   ══════════════════════════════════════════════════════════════════════ */
+@media (max-width:640px){
+  .crm-table-wrap{max-height:none;overflow:visible;border:none;background:none;padding:0}
+  .crm-table{min-width:0;width:100%;display:block;font-size:12.5px}
+  .crm-table thead{display:none}
+  .crm-table tbody{display:block}
+  .crm-table tr{
+    display:block;position:relative;background:var(--surface);
+    border:1px solid var(--border);border-radius:14px;
+    margin-bottom:10px;padding:14px 14px 10px;
+    box-shadow:0 2px 10px rgba(0,0,0,.05);
+  }
+  .crm-table tr.crm-row-selected{border-color:var(--gold);background:rgba(201,169,110,.06)}
+  .crm-table tr:last-child{margin-bottom:0}
+  /* Baris pemisah tanggal (mode "grouping per periode") bukan kartu customer —
+     dikembalikan jadi header polos, bukan ikut ter-bungkus card. */
+  .crm-table tr.crm-group-row{
+    background:none;border:none;box-shadow:none;padding:4px 2px;margin-bottom:8px;
+  }
+  .crm-table tr.crm-group-row td{display:block;border-bottom:none;padding:0;text-align:left}
+  .crm-table tr.crm-group-row td::before{content:''}
+  .crm-table td{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:7px 0;border-bottom:1px dashed var(--border);
+    text-align:right;font-size:12.5px;
+  }
+  .crm-table td:not(.crm-cb-col)::before{
+    content:attr(data-label);flex-shrink:0;text-align:left;
+    font-size:9px;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--muted);font-weight:700;
+  }
+  /* Checkbox pilih (mode moderator) → pindah ke pojok kanan-atas kartu */
+  .crm-table td.crm-cb-col{
+    position:absolute;top:10px;right:10px;width:auto;min-width:0;max-width:none;
+    background:none;padding:0;border:none;left:auto;z-index:1;
+  }
+  /* Nama + ID Customer → jadi "judul kartu": besar, di baris paling atas,
+     tanpa label kiri (karena dia sendiri sudah jadi identitas utama). */
+  .crm-table td.crm-freeze-id{
+    position:static;left:auto;width:auto;max-width:none;background:none;
+    padding:0 0 2px;border-bottom:none;justify-content:flex-start;
+  }
+  .crm-table td.crm-freeze-id::before{content:''}
+  .crm-table td.crm-freeze-id .crm-id{
+    font-size:10px;color:var(--gold-hi);letter-spacing:.04em;font-weight:700;
+    background:rgba(201,169,110,.1);padding:2px 8px;border-radius:20px;
+  }
+  .crm-table td.crm-freeze-name{
+    position:static;left:auto;width:auto;max-width:none;background:none;overflow:visible;
+    padding:0 0 10px;margin-bottom:6px;border-bottom:1px solid var(--border);
+    justify-content:flex-start;flex-wrap:wrap;
+  }
+  .crm-table td.crm-freeze-name::before{content:''}
+  .crm-table td.crm-freeze-name .crm-name{font-size:15px;font-weight:700;max-width:100%}
+  .crm-mcard-label-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-right:2px}
+  /* Baris terakhir sebelum actions tidak perlu garis putus-putus */
+  .crm-table td[data-label="Follow Up"]{border-bottom:none;padding-bottom:10px}
+  /* Aksi (edit/follow-up/hapus) → bar penuh di bawah kartu */
+  .crm-table td.crm-mcard-acts-cell{
+    padding:10px 0 0;border-top:1px solid var(--border);border-bottom:none;
+    margin-top:2px;
+  }
+  .crm-table td.crm-mcard-acts-cell .crm-row-acts{width:100%;justify-content:flex-end;gap:8px}
+  .crm-table .crm-ico-btn{width:30px;height:30px}
+  /* Elemen bantu desktop (kolom beku, indikator scroll) tidak relevan lagi */
+  .crm-table-wrap.scrolled .crm-tbl-sticky::after,
+  .crm-table-wrap.h-scrolled .crm-freeze-name{display:none!important}
+  .crm-tbl-sticky{position:static}
+}
+
 /* CRM table toolbar */
 .crm-tbl-toolbar{
   display:flex;justify-content:space-between;align-items:center;
@@ -5919,6 +5996,7 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
                     <button type="button" class="crm-period-opt crm-period-opt-group" data-group="tahunan" onclick="crmOpenPeriodCal('tahunan')"><span>Berdasarkan Tahun</span><svg class="chev" width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                   </div>
                   <div class="crm-period-divider"></div>
+                  <button type="button" class="crm-period-opt" id="crm-sortby-updated" onclick="crmSortByUpdated()" title="Tampilkan customer yang baru saja diupdate paling atas"><span>Baru Diupdate</span></button>
                   <button type="button" class="crm-period-opt" onclick="crmSortByLabel()" title="Sortir berdasarkan label"><span>Sortir per Label</span></button>
                 </div>
                 <!-- v47: popover kalender untuk Per Hari/Minggu/Bulan/Tahun — lihat CSS
@@ -17336,6 +17414,7 @@ function crmFromDb(row) {
     owner_id:       row.owner_id || row.created_by || '',
     created_by:     row.created_by || '',
     created_at:     row.created_at || '',
+    updated_at:     row.updated_at || '',   // v71 — dasar sort "Baru Diupdate"
     updated_by:     row.updated_by || '',
     last_followup_at: row.last_followup_at || '',   // v5.4 — task follow up harian
     label_id:       row.label_id || null,            // v24 — label warna per-role
@@ -17588,7 +17667,11 @@ async function loadCRM() {
     if (_hf !== 'all') q = q.eq('heat_category', _hf);
     if (_lf === 'none') q = q.is('label_id', null);
     else if (_lf !== 'all') q = q.eq('label_id', _lf);
-    q = q.order('cust_code', { ascending: true })
+    // v71: default urutan fetch sekarang updated_at TERBARU dulu — supaya
+    // customer yang baru saja berubah (edit manual, follow up, closing,
+    // ads, dsb — apapun sumbernya) langsung muncul di halaman pertama,
+    // konsisten untuk SEMUA role (moderator maupun staff biasa).
+    q = q.order('updated_at', { ascending: false })
          .range(crmPageOffset, crmPageOffset + CRM_PAGE_SIZE - 1);
     const res = await dbQ(() => q);
     _crmLoading = false;
@@ -19573,7 +19656,7 @@ async function crmNextIdFor(ownerId) {
 // v46: arah urutan dikunci selalu "terbaru dulu" (toggle Terlama/Terbaru
 // dihapus dari UI supaya panel Periode Data tidak ramai) — tetap pakai
 // variabel crmSortDir2 di kode sort supaya logic lain tidak berubah.
-let crmSortField  = 'date'; // 'date' (default, tgl first_order) | 'label'
+let crmSortField  = 'updated'; // v71: DEFAULT sekarang 'updated' (baru diupdate paling atas) | 'date' (tgl first_order) | 'label'
 let crmSortDir2   = 'desc';
 let crmSortPeriod = 'harian'; // 'harian' | 'mingguan' | 'bulanan' | 'tahunan'
 
@@ -19643,6 +19726,7 @@ function crmSetPeriodGroup(period) {
   crmSortPeriod = period;
   document.querySelectorAll('#crm-period-panel .crm-period-opt-group[data-group]').forEach(b => b.classList.toggle('active', b.dataset.group === period));
   crmUpdatePeriodLabel();
+  crmSyncSortButtonsUI();
   crmResetPaging();
   renderCRM(false);
   crmTogglePeriodPanel(true);
@@ -19666,6 +19750,7 @@ function crmJumpToRecent() {
   document.querySelectorAll('#crm-period-panel .crm-period-opt[data-preset]').forEach(b => b.classList.toggle('active', b.dataset.preset === 'realtime'));
   document.querySelectorAll('#crm-period-panel .crm-period-opt-group[data-group]').forEach(b => b.classList.toggle('active', b.dataset.group === 'harian'));
   crmUpdatePeriodLabel();
+  crmSyncSortButtonsUI();
   crmResetPaging();
   renderCRM(false);
   crmCloseCalPop();
@@ -20037,6 +20122,30 @@ document.getElementById('crm-table-wrap')?.addEventListener('scroll', () => crmT
 window.addEventListener('scroll', () => crmToggleMoreMenu(true), { passive:true, capture:true });
 
 // v24: sortir berdasarkan Label (grup per nama label, A-Z / Z-A; yang belum berlabel selalu di bawah)
+// v71: sort default baru — customer yang barusan diupdate (edit data,
+// follow up, closing, ads, dsb — apapun perubahannya) muncul PALING ATAS,
+// berlaku sama untuk semua role. Sumbernya kolom updated_at yang sudah
+// otomatis ke-bump oleh trigger database di SETIAP perubahan baris.
+// v71: sinkronkan status "active" tombol Baru Diupdate / Sortir per Label
+// dengan crmSortField saat ini, supaya user tahu mode sort mana yang aktif.
+function crmSyncSortButtonsUI() {
+  document.getElementById('crm-sortby-updated')?.classList.toggle('active', crmSortField === 'updated');
+  document.querySelectorAll('#crm-period-panel .crm-period-opt[onclick="crmSortByLabel()"]')
+    .forEach(b => b.classList.toggle('active', crmSortField === 'label'));
+}
+
+function crmSortByUpdated() {
+  if (crmSortField === 'updated') {
+    crmSortDir2 = crmSortDir2 === 'asc' ? 'desc' : 'asc';
+  } else {
+    crmSortField = 'updated';
+    crmSortDir2  = 'desc';
+  }
+  crmUpdatePeriodLabel();
+  crmSyncSortButtonsUI();
+  renderCRM(false);
+}
+
 function crmSortByLabel() {
   if (crmSortField === 'label') {
     crmSortDir2 = crmSortDir2 === 'asc' ? 'desc' : 'asc';
@@ -20044,6 +20153,7 @@ function crmSortByLabel() {
     crmSortField = 'label';
     crmSortDir2  = 'asc';
   }
+  crmSyncSortButtonsUI();
   renderCRM(false);
 }
 
@@ -20186,6 +20296,7 @@ function renderCRMDiagram(data) {
 
 // ── RENDER ──
 async function renderCRM(reload = true) {
+  crmSyncSortButtonsUI();
   // v24-FIX: dulu setiap ketik di kolom cari / ganti filter, fungsi ini SELALU
   // narik ulang seluruh data dari Supabase (loadCRM()) sebelum render —
   // itu sebabnya UI kolom Manage CRM terasa lemot tiap kali mengetik.
@@ -20315,8 +20426,15 @@ async function renderCRM(reload = true) {
     rows = rows.filter(c => !c.fu_flag);
   }
 
-  // Sort: default by customer ID (urut CST), atau by first_order date, atau by label
-  if (crmSortField === 'date') {
+  // Sort: default 'updated' (baru diupdate paling atas), atau by
+  // first_order date ('date'), atau by label ('label')
+  if (crmSortField === 'updated') {
+    rows.sort((a,b) => {
+      const ua = a.updated_at ? new Date(a.updated_at) : new Date(0);
+      const ub = b.updated_at ? new Date(b.updated_at) : new Date(0);
+      return crmSortDir2 === 'asc' ? ua - ub : ub - ua;
+    });
+  } else if (crmSortField === 'date') {
     rows.sort((a,b) => {
       const da = a.first_order ? new Date(a.first_order) : new Date(0);
       const db2 = b.first_order ? new Date(b.first_order) : new Date(0);
@@ -20594,32 +20712,32 @@ async function renderCRM(reload = true) {
       : '';
     return `${groupHeaderHtml}<tr class="${isSelectedRow?'crm-row-selected':''}" data-custkey="${escHtml(custKey)}">
       <td class="crm-cb-col"><input type="checkbox" class="crm-row-cb" ${isSelectedRow?'checked':''} onchange="crmToggleSelectRow('${escHtml(custKey).replace(/'/g,"\\'")}',this.checked)"/></td>
-      <td class="crm-freeze-id"><span class="crm-id">${escHtml(c.id_customer||'—')}</span></td>
-      <td class="crm-freeze-name"><span class="crm-name ${rowLabel?'crm-name-labeled':''}" ${rowLabel?`style="border-bottom:2px solid ${rowLabel.color};padding-bottom:1px"`:''}>${escHtml(c.nama||'—')}</span>${c.catatan?`<div style="font-size:9px;color:var(--muted);margin-top:2px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(c.catatan)}">${escHtml(c.catatan)}</div>`:''}${fuFlagBadge}${fuUnreachBadge}</td>
-      <td>${waCell}</td>
-      <td>${escHtml(c.kota||'—')}</td>
-      <td class="crm-col-extra">${chBadge}</td>
-      <td style="text-align:right;font-variant-numeric:tabular-nums">${(function(){
+      <td class="crm-freeze-id" data-label="ID Customer"><span class="crm-id">${escHtml(c.id_customer||'—')}</span></td>
+      <td class="crm-freeze-name" data-label="Nama">${rowLabel?`<span class="crm-mcard-label-dot" style="background:${rowLabel.color}" title="${escHtml(rowLabel.name)}"></span>`:''}<span class="crm-name ${rowLabel?'crm-name-labeled':''}" ${rowLabel?`style="border-bottom:2px solid ${rowLabel.color};padding-bottom:1px"`:''}>${escHtml(c.nama||'—')}</span>${c.catatan?`<div style="font-size:9px;color:var(--muted);margin-top:2px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(c.catatan)}">${escHtml(c.catatan)}</div>`:''}${fuFlagBadge}${fuUnreachBadge}</td>
+      <td data-label="WhatsApp">${waCell}</td>
+      <td data-label="Kota">${escHtml(c.kota||'—')}</td>
+      <td class="crm-col-extra" data-label="Channel">${chBadge}</td>
+      <td data-label="Total Order" style="text-align:right;font-variant-numeric:tabular-nums">${(function(){
         const heat = c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status));
         const ord = crmParseInt(c.total_order);
         return heat === 'Cold' && ord === 0 ? '<span style="color:var(--muted)">—</span>' : (ord||0);
       })()}</td>
-      <td class="crm-money">${(function(){
+      <td class="crm-money" data-label="Total Belanja">${(function(){
         const heat = c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status));
         const sp = crmParseMoney(c.total_belanja);
         return heat === 'Cold' && sp === 0 ? '<span style="color:var(--muted)">—</span>' : crmFmtRupiah(sp);
       })()}</td>
-      <td>${crmHeatBadge(c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status)))}</td>
-      <td class="crm-col-extra">${labelCell}</td>
-      <td class="crm-col-extra">${inputByCell}</td>
-      <td>${(function(){
+      <td data-label="Panas/Dingin">${crmHeatBadge(c.heat_category || crmComputeHeat(crmParseInt(c.total_order), crmNormStatus(c.status)))}</td>
+      <td class="crm-col-extra" data-label="Label">${labelCell}</td>
+      <td class="crm-col-extra" data-label="Diinput Oleh">${inputByCell}</td>
+      <td data-label="Follow Up">${(function(){
         const days = daysSinceFollowup(c);
         const doneToday = followupDoneTodayIds.has(_followupCustKey(c));
         const color = doneToday ? 'var(--green)' : days === null ? 'var(--red)' : days >= 3 ? 'var(--red)' : days >= 1 ? 'var(--amber)' : 'var(--green)';
         const label = doneToday ? '✓ Hari ini' : days === null ? 'Belum pernah' : `${days} hari lalu`;
         return `<span class="crm-followup-badge" style="color:${color}">● ${label}</span>`;
       })()}</td>
-      <td>
+      <td class="crm-mcard-acts-cell">
         <div class="crm-row-acts">
           <button class="crm-ico-btn" onclick="openCRMModal(${idx})" title="Edit">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5l2 2L6 12l-2.5.5L4 10l7.5-7.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
