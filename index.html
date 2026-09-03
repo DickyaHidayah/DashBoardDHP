@@ -17667,11 +17667,13 @@ async function loadCRM() {
     if (_hf !== 'all') q = q.eq('heat_category', _hf);
     if (_lf === 'none') q = q.is('label_id', null);
     else if (_lf !== 'all') q = q.eq('label_id', _lf);
-    // v71: default urutan fetch sekarang updated_at TERBARU dulu — supaya
-    // customer yang baru saja berubah (edit manual, follow up, closing,
-    // ads, dsb — apapun sumbernya) langsung muncul di halaman pertama,
-    // konsisten untuk SEMUA role (moderator maupun staff biasa).
-    q = q.order('updated_at', { ascending: false })
+    // v79-FIX: dikembalikan ke created_at TERBARU dulu — urutan sekarang
+    // mengikuti TANGGAL PENGINPUTAN customer (yang paling baru masuk di
+    // paling atas), bukan updated_at. Sebelumnya (v71) dipakai updated_at,
+    // efeknya customer LAMA yang sekadar di-follow-up/edit/label ikut
+    // melompat ke halaman pertama, sehingga urutan kelihatan "berantakan"
+    // dibanding tanggal dia pertama kali masuk.
+    q = q.order('created_at', { ascending: false })
          .range(crmPageOffset, crmPageOffset + CRM_PAGE_SIZE - 1);
     const res = await dbQ(() => q);
     _crmLoading = false;
