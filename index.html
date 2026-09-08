@@ -22769,6 +22769,9 @@ function trackingReportStyleOnce() {
   .trk-staff-sub{font-size:10.5px;color:var(--muted)}
   .trk-staff-missing-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
   .trk-staff-missing-row .trk-missing-chip svg{width:9px;height:9px;margin-right:2px;vertical-align:-1px}
+  .trk-team-row.sunday td{background:var(--surface2);color:var(--muted);font-style:italic}
+  .trk-team-total-row td{background:linear-gradient(160deg,var(--surface2),var(--surface));
+    border-top:2px solid var(--border-hi);font-family:'Cormorant Garamond',serif;font-size:14.5px;padding-top:10px;padding-bottom:10px}
 
   /* ── Penyesuaian mobile: elemen dibuat lebih ringkas & rapi di layar kecil,
      bukan cuma di-stack begitu saja (hindari UI kebesaran di HP). ── */
@@ -23342,6 +23345,16 @@ function trkTeamMonthChange(ym) {
   trkLoadTeamMonthlyRecap();
 }
 
+/* Minggu = hari libur (bukan hari kerja) — tidak dihitung ke dalam total
+   hari kerja/kelengkapan lapor staff, dan ditandai khusus di tabel detail.
+   Dihitung dari tanggal string 'YYYY-MM-DD' langsung (bukan Date ISO parse)
+   supaya tidak kena geser timezone. */
+function trkIsSunday(dateStr) {
+  const p = String(dateStr || '').split('-').map(Number);
+  if (p.length !== 3) return false;
+  return new Date(p[0], p[1] - 1, p[2]).getDay() === 0;
+}
+
 async function trkLoadTeamMonthlyRecap() {
   const sumEl = document.getElementById('trk-team-monthly-summary');
   const detEl = document.getElementById('trk-team-monthly-detail');
@@ -23387,14 +23400,15 @@ function trkRenderTeamMonthlyFromCache() {
   const roleLabel = { 'admin':'Admin', 'b2b_marketing':'B2B Marketing', 'cs_hunter':'CS Hunter' };
   const staffList = order.map(uid => {
     const u = byUser[uid];
-    const daysTotal = u.dates.length;
-    const daysComplete = u.dates.filter(d => d.siang_filled && d.sore_filled).length;
+    const workDates = u.dates.filter(d => !trkIsSunday(d.report_date)); // Minggu = libur, tidak dihitung
+    const daysTotal = workDates.length;
+    const daysComplete = workDates.filter(d => d.siang_filled && d.sore_filled).length;
     const pct = daysTotal ? Math.round((daysComplete / daysTotal) * 100) : 0;
-    const missing = u.dates.filter(d => !(d.siang_filled && d.sore_filled));
+    const missing = workDates.filter(d => !(d.siang_filled && d.sore_filled));
     return { ...u, daysTotal, daysComplete, pct, missing };
   });
 
-  if (countEl) countEl.textContent = `${staffList.length} staff · ${ymLabel}`;
+  if (countEl) countEl.textContent = `${staffList.length} staff · ${ymLabel} · Minggu dihitung libur`;
   if (!_trkTeamMonthlySelected || !byUser[_trkTeamMonthlySelected]) {
     _trkTeamMonthlySelected = staffList[0]?.user_id || null;
   }
@@ -23403,6 +23417,7 @@ function trkRenderTeamMonthlyFromCache() {
   if (sumEl) {
     sumEl.innerHTML = `
     <div class="trk-section-title"><span class="st-ico">${TRK_ICO.compare}</span> Kelengkapan Laporan per Staff <span style="font-size:11px;color:var(--muted);font-family:'Inter',sans-serif;font-weight:500">· ${ymLabel} · klik kartu untuk lihat detail per tanggal</span></div>
+    <div style="font-size:11px;color:var(--muted);margin:-4px 0 12px">🌙 Hari Minggu dihitung libur — tidak masuk hitungan total hari kerja & kelengkapan lapor di bawah.</div>
     <div class="trk-staff-grid">
       ${staffList.map(u => `
         <div class="trk-staff-card ${u.user_id === _trkTeamMonthlySelected ? 'selected' : ''} ${u.pct === 100 ? 'perfect' : ''}" onclick="trkSelectStaffMonthly('${u.user_id}')">
@@ -23451,6 +23466,12 @@ function trkRenderTeamMonthlyDetailTable(byUserArg) {
   const roleLabel = { 'admin':'Admin', 'b2b_marketing':'B2B Marketing', 'cs_hunter':'CS Hunter' };
 
   const rowsHtml = u.dates.map(r => {
+    if (trkIsSunday(r.report_date)) {
+      return `<tr class="trk-team-row sunday">
+        <td>${trkFmtDMY(r.report_date)}</td>
+        <td colspan="9" style="text-align:center">🌙 Hari Minggu — Libur, tidak dihitung dalam rekap kelengkapan</td>
+      </tr>`;
+    }
     const missing = !(r.siang_filled && r.sore_filled);
     return `<tr class="${missing ? 'trk-team-row missing' : ''}">
       <td>${trkFmtDMY(r.report_date)}</td>
@@ -23463,6 +23484,27 @@ function trkRenderTeamMonthlyDetailTable(byUserArg) {
     </tr>`;
   }).join('');
 
+  // ── Baris Total Bulan Ini — menjumlahkan semua tanggal yang punya data
+  //    (Minggu ikut dijumlah kalau memang ada laporan susulan diisi di hari
+  //    itu, walau tidak dihitung ke persentase kelengkapan di atas). ──
+  const totalSum = u.dates.reduce((a, r) => {
+    a.masuk += r.total_leads_masuk || 0;
+    a.terlayani += r.total_leads_terlayani || 0;
+    a.fulama += r.total_fu_leads_lama || 0;
+    a.cold += r.total_cold || 0;
+    a.warm += r.total_warm || 0;
+    a.hot += r.total_hot || 0;
+    a.closing += Number(r.total_nominal_closing) || 0;
+    return a;
+  }, { masuk:0, terlayani:0, fulama:0, cold:0, warm:0, hot:0, closing:0 });
+  const totalRowHtml = `<tr class="trk-team-total-row">
+    <td colspan="3" style="text-align:right">Total ${escHtml(u.full_name)} — ${roleLabel[u.role] || u.role}</td>
+    <td><b>${totalSum.masuk}</b></td><td><b>${totalSum.terlayani}</b></td><td><b>${totalSum.fulama}</b></td>
+    <td><b>${totalSum.cold}</b></td><td><b>${totalSum.warm}</b></td>
+    <td><b style="color:#e87070">${totalSum.hot}</b></td>
+    <td><b style="color:var(--green)">${crmFmtRupiah(totalSum.closing)}</b></td>
+  </tr>`;
+
   detEl.innerHTML = `
     <div class="trk-section-title"><span class="st-ico">${TRK_ICO.closing}</span> Detail Harian — ${escHtml(u.full_name)} <span style="font-size:11px;color:var(--muted);font-family:'Inter',sans-serif;font-weight:500">· ${roleLabel[u.role] || u.role}</span></div>
     <div class="tbl-wrap"><div class="tbl-scroll">
@@ -23470,7 +23512,7 @@ function trkRenderTeamMonthlyDetailTable(byUserArg) {
         <th>Tanggal</th><th>Siang</th><th>Sore</th>
         <th>Leads Masuk</th><th>Baru Terlayani</th><th>FU Lama</th>
         <th>Cold</th><th>Warm</th><th>Hot</th><th>Nominal Closing</th>
-      </tr></thead><tbody>${rowsHtml}</tbody></table>
+      </tr></thead><tbody>${rowsHtml}</tbody><tfoot>${totalRowHtml}</tfoot></table>
     </div></div>`;
 }
 
