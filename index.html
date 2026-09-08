@@ -22569,6 +22569,12 @@ let _trkTimer = null;
 let trackingChannel = null;
 let _trkFormOpen = null;      // slot key yg formnya sedang terbuka (own view)
 
+// ── v80: REKAP BULANAN TIM (Moderator/Owner) ──
+let _trkTeamTab = 'harian';           // 'harian' | 'bulanan' — tab aktif di Rekap Tim
+let _trkTeamMonthlyYm = null;         // 'YYYY-MM' bulan yg sedang dilihat di Rekap Bulanan
+let _trkTeamMonthlyRows = null;       // hasil mentah get_tracking_report_history_month_team
+let _trkTeamMonthlySelected = null;   // user_id staff yg sedang dibuka detailnya
+
 function trkNowJakarta() { return cshTodayJakarta(); }
 function trkTodayStr() { return ymdKey(trkNowJakarta()); }
 function trkDeadlineDate(slotKey, base) {
@@ -22738,6 +22744,32 @@ function trackingReportStyleOnce() {
     color:var(--text);cursor:pointer;transition:var(--trans)}
   .trk-alert-missing .am-chip:hover{border-color:var(--gold);color:var(--gold)}
 
+  /* ── v80: tab Rekap Harian / Rekap Bulanan Tim ── */
+  .trk-tab-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .trk-tab-btn{padding:7px 16px;border-radius:20px;font-size:12.5px;font-weight:600;border:1px solid var(--border-hi);
+    background:var(--surface2);color:var(--muted);cursor:pointer;transition:var(--trans);display:inline-flex;align-items:center;gap:6px}
+  .trk-tab-btn svg{width:13px;height:13px}
+  .trk-tab-btn:hover{color:var(--text)}
+  .trk-tab-btn.active{background:linear-gradient(135deg,var(--gold),var(--gold-hi));color:#1a1508;border-color:transparent;box-shadow:0 2px 10px rgba(201,169,110,.35)}
+  .trk-staff-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-bottom:18px}
+  .trk-staff-card{background:linear-gradient(160deg,var(--surface2),var(--surface));border:1px solid var(--border-hi);
+    border-radius:var(--r);padding:14px 15px;cursor:pointer;transition:var(--trans);position:relative}
+  .trk-staff-card:hover{border-color:var(--gold);transform:translateY(-1px)}
+  .trk-staff-card.selected{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
+  .trk-staff-card.perfect{border-color:rgba(122,191,142,.4)}
+  .trk-staff-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+  .trk-staff-name{font-family:'Cormorant Garamond',serif;font-size:15.5px;color:var(--text);font-weight:600;line-height:1.25}
+  .trk-staff-role{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+  .trk-staff-pct{font-size:19px;font-weight:700;font-family:'Cormorant Garamond',serif;flex-shrink:0}
+  .trk-staff-pct.ok{color:var(--green)}
+  .trk-staff-pct.warn{color:var(--amber)}
+  .trk-staff-pct.bad{color:var(--red)}
+  .trk-staff-bar{height:5px;border-radius:3px;background:var(--surface3);overflow:hidden;margin:6px 0 8px}
+  .trk-staff-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--green));transition:width .4s ease}
+  .trk-staff-sub{font-size:10.5px;color:var(--muted)}
+  .trk-staff-missing-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+  .trk-staff-missing-row .trk-missing-chip svg{width:9px;height:9px;margin-right:2px;vertical-align:-1px}
+
   /* ── Penyesuaian mobile: elemen dibuat lebih ringkas & rapi di layar kecil,
      bukan cuma di-stack begitu saja (hindari UI kebesaran di HP). ── */
   @media(max-width:640px){
@@ -22780,7 +22812,7 @@ async function renderTrackingReportPage() {
   const r = currentUser.role;
   const sub = document.getElementById('trk-page-sub');
   if (can.isMod(r) || can.isOwnerView(r)) {
-    if (sub) sub.textContent = 'Rekap laporan seluruh tim (CS Hunter, Admin, B2B Marketing) per tanggal';
+    if (sub) sub.textContent = 'Rekap laporan seluruh tim (CS Hunter, Admin, B2B Marketing) — per tanggal & per bulan';
     await renderTrackingTeamView(root);
   } else if (can.canTrackingReport(r)) {
     if (sub) sub.textContent = 'Laporan kinerja jam 12:00 & 17:00 — otomatis direkap jadi laporan harian';
@@ -23190,9 +23222,43 @@ function initTrackingRealtime() {
   } catch (e) { console.warn('[DHP] initTrackingRealtime gagal:', e); }
 }
 
-/* ═══ VIEW: REKAP TIM (Moderator / Owner) ═══ */
+/* ═══ VIEW: REKAP TIM (Moderator / Owner) ═══
+   v80: sekarang punya 2 tab —
+     • "Rekap Harian"  : tampilan lama, per-tanggal, semua staff (siapa saja
+       yang siang/sore-nya belum masuk HARI INI).
+     • "Rekap Bulanan" : BARU — per staff, lengkap per tanggal sepanjang
+       bulan yang dipilih, dengan nama lengkap & indikator hari/slot mana
+       yang belum diisi. Datanya realtime dari tabel tracking_reports yang
+       sama (lihat initTrackingRealtime), jadi otomatis ter-update begitu
+       ada laporan baru masuk/diubah — tidak ada data terpisah/duplikat. */
 async function renderTrackingTeamView(root) {
   if (!_trkTeamDate) _trkTeamDate = trkTodayStr();
+  root.innerHTML = `
+    <div class="trk-tab-bar">
+      <button class="trk-tab-btn ${_trkTeamTab === 'harian' ? 'active' : ''}" onclick="trkTeamSetTab('harian')">${TRK_ICO.clock} Rekap Harian</button>
+      <button class="trk-tab-btn ${_trkTeamTab === 'bulanan' ? 'active' : ''}" onclick="trkTeamSetTab('bulanan')">${TRK_ICO.compare} Rekap Bulanan per Staff</button>
+    </div>
+    <div id="trk-team-content"></div>
+  `;
+  const content = document.getElementById('trk-team-content');
+  if (!content) return;
+  if (_trkTeamTab === 'bulanan') {
+    await trkRenderTeamMonthlySection(content);
+  } else {
+    await trkRenderTeamDailySection(content);
+  }
+}
+
+function trkTeamSetTab(tab) {
+  if (_trkTeamTab === tab) return;
+  _trkTeamTab = tab;
+  const root = document.getElementById('tracking-report-root');
+  if (root) renderTrackingTeamView(root);
+}
+
+/* ── Sub-view: Rekap Harian (isi & perilaku persis versi lama, cuma
+   dipindah ke fungsi tersendiri supaya bisa jadi 1 dari 2 tab) ── */
+async function trkRenderTeamDailySection(root) {
   root.innerHTML = `
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
       <label style="font-size:12px;color:var(--muted)">Tanggal:</label>
@@ -23228,6 +23294,185 @@ async function renderTrackingTeamView(root) {
 }
 
 function trkTeamDateChange(v) { _trkTeamDate = v; trkLoadTeamRecap(); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   v80 — REKAP BULANAN TIM (Moderator/Owner)
+   Pola pemilih bulan disamakan dengan Riwayat Laporan Saya (trkHistYmNow/
+   trkHistYmLabel dipakai ulang) & Leaderboard, supaya konsisten. Sumber
+   data: RPC get_tracking_report_history_month_team — 1x panggilan
+   mengembalikan SEMUA staff x SEMUA tanggal berjalan di bulan itu (dari
+   tanggal 1 s/d hari ini utk bulan berjalan, atau s/d akhir bulan utk
+   bulan yang sudah lewat), jadi tabel tetap "urut sesuai tanggal
+   penginputan" tanpa perlu query terpisah per staff.
+   ═══════════════════════════════════════════════════════════════════════ */
+async function trkRenderTeamMonthlySection(root) {
+  if (!_trkTeamMonthlyYm) _trkTeamMonthlyYm = trkHistYmNow();
+  root.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <label style="font-size:12px;color:var(--muted)">Bulan:</label>
+      <select id="trk-team-month-sel" onchange="trkTeamMonthChange(this.value)"
+        style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:13px"></select>
+      <button class="btn-sm btn-gold" onclick="trkLoadTeamMonthlyRecap()">⟲ Muat Ulang</button>
+      <span id="trk-team-month-count" style="font-size:11px;color:var(--muted)"></span>
+    </div>
+    <div id="trk-team-monthly-summary"><div class="myperf-empty" style="padding:20px 0">Memuat rekap bulanan…</div></div>
+    <div id="trk-team-monthly-detail"></div>
+  `;
+  await trkLoadTeamMonthlyRecap();
+}
+
+function trkPopulateTeamMonthSelect() {
+  const sel = document.getElementById('trk-team-month-sel');
+  if (!sel || sel.options.length) return;
+  const now = trkNowJakarta();
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const ym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    const opt = document.createElement('option');
+    opt.value = ym;
+    opt.textContent = trkHistYmLabel(ym) + (i === 0 ? ' (Bulan Ini)' : '');
+    sel.appendChild(opt);
+  }
+  sel.value = trkHistYmNow();
+}
+
+function trkTeamMonthChange(ym) {
+  _trkTeamMonthlyYm = ym;
+  _trkTeamMonthlySelected = null; // ganti bulan → reset staff yg lagi dibuka detailnya
+  trkLoadTeamMonthlyRecap();
+}
+
+async function trkLoadTeamMonthlyRecap() {
+  const sumEl = document.getElementById('trk-team-monthly-summary');
+  const detEl = document.getElementById('trk-team-monthly-detail');
+  trkPopulateTeamMonthSelect();
+  const sel = document.getElementById('trk-team-month-sel');
+  if (!_trkTeamMonthlyYm) _trkTeamMonthlyYm = sel?.value || trkHistYmNow();
+  if (sel && sel.value !== _trkTeamMonthlyYm) sel.value = _trkTeamMonthlyYm;
+  if (sumEl) sumEl.innerHTML = `<div class="myperf-empty" style="padding:20px 0">Memuat rekap bulanan…</div>`;
+  if (detEl) detEl.innerHTML = '';
+  let rows = [];
+  try {
+    const res = await dbQ(d => d.rpc('get_tracking_report_history_month_team', { p_period_ym: _trkTeamMonthlyYm }));
+    rows = (res && res.data) || [];
+  } catch (e) { console.warn('[DHP] get_tracking_report_history_month_team gagal:', e); }
+  _trkTeamMonthlyRows = rows;
+  trkRenderTeamMonthlyFromCache();
+}
+
+/* Render ulang dari cache (_trkTeamMonthlyRows) — dipakai baik sesudah
+   fetch baru maupun sekadar ganti staff yang dibuka detailnya, supaya
+   klik antar kartu staff instan tanpa round-trip DB tiap kali. */
+function trkRenderTeamMonthlyFromCache() {
+  const sumEl = document.getElementById('trk-team-monthly-summary');
+  const detEl = document.getElementById('trk-team-monthly-detail');
+  const countEl = document.getElementById('trk-team-month-count');
+  const ymLabel = trkHistYmLabel(_trkTeamMonthlyYm);
+  const rows = _trkTeamMonthlyRows || [];
+
+  if (!rows.length) {
+    if (countEl) countEl.textContent = '';
+    if (sumEl) sumEl.innerHTML = `<div class="myperf-empty" style="padding:20px 0">Belum ada staff aktif / belum ada data tracking report di ${ymLabel}.</div>`;
+    if (detEl) detEl.innerHTML = '';
+    return;
+  }
+
+  // ── kelompokkan per staff (baris sudah datang terurut nama, tanggal terbaru dulu) ──
+  const byUser = {};
+  const order = [];
+  rows.forEach(r => {
+    if (!byUser[r.user_id]) { byUser[r.user_id] = { user_id: r.user_id, full_name: r.full_name, role: r.role, dates: [] }; order.push(r.user_id); }
+    byUser[r.user_id].dates.push(r);
+  });
+  const roleLabel = { 'admin':'Admin', 'b2b_marketing':'B2B Marketing', 'cs_hunter':'CS Hunter' };
+  const staffList = order.map(uid => {
+    const u = byUser[uid];
+    const daysTotal = u.dates.length;
+    const daysComplete = u.dates.filter(d => d.siang_filled && d.sore_filled).length;
+    const pct = daysTotal ? Math.round((daysComplete / daysTotal) * 100) : 0;
+    const missing = u.dates.filter(d => !(d.siang_filled && d.sore_filled));
+    return { ...u, daysTotal, daysComplete, pct, missing };
+  });
+
+  if (countEl) countEl.textContent = `${staffList.length} staff · ${ymLabel}`;
+  if (!_trkTeamMonthlySelected || !byUser[_trkTeamMonthlySelected]) {
+    _trkTeamMonthlySelected = staffList[0]?.user_id || null;
+  }
+
+  const pctClass = p => p >= 90 ? 'ok' : p >= 60 ? 'warn' : 'bad';
+  if (sumEl) {
+    sumEl.innerHTML = `
+    <div class="trk-section-title"><span class="st-ico">${TRK_ICO.compare}</span> Kelengkapan Laporan per Staff <span style="font-size:11px;color:var(--muted);font-family:'Inter',sans-serif;font-weight:500">· ${ymLabel} · klik kartu untuk lihat detail per tanggal</span></div>
+    <div class="trk-staff-grid">
+      ${staffList.map(u => `
+        <div class="trk-staff-card ${u.user_id === _trkTeamMonthlySelected ? 'selected' : ''} ${u.pct === 100 ? 'perfect' : ''}" onclick="trkSelectStaffMonthly('${u.user_id}')">
+          <div class="trk-staff-head">
+            <div>
+              <div class="trk-staff-name">${escHtml(u.full_name)}</div>
+              <div class="trk-staff-role">${roleLabel[u.role] || u.role}</div>
+            </div>
+            <div class="trk-staff-pct ${pctClass(u.pct)}">${u.pct}%</div>
+          </div>
+          <div class="trk-staff-bar"><div class="trk-staff-bar-fill" style="width:${u.pct}%"></div></div>
+          <div class="trk-staff-sub">${u.daysComplete} dari ${u.daysTotal} hari lapor lengkap (Siang &amp; Sore)</div>
+          ${u.missing.length ? `<div class="trk-staff-missing-row">
+            ${u.missing.slice(0, 4).map(m => `<span class="trk-missing-chip">${trkFmtDMY(m.report_date)}${!m.siang_filled && !m.sore_filled ? ' · Siang &amp; Sore' : !m.siang_filled ? ' · Siang' : ' · Sore'}</span>`).join('')}
+            ${u.missing.length > 4 ? `<span class="trk-missing-chip" style="opacity:.7">+${u.missing.length - 4} lainnya</span>` : ''}
+          </div>` : `<div class="trk-staff-missing-row"><span class="trk-missing-chip" style="background:rgba(122,191,142,.12);border-color:rgba(122,191,142,.35);color:var(--green)">${TRK_ICO.okCircle}Lengkap semua</span></div>`}
+        </div>
+      `).join('')}
+    </div>`;
+  }
+
+  trkRenderTeamMonthlyDetailTable(byUser);
+}
+
+function trkSelectStaffMonthly(userId) {
+  _trkTeamMonthlySelected = userId;
+  trkRenderTeamMonthlyFromCache();
+}
+
+/* Tabel detail per-tanggal utk 1 staff yg sedang dipilih — persis pola
+   "Riwayat Laporan Saya" (trkLoadOwnHistory) supaya moderator/owner
+   melihat tampilan yang sama persis seperti yang dilihat staff sendiri,
+   plus baris yang belum lengkap otomatis di-highlight merah tipis. */
+function trkRenderTeamMonthlyDetailTable(byUserArg) {
+  const detEl = document.getElementById('trk-team-monthly-detail');
+  if (!detEl) return;
+  const rows = _trkTeamMonthlyRows || [];
+  if (!rows.length || !_trkTeamMonthlySelected) { detEl.innerHTML = ''; return; }
+  let byUser = byUserArg;
+  if (!byUser) {
+    byUser = {};
+    rows.forEach(r => { (byUser[r.user_id] = byUser[r.user_id] || { user_id: r.user_id, full_name: r.full_name, role: r.role, dates: [] }).dates.push(r); });
+  }
+  const u = byUser[_trkTeamMonthlySelected];
+  if (!u || !u.dates || !u.dates.length) { detEl.innerHTML = ''; return; }
+  const roleLabel = { 'admin':'Admin', 'b2b_marketing':'B2B Marketing', 'cs_hunter':'CS Hunter' };
+
+  const rowsHtml = u.dates.map(r => {
+    const missing = !(r.siang_filled && r.sore_filled);
+    return `<tr class="${missing ? 'trk-team-row missing' : ''}">
+      <td>${trkFmtDMY(r.report_date)}</td>
+      <td>${trkStatusPillHtml(r.siang_filled, r.siang_status, r.siang_is_late)}</td>
+      <td>${trkStatusPillHtml(r.sore_filled, r.sore_status, r.sore_is_late)}</td>
+      <td>${r.total_leads_masuk || 0}</td><td>${r.total_leads_terlayani || 0}</td><td>${r.total_fu_leads_lama || 0}</td>
+      <td>${r.total_cold || 0}</td><td>${r.total_warm || 0}</td>
+      <td><b style="color:#e87070">${r.total_hot || 0}</b></td>
+      <td><b style="color:var(--green)">${crmFmtRupiah(r.total_nominal_closing)}</b></td>
+    </tr>`;
+  }).join('');
+
+  detEl.innerHTML = `
+    <div class="trk-section-title"><span class="st-ico">${TRK_ICO.closing}</span> Detail Harian — ${escHtml(u.full_name)} <span style="font-size:11px;color:var(--muted);font-family:'Inter',sans-serif;font-weight:500">· ${roleLabel[u.role] || u.role}</span></div>
+    <div class="tbl-wrap"><div class="tbl-scroll">
+      <table class="fu-table"><thead><tr>
+        <th>Tanggal</th><th>Siang</th><th>Sore</th>
+        <th>Leads Masuk</th><th>Baru Terlayani</th><th>FU Lama</th>
+        <th>Cold</th><th>Warm</th><th>Hot</th><th>Nominal Closing</th>
+      </tr></thead><tbody>${rowsHtml}</tbody></table>
+    </div></div>`;
+}
 
 const trkStatusPillHtml = (filled, status, isLate) => {
   if (!filled) return `<span class="trk-status-pill pending">${TRK_ICO.clock}Belum</span>`;
