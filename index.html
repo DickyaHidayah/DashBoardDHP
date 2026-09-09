@@ -22947,7 +22947,6 @@ async function trkLoadOwnHistory() {
     const res = await dbQ(d => d.rpc('get_tracking_report_history_month', { p_user_id: currentUser.id, p_period_ym: trkHistCurrentYm }));
     rows = (res && res.data) || [];
   } catch (e) { console.warn('[DHP] get_tracking_report_history_month gagal:', e); }
-  if (countEl) countEl.textContent = rows.length ? `${rows.length} laporan di ${trkHistYmLabel(trkHistCurrentYm)}` : '';
   if (!rows.length) {
     tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--muted)">Belum ada riwayat laporan di ${trkHistYmLabel(trkHistCurrentYm)}.</td></tr>`;
     return;
@@ -22955,6 +22954,16 @@ async function trkLoadOwnHistory() {
   const todayStr = trkTodayStr();
   const missingPast = []; // {date, slot} — dipakai utk banner ringkasan di atas tabel
   const rowsHtml = rows.map(r => {
+    // v83: sekarang RPC mengembalikan SEMUA tanggal kalender (termasuk yang
+    // belum pernah diisi sama sekali) — Minggu jadi ikut muncul, jadi perlu
+    // ditandai libur di sini juga (sama seperti Rekap Bulanan Tim) supaya
+    // tidak keliru dianggap "belum lapor" & tidak memicu ajakan susulan.
+    if (trkIsSunday(r.report_date)) {
+      return `<tr class="trk-team-row sunday">
+        <td>${trkFmtDMY(r.report_date)}</td>
+        <td colspan="9" style="text-align:center"><span style="display:inline-flex;width:12px;height:12px;color:var(--gold);vertical-align:-2px;margin-right:5px">${TRK_ICO.sunday}</span>Hari Minggu — Libur</td>
+      </tr>`;
+    }
     const isPast = r.report_date < todayStr;
     const missing = !r.siang_filled || !r.sore_filled;
     if (isPast) {
@@ -22991,6 +23000,15 @@ async function trkLoadOwnHistory() {
     </div>` : '';
   const bannerHost = document.getElementById('trk-hist-missing-banner');
   if (bannerHost) bannerHost.innerHTML = banner;
+
+  // v83: dihitung dari hari KERJA saja (Minggu dikecualikan), sekarang
+  // `rows` sudah berisi semua tanggal kalender (bukan cuma yg terisi),
+  // jadi tidak bisa lagi pakai rows.length mentah sbg "jumlah laporan".
+  const workRows = rows.filter(r => !trkIsSunday(r.report_date));
+  const completeCount = workRows.filter(r => r.siang_filled && r.sore_filled).length;
+  if (countEl) countEl.textContent = workRows.length
+    ? `${completeCount} dari ${workRows.length} hari kerja lapor lengkap · ${trkHistYmLabel(trkHistCurrentYm)}`
+    : '';
 
   tbody.innerHTML = rowsHtml;
 }
