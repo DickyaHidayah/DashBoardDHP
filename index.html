@@ -22560,6 +22560,11 @@ const TRK_ICO = {
   compare: '<svg viewBox="0 0 16 16" fill="none"><path d="M3 13V6.6M8 13V2.6M13 13V9.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M1.6 13h12.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
   undo: '<svg viewBox="0 0 16 16" fill="none"><path d="M3 6.4h6.1a3.9 3.9 0 0 1 0 7.8H6.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.4 3.8 2.8 6.4l2.6 2.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   trash: '<svg viewBox="0 0 16 16" fill="none"><path d="M2.8 4.4h10.4M6.2 4.4V3a1 1 0 0 1 1-1h1.6a1 1 0 0 1 1 1v1.4M6.6 7.4v4M9.4 7.4v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.8 4.4 4.4 13a1.2 1.2 0 0 0 1.2 1.1h4.8A1.2 1.2 0 0 0 11.6 13l.6-8.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  plus: '<svg viewBox="0 0 16 16" fill="none"><path d="M8 3.2v9.6M3.2 8h9.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+  // v82: vektor bulan sabit + kilau — dipakai utk menandai "Hari Minggu/Libur"
+  // di Rekap Bulanan, gaya garis tipis (line-art) konsisten dgn ikon lain di
+  // TRK_ICO, menggantikan emoji 🌙 supaya lebih elegan & tajam di layar apa pun.
+  sunday: '<svg viewBox="0 0 16 16" fill="none"><path d="M10.1 2.3a5.7 5.7 0 1 0 3.7 9.2A6.8 6.8 0 0 1 10.1 2.3Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round" stroke-linecap="round"/><path d="M13 2.4v2M12 3.4h2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>',
 };
 const TRK_REMINDER_LEAD_MIN = 45; // mulai warning kalau sisa waktu ≤ 45 menit
 let _trkOwnRecap = null;      // hasil get_tracking_daily_recap utk currentUser hari ini
@@ -22568,6 +22573,7 @@ let _trkTeamRows = null;
 let _trkTimer = null;
 let trackingChannel = null;
 let _trkFormOpen = null;      // slot key yg formnya sedang terbuka (own view)
+let _trkCatchupTarget = null; // {userId, isSelf} — target laporan susulan yg sedang diisi (v82)
 
 // ── v80: REKAP BULANAN TIM (Moderator/Owner) ──
 let _trkTeamTab = 'harian';           // 'harian' | 'bulanan' — tab aktif di Rekap Tim
@@ -22769,6 +22775,9 @@ function trackingReportStyleOnce() {
   .trk-staff-sub{font-size:10.5px;color:var(--muted)}
   .trk-staff-missing-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
   .trk-staff-missing-row .trk-missing-chip svg{width:9px;height:9px;margin-right:2px;vertical-align:-1px}
+  .trk-missing-chip.clickable{cursor:pointer;transition:var(--trans)}
+  .trk-missing-chip.clickable:hover{background:rgba(201,169,110,.16);border-color:var(--gold);color:var(--gold)}
+  .trk-missing-chip.clickable svg{width:9px;height:9px;margin-right:3px;vertical-align:-1px}
   .trk-team-row.sunday td{background:var(--surface2);color:var(--muted);font-style:italic}
   .trk-team-total-row td{background:linear-gradient(160deg,var(--surface2),var(--surface));
     border-top:2px solid var(--border-hi);font-family:'Cormorant Garamond',serif;font-size:14.5px;padding-top:10px;padding-bottom:10px}
@@ -22990,14 +22999,34 @@ async function trkLoadOwnHistory() {
    belum sempat diisi slot Siang/Sore-nya. Memakai modal generik #modal-ov
    (pola sama seperti openTrkRejectModal), RPC submit_tracking_report yang
    sama persis dipakai halaman utama — backend sudah otomatis menandai
-   is_late=true kalau p_report_date < hari ini, jadi tidak perlu RPC baru. ── */
-function trkOpenCatchup(dateStr, slotKey) {
+   is_late=true kalau p_report_date < hari ini, jadi tidak perlu RPC baru.
+   v82: sekarang generik — dipakai staff utk laporan sendiri (2 argumen,
+   seperti sebelumnya) MAUPUN moderator/owner utk mengisikan susulan staff
+   lain langsung dari Rekap Harian/Bulanan Tim (argumen ke-3, targetUserId).
+   Backend submit_tracking_report sudah dari awal mengizinkan moderator
+   mengisi atas nama user lain (lihat guard p_actor_id <> p_target_user_id
+   di RPC), cuma front-end lama menghardcode target = diri sendiri. ── */
+function trkResolveStaffName(userId) {
+  if (currentUser && userId === currentUser.id) return currentUser.name || currentUser.full_name || 'Anda';
+  const pools = [_trkTeamMonthlyRows, _trkTeamRows];
+  for (const p of pools) {
+    if (!p) continue;
+    const hit = p.find(r => r.user_id === userId);
+    if (hit) return hit.full_name;
+  }
+  return null;
+}
+function trkOpenCatchup(dateStr, slotKey, targetUserId) {
+  targetUserId = targetUserId || currentUser.id;
+  const isSelf = targetUserId === currentUser.id;
+  const targetName = isSelf ? null : trkResolveStaffName(targetUserId);
+  _trkCatchupTarget = { userId: targetUserId, isSelf };
   const label = slotKey === 'siang' ? 'Siang (12:00)' : 'Sore (17:00)';
-  document.getElementById('m-title').textContent = `Laporan Susulan — ${label}`;
+  document.getElementById('m-title').textContent = `Laporan Susulan — ${label}${!isSelf && targetName ? ' · ' + targetName : ''}`;
   document.getElementById('m-body').innerHTML = `
     <div style="font-size:11.5px;color:var(--text2);margin-bottom:14px;padding:10px 12px;background:var(--surface2);
       border:1px solid var(--border);border-radius:8px;line-height:1.5">
-      Melengkapi laporan <b>${label}</b> untuk tanggal <b>${trkFmtDMY(dateStr)}</b>. Laporan ini akan tercatat
+      Melengkapi laporan <b>${label}</b> untuk tanggal <b>${trkFmtDMY(dateStr)}</b>${!isSelf ? ` atas nama <b>${escHtml(targetName || 'staff ini')}</b>` : ''}. Laporan ini akan tercatat
       <b style="color:var(--red)">terlambat</b> dan tetap menunggu approval moderator seperti biasa.
     </div>
     <div class="trk-form-grid">
@@ -23020,9 +23049,10 @@ function trkOpenCatchup(dateStr, slotKey) {
 }
 async function _trkSubmitCatchup(dateStr, slotKey) {
   if (!db || !currentUser) { toast('Supabase tidak aktif.'); return; }
+  const targetUserId = (_trkCatchupTarget && _trkCatchupTarget.userId) || currentUser.id;
   const val = id => { const el = document.getElementById(id); return el ? Number(el.value) || 0 : 0; };
   const payload = {
-    p_actor_id: currentUser.id, p_target_user_id: currentUser.id,
+    p_actor_id: currentUser.id, p_target_user_id: targetUserId,
     p_report_date: dateStr, p_slot: slotKey,
     p_leads_masuk: val('trk-cu-masuk'), p_leads_terlayani: val('trk-cu-terlayani'),
     p_fu_leads_lama: val('trk-cu-fulama'), p_total_cold: val('trk-cu-cold'),
@@ -23034,7 +23064,12 @@ async function _trkSubmitCatchup(dateStr, slotKey) {
   if (!res || res.error) { toast('Gagal menyimpan laporan susulan: ' + (res && res.error ? res.error.message : 'unknown')); return; }
   closeModal();
   toast(`Laporan susulan ${slotKey === 'siang' ? 'Siang' : 'Sore'} (${trkFmtDMY(dateStr)}) tersimpan ✓`);
+  _trkCatchupTarget = null;
+  // Refresh semua view yang mungkin sedang terbuka — masing2 fungsi sudah
+  // null-safe (langsung return kalau elemen DOM-nya tidak ada di halaman).
   trkLoadOwnHistory();
+  if (typeof trkLoadTeamRecap === 'function') trkLoadTeamRecap();
+  if (typeof trkLoadTeamMonthlyRecap === 'function') trkLoadTeamMonthlyRecap();
 }
 
 function trkFmtDMY(dateStr) {
@@ -23355,6 +23390,29 @@ function trkIsSunday(dateStr) {
   return new Date(p[0], p[1] - 1, p[2]).getDay() === 0;
 }
 
+/* Dipakai bareng oleh Rekap Bulanan Tim (Tracking Report) DAN Leaderboard
+   ("Belum Ngisi Laporan Terbanyak") — supaya definisi "hari kerja" &
+   "belum lapor" (Minggu = libur, tidak dihitung) konsisten di kedua
+   tempat, tidak dihitung dua cara yang beda. */
+function trkComputeStaffMonthlyStats(rows) {
+  if (!rows || !rows.length) return [];
+  const byUser = {};
+  const order = [];
+  rows.forEach(r => {
+    if (!byUser[r.user_id]) { byUser[r.user_id] = { user_id: r.user_id, full_name: r.full_name, role: r.role, dates: [] }; order.push(r.user_id); }
+    byUser[r.user_id].dates.push(r);
+  });
+  return order.map(uid => {
+    const u = byUser[uid];
+    const workDates = u.dates.filter(d => !trkIsSunday(d.report_date)); // Minggu = libur, tidak dihitung
+    const daysTotal = workDates.length;
+    const daysComplete = workDates.filter(d => d.siang_filled && d.sore_filled).length;
+    const pct = daysTotal ? Math.round((daysComplete / daysTotal) * 100) : 0;
+    const missing = workDates.filter(d => !(d.siang_filled && d.sore_filled));
+    return { user_id: uid, full_name: u.full_name, role: u.role, daysTotal, daysComplete, pct, missing, missingCount: missing.length };
+  });
+}
+
 async function trkLoadTeamMonthlyRecap() {
   const sumEl = document.getElementById('trk-team-monthly-summary');
   const detEl = document.getElementById('trk-team-monthly-detail');
@@ -23398,26 +23456,38 @@ function trkRenderTeamMonthlyFromCache() {
     byUser[r.user_id].dates.push(r);
   });
   const roleLabel = { 'admin':'Admin', 'b2b_marketing':'B2B Marketing', 'cs_hunter':'CS Hunter' };
-  const staffList = order.map(uid => {
-    const u = byUser[uid];
-    const workDates = u.dates.filter(d => !trkIsSunday(d.report_date)); // Minggu = libur, tidak dihitung
-    const daysTotal = workDates.length;
-    const daysComplete = workDates.filter(d => d.siang_filled && d.sore_filled).length;
-    const pct = daysTotal ? Math.round((daysComplete / daysTotal) * 100) : 0;
-    const missing = workDates.filter(d => !(d.siang_filled && d.sore_filled));
-    return { ...u, daysTotal, daysComplete, pct, missing };
-  });
+  const staffList = trkComputeStaffMonthlyStats(rows);
 
   if (countEl) countEl.textContent = `${staffList.length} staff · ${ymLabel} · Minggu dihitung libur`;
   if (!_trkTeamMonthlySelected || !byUser[_trkTeamMonthlySelected]) {
     _trkTeamMonthlySelected = staffList[0]?.user_id || null;
   }
 
+  const canModerate = can.isMod(currentUser.role); // Owner: view-only, tidak bisa isi susulan
   const pctClass = p => p >= 90 ? 'ok' : p >= 60 ? 'warn' : 'bad';
+  // Setiap tanggal yg belum lengkap dipecah jadi 1 chip PER SLOT yg bolong
+  // (bukan 1 chip gabungan) — supaya moderator bisa langsung klik chip yg
+  // mana yg mau diisikan susulan, tanpa perlu tebak-tebak slot apa saja.
+  const missingChipsHtml = (u) => {
+    const chips = [];
+    u.missing.forEach(m => {
+      if (!m.siang_filled) chips.push({ date: m.report_date, slot: 'siang' });
+      if (!m.sore_filled)  chips.push({ date: m.report_date, slot: 'sore' });
+    });
+    if (!chips.length) {
+      return `<div class="trk-staff-missing-row"><span class="trk-missing-chip" style="background:rgba(122,191,142,.12);border-color:rgba(122,191,142,.35);color:var(--green)">${TRK_ICO.okCircle}Lengkap semua</span></div>`;
+    }
+    const shown = chips.slice(0, 6);
+    const clickable = canModerate;
+    return `<div class="trk-staff-missing-row">
+      ${shown.map(c => `<span class="trk-missing-chip${clickable ? ' clickable' : ''}"${clickable ? ` onclick="event.stopPropagation();trkOpenCatchup('${c.date}','${c.slot}','${u.user_id}')" title="Klik utk isi laporan susulan"` : ''}>${clickable ? TRK_ICO.plus : ''}${trkFmtDMY(c.date)} · ${c.slot === 'siang' ? 'Siang' : 'Sore'}</span>`).join('')}
+      ${chips.length > 6 ? `<span class="trk-missing-chip" style="opacity:.7">+${chips.length - 6} lainnya</span>` : ''}
+    </div>`;
+  };
   if (sumEl) {
     sumEl.innerHTML = `
     <div class="trk-section-title"><span class="st-ico">${TRK_ICO.compare}</span> Kelengkapan Laporan per Staff <span style="font-size:11px;color:var(--muted);font-family:'Inter',sans-serif;font-weight:500">· ${ymLabel} · klik kartu untuk lihat detail per tanggal</span></div>
-    <div style="font-size:11px;color:var(--muted);margin:-4px 0 12px">🌙 Hari Minggu dihitung libur — tidak masuk hitungan total hari kerja & kelengkapan lapor di bawah.</div>
+    <div style="font-size:11px;color:var(--muted);margin:-4px 0 12px;display:flex;align-items:center;gap:6px"><span style="display:inline-flex;width:14px;height:14px;color:var(--gold)">${TRK_ICO.sunday}</span> Hari Minggu dihitung libur — tidak masuk hitungan total hari kerja &amp; kelengkapan lapor di bawah.</div>
     <div class="trk-staff-grid">
       ${staffList.map(u => `
         <div class="trk-staff-card ${u.user_id === _trkTeamMonthlySelected ? 'selected' : ''} ${u.pct === 100 ? 'perfect' : ''}" onclick="trkSelectStaffMonthly('${u.user_id}')">
@@ -23430,10 +23500,7 @@ function trkRenderTeamMonthlyFromCache() {
           </div>
           <div class="trk-staff-bar"><div class="trk-staff-bar-fill" style="width:${u.pct}%"></div></div>
           <div class="trk-staff-sub">${u.daysComplete} dari ${u.daysTotal} hari lapor lengkap (Siang &amp; Sore)</div>
-          ${u.missing.length ? `<div class="trk-staff-missing-row">
-            ${u.missing.slice(0, 4).map(m => `<span class="trk-missing-chip">${trkFmtDMY(m.report_date)}${!m.siang_filled && !m.sore_filled ? ' · Siang &amp; Sore' : !m.siang_filled ? ' · Siang' : ' · Sore'}</span>`).join('')}
-            ${u.missing.length > 4 ? `<span class="trk-missing-chip" style="opacity:.7">+${u.missing.length - 4} lainnya</span>` : ''}
-          </div>` : `<div class="trk-staff-missing-row"><span class="trk-missing-chip" style="background:rgba(122,191,142,.12);border-color:rgba(122,191,142,.35);color:var(--green)">${TRK_ICO.okCircle}Lengkap semua</span></div>`}
+          ${missingChipsHtml(u)}
         </div>
       `).join('')}
     </div>`;
@@ -23465,18 +23532,21 @@ function trkRenderTeamMonthlyDetailTable(byUserArg) {
   if (!u || !u.dates || !u.dates.length) { detEl.innerHTML = ''; return; }
   const roleLabel = { 'admin':'Admin', 'b2b_marketing':'B2B Marketing', 'cs_hunter':'CS Hunter' };
 
+  const canModerate = can.isMod(currentUser.role); // Owner: view-only, tidak bisa isi susulan
   const rowsHtml = u.dates.map(r => {
     if (trkIsSunday(r.report_date)) {
       return `<tr class="trk-team-row sunday">
         <td>${trkFmtDMY(r.report_date)}</td>
-        <td colspan="9" style="text-align:center">🌙 Hari Minggu — Libur, tidak dihitung dalam rekap kelengkapan</td>
+        <td colspan="9" style="text-align:center"><span style="display:inline-flex;width:12px;height:12px;color:var(--gold);vertical-align:-2px;margin-right:5px">${TRK_ICO.sunday}</span>Hari Minggu — Libur, tidak dihitung dalam rekap kelengkapan</td>
       </tr>`;
     }
     const missing = !(r.siang_filled && r.sore_filled);
+    const cuBtn = (slotKey, filled) => (!filled && canModerate)
+      ? `<button class="trk-catchup-btn" onclick="trkOpenCatchup('${r.report_date}','${slotKey}','${u.user_id}')">${TRK_ICO.plus} Isi</button>` : '';
     return `<tr class="${missing ? 'trk-team-row missing' : ''}">
       <td>${trkFmtDMY(r.report_date)}</td>
-      <td>${trkStatusPillHtml(r.siang_filled, r.siang_status, r.siang_is_late)}</td>
-      <td>${trkStatusPillHtml(r.sore_filled, r.sore_status, r.sore_is_late)}</td>
+      <td><span class="trk-catchup-cell">${trkStatusPillHtml(r.siang_filled, r.siang_status, r.siang_is_late)}${cuBtn('siang', r.siang_filled)}</span></td>
+      <td><span class="trk-catchup-cell">${trkStatusPillHtml(r.sore_filled, r.sore_status, r.sore_is_late)}${cuBtn('sore', r.sore_filled)}</span></td>
       <td>${r.total_leads_masuk || 0}</td><td>${r.total_leads_terlayani || 0}</td><td>${r.total_fu_leads_lama || 0}</td>
       <td>${r.total_cold || 0}</td><td>${r.total_warm || 0}</td>
       <td><b style="color:#e87070">${r.total_hot || 0}</b></td>
@@ -23668,6 +23738,7 @@ async function trkLoadTeamRecap() {
       <td>${roleLabel[r.role] || r.role}</td>
       <td>${trkStatusPillHtml(filled, status, isLate)}
         ${(!filled && canRemind) ? `<button class="btn-sm" style="padding:2px 8px;font-size:10px;margin-left:4px" onclick="trkSendReminder('${r.user_id}','${slotKey}')">Ingatkan</button>` : ''}
+        ${(!filled && canModerate) ? `<button class="trk-catchup-btn" style="margin-left:4px" onclick="trkOpenCatchup('${_trkTeamDate}','${slotKey}','${r.user_id}')">${TRK_ICO.plus} Isi Susulan</button>` : ''}
         ${(filled && filledAt) ? `<div style="font-size:9.5px;color:var(--muted);margin-top:3px">Diisi ${trkFmtHM(filledAt)}</div>` : ''}
         ${(filled && status === 'rejected' && rejectReason) ? `<div style="font-size:10px;color:var(--red);margin-top:3px;max-width:220px;line-height:1.4">${escHtml(rejectReason)}</div>` : ''}</td>
       ${slotMetricCells(r, slotKey, filled)}
@@ -26014,6 +26085,10 @@ const LB_ICO = {
   hourglass: '<svg viewBox="0 0 16 16" fill="none"><path d="M4 2.4h8M4 13.6h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M4.6 2.4v1.7c0 1.5.9 2.6 2.3 3.1-1.4.5-2.3 1.7-2.3 3.1v1.7M11.4 2.4v1.7c0 1.5-.9 2.6-2.3 3.1 1.4.5 2.3 1.7 2.3 3.1v1.7" stroke="currentColor" stroke-width="1.15" stroke-linejoin="round"/></svg>',
   calendar: '<svg viewBox="0 0 16 16" fill="none"><rect x="2.2" y="3.4" width="11.6" height="10" rx="1.4" stroke="currentColor" stroke-width="1.25"/><path d="M2.2 6.4h11.6M5.4 2v2.8M10.6 2v2.8" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>',
   barChart: '<svg viewBox="0 0 16 16" fill="none"><path d="M2.6 13.4V9M6.2 13.4V5.6M9.8 13.4V7.4M13.4 13.4V2.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+  // v82: clipboard + tanda seru — vektor line-art elegan utk chip "Belum
+  // Ngisi Laporan Terbanyak" (pengganti "Iklan Paling Aktif"), gaya sama
+  // persis dgn ikon LB_ICO lain (viewBox 16x16, stroke currentColor).
+  clipboardAlert: '<svg viewBox="0 0 16 16" fill="none"><rect x="3.4" y="2.6" width="9.2" height="11.6" rx="1.4" stroke="currentColor" stroke-width="1.25"/><path d="M6 2.9V2.4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M8 6.2v3.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.3" r=".9" fill="currentColor"/></svg>',
 };
 let lbChannel = null;
 let lbCurrentYm = null;
@@ -26065,14 +26140,26 @@ function lbPeriodChange(ym) {
 
 /* ── AMBIL & OLAH DATA ── lewat RPC get_leaderboard_monthly (SECURITY
    DEFINER), persis pola get_tracking_recap_team/host_dashboard_stats di
-   sistem ini — BUKAN select langsung ke tabel, supaya tidak diblok RLS. ── */
+   sistem ini — BUKAN select langsung ke tabel, supaya tidak diblok RLS. ──
+   v82: sekarang juga menarik data kepatuhan Tracking Report bulan yang
+   sama (get_tracking_report_history_month_team, RPC yg sama dipakai Rekap
+   Bulanan Tim), supaya chip "Belum Ngisi Laporan Terbanyak" bisa dihitung
+   — 2 RPC dipanggil paralel, tidak saling menunggu. */
 async function lbFetchData(ym) {
-  const res = await dbQ(d => d.rpc('get_leaderboard_monthly', { p_period_ym: ym }));
+  const [res, resTrk] = await Promise.all([
+    dbQ(d => d.rpc('get_leaderboard_monthly', { p_period_ym: ym })),
+    dbQ(d => d.rpc('get_tracking_report_history_month_team', { p_period_ym: ym })).catch(() => null)
+  ]);
 
   if (!res || res.error) {
     console.warn('[DHP] get_leaderboard_monthly gagal / belum ada di database:', res?.error?.message);
     return { rows: [], generatedAt: new Date(), rpcMissing: true };
   }
+
+  const trkRows = (resTrk && resTrk.data) || [];
+  const staffStats = trkComputeStaffMonthlyStats(trkRows);
+  const statsByUser = {};
+  staffStats.forEach(s => { statsByUser[s.user_id] = s; });
 
   const data = res.data || [];
   const rows = data.map(r => ({
@@ -26088,6 +26175,8 @@ async function lbFetchData(ym) {
     adsTotal: Number(r.total_ads_total) || 0,
     adsDone: Number(r.total_ads_done) || 0,
     target: Number(r.target_amount) || 0,
+    missingReports: statsByUser[r.user_id]?.missingCount ?? 0,
+    workDays: statsByUser[r.user_id]?.daysTotal ?? 0,
   }));
   // v70: peringkat sekarang berdasar PERSENTASE pencapaian terhadap target
   // masing-masing orang (bukan nominal mentah) — siapa yang paling dekat/
@@ -26120,14 +26209,18 @@ function lbComputeAchievements(rows) {
   const fu = pick('followup');
   const hot = pick('hot');
   const crm = pick('crmTotal');
-  const ads = pick('adsDone');
+  // v82: "Iklan Paling Aktif" diganti "Belum Ngisi Laporan Terbanyak" — staff
+  // dengan jumlah laporan Tracking Report (Siang+Sore, Minggu tidak dihitung)
+  // yang paling banyak BELUM diisi bulan ini, supaya kepatuhan lapor kelihatan
+  // jelas di leaderboard, bukan cuma di menu Tracking Report.
+  const worst = rows.reduce((best, r) => (r.missingReports > (best?.missingReports ?? -1) ? r : best), null);
   return {
     topPct: topPct && topPct.pct > 0 ? topPct : null,
     topSales,
     topFollowup: fu && fu.followup > 0 ? fu : null,
     topHot: hot && hot.hot > 0 ? hot : null,
     topCrm: crm && crm.crmTotal > 0 ? crm : null,
-    topAds: ads && ads.adsDone > 0 ? ads : null,
+    leastCompliant: worst && worst.missingReports > 0 ? worst : null,
   };
 }
 
@@ -26234,7 +26327,9 @@ function lbAchievementsHtml(ach) {
     { key: 'topFollowup', icon: LB_ICO.phone,     color: 'var(--blue)',  lbl: 'Rajin Follow Up',   val: (u) => `${u.followup}x follow up` },
     { key: 'topHot',      icon: TRK_ICO.hot,      color: 'var(--green)', lbl: 'Leads Terpanas',    val: (u) => `${u.hot} hot leads` },
     { key: 'topCrm',      icon: LB_ICO.users,     color: 'var(--blue)',  lbl: 'CRM Terbanyak',     val: (u) => `${u.crmTotal} customer` },
-    { key: 'topAds',      icon: LB_ICO.megaphone, color: 'var(--amber)', lbl: 'Iklan Paling Aktif', val: (u) => `${u.adsDone} iklan jalan` },
+    { key: 'leastCompliant', icon: LB_ICO.clipboardAlert, color: 'var(--red)', lbl: 'Belum Ngisi Laporan Terbanyak',
+      val: (u) => `${u.missingReports} laporan belum diisi${u.workDays ? ` dari ${u.workDays} hari kerja` : ''}`,
+      emptyMsg: '🎉 Semua staff lapor lengkap' },
   ];
   let html = '<div class="lb-ach-row">';
   chips.forEach(c => {
@@ -26245,7 +26340,7 @@ function lbAchievementsHtml(ach) {
         <div class="lb-ach-txt">
           <div class="lb-ach-lbl">${c.lbl}</div>
           <div class="lb-ach-name">${u ? escHtml(u.name) : '—'}</div>
-          <div class="lb-ach-val">${u ? c.val(u) : 'Belum ada data'}</div>
+          <div class="lb-ach-val">${u ? c.val(u) : (c.emptyMsg || 'Belum ada data')}</div>
         </div>
       </div>`;
   });
