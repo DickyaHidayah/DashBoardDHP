@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<meta name="dhp-build" content="2026-08-28T04-30-00-v76"/>
+<meta name="dhp-build" content="2026-09-09T00-00-00-v84"/>
 <title>DHP Creative — Command Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Shippori+Mincho:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
@@ -22672,6 +22672,46 @@ function trackingReportStyleOnce() {
   .trk-recap-box span{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
   .trk-recap-box.hi{border-color:rgba(122,191,142,.5)}
   .trk-recap-box.hi b{color:var(--green)}
+
+  /* ══ v84 — Dashboard target & kepatuhan laporan (vector ring, elegan) ══ */
+  .trk-own-dash{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
+  @media(max-width:720px){.trk-own-dash{grid-template-columns:1fr}}
+  .trk-dash-card{position:relative;display:flex;align-items:center;gap:16px;
+    background:linear-gradient(160deg,var(--surface2),var(--surface));border:1px solid var(--border-hi);
+    border-radius:var(--r);padding:16px 18px;overflow:hidden}
+  .trk-dash-card::before{content:'';position:absolute;top:-30%;right:-15%;width:140px;height:140px;
+    background:radial-gradient(circle,rgba(201,169,110,.10),transparent 70%);pointer-events:none}
+  .trk-dash-ring{position:relative;width:76px;height:76px;flex-shrink:0}
+  .trk-dash-ring svg{width:100%;height:100%;transform:rotate(-90deg);display:block}
+  .trk-dash-ring .ring-bg{fill:none;stroke:var(--border);stroke-width:7}
+  .trk-dash-ring .ring-fg{fill:none;stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset .9s cubic-bezier(.16,1,.3,1)}
+  .trk-dash-ring .ring-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--gold-hi)}
+  .trk-dash-info{flex:1;min-width:0}
+  .trk-dash-title{display:flex;align-items:center;gap:6px;font-size:10px;text-transform:uppercase;
+    letter-spacing:.06em;color:var(--muted);margin-bottom:6px}
+  .trk-dash-title svg{width:12px;height:12px;color:var(--gold)}
+  .trk-dash-main{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--text);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .trk-dash-sub{font-size:11px;color:var(--text2);margin-top:3px}
+  .trk-dash-card.no-target .trk-dash-ring .ring-fg{stroke:var(--muted);opacity:.35}
+  .trk-dash-card.no-target .ring-pct{color:var(--muted);font-size:10px}
+
+  /* ── Toolbar aksi Riwayat Laporan Saya: bulan, muat ulang, export ── */
+  .trk-hist-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+  .trk-hist-export-grp{display:inline-flex;gap:6px;margin-left:auto}
+  @media(max-width:640px){.trk-hist-export-grp{margin-left:0;width:100%}}
+  .trk-export-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:6px;
+    font-size:11.5px;font-weight:600;cursor:pointer;transition:var(--trans);white-space:nowrap;
+    border:1px solid var(--border-hi);background:var(--surface2);color:var(--text2)}
+  .trk-export-btn svg{width:12.5px;height:12.5px;flex-shrink:0}
+  .trk-export-btn:hover{border-color:var(--gold);color:var(--gold-hi);background:rgba(201,169,110,.08)}
+  .trk-export-btn:disabled{opacity:.55;cursor:default;pointer-events:none}
+  .trk-export-btn.xls:hover{border-color:var(--green);color:var(--green);background:rgba(122,191,142,.08)}
+
+  /* ── Baris total di kaki tabel riwayat ── */
+  .fu-table tfoot td{background:var(--surface2);font-weight:700;color:var(--gold-hi);
+    border-top:2px solid var(--border-hi);border-bottom:none;position:sticky;bottom:0}
+  .fu-table tfoot .trk-total-lbl{color:var(--muted);font-weight:700;font-size:9.5px;text-transform:uppercase;letter-spacing:.06em}
   .trk-team-row.missing{background:rgba(232,112,112,.05)}
   .trk-team-slot{display:inline-flex;align-items:center;gap:5px;font-size:11.5px}
   .trk-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
@@ -22881,19 +22921,33 @@ async function renderTrackingOwnView(root) {
 
     <div class="trk-section-title" style="margin-top:22px"><span class="st-ico">${TRK_ICO.compare}</span> Riwayat Laporan Saya</div>
     <div id="trk-hist-missing-banner"></div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+    <div class="trk-own-dash" id="trk-own-dash"></div>
+    <div class="trk-hist-toolbar">
       <label style="font-size:12px;color:var(--muted)">Bulan:</label>
       <select id="trk-hist-period-sel" onchange="trkHistPeriodChange(this.value)"
         style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:13px"></select>
       <button class="btn-sm btn-gold" onclick="trkLoadOwnHistory()">⟲ Muat Ulang</button>
       <span id="trk-hist-count" style="font-size:11px;color:var(--muted)"></span>
+      <div class="trk-hist-export-grp">
+        <button class="trk-export-btn xls" id="trk-hist-export-xls-btn" onclick="exportTrkOwnHistoryExcel()" title="Export riwayat laporan bulan ini ke Excel">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M8 10V1M8 1L5 4M8 1l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span>Export Excel</span>
+        </button>
+        <button class="trk-export-btn pdf" id="trk-hist-export-pdf-btn" onclick="exportTrkOwnHistoryPdf()" title="Export riwayat laporan bulan ini ke PDF — siap cetak">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M4 1.5h5.5L13 5v9.5a1 1 0 01-1 1H4a1 1 0 01-1-1v-12a1 1 0 011-1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M9.5 1.5V5H13" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <span>Export PDF</span>
+        </button>
+      </div>
     </div>
     <div class="tbl-wrap"><div class="tbl-scroll">
       <table class="fu-table"><thead><tr>
         <th>Tanggal</th><th>Siang</th><th>Sore</th>
         <th>Leads Masuk</th><th>Baru Terlayani</th><th>FU Lama</th>
         <th>Cold</th><th>Warm</th><th>Hot</th><th>Nominal Closing</th>
-      </tr></thead><tbody id="trk-hist-tbody"><tr><td colspan="10" style="text-align:center;color:var(--muted)">Memuat…</td></tr></tbody></table>
+      </tr></thead>
+      <tbody id="trk-hist-tbody"><tr><td colspan="10" style="text-align:center;color:var(--muted)">Memuat…</td></tr></tbody>
+      <tfoot id="trk-hist-tfoot"></tfoot>
+      </table>
     </div></div>
   `;
   trkTickReminder();
@@ -22932,23 +22986,41 @@ function trkHistPeriodChange(ym) {
   trkHistCurrentYm = ym;
   trkLoadOwnHistory();
 }
+let _trkOwnHistoryExport = null; // v84: cache data terakhir dimuat, dipakai exportTrkOwnHistoryExcel/Pdf
 async function trkLoadOwnHistory() {
   const tbody = document.getElementById('trk-hist-tbody');
   const countEl = document.getElementById('trk-hist-count');
+  const tfoot = document.getElementById('trk-hist-tfoot');
+  const dashHost = document.getElementById('trk-own-dash');
   if (!tbody || !currentUser) return;
   trkPopulateHistPeriodSelect();
   const sel = document.getElementById('trk-hist-period-sel');
   if (!trkHistCurrentYm) trkHistCurrentYm = sel?.value || trkHistYmNow();
   if (sel && sel.value !== trkHistCurrentYm) sel.value = trkHistCurrentYm;
   tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--muted)">Memuat…</td></tr>`;
+  if (tfoot) tfoot.innerHTML = '';
   if (countEl) countEl.textContent = '';
+  if (dashHost) dashHost.innerHTML = '';
+  _trkOwnHistoryExport = null;
   let rows = [];
+  let targetRow = null; // {target, sales, pct} — dari get_leaderboard_monthly, kalau moderator sudah atur target omzet
   try {
-    const res = await dbQ(d => d.rpc('get_tracking_report_history_month', { p_user_id: currentUser.id, p_period_ym: trkHistCurrentYm }));
+    const [res, resLb] = await Promise.all([
+      dbQ(d => d.rpc('get_tracking_report_history_month', { p_user_id: currentUser.id, p_period_ym: trkHistCurrentYm })),
+      dbQ(d => d.rpc('get_leaderboard_monthly', { p_period_ym: trkHistCurrentYm })).catch(() => null)
+    ]);
     rows = (res && res.data) || [];
+    const lbRows = (resLb && resLb.data) || [];
+    const hit = lbRows.find(r => r.user_id === currentUser.id);
+    if (hit) {
+      const target = Number(hit.target_amount) || 0;
+      const sales = Number(hit.total_sales) || 0;
+      targetRow = { target, sales, pct: target > 0 ? Math.round((sales / target) * 100) : null };
+    }
   } catch (e) { console.warn('[DHP] get_tracking_report_history_month gagal:', e); }
   if (!rows.length) {
     tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--muted)">Belum ada riwayat laporan di ${trkHistYmLabel(trkHistCurrentYm)}.</td></tr>`;
+    if (dashHost) dashHost.innerHTML = trkRenderOwnDash(targetRow, { completeCount: 0, workDaysTotal: 0 });
     return;
   }
   const todayStr = trkTodayStr();
@@ -23011,6 +23083,281 @@ async function trkLoadOwnHistory() {
     : '';
 
   tbody.innerHTML = rowsHtml;
+
+  // ── v84: baris TOTAL di kaki tabel (dijumlah dari semua tanggal kerja) ──
+  const totals = trkOwnHistoryTotals(workRows);
+  if (tfoot) {
+    tfoot.innerHTML = `<tr>
+      <td colspan="3" class="trk-total-lbl">TOTAL · ${trkHistYmLabel(trkHistCurrentYm)}</td>
+      <td>${totals.leads_masuk}</td><td>${totals.leads_terlayani}</td><td>${totals.fu_leads_lama}</td>
+      <td>${totals.cold}</td><td>${totals.warm}</td>
+      <td style="color:#e87070">${totals.hot}</td>
+      <td style="color:var(--green)">${crmFmtRupiah(totals.nominal_closing)}</td>
+    </tr>`;
+  }
+
+  // ── v84: dashboard vector — target omzet (kalau sudah diatur moderator) + kepatuhan laporan ──
+  if (dashHost) dashHost.innerHTML = trkRenderOwnDash(targetRow, { completeCount, workDaysTotal: workRows.length });
+
+  // ── v84: cache untuk export Excel/PDF ──
+  _trkOwnHistoryExport = {
+    ym: trkHistCurrentYm, ymLabel: trkHistYmLabel(trkHistCurrentYm),
+    userName: currentUser.name, roleLabel: rn(currentUser.role),
+    rows: workRows, totals, targetRow, completeCount, workDaysTotal: workRows.length
+  };
+}
+
+/* ── v84: jumlahkan semua kolom angka riwayat laporan (dipakai baris TOTAL + export) ── */
+function trkOwnHistoryTotals(rows) {
+  return rows.reduce((t, r) => {
+    t.leads_masuk += r.total_leads_masuk || 0;
+    t.leads_terlayani += r.total_leads_terlayani || 0;
+    t.fu_leads_lama += r.total_fu_leads_lama || 0;
+    t.cold += r.total_cold || 0;
+    t.warm += r.total_warm || 0;
+    t.hot += r.total_hot || 0;
+    t.nominal_closing += Number(r.total_nominal_closing) || 0;
+    return t;
+  }, { leads_masuk: 0, leads_terlayani: 0, fu_leads_lama: 0, cold: 0, warm: 0, hot: 0, nominal_closing: 0 });
+}
+
+/* ── v84: ring progres SVG (vector, bukan canvas) — dipakai dashboard riwayat sendiri ── */
+function trkRingSvg(pct, gradId, strokeColor) {
+  const size = 76, sw = 7, r = (size / 2) - sw;
+  const c = 2 * Math.PI * r;
+  const clamped = pct == null ? 0 : Math.max(0, Math.min(100, pct));
+  const offset = c * (1 - clamped / 100);
+  return `<svg viewBox="0 0 ${size} ${size}">
+    <defs><linearGradient id="${gradId}" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="${strokeColor[0]}"/><stop offset="100%" stop-color="${strokeColor[1]}"/>
+    </linearGradient></defs>
+    <circle class="ring-bg" cx="${size/2}" cy="${size/2}" r="${r}"/>
+    <circle class="ring-fg" cx="${size/2}" cy="${size/2}" r="${r}" stroke="url(#${gradId})"
+      stroke-dasharray="${c.toFixed(2)}" stroke-dashoffset="${offset.toFixed(2)}"/>
+  </svg>`;
+}
+
+/* ── v84: 2 kartu dashboard — Target Omzet Bulan Ini (dari get_leaderboard_monthly,
+   sama seperti Leaderboard) & Kepatuhan Laporan (dari data riwayat sendiri) ── */
+function trkRenderOwnDash(targetRow, compliance) {
+  const hasTarget = !!(targetRow && targetRow.target > 0);
+  const tPct = hasTarget ? Math.min(100, targetRow.pct ?? 0) : null;
+  const cPct = compliance.workDaysTotal > 0 ? Math.round((compliance.completeCount / compliance.workDaysTotal) * 100) : 0;
+
+  const cardTarget = `
+    <div class="trk-dash-card ${hasTarget ? '' : 'no-target'}">
+      <div class="trk-dash-ring">
+        ${trkRingSvg(hasTarget ? tPct : 0, 'trkRingGradA', ['var(--gold-hi)', 'var(--gold-lo)'])}
+        <div class="ring-pct">${hasTarget ? tPct + '%' : '—'}</div>
+      </div>
+      <div class="trk-dash-info">
+        <div class="trk-dash-title">${TRK_ICO.closing} Target Omzet Bulan Ini</div>
+        ${hasTarget ? `
+          <div class="trk-dash-main">${crmFmtRupiah(targetRow.sales)}</div>
+          <div class="trk-dash-sub">dari target ${crmFmtRupiah(targetRow.target)}</div>
+        ` : `
+          <div class="trk-dash-main" style="font-size:14px;color:var(--muted)">Belum diatur moderator</div>
+          <div class="trk-dash-sub">Target omzet bulanan belum tersedia untuk periode ini.</div>
+        `}
+      </div>
+    </div>`;
+
+  const cardCompliance = `
+    <div class="trk-dash-card">
+      <div class="trk-dash-ring">
+        ${trkRingSvg(cPct, 'trkRingGradB', ['var(--green)', '#4f9a68'])}
+        <div class="ring-pct" style="color:var(--green)">${cPct}%</div>
+      </div>
+      <div class="trk-dash-info">
+        <div class="trk-dash-title">${TRK_ICO.compare} Kepatuhan Laporan</div>
+        <div class="trk-dash-main">${compliance.completeCount} / ${compliance.workDaysTotal} hari kerja</div>
+        <div class="trk-dash-sub">laporan Siang &amp; Sore terisi lengkap</div>
+      </div>
+    </div>`;
+
+  return cardTarget + cardCompliance;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   v84 — EXPORT "Riwayat Laporan Saya" ke Excel & PDF
+   ─ Dipakai staff CS Hunter/Admin/B2B Marketing untuk mengunduh
+     riwayat laporan tracking bulan yang sedang dipilih: tabel
+     lengkap semua tanggal, baris TOTAL, ringkasan target omzet
+     (kalau sudah diatur moderator) & persentase kepatuhan lapor.
+   ═══════════════════════════════════════════════════════════ */
+function trkHistTableAoa(data) {
+  const head = ['Tanggal', 'Siang', 'Sore', 'Leads Masuk', 'Baru Terlayani', 'FU Lama', 'Cold', 'Warm', 'Hot', 'Nominal Closing'];
+  const slotTxt = (filled, status, late) => !filled ? 'Belum Lapor' : (status === 'approved' ? 'Disetujui' : status === 'rejected' ? 'Ditolak' : 'Menunggu') + (late ? ' (Telat)' : '');
+  const body = data.rows.map(r => trkIsSunday(r.report_date) ? [trkFmtDMY(r.report_date), 'Libur', 'Libur', '', '', '', '', '', '', ''] : [
+    trkFmtDMY(r.report_date),
+    slotTxt(r.siang_filled, r.siang_status, r.siang_is_late),
+    slotTxt(r.sore_filled, r.sore_status, r.sore_is_late),
+    r.total_leads_masuk || 0, r.total_leads_terlayani || 0, r.total_fu_leads_lama || 0,
+    r.total_cold || 0, r.total_warm || 0, r.total_hot || 0, Number(r.total_nominal_closing) || 0
+  ]);
+  const t = data.totals;
+  const totalRow = ['TOTAL', '', '', t.leads_masuk, t.leads_terlayani, t.fu_leads_lama, t.cold, t.warm, t.hot, t.nominal_closing];
+  return { head, body, totalRow };
+}
+async function exportTrkOwnHistoryExcel() {
+  const btn = document.getElementById('trk-hist-export-xls-btn');
+  if (!_trkOwnHistoryExport || !_trkOwnHistoryExport.rows.length) { toast('Belum ada data riwayat untuk diexport.'); return; }
+  const btnOrig = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span>⏳ Menyiapkan…</span>'; }
+  try {
+    const data = _trkOwnHistoryExport;
+    const { head, body, totalRow } = trkHistTableAoa(data);
+    const wb = XLSX.utils.book_new();
+
+    // ── Sheet 1: Ringkasan (nama, role, bulan, target omzet, kepatuhan) ──
+    const t = data.targetRow;
+    const sumAoa = [
+      ['DHP CREATIVE — Riwayat Laporan Tracking'],
+      ['Nama', data.userName], ['Role', data.roleLabel], ['Periode', data.ymLabel],
+      ['Dibuat pada', new Date().toLocaleString('id-ID', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' })],
+      [],
+      ['TARGET OMZET BULAN INI'],
+      ['Target', t && t.target > 0 ? t.target : 'Belum diatur moderator'],
+      ['Tercapai', t && t.target > 0 ? t.sales : '-'],
+      ['Persentase', t && t.target > 0 ? (t.pct + '%') : '-'],
+      [],
+      ['KEPATUHAN LAPORAN'],
+      ['Hari kerja lengkap lapor', `${data.completeCount} / ${data.workDaysTotal}`],
+      ['Persentase', data.workDaysTotal > 0 ? Math.round((data.completeCount / data.workDaysTotal) * 100) + '%' : '-'],
+      [],
+      ['RINGKASAN ANGKA (TOTAL 1 BULAN)'],
+      ['Leads Masuk', data.totals.leads_masuk], ['Leads Baru Terlayani', data.totals.leads_terlayani],
+      ['FU Leads Lama', data.totals.fu_leads_lama], ['Total Cold', data.totals.cold],
+      ['Total Warm', data.totals.warm], ['Total Hot', data.totals.hot],
+      ['Total Nominal Closing', data.totals.nominal_closing]
+    ];
+    const wsSum = XLSX.utils.aoa_to_sheet(sumAoa);
+    wsSum['!cols'] = [{ wch: 26 }, { wch: 26 }];
+    XLSX.utils.book_append_sheet(wb, wsSum, '📊 Ringkasan');
+
+    // ── Sheet 2: Tabel lengkap semua tanggal + baris TOTAL ──
+    const dataAoa = [head, ...body, totalRow];
+    const wsData = XLSX.utils.aoa_to_sheet(dataAoa);
+    wsData['!cols'] = [{ wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 12 }, { wch: 14 }, { wch: 10 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 16 }];
+    wsData['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: 0, c: head.length - 1 } }) };
+    XLSX.utils.book_append_sheet(wb, wsData, '📋 Riwayat Harian');
+
+    XLSX.writeFile(wb, `Riwayat_Laporan_${_pdfFileSafe(data.userName)}_${_pdfFileSafe(data.ymLabel)}.xlsx`);
+    toast('Riwayat laporan berhasil diexport ke Excel');
+  } catch (e) {
+    console.error('[DHP] exportTrkOwnHistoryExcel gagal:', e);
+    toast('Gagal export Excel: ' + (e.message || e));
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = btnOrig; }
+  }
+}
+async function exportTrkOwnHistoryPdf() {
+  const btn = document.getElementById('trk-hist-export-pdf-btn');
+  if (!_trkOwnHistoryExport || !_trkOwnHistoryExport.rows.length) { toast('Belum ada data riwayat untuk diexport.'); return; }
+  const btnOrig = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span>⏳ Menyiapkan…</span>'; }
+  try {
+    if (!_pdfLibsReady()) { toast('Komponen PDF belum siap, coba lagi sebentar lagi'); return; }
+    const data = _trkOwnHistoryExport;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const marginX = 36;
+    let y = 0;
+    const genDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    // ── Header brand ──
+    doc.setFillColor(20, 20, 24);
+    doc.rect(0, 0, pageW, 90, 'F');
+    doc.setTextColor(201, 169, 110);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(17);
+    doc.text('DHP CREATIVE', marginX, 36);
+    doc.setTextColor(230, 230, 230); doc.setFontSize(10.5); doc.setFont('helvetica', 'normal');
+    doc.text('Riwayat Laporan Tracking Report — Bulanan', marginX, 55);
+    doc.setFontSize(9); doc.setTextColor(190, 190, 190);
+    doc.text(`${data.userName}  ·  ${data.roleLabel}  ·  ${data.ymLabel}`, marginX, 73);
+    doc.setTextColor(0, 0, 0);
+    y = 112;
+
+    // ── Kartu KPI: target omzet & kepatuhan laporan (rapi, sejajar seperti dashboard) ──
+    const t = data.targetRow;
+    const hasTarget = !!(t && t.target > 0);
+    const compliancePct = data.workDaysTotal > 0 ? Math.round((data.completeCount / data.workDaysTotal) * 100) : 0;
+    const kpis = [
+      { lbl: 'Target Omzet', num: hasTarget ? crmFmtRupiah(t.target) : 'Belum diatur' },
+      { lbl: 'Tercapai', num: hasTarget ? crmFmtRupiah(t.sales) : '-' },
+      { lbl: '% Capaian Target', num: hasTarget ? t.pct + '%' : '-' },
+      { lbl: 'Kepatuhan Laporan', num: `${data.completeCount}/${data.workDaysTotal} hari (${compliancePct}%)` }
+    ];
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11.5); doc.setTextColor(30, 30, 30);
+    doc.text('Ringkasan Target &amp; Capaian'.replace('&amp;', '&'), marginX, y); y += 12;
+    const gap = 8;
+    const colW = (pageW - marginX * 2 - gap * (kpis.length - 1)) / kpis.length;
+    kpis.forEach((k, i) => {
+      const x = marginX + i * (colW + gap);
+      doc.setDrawColor(222, 222, 222); doc.setLineWidth(0.8);
+      doc.roundedRect(x, y, colW, 46, 4, 4);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(178, 138, 68);
+      doc.text(doc.splitTextToSize(k.num, colW - 16), x + 8, y + 19);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.4); doc.setTextColor(95, 95, 95);
+      doc.text(doc.splitTextToSize(k.lbl, colW - 16), x + 8, y + 36);
+    });
+    y += 46 + 20;
+    doc.setTextColor(0, 0, 0);
+
+    // ── Ringkasan angka total 1 bulan (leads, heat, closing) ──
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(30, 30, 30);
+    doc.text('Total Angka Sebulan', marginX, y); y += 8;
+    doc.autoTable({
+      startY: y + 4, margin: { left: marginX, right: marginX },
+      head: [['Leads Masuk', 'Baru Terlayani', 'FU Lama', 'Cold', 'Warm', 'Hot', 'Nominal Closing']],
+      body: [[data.totals.leads_masuk, data.totals.leads_terlayani, data.totals.fu_leads_lama, data.totals.cold, data.totals.warm, data.totals.hot, crmFmtRupiah(data.totals.nominal_closing)]],
+      styles: { font: 'helvetica', fontSize: 8.6, cellPadding: 6, textColor: [40, 40, 40], halign: 'center' },
+      headStyles: { fillColor: [26, 26, 30], textColor: [230, 208, 166], fontStyle: 'bold', fontSize: 8.3 },
+      theme: 'grid'
+    });
+    y = doc.lastAutoTable.finalY + 20;
+
+    if (y > pageH - 140) { doc.addPage(); y = 40; }
+
+    // ── Tabel lengkap semua tanggal, rapi, tidak berantakan, + baris TOTAL di-highlight ──
+    const { head, body, totalRow } = trkHistTableAoa(data);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11.5); doc.setTextColor(30, 30, 30);
+    doc.text(`Rincian Harian — ${data.ymLabel} (${data.rows.length} tanggal)`, marginX, y); y += 6;
+    doc.autoTable({
+      head: [head], body: [...body, totalRow], startY: y + 8, margin: { left: marginX, right: marginX },
+      styles: { font: 'helvetica', fontSize: 7.8, cellPadding: 4.5, textColor: [40, 40, 40], overflow: 'linebreak', valign: 'middle' },
+      headStyles: { fillColor: [26, 26, 30], textColor: [230, 208, 166], fontStyle: 'bold', fontSize: 7.9 },
+      alternateRowStyles: { fillColor: [248, 246, 241] },
+      columnStyles: { 3:{halign:'right'},4:{halign:'right'},5:{halign:'right'},6:{halign:'right'},7:{halign:'right'},8:{halign:'right'},9:{halign:'right'} },
+      didParseCell: (hookData) => {
+        if (hookData.row.index === body.length && hookData.section === 'body') {
+          hookData.cell.styles.fontStyle = 'bold';
+          hookData.cell.styles.fillColor = [238, 228, 206];
+          hookData.cell.styles.textColor = [110, 80, 20];
+        }
+      },
+      theme: 'grid'
+    });
+
+    // ── Footer nomor halaman di semua halaman ──
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(150, 150, 150);
+      doc.text(`DHP Creative — laporan dibuat ${genDate}`, marginX, pageH - 20);
+      doc.text(`Halaman ${i}/${pageCount}`, pageW - marginX - 60, pageH - 20);
+    }
+
+    doc.save(`Riwayat_Laporan_${_pdfFileSafe(data.userName)}_${_pdfFileSafe(data.ymLabel)}.pdf`);
+    toast('Riwayat laporan berhasil diexport ke PDF');
+  } catch (e) {
+    console.error('[DHP] exportTrkOwnHistoryPdf gagal:', e);
+    toast('Gagal export PDF: ' + (e.message || e));
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = btnOrig; }
+  }
 }
 
 /* ── ISI LAPORAN SUSULAN (catch-up) — untuk tanggal yang sudah lewat dan
