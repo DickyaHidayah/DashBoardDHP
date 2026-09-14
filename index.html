@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<meta name="dhp-build" content="2026-09-14T00-00-00-v85"/>
+<meta name="dhp-build" content="2026-09-14T01-00-00-v86"/>
 <title>DHP Creative — Command Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Shippori+Mincho:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
@@ -6589,7 +6589,12 @@ const OWNER_WRITE_KEYWORDS = [
 ];
 // Fungsi yang namanya kebetulan mengandung kata kunci di atas TAPI
 // sebenarnya cuma untuk MELIHAT — jangan diblokir.
-const OWNER_WRITE_EXCEPTIONS = ['openrecapmodal','openmyprofile','lsselectdate','navto'];
+// v86: trkSelectStaffMonthly (kartu pilih staff di Rekap Bulanan per Staff)
+// sempat ikut ke-block karena namanya mengandung "select" — padahal cuma
+// ganti staff mana yang detailnya ditampilkan, bukan aksi tulis. Akibatnya
+// Owner nyangkut cuma bisa lihat staff pertama (mis. Erni) & kartu staff
+// lain hilang total. Ditambah ke exceptions supaya kartunya tampil normal.
+const OWNER_WRITE_EXCEPTIONS = ['openrecapmodal','openmyprofile','lsselectdate','navto','trkselectstaffmonthly'];
 function ownerActionFnName(onclickAttr) {
   const s = (onclickAttr || '').trim().toLowerCase();
   const m = s.match(/^[a-z_][a-z0-9_]*/);
