@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<meta name="dhp-build" content="2026-09-09T00-00-00-v84"/>
+<meta name="dhp-build" content="2026-09-14T00-00-00-v85"/>
 <title>DHP Creative — Command Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Shippori+Mincho:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
@@ -22579,6 +22579,8 @@ let _trkCatchupTarget = null; // {userId, isSelf} — target laporan susulan yg 
 let _trkTeamTab = 'harian';           // 'harian' | 'bulanan' — tab aktif di Rekap Tim
 let _trkTeamMonthlyYm = null;         // 'YYYY-MM' bulan yg sedang dilihat di Rekap Bulanan
 let _trkTeamMonthlyRows = null;       // hasil mentah get_tracking_report_history_month_team
+let _trkTeamMonthlyTargets = {};      // v85: map user_id -> {target,sales,pct} dari get_leaderboard_monthly, buat dashboard ring & export per staff
+let _trkTeamMonthlyExport = null;     // v85: cache data staff yg sedang dibuka, dipakai exportTrkTeamStaffExcel/Pdf
 let _trkTeamMonthlySelected = null;   // user_id staff yg sedang dibuka detailnya
 
 function trkNowJakarta() { return cshTodayJakarta(); }
@@ -23199,13 +23201,16 @@ function trkHistTableAoa(data) {
   const totalRow = ['TOTAL', '', '', t.leads_masuk, t.leads_terlayani, t.fu_leads_lama, t.cold, t.warm, t.hot, t.nominal_closing];
   return { head, body, totalRow };
 }
-async function exportTrkOwnHistoryExcel() {
-  const btn = document.getElementById('trk-hist-export-xls-btn');
-  if (!_trkOwnHistoryExport || !_trkOwnHistoryExport.rows.length) { toast('Belum ada data riwayat untuk diexport.'); return; }
+/* ── v84/v85: generik — dipakai baik oleh "Riwayat Laporan Saya" (staff)
+   MAUPUN "Rekap Bulanan per Staff" (Moderator & Owner, lihat riwayat staff
+   lain) — supaya hasil export & tampilan dashboard konsisten di kedua
+   tempat, termasuk untuk role Owner yang sebelumnya tidak kebagian ini. ── */
+async function trkExportHistoryExcel(data, btnId, fileTag) {
+  const btn = document.getElementById(btnId);
+  if (!data || !data.rows.length) { toast('Belum ada data riwayat untuk diexport.'); return; }
   const btnOrig = btn ? btn.innerHTML : '';
   if (btn) { btn.disabled = true; btn.innerHTML = '<span>⏳ Menyiapkan…</span>'; }
   try {
-    const data = _trkOwnHistoryExport;
     const { head, body, totalRow } = trkHistTableAoa(data);
     const wb = XLSX.utils.book_new();
 
@@ -23242,23 +23247,22 @@ async function exportTrkOwnHistoryExcel() {
     wsData['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: 0, c: head.length - 1 } }) };
     XLSX.utils.book_append_sheet(wb, wsData, '📋 Riwayat Harian');
 
-    XLSX.writeFile(wb, `Riwayat_Laporan_${_pdfFileSafe(data.userName)}_${_pdfFileSafe(data.ymLabel)}.xlsx`);
+    XLSX.writeFile(wb, `${fileTag}_${_pdfFileSafe(data.userName)}_${_pdfFileSafe(data.ymLabel)}.xlsx`);
     toast('Riwayat laporan berhasil diexport ke Excel');
   } catch (e) {
-    console.error('[DHP] exportTrkOwnHistoryExcel gagal:', e);
+    console.error('[DHP] trkExportHistoryExcel gagal:', e);
     toast('Gagal export Excel: ' + (e.message || e));
   } finally {
     if (btn) { btn.disabled = false; btn.innerHTML = btnOrig; }
   }
 }
-async function exportTrkOwnHistoryPdf() {
-  const btn = document.getElementById('trk-hist-export-pdf-btn');
-  if (!_trkOwnHistoryExport || !_trkOwnHistoryExport.rows.length) { toast('Belum ada data riwayat untuk diexport.'); return; }
+async function trkExportHistoryPdf(data, btnId, fileTag, subtitle) {
+  const btn = document.getElementById(btnId);
+  if (!data || !data.rows.length) { toast('Belum ada data riwayat untuk diexport.'); return; }
   const btnOrig = btn ? btn.innerHTML : '';
   if (btn) { btn.disabled = true; btn.innerHTML = '<span>⏳ Menyiapkan…</span>'; }
   try {
     if (!_pdfLibsReady()) { toast('Komponen PDF belum siap, coba lagi sebentar lagi'); return; }
-    const data = _trkOwnHistoryExport;
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
     const pageW = doc.internal.pageSize.getWidth();
@@ -23274,7 +23278,7 @@ async function exportTrkOwnHistoryPdf() {
     doc.setFont('helvetica', 'bold'); doc.setFontSize(17);
     doc.text('DHP CREATIVE', marginX, 36);
     doc.setTextColor(230, 230, 230); doc.setFontSize(10.5); doc.setFont('helvetica', 'normal');
-    doc.text('Riwayat Laporan Tracking Report — Bulanan', marginX, 55);
+    doc.text(subtitle || 'Riwayat Laporan Tracking Report — Bulanan', marginX, 55);
     doc.setFontSize(9); doc.setTextColor(190, 190, 190);
     doc.text(`${data.userName}  ·  ${data.roleLabel}  ·  ${data.ymLabel}`, marginX, 73);
     doc.setTextColor(0, 0, 0);
@@ -23291,7 +23295,7 @@ async function exportTrkOwnHistoryPdf() {
       { lbl: 'Kepatuhan Laporan', num: `${data.completeCount}/${data.workDaysTotal} hari (${compliancePct}%)` }
     ];
     doc.setFont('helvetica', 'bold'); doc.setFontSize(11.5); doc.setTextColor(30, 30, 30);
-    doc.text('Ringkasan Target &amp; Capaian'.replace('&amp;', '&'), marginX, y); y += 12;
+    doc.text('Ringkasan Target & Capaian', marginX, y); y += 12;
     const gap = 8;
     const colW = (pageW - marginX * 2 - gap * (kpis.length - 1)) / kpis.length;
     kpis.forEach((k, i) => {
@@ -23350,15 +23354,21 @@ async function exportTrkOwnHistoryPdf() {
       doc.text(`Halaman ${i}/${pageCount}`, pageW - marginX - 60, pageH - 20);
     }
 
-    doc.save(`Riwayat_Laporan_${_pdfFileSafe(data.userName)}_${_pdfFileSafe(data.ymLabel)}.pdf`);
+    doc.save(`${fileTag}_${_pdfFileSafe(data.userName)}_${_pdfFileSafe(data.ymLabel)}.pdf`);
     toast('Riwayat laporan berhasil diexport ke PDF');
   } catch (e) {
-    console.error('[DHP] exportTrkOwnHistoryPdf gagal:', e);
+    console.error('[DHP] trkExportHistoryPdf gagal:', e);
     toast('Gagal export PDF: ' + (e.message || e));
   } finally {
     if (btn) { btn.disabled = false; btn.innerHTML = btnOrig; }
   }
 }
+/* ── Wrapper "Riwayat Laporan Saya" (staff sendiri) ── */
+function exportTrkOwnHistoryExcel() { trkExportHistoryExcel(_trkOwnHistoryExport, 'trk-hist-export-xls-btn', 'Riwayat_Laporan'); }
+function exportTrkOwnHistoryPdf() { trkExportHistoryPdf(_trkOwnHistoryExport, 'trk-hist-export-pdf-btn', 'Riwayat_Laporan', 'Riwayat Laporan Tracking Report — Bulanan'); }
+/* ── Wrapper "Rekap Bulanan per Staff" (Moderator & Owner) — export staff yg sedang dipilih ── */
+function exportTrkTeamStaffExcel() { trkExportHistoryExcel(_trkTeamMonthlyExport, 'trk-team-export-xls-btn', 'Rekap_Staff'); }
+function exportTrkTeamStaffPdf() { trkExportHistoryPdf(_trkTeamMonthlyExport, 'trk-team-export-pdf-btn', 'Rekap_Staff', 'Rekap Bulanan Tim — per Staff'); }
 
 /* ── ISI LAPORAN SUSULAN (catch-up) — untuk tanggal yang sudah lewat dan
    belum sempat diisi slot Siang/Sore-nya. Memakai modal generik #modal-ov
@@ -23788,9 +23798,17 @@ async function trkLoadTeamMonthlyRecap() {
   if (sumEl) sumEl.innerHTML = `<div class="myperf-empty" style="padding:20px 0">Memuat rekap bulanan…</div>`;
   if (detEl) detEl.innerHTML = '';
   let rows = [];
+  _trkTeamMonthlyTargets = {};
   try {
-    const res = await dbQ(d => d.rpc('get_tracking_report_history_month_team', { p_period_ym: _trkTeamMonthlyYm }));
+    const [res, resLb] = await Promise.all([
+      dbQ(d => d.rpc('get_tracking_report_history_month_team', { p_period_ym: _trkTeamMonthlyYm })),
+      dbQ(d => d.rpc('get_leaderboard_monthly', { p_period_ym: _trkTeamMonthlyYm })).catch(() => null)
+    ]);
     rows = (res && res.data) || [];
+    ((resLb && resLb.data) || []).forEach(r => {
+      const target = Number(r.target_amount) || 0, sales = Number(r.total_sales) || 0;
+      _trkTeamMonthlyTargets[r.user_id] = { target, sales, pct: target > 0 ? Math.round((sales / target) * 100) : null };
+    });
   } catch (e) { console.warn('[DHP] get_tracking_report_history_month_team gagal:', e); }
   _trkTeamMonthlyRows = rows;
   trkRenderTeamMonthlyFromCache();
@@ -23922,26 +23940,45 @@ function trkRenderTeamMonthlyDetailTable(byUserArg) {
   // ── Baris Total Bulan Ini — menjumlahkan semua tanggal yang punya data
   //    (Minggu ikut dijumlah kalau memang ada laporan susulan diisi di hari
   //    itu, walau tidak dihitung ke persentase kelengkapan di atas). ──
-  const totalSum = u.dates.reduce((a, r) => {
-    a.masuk += r.total_leads_masuk || 0;
-    a.terlayani += r.total_leads_terlayani || 0;
-    a.fulama += r.total_fu_leads_lama || 0;
-    a.cold += r.total_cold || 0;
-    a.warm += r.total_warm || 0;
-    a.hot += r.total_hot || 0;
-    a.closing += Number(r.total_nominal_closing) || 0;
-    return a;
-  }, { masuk:0, terlayani:0, fulama:0, cold:0, warm:0, hot:0, closing:0 });
+  const totals = trkOwnHistoryTotals(u.dates);
   const totalRowHtml = `<tr class="trk-team-total-row">
     <td colspan="3" style="text-align:right">Total ${escHtml(u.full_name)} — ${roleLabel[u.role] || u.role}</td>
-    <td><b>${totalSum.masuk}</b></td><td><b>${totalSum.terlayani}</b></td><td><b>${totalSum.fulama}</b></td>
-    <td><b>${totalSum.cold}</b></td><td><b>${totalSum.warm}</b></td>
-    <td><b style="color:#e87070">${totalSum.hot}</b></td>
-    <td><b style="color:var(--green)">${crmFmtRupiah(totalSum.closing)}</b></td>
+    <td><b>${totals.leads_masuk}</b></td><td><b>${totals.leads_terlayani}</b></td><td><b>${totals.fu_leads_lama}</b></td>
+    <td><b>${totals.cold}</b></td><td><b>${totals.warm}</b></td>
+    <td><b style="color:#e87070">${totals.hot}</b></td>
+    <td><b style="color:var(--green)">${crmFmtRupiah(totals.nominal_closing)}</b></td>
   </tr>`;
+
+  // ── v85: dashboard vector (target omzet + kepatuhan laporan) — SAMA persis
+  //    dengan yang dilihat staff sendiri di "Riwayat Laporan Saya", sekarang
+  //    juga tampil di sini untuk Moderator MAUPUN Owner. ──
+  const workDates = u.dates.filter(d => !trkIsSunday(d.report_date));
+  const daysComplete = workDates.filter(d => d.siang_filled && d.sore_filled).length;
+  const targetRow = _trkTeamMonthlyTargets[u.user_id] || null;
+  const dashHtml = trkRenderOwnDash(targetRow, { completeCount: daysComplete, workDaysTotal: workDates.length });
+
+  // ── v85: cache untuk export Excel/PDF staff yg sedang dibuka ──
+  _trkTeamMonthlyExport = {
+    ym: _trkTeamMonthlyYm, ymLabel: trkHistYmLabel(_trkTeamMonthlyYm),
+    userName: u.full_name, roleLabel: roleLabel[u.role] || u.role,
+    rows: u.dates, totals, targetRow, completeCount: daysComplete, workDaysTotal: workDates.length
+  };
 
   detEl.innerHTML = `
     <div class="trk-section-title"><span class="st-ico">${TRK_ICO.closing}</span> Detail Harian — ${escHtml(u.full_name)} <span style="font-size:11px;color:var(--muted);font-family:'Inter',sans-serif;font-weight:500">· ${roleLabel[u.role] || u.role}</span></div>
+    <div class="trk-own-dash">${dashHtml}</div>
+    <div class="trk-hist-toolbar" style="justify-content:flex-end">
+      <div class="trk-hist-export-grp" style="margin-left:0">
+        <button class="trk-export-btn xls" id="trk-team-export-xls-btn" onclick="exportTrkTeamStaffExcel()" title="Export riwayat staff ini ke Excel">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M8 10V1M8 1L5 4M8 1l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span>Export Excel</span>
+        </button>
+        <button class="trk-export-btn pdf" id="trk-team-export-pdf-btn" onclick="exportTrkTeamStaffPdf()" title="Export riwayat staff ini ke PDF — siap cetak">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M4 1.5h5.5L13 5v9.5a1 1 0 01-1 1H4a1 1 0 01-1-1v-12a1 1 0 011-1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M9.5 1.5V5H13" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <span>Export PDF</span>
+        </button>
+      </div>
+    </div>
     <div class="tbl-wrap"><div class="tbl-scroll">
       <table class="fu-table"><thead><tr>
         <th>Tanggal</th><th>Siang</th><th>Sore</th>
