@@ -3702,6 +3702,11 @@ body.light .mt-fu-reco-badge.is-overdue{background:rgba(26,86,160,.1);color:#1a5
 .fu-group-header.is-mod .fu-group-title,.fu-group-header.is-mod .fu-group-ico{color:var(--gold)}
 .fu-group-header.is-mod .fu-group-ico{background:rgba(201,169,110,.16)}
 .fu-group-header.is-mod .fu-group-count{background:rgba(201,169,110,.18);color:var(--gold)}
+
+.fu-group-header.is-ads-fresh{background:rgba(232,184,110,.09);border-color:rgba(232,184,110,.3)}
+.fu-group-header.is-ads-fresh .fu-group-title,.fu-group-header.is-ads-fresh .fu-group-ico{color:#e8b86e}
+.fu-group-header.is-ads-fresh .fu-group-ico{background:rgba(232,184,110,.16)}
+.fu-group-header.is-ads-fresh .fu-group-count{background:rgba(232,184,110,.18);color:#e8b86e}
 /* Sistem · Panas/Hangat — merah-jingga hangat */
 .fu-group-header.is-sys-heat{background:rgba(232,112,112,.08);border-color:rgba(232,112,112,.28)}
 .fu-group-header.is-sys-heat .fu-group-title,.fu-group-header.is-sys-heat .fu-group-ico{color:#e87070}
@@ -7377,6 +7382,7 @@ const i18n = {
     followupNoResult:'No results for this search.', followupToday:'Today', followupDaysAgo:'{n} days ago',
     // v51: Follow Up — auto-assign groups (system priority + moderator) & database coverage
     fuGroupModTitle:'From Moderator', fuGroupModSub:'{n} customer sent directly — handle these first',
+    fuGroupAdsFreshTitle:'New Ads Leads — Warm', fuGroupAdsFreshSub:'{n} customer from ads in the last 2 days, already Warm — strike while it\'s hot',
     fuGroupSysHeatTitle:'System Priority — Hot & Warm', fuGroupSysHeatSub:'Top {n} highest-potential customers, picked automatically',
     fuGroupSysOverdueTitle:'Not Followed Up in 7+ Days', fuGroupSysOverdueSub:'{n} long-untouched customers, oldest first',
     fuGroupRestTitle:'Others', fuGroupRestSub:'{n} more customers in your list',
@@ -7638,6 +7644,7 @@ const i18n = {
     followupNoResult:'Tidak ada hasil untuk pencarian ini.', followupToday:'Hari ini', followupDaysAgo:'{n} hari lalu',
     // v51: Follow Up — grup auto-assign (prioritas sistem + moderator) & cakupan database
     fuGroupModTitle:'Dari Moderator', fuGroupModSub:'{n} customer dikirim langsung — wajib didahulukan',
+    fuGroupAdsFreshTitle:'Leads Baru dari Iklan — Hangat', fuGroupAdsFreshSub:'{n} customer dari iklan 2 hari terakhir yang sudah Hangat — sikat selagi masih hangat',
     fuGroupSysHeatTitle:'Prioritas Sistem — Panas & Hangat', fuGroupSysHeatSub:'Top {n} customer paling berpotensi closing, dipilih otomatis',
     fuGroupSysOverdueTitle:'Belum Follow Up 7+ Hari', fuGroupSysOverdueSub:'{n} customer lama tak tersentuh, paling lama duluan',
     fuGroupRestTitle:'Lainnya', fuGroupRestSub:'{n} customer lain di daftar kamu',
@@ -15244,8 +15251,22 @@ function initMiscRealtime() {
           safe(() => loadAllRoleDashboard().catch(() => {}));
         }
         // ring/progress follow up harian milik user yang sedang login sendiri
+        // v87-FIX: sebelumnya cuma refresh Set-nya (loadFollowupLogsToday) tanpa
+        // render ulang, jadi ring 0/50 kelihatan "stuck" sampai pindah halaman /
+        // reload manual — walau datanya di DB sudah benar ke-update. Sekarang
+        // langsung render ulang halaman yang lagi aktif begitu Set-nya selesai
+        // di-refresh, sama seperti yang dilakukan _confirmFollowup() lokal.
         if (row && currentUser && row.user_id === currentUser.id) {
-          safe(() => loadFollowupLogsToday());
+          safe(() => {
+            loadFollowupLogsToday().then(() => {
+              if (document.getElementById('pg-followup')?.classList.contains('active')) {
+                renderFollowupPage().catch(() => {});
+              }
+              if (document.getElementById('pg-crm')?.classList.contains('active')) {
+                renderCRM();
+              }
+            });
+          });
         }
       })
       .subscribe();
@@ -18030,7 +18051,17 @@ async function _confirmFollowup(key, response) {
       // belum ditangani, bukan riwayat permanen siapa yang mengirim dulu.
       if (c.fu_flag) upd.fu_flag = false;
       await dbQ(d => d.from('crm_customers').update(upd).eq('id', c._uuid));
-    } catch(e) { console.warn('[DHP] markFollowedUp gagal:', e); }
+    } catch(e) {
+      // v87-FIX: sebelumnya kegagalan di sini cuma di-console.warn, tapi
+      // toast "sudah di-follow up" tetap muncul & ring dianggap +1 di memori
+      // — begitu halaman render ulang & ambil ulang data ASLI dari server
+      // (yang sebenarnya gagal tersimpan), progress balik ke semula alias
+      // kelihatan "stuck". Sekarang kegagalan beneran dikasih tau & progress
+      // TIDAK ditambah secara optimis, supaya ring selalu jujur sesuai DB.
+      console.warn('[DHP] markFollowedUp gagal:', e);
+      toast(`Gagal menyimpan follow-up ${c.nama || 'customer ini'} — coba lagi (${e?.message || 'error tidak diketahui'})`);
+      return;
+    }
   } else {
     // Mode offline — simpan progress harian di localStorage
     try {
@@ -24522,6 +24553,28 @@ function fuHeatOf(c) { return c.heat_category || crmComputeHeat(crmParseInt(c.to
    cepat atau lambat — tidak ada yang tertinggal selamanya. ═══════════════ */
 const FU_SYS_TOTAL_CAP = 50; // batas TOTAL otomatis dari sistem per hari (Panas+Hangat+7 hari digabung)
 const FU_OVERDUE_DAYS  = 7;
+// v87: leads dari iklan yang masuk 2 hari terakhir (kemarin/hari ini) & sudah
+// Hangat — ini paling "panas momentumnya", jadi didahulukan bahkan di atas
+// kuota sistem biasa, TIDAK dibatasi jumlah (sama seperti grup Moderator).
+const FU_ADS_FRESH_DAYS = 2;
+// v87: dari kuota 50/hari itu, minimal segini WAJIB diisi dari yang paling
+// lama tak disentuh (7+ hari) — supaya kalau leads iklan baru terus deras
+// masuk tiap hari, customer LAMA tetap kebagian giliran & tidak tertinggal
+// selamanya. Ini yang bikin "semua database akhirnya ke-follow up semua".
+const FU_OVERDUE_RESERVE = 15;
+
+// Berapa hari sejak customer ini MASUK ke database (dari created_at).
+function _fuDaysSinceCreated(c) {
+  if (!c || !c.created_at) return Infinity;
+  const then = new Date(c.created_at);
+  if (isNaN(then.getTime())) return Infinity;
+  return Math.max(0, Math.floor((Date.now() - then.getTime()) / 86400000));
+}
+// Leads segar dari iklan (bukan input manual) yang baru masuk 2 hari
+// terakhir dan sudah naik status Hangat — target paling empuk buat closing.
+function _fuIsFreshAdsWarm(c) {
+  return !!c.channel_is_ads && fuHeatOf(c) === 'Warm' && _fuDaysSinceCreated(c) <= FU_ADS_FRESH_DAYS;
+}
 
 let _fuGroupMap = new Map();   // key customer → 'mod' | 'sysHeat' | 'sysOverdue' | 'rest' | 'done'
 let _fuGroupCounts = { mod:0, sysHeat:0, sysOverdue:0, rest:0, done:0 };
@@ -24549,41 +24602,71 @@ function fuBuildOrder() {
   const modFlagged = pending.filter(c => c.fu_flag);
   const afterMod    = pending.filter(c => !c.fu_flag);
 
+  // 1b) v87 — LEADS BARU DARI IKLAN, SUDAH HANGAT: momentumnya lagi
+  //     paling tinggi (baru masuk 2 hari terakhir), jadi didahulukan
+  //     di atas kuota sistem biasa, TIDAK dibatasi jumlah (sama seperti
+  //     grup Moderator). Diurutkan yang paling baru masuk duluan.
+  const adsFresh   = afterMod
+    .filter(c => _fuIsFreshAdsWarm(c))
+    .sort((a,b) => _fuDaysSinceCreated(a) - _fuDaysSinceCreated(b));
+  const afterAdsFresh = afterMod.filter(c => !_fuIsFreshAdsWarm(c));
+
   // 2) DARI SISTEM — satu kuota gabungan, maks 50 total: Panas dulu, lalu
   //    Hangat, lalu belum di-follow up 7+ hari, di tiap tingkat diurutkan
   //    paling lama tak disentuh duluan. Sub-judul (Panas/Hangat vs 7+ Hari)
   //    cuma buat tampilan — kuotanya tetap satu, jadi total selalu ≤ 50.
-  const sysPool = afterMod
-    .filter(c => _fuSysRank(c) <= 2)
-    .sort((a,b) => _fuSysRank(a) - _fuSysRank(b) || _fuOverdueRank(b) - _fuOverdueRank(a))
-    .slice(0, FU_SYS_TOTAL_CAP);
-  const sysHeat    = sysPool.filter(c => _fuSysRank(c) <= 1);   // Panas/Hangat
-  const sysOverdue = sysPool.filter(c => _fuSysRank(c) === 2);  // belum 7+ hari (di luar Panas/Hangat)
-  const sysIds = new Set(sysPool.map(_followupCustKey));
+  //
+  //    v87: supaya leads iklan baru yang deras tiap hari tidak "menelan"
+  //    seluruh kuota 50 dan bikin customer lama (7+ hari) tak pernah
+  //    kebagian giliran, sekarang minimal FU_OVERDUE_RESERVE slot WAJIB
+  //    diisi dari yang paling lama tak disentuh dulu, baru sisanya diisi
+  //    Panas/Hangat → dan kalau masih ada sisa kuota, ditambah lagi dari
+  //    overdue. Hasilnya: seluruh isi database tetap bergilir naik ke
+  //    depan cepat atau lambat, tidak ada yang tertinggal selamanya.
+  const heatPool    = afterAdsFresh
+    .filter(c => _fuSysRank(c) <= 1)
+    .sort((a,b) => _fuSysRank(a) - _fuSysRank(b) || _fuOverdueRank(b) - _fuOverdueRank(a));
+  const overduePool = afterAdsFresh
+    .filter(c => _fuSysRank(c) === 2)
+    .sort((a,b) => _fuOverdueRank(b) - _fuOverdueRank(a));
+
+  const reserveN       = Math.min(FU_OVERDUE_RESERVE, overduePool.length);
+  const overdueReserved = overduePool.slice(0, reserveN);
+  const overdueLeftover = overduePool.slice(reserveN);
+  const heatCap    = Math.max(0, FU_SYS_TOTAL_CAP - overdueReserved.length);
+  const heatTaken  = heatPool.slice(0, heatCap);
+  const extraCap   = Math.max(0, heatCap - heatTaken.length);
+  const overdueExtra = overdueLeftover.slice(0, extraCap);
+
+  const sysHeat    = heatTaken;
+  const sysOverdue = [...overdueReserved, ...overdueExtra].sort((a,b) => _fuOverdueRank(b) - _fuOverdueRank(a));
+  const sysIds     = new Set([...sysHeat, ...sysOverdue].map(_followupCustKey));
 
   // 3) LAINNYA — TIDAK auto ditampilkan (nunggu dikirim Moderator), tapi
   //    tetap disimpan di _fuOrder supaya masih bisa ditemukan lewat kotak
   //    pencarian & supaya markFollowedUp(idx) tetap bisa menemukan index-nya.
-  const rest = afterMod.filter(c => !sysIds.has(_followupCustKey(c)));
+  const rest = afterAdsFresh.filter(c => !sysIds.has(_followupCustKey(c)));
 
   _fuGroupMap = new Map();
   modFlagged.forEach(c  => _fuGroupMap.set(_followupCustKey(c), 'mod'));
+  adsFresh.forEach(c    => _fuGroupMap.set(_followupCustKey(c), 'adsFresh'));
   sysHeat.forEach(c     => _fuGroupMap.set(_followupCustKey(c), 'sysHeat'));
   sysOverdue.forEach(c  => _fuGroupMap.set(_followupCustKey(c), 'sysOverdue'));
   rest.forEach(c        => _fuGroupMap.set(_followupCustKey(c), 'rest'));
   done.forEach(c        => _fuGroupMap.set(_followupCustKey(c), 'done'));
-  _fuGroupCounts = { mod:modFlagged.length, sysHeat:sysHeat.length, sysOverdue:sysOverdue.length, rest:rest.length, done:done.length };
+  _fuGroupCounts = { mod:modFlagged.length, adsFresh:adsFresh.length, sysHeat:sysHeat.length, sysOverdue:sysOverdue.length, rest:rest.length, done:done.length };
 
-  _fuOrder = [...modFlagged, ...sysHeat, ...sysOverdue, ...rest, ...done];
+  _fuOrder = [...modFlagged, ...adsFresh, ...sysHeat, ...sysOverdue, ...rest, ...done];
   return _fuGroupCounts;
 }
 
 // Ikon vektor + judul elegan per kelompok — dipakai buat baris judul section
 // di tabel, supaya "Dari Moderator" vs "Dari Sistem" langsung kelihatan beda.
 const FU_GROUP_META = {
-  mod:        { cls:'is-mod',         ico:'crown', titleKey:'fuGroupModTitle',        subKey:'fuGroupModSub' },
-  sysHeat:    { cls:'is-sys-heat',    ico:'flame', titleKey:'fuGroupSysHeatTitle',    subKey:'fuGroupSysHeatSub' },
-  sysOverdue: { cls:'is-sys-overdue', ico:'clock', titleKey:'fuGroupSysOverdueTitle', subKey:'fuGroupSysOverdueSub' },
+  mod:        { cls:'is-mod',         ico:'crown',  titleKey:'fuGroupModTitle',        subKey:'fuGroupModSub' },
+  adsFresh:   { cls:'is-ads-fresh',   ico:'target', titleKey:'fuGroupAdsFreshTitle',   subKey:'fuGroupAdsFreshSub' },
+  sysHeat:    { cls:'is-sys-heat',    ico:'flame',  titleKey:'fuGroupSysHeatTitle',    subKey:'fuGroupSysHeatSub' },
+  sysOverdue: { cls:'is-sys-overdue', ico:'clock',  titleKey:'fuGroupSysOverdueTitle', subKey:'fuGroupSysOverdueSub' },
   rest:       { cls:'is-rest',        ico:'layers', titleKey:'fuGroupRestTitle',       subKey:'fuGroupRestSub' },
   done:       { cls:'is-done',        ico:null,     titleKey:'fuGroupDoneTitle',       subKey:'fuGroupDoneSub' }
 };
@@ -24624,6 +24707,8 @@ function fuRowHtml(c) {
     const when = c.fu_assigned_at ? timeAgo(new Date(c.fu_assigned_at).getTime()) : '';
     const tip = `Dikirim oleh ${escHtml(am.name)}${when?' · '+when:''}${c.fu_note?' — "'+escHtml(c.fu_note)+'"':''}`;
     rowBadge = `<span class="mt-fu-reco-badge is-mod-flag" title="${tip}">${crmIco('sparkle')} Moderator</span>`;
+  } else if (!doneToday && group === 'adsFresh') {
+    rowBadge = `<span class="mt-fu-reco-badge is-warm" title="Leads baru dari iklan (masuk ${FU_ADS_FRESH_DAYS} hari terakhir), sudah Hangat">${crmIco('target')} Leads Baru</span>`;
   } else if (!doneToday && group === 'sysHeat') {
     rowBadge = `<span class="mt-fu-reco-badge ${heat==='Hot'?'is-hot':'is-warm'}" title="Dipilih otomatis oleh sistem">${crmIco(heat==='Hot'?'flame':'sun')} Sistem</span>`;
   } else if (!doneToday && group === 'sysOverdue') {
@@ -24671,7 +24756,7 @@ function fuBodyHtml() {
   // v51: "Lainnya" (rest) SENGAJA tidak ikut ditampilkan di sini — fokus
   // hari ini cukup Dari Moderator + kuota 50 dari Sistem. Sisanya menunggu
   // dikirim manual oleh Moderator (masih bisa ditemukan lewat pencarian).
-  const groupsInOrder = ['mod','sysHeat','sysOverdue','done'];
+  const groupsInOrder = ['mod','adsFresh','sysHeat','sysOverdue','done'];
   let html = '';
   groupsInOrder.forEach(g => {
     const items = _fuOrder.filter(c => _fuGroupMap.get(_followupCustKey(c)) === g);
