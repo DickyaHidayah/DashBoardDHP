@@ -4374,6 +4374,8 @@ body.light .ktr-bar{background:rgba(0,0,0,.06)}
 .lb-pod-card.r1 .lb-pod-rank{border-color:var(--gold-hi);background:var(--gold-hi);color:#0a0906}
 .lb-pod-name{margin-top:14px;font-size:13px;font-weight:700;color:var(--text);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .lb-pod-role{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-top:1px}
+.lb-pod-role-host{display:inline-flex;align-items:center;gap:3px;color:#e87070}
+.lb-pod-role-host svg{width:9px;height:9px;flex-shrink:0}
 .lb-pod-sales{margin-top:8px;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:19px;color:var(--gold-hi);font-variant-numeric:tabular-nums}
 .lb-pod-card.r1 .lb-pod-sales{font-size:23px}
 .lb-pod-sub{font-size:9.5px;color:var(--muted);margin-top:1px}
@@ -4407,6 +4409,8 @@ body.light .ktr-bar{background:rgba(0,0,0,.06)}
 .lb-diagram-sub{font-size:10.5px;color:var(--muted);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
 .lb-dbar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .lb-dbar-name{width:84px;flex-shrink:0;font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-dbar-host-ico{display:inline-flex;vertical-align:middle;margin-right:3px;color:#e87070}
+.lb-dbar-host-ico svg{width:9px;height:9px}
 .lb-dbar-track{flex:1;height:16px;background:var(--bg3);border-radius:8px;overflow:hidden;position:relative}
 .lb-dbar-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--gold-lo),var(--gold) 55%,var(--gold-hi));width:0;transition:width 1s cubic-bezier(.2,.8,.2,1)}
 .lb-dbar-fill.me{background:linear-gradient(90deg,#5b8fae,var(--blue) 55%,#9bc4dd)}
@@ -4447,6 +4451,11 @@ body.light .ktr-bar{background:rgba(0,0,0,.06)}
 .lb-badge-over,.lb-badge-close{font-size:8.5px;font-weight:800;letter-spacing:.03em;border-radius:6px;padding:2px 6px;white-space:nowrap}
 .lb-badge-over{color:var(--green);background:rgba(122,191,142,.14);border:1px solid rgba(122,191,142,.35)}
 .lb-badge-close{color:var(--amber);background:rgba(232,184,110,.14);border:1px solid rgba(232,184,110,.35)}
+/* v87 — badge Host Live di baris leaderboard (pakai warna role host_live) */
+.lb-badge-host{display:inline-flex;align-items:center;gap:3px;font-size:8.5px;font-weight:800;letter-spacing:.03em;
+  border-radius:6px;padding:2px 6px;white-space:nowrap;vertical-align:middle;
+  color:#e87070;background:rgba(232,112,112,.14);border:1px solid rgba(232,112,112,.35)}
+.lb-badge-host svg{width:9px;height:9px;flex-shrink:0}
 .lb-target-edit-btn{margin-top:8px;font-size:9.5px;font-weight:700;color:var(--gold-hi);background:var(--bg3);border:1px solid var(--border-hi);border-radius:8px;padding:4px 9px;cursor:pointer;white-space:nowrap;transition:background var(--trans),transform var(--trans)}
 .lb-target-edit-btn:hover{background:var(--surface2);transform:translateY(-1px)}
 
@@ -8383,7 +8392,7 @@ async function initDashboard() {
   navShow('ns-cs-tools',      can.canFollowup(r) || isMod || isOwner);   // v53: Section label "Tools" — kini juga muncul utk B2B Marketing (tetap ada utk Mod/Owner krn masih ada Tracking Report & Leaderboard)
   navShow('n-followup',       can.canFollowup(r));   // v63: Follow Up dihapus dari Owner & Moderator — khusus cs_hunter + b2b_marketing + admin (dulu ada || isMod || isOwner)
   navShow('n-tracking-report', can.canTrackingReport(r) || isMod || isOwner); // v47: Tracking Report — laporan jam 12:00 & 17:00 (cs_hunter + b2b_marketing + admin, + rekap tim utk Mod/Owner)
-  navShow('n-leaderboard',    can.canFollowup(r) || isMod || isOwner); // Leaderboard bulanan — cs_hunter + b2b_marketing + admin, + Mod/Owner lihat semua
+  navShow('n-leaderboard',    true); // v87: Leaderboard sekarang bisa dilihat SEMUA role (termasuk Host Live, Content Creator, dll) — bukan cuma cs_hunter/admin/b2b/Mod/Owner
   // v56: Bantuan — FAQ & Quick Reply (cs_hunter + b2b_marketing + admin lihat, Mod/Owner lihat semua; isi hanya editable Moderator)
   navShow('ns-help',          can.canFaqQuickReply(r) || isMod || isOwner);
   navShow('n-faq',            can.canFaqQuickReply(r) || isMod || isOwner);
@@ -8542,7 +8551,7 @@ async function initDashboard() {
   // Leaderboard — subscribe realtime langsung setelah login, pola sama seperti
   // Tracking Report: begitu ada tracking_reports/crm_customers/ad_tasks berubah,
   // papan peringkat ikut ter-refresh tanpa perlu klik Muat Ulang.
-  if (can.canFollowup(r) || isMod || isOwner) { try { initLeaderboardRealtime(); } catch (e) { console.warn('[DHP] initLeaderboardRealtime gagal:', e); } }
+  if (true) { try { initLeaderboardRealtime(); } catch (e) { console.warn('[DHP] initLeaderboardRealtime gagal:', e); } } // v87: semua role bisa buka Leaderboard, jadi realtime-nya juga di-init utk semua
 
   try { renderStats(); renderActivity(); }
   catch (e) { console.warn('[DHP] render awal gagal:', e); }
@@ -22373,7 +22382,7 @@ function navTo(page, btn) {
   if (page === 'tracking_report' && !can.canTrackingReport(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Admin / B2B Marketing / Moderator access required'); return; }
   if (page === 'faq'            && !can.canFaqQuickReply(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Admin / B2B Marketing / Moderator access required'); return; }
   if (page === 'quick_reply'    && !can.canFaqQuickReply(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Admin / B2B Marketing / Moderator access required'); return; }
-  if (page === 'leaderboard'    && !can.canFollowup(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Admin / B2B Marketing / Moderator access required'); return; }
+  // v87: Leaderboard sekarang terbuka untuk SEMUA role yang login (termasuk Host Live) — gerbang role lama dihapus.
   if (page === 'crm_unreach'    && !can.isMod(r)) { toast('Moderator access required'); return; } // v70: khusus moderator, bukan Owner
 
   document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
@@ -26589,6 +26598,9 @@ const LB_ICO = {
   // Ngisi Laporan Terbanyak" (pengganti "Iklan Paling Aktif"), gaya sama
   // persis dgn ikon LB_ICO lain (viewBox 16x16, stroke currentColor).
   clipboardAlert: '<svg viewBox="0 0 16 16" fill="none"><rect x="3.4" y="2.6" width="9.2" height="11.6" rx="1.4" stroke="currentColor" stroke-width="1.25"/><path d="M6 2.9V2.4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M8 6.2v3.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.3" r=".9" fill="currentColor"/></svg>',
+  // v87: kamera/live-stream — badge khusus baris Host Live di Leaderboard,
+  // gaya sama persis (viewBox 16x16, garis tipis, currentColor).
+  camera: '<svg viewBox="0 0 16 16" fill="none"><rect x="1.6" y="4.2" width="8.8" height="7.6" rx="1.3" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M10.4 6.6l3.2-1.9a.6.6 0 0 1 .9.5v5.6a.6.6 0 0 1-.9.5l-3.2-1.9" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><circle cx="4.2" cy="6.6" r=".6" fill="currentColor"/></svg>',
 };
 let lbChannel = null;
 let lbCurrentYm = null;
@@ -26646,9 +26658,20 @@ function lbPeriodChange(ym) {
    Bulanan Tim), supaya chip "Belum Ngisi Laporan Terbanyak" bisa dihitung
    — 2 RPC dipanggil paralel, tidak saling menunggu. */
 async function lbFetchData(ym) {
-  const [res, resTrk] = await Promise.all([
+  const isCurrentMonth = ym === lbYmNow();
+  const { start, end } = lbMonthBounds(ym);
+  const [res, resTrk, resHostTarget, resHostSessions] = await Promise.all([
     dbQ(d => d.rpc('get_leaderboard_monthly', { p_period_ym: ym })),
-    dbQ(d => d.rpc('get_tracking_report_history_month_team', { p_period_ym: ym })).catch(() => null)
+    dbQ(d => d.rpc('get_tracking_report_history_month_team', { p_period_ym: ym })).catch(() => null),
+    // v87: target omzet Host Live bulan berjalan — pakai view yang sama
+    // dipakai halaman "Atur Target" moderator (v_host_target_progress).
+    // View ini tidak punya parameter periode, jadi cuma valid utk bulan
+    // BERJALAN — utk bulan lampau, target/omzet host ditampilkan '—'.
+    (isCurrentMonth && db) ? dbQ(d => d.from('v_host_target_progress').select('*')).catch(() => null) : Promise.resolve(null),
+    // v87: jumlah sesi live (terjadwal vs selesai) bulan yg dipilih — ini
+    // JALAN utk semua bulan karena difilter dari tanggal, bukan view.
+    db ? dbQ(d => d.from('live_schedule').select('host_user_id,status')
+      .gte('schedule_date', start).lte('schedule_date', end)).catch(() => null) : Promise.resolve(null),
   ]);
 
   if (!res || res.error) {
@@ -26678,26 +26701,62 @@ async function lbFetchData(ym) {
     missingReports: statsByUser[r.user_id]?.missingCount ?? 0,
     workDays: statsByUser[r.user_id]?.daysTotal ?? 0,
   }));
+
+  // v87 — HOST LIVE: gabungkan ke leaderboard yang sama (bukan papan
+  // terpisah), tapi kontennya beda — bukan follow up/CRM/iklan, melainkan
+  // target omzet live & jumlah sesi live selesai bulan ini.
+  const sessionsByHost = {};
+  ((resHostSessions && resHostSessions.data) || []).forEach(row => {
+    const h = row.host_user_id; if (!h) return;
+    if (!sessionsByHost[h]) sessionsByHost[h] = { total: 0, done: 0 };
+    sessionsByHost[h].total++;
+    if (row.status === 'completed') sessionsByHost[h].done++;
+  });
+  const hostTargetById = {};
+  ((resHostTarget && resHostTarget.data) || []).forEach(row => { hostTargetById[row.host_user_id] = row; });
+
+  const hostIds = new Set([...Object.keys(sessionsByHost), ...Object.keys(hostTargetById)]);
+  const hostRows = [...hostIds].map(id => {
+    const meta = getUserMeta(id);
+    const tgt = hostTargetById[id] || {};
+    const sess = sessionsByHost[id] || { total: 0, done: 0 };
+    return {
+      id, name: meta.name, role: 'host_live', isHostLive: true,
+      sales: Number(tgt.achieved_amount) || 0,
+      target: Number(tgt.target_amount) || 0,
+      sessionsTotal: sess.total, sessionsDone: sess.done,
+      followup: 0, hot: 0, warm: 0, cold: 0, crmTotal: 0, adsTotal: 0, adsDone: 0,
+      missingReports: 0, workDays: 0,
+    };
+  }).filter(r => LOCAL_USERS[r.id] && LOCAL_USERS[r.id].role === 'host_live'); // buang id nyasar (akun dihapus, dsb) — cuma host_live asli yang tampil
+
+  const allRows = rows.concat(hostRows);
+
   // v70: peringkat sekarang berdasar PERSENTASE pencapaian terhadap target
   // masing-masing orang (bukan nominal mentah) — siapa yang paling dekat/
   // sudah melewati target sendiri, itu yang naik ke atas. Orang yang belum
   // punya target diatur (target = 0) selalu ditaruh di bawah orang yang
   // sudah punya target, diurutkan berdasar nominal sebagai fallback.
-  rows.forEach(r => { r.pct = r.target > 0 ? (r.sales / r.target) : null; });
-  rows.sort((a, b) => {
+  allRows.forEach(r => { r.pct = r.target > 0 ? (r.sales / r.target) : null; });
+  allRows.sort((a, b) => {
     const ap = a.pct == null ? -1 : a.pct;
     const bp = b.pct == null ? -1 : b.pct;
     if (bp !== ap) return bp - ap;
     return b.sales - a.sales || b.hot - a.hot || b.followup - a.followup;
   });
-  rows.forEach((r, i) => { r.rank = i + 1; });
+  allRows.forEach((r, i) => { r.rank = i + 1; });
 
-  return { rows, generatedAt: new Date(), rpcMissing: false };
+  return { rows: allRows, generatedAt: new Date(), rpcMissing: false };
 }
 
 function lbComputeAchievements(rows) {
   if (!rows.length) return null;
-  const pick = (key) => rows.reduce((best, r) => (r[key] > (best?.[key] ?? -1) ? r : best), null);
+  // v87: chip follow up / hot leads / CRM / kepatuhan laporan itu metrik
+  // khusus CS Hunter–Admin–B2B, jadi baris Host Live dikeluarkan dari sini
+  // (host punya chip sendiri di bawah). Chip "Paling Dekat Target" tetap
+  // memakai SEMUA baris, termasuk host — karena itu metrik lintas role.
+  const csRows = rows.filter(r => !r.isHostLive);
+  const pick = (key) => csRows.reduce((best, r) => (r[key] > (best?.[key] ?? -1) ? r : best), null);
   // v70: "Top Sales" jadi "Paling Dekat Target" — orang dengan persentase
   // capaian tertinggi (butuh target diatur & ada penjualan), bukan lagi
   // sekadar nominal terbesar.
@@ -26713,7 +26772,13 @@ function lbComputeAchievements(rows) {
   // dengan jumlah laporan Tracking Report (Siang+Sore, Minggu tidak dihitung)
   // yang paling banyak BELUM diisi bulan ini, supaya kepatuhan lapor kelihatan
   // jelas di leaderboard, bukan cuma di menu Tracking Report.
-  const worst = rows.reduce((best, r) => (r.missingReports > (best?.missingReports ?? -1) ? r : best), null);
+  const worst = csRows.reduce((best, r) => (r.missingReports > (best?.missingReports ?? -1) ? r : best), null);
+  // v87: chip khusus Host Live — host dengan sesi live SELESAI terbanyak
+  // bulan ini. Kalau belum ada host sama sekali, chip-nya tidak ditampilkan.
+  const hostRows = rows.filter(r => r.isHostLive);
+  const topHost = hostRows.length
+    ? hostRows.reduce((best, r) => (r.sessionsDone > (best?.sessionsDone ?? -1) ? r : best), null)
+    : null;
   return {
     topPct: topPct && topPct.pct > 0 ? topPct : null,
     topSales,
@@ -26721,6 +26786,8 @@ function lbComputeAchievements(rows) {
     topHot: hot && hot.hot > 0 ? hot : null,
     topCrm: crm && crm.crmTotal > 0 ? crm : null,
     leastCompliant: worst && worst.missingReports > 0 ? worst : null,
+    topHostLive: topHost && topHost.sessionsDone > 0 ? topHost : null,
+    _hasHost: hostRows.length > 0,
   };
 }
 
@@ -26805,14 +26872,14 @@ function lbPodiumHtml(top3) {
         ${rank === 1 ? `<div class="lb-pod-crown">${LB_ICO.crown}</div>` : ''}
         <div class="lb-pod-avatar">${lbInitials(u.name)}<span class="lb-pod-rank">${rank}</span></div>
         <div class="lb-pod-name">${escHtml(u.name)}</div>
-        <div class="lb-pod-role">${escHtml(rn(roleFromDb(u.role)))}</div>
+        <div class="lb-pod-role">${u.isHostLive ? `<span class="lb-pod-role-host">${LB_ICO.camera} ${escHtml(rn('host_live'))}</span>` : escHtml(rn(roleFromDb(u.role)))}</div>
         ${hasTarget
           ? `<div class="lb-pod-sales lb-countup" data-target="${pctShown}" data-fmt="pct">0%</div>
              <div class="lb-pod-target-track"><div class="lb-pod-target-fill${pctShown>=100?' over':''}" style="width:${Math.min(100,pctShown)}%"></div></div>
              <div class="lb-pod-sub">${crmFmtRupiah(u.sales)} dari ${crmFmtRupiah(u.target)}</div>`
           : `<div class="lb-pod-sales lb-countup" data-target="${u.sales}" data-fmt="rupiah">${crmFmtRupiah(0)}</div>
              <div class="lb-pod-sub">Target belum diatur</div>`}
-        <div class="lb-pod-sub" style="margin-top:2px">${u.followup} follow up · ${u.hot} hot leads</div>
+        <div class="lb-pod-sub" style="margin-top:2px">${u.isHostLive ? `${u.sessionsDone}/${u.sessionsTotal} sesi live selesai` : `${u.followup} follow up · ${u.hot} hot leads`}</div>
         <div class="lb-pod-bar"></div>
       </div>`;
   });
@@ -26831,6 +26898,13 @@ function lbAchievementsHtml(ach) {
       val: (u) => `${u.missingReports} laporan belum diisi${u.workDays ? ` dari ${u.workDays} hari kerja` : ''}`,
       emptyMsg: '🎉 Semua staff lapor lengkap' },
   ];
+  // v87: chip Host Live cuma muncul kalau ada host yang terdata bulan ini,
+  // supaya tidak jadi chip kosong permanen di tim yang belum punya host.
+  if (ach._hasHost) {
+    chips.push({ key: 'topHostLive', icon: LB_ICO.camera, color: '#e87070', lbl: 'Host Live Terajin',
+      val: (u) => `${u.sessionsDone} sesi live selesai${u.sessionsTotal ? ` dari ${u.sessionsTotal} terjadwal` : ''}`,
+      emptyMsg: 'Belum ada sesi live selesai' });
+  }
   let html = '<div class="lb-ach-row">';
   chips.forEach(c => {
     const u = ach[c.key];
@@ -26865,7 +26939,7 @@ function lbDiagramHtml(rows) {
     const over = pctVal >= 100;
     return `
       <div class="lb-dbar-row">
-        <div class="lb-dbar-name" title="${escHtml(u.name)}">${escHtml(u.name)}</div>
+        <div class="lb-dbar-name" title="${escHtml(u.name)}${u.isHostLive ? ' — Host Live' : ''}">${u.isHostLive ? `<span class="lb-dbar-host-ico" title="Host Live">${LB_ICO.camera}</span>` : ''}${escHtml(u.name)}</div>
         <div class="lb-dbar-track"><div class="lb-dbar-fill ${u.id === meId ? 'me' : ''}${over ? ' over' : ''}" data-pct="${barPct}" style="width:0"></div></div>
         <div class="lb-dbar-val">${hasTarget ? pctVal + '%' : '—'}</div>
       </div>`;
@@ -26873,7 +26947,7 @@ function lbDiagramHtml(rows) {
   return `
     <div class="lb-diagram">
       <div class="lb-diagram-title"><span class="lb-icotxt">${LB_ICO.barChart}</span> Diagram Perbandingan Persentase Target</div>
-      <div class="lb-diagram-sub">Persentase pencapaian terhadap target masing-masing, bulan ${lbYmLabel(lbCurrentYm)} — seluruh tim CS Hunter, Admin &amp; B2B Marketing</div>
+      <div class="lb-diagram-sub">Persentase pencapaian terhadap target masing-masing, bulan ${lbYmLabel(lbCurrentYm)} — seluruh tim CS Hunter, Admin, B2B Marketing &amp; Host Live</div>
       ${bars}
     </div>`;
 }
@@ -26881,7 +26955,7 @@ function lbDiagramHtml(rows) {
 function lbListHtml(rest, startRank, meId, totalCount) {
   if (!rest.length) {
     if (totalCount > 0) return '';
-    return `<div class="lb-empty-state">Belum ada anggota tim CS Hunter / Admin / B2B Marketing yang aktif.</div>`;
+    return `<div class="lb-empty-state">Belum ada anggota tim CS Hunter / Admin / B2B Marketing / Host Live yang aktif.</div>`;
   }
   const isModView = can.isMod(currentUser?.role);
   const rowsHtml = rest.map((u, i) => {
@@ -26904,8 +26978,12 @@ function lbListHtml(rest, startRank, meId, totalCount) {
         <div class="lb-row-rank">#${rank}</div>
         <div class="lb-row-avatar" style="background:${ROLE_COLORS[roleFromDb(u.role)] || 'var(--gold)'}">${lbInitials(u.name)}</div>
         <div class="lb-row-mid">
-          <div class="lb-row-name">${escHtml(u.name)} ${isMe ? '<span class="you-tag">KAMU</span>' : ''}${over ? '<span class="lb-badge-over">🏁 Target Tercapai</span>' : ''}${closeToTarget ? '<span class="lb-badge-close">🔥 Hampir Capai Target</span>' : ''}</div>
+          <div class="lb-row-name">${escHtml(u.name)} ${isMe ? '<span class="you-tag">KAMU</span>' : ''}${u.isHostLive ? `<span class="lb-badge-host">${LB_ICO.camera} Host Live</span>` : ''}${over ? '<span class="lb-badge-over">🏁 Target Tercapai</span>' : ''}${closeToTarget ? '<span class="lb-badge-close">🔥 Hampir Capai Target</span>' : ''}</div>
           ${hasTarget ? `<div class="lb-row-target-track"><div class="lb-row-target-fill${over ? ' over' : ''}" style="width:${Math.min(100,pctVal)}%"></div></div>` : ''}
+          ${u.isHostLive ? `
+          <div class="lb-row-metrics">
+            <div class="lb-metric"><span class="lb-metric-lbl">Sesi Live</span><span class="lb-metric-val">${u.sessionsDone}/${u.sessionsTotal}</span></div>
+          </div>` : `
           <div class="lb-row-metrics">
             <div class="lb-metric"><span class="lb-metric-lbl">Follow Up</span><span class="lb-metric-val">${u.followup}</span></div>
             <div class="lb-metric"><span class="lb-metric-lbl">CRM</span><span class="lb-metric-val">${u.crmTotal}</span></div>
@@ -26916,14 +26994,14 @@ function lbListHtml(rest, startRank, meId, totalCount) {
                 <span style="width:${hotPct}%;background:var(--green)"></span><span style="width:${warmPct}%;background:var(--amber)"></span><span style="width:${coldPct}%;background:var(--red)"></span>
               </div>
             </div>
-          </div>
+          </div>`}
         </div>
         <div class="lb-row-right">
           ${hasTarget
             ? `<div class="lb-row-sales lb-countup${over ? ' over' : ''}" data-target="${pctVal}" data-fmt="pct">0%</div>
                <div class="lb-row-sales-lbl">${crmFmtRupiah(u.sales)} / ${crmFmtRupiah(u.target)}</div>`
             : `<div class="lb-row-sales">—</div>
-               <div class="lb-row-sales-lbl">Target belum diatur · ${crmFmtRupiah(u.sales)}</div>`}
+               <div class="lb-row-sales-lbl">${u.isHostLive && u.target === 0 ? 'Target belum diatur (Moderator → Atur Target)' : 'Target belum diatur'} · ${crmFmtRupiah(u.sales)}</div>`}
           ${isModView ? `<button type="button" class="lb-target-edit-btn" onclick="event.stopPropagation();lbOpenTargetModal('${u.id}','${u.role}','${escHtml(u.name).replace(/'/g,"\\'")}',${u.target})">🎯 Atur Target</button>` : ''}
         </div>
       </div>`;
@@ -26939,6 +27017,10 @@ const LB_TARGET_RPC = {
   'admin':         { rpc: 'moderator_set_admin_target',     param: 'p_admin_user' },
   'b2b-marketing': { rpc: 'moderator_set_b2b_target',        param: 'p_b2b_user' },
   'cs_hunter':      { rpc: 'moderator_set_cs_hunter_target', param: 'p_cs_hunter_user' },
+  // v87: Host Live — RPC yang sama dipakai halaman "Atur Target" moderator,
+  // jadi target host bisa diatur langsung dari Leaderboard juga.
+  'host_live':     { rpc: 'moderator_set_host_target',       param: 'p_host_user' },
+  'host-live':     { rpc: 'moderator_set_host_target',       param: 'p_host_user' },
 };
 
 function lbOpenTargetModal(uid, role, name, currentTarget) {
@@ -27035,6 +27117,12 @@ function initLeaderboardRealtime() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'admin_sales_target' }, lbHandleRealtimeChange)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'b2b_sales_target' }, lbHandleRealtimeChange)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'cs_hunter_sales_target' }, lbHandleRealtimeChange)
+      // v87: Host Live sekarang ikut tampil di leaderboard, jadi perubahan
+      // target host, catatan omzet host, & jadwal/status sesi live juga
+      // memicu refresh realtime — sama seperti role lain.
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'host_sales_target' }, lbHandleRealtimeChange)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'host_sales_log' }, lbHandleRealtimeChange)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'live_schedule' }, lbHandleRealtimeChange)
       .subscribe();
   } catch (e) { console.warn('[DHP] initLeaderboardRealtime gagal:', e); }
 }
