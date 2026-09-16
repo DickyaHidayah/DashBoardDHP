@@ -15274,6 +15274,7 @@ function initMiscRealtime() {
               if (document.getElementById('pg-crm')?.classList.contains('active')) {
                 renderCRM();
               }
+              initFollowupBadge().catch(() => {}); // v88: angka badge menu samping ikut update
             });
           });
         }
@@ -17943,9 +17944,22 @@ function _followupCustKey(c) { return c._uuid || c.id_customer || ''; }
    di crmData yang PALING BARU saat tombol benar-benar diklik. Ini bikin
    tombol selalu tepat sasaran walau data sudah di-reload oleh realtime di
    belakang layar, tanpa perlu refresh manual. */
+/* v88-FIX — PENYEBAB ASLI "Data customer ini sudah berubah" & progress mandek.
+   crmData itu DIPAGINASI (CRM_PAGE_SIZE = 500 baris per halaman), sedangkan
+   daftar Follow Up (_fuMine) memuat SELURUH customer milik user (s/d 10.000).
+   Jadi untuk siapa pun yang punya >500 customer, semua customer di urutan
+   ke-501 dst memang ADA di daftar Follow Up tapi TIDAK ADA di crmData —
+   akibatnya _crmFindByKey() mengembalikan null, tombol Progress menolak
+   jalan, muncul toast "Data customer ini sudah berubah", dan ring harian
+   berhenti di angka berapa pun (23/50, 4/50, dst) tergantung berapa banyak
+   customer yang kebetulan masih ada di halaman CRM pertama.
+   Perbaikannya: cari di crmData DULU (biar edit di halaman CRM tetap kena
+   objek yang sama), lalu jatuh ke _fuMine kalau tidak ketemu. */
 function _crmFindByKey(key) {
   if (key === undefined || key === null || key === '') return null;
-  return crmData.find(x => _followupCustKey(x) === key) || null;
+  return crmData.find(x => _followupCustKey(x) === key)
+      || (Array.isArray(_fuMine) ? _fuMine.find(x => _followupCustKey(x) === key) : null)
+      || null;
 }
 
 async function loadFollowupLogsToday() {
@@ -18096,6 +18110,11 @@ async function _confirmFollowup(key, response) {
   // v45: kalau halaman Follow Up sedang dibuka, render ulang supaya ring
   // target & tabel langsung update begitu progress dikonfirmasi.
   if (document.getElementById('pg-followup')?.classList.contains('active')) { try { await renderFollowupPage(); } catch(e){} }
+  // v88-FIX: angka di menu samping (badge "Follow Up") sebelumnya cuma
+  // dihitung sekali saat login lewat initFollowupBadge(), jadi setelah
+  // follow-up angkanya tetap nyangkut di jumlah lama walau tabel & ring
+  // sudah benar. Sekarang ikut dihitung ulang tiap kali progress tersimpan.
+  try { await initFollowupBadge(); } catch(e) { console.warn('[DHP] refresh badge follow up gagal:', e); }
   try { await checkAndCelebrateFollowupMilestone(); } catch(e) { console.warn('[DHP] cek milestone follow up gagal:', e); }
 }
 window._confirmFollowup = _confirmFollowup;
