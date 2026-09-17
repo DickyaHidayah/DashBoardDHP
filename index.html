@@ -24830,9 +24830,17 @@ function _fuApplyLiveStats() {
   const groupCounts = fuBuildOrder();
   fuRenderBody();
 
-  const doneCount = _fuMine.filter(c => followupDoneTodayIds.has(_followupCustKey(c))).length;
+  // v89-FIX: progress harian dihitung dari JUMLAH LOG hari ini (sumber yang
+  // sama dipakai CRM), bukan dari irisan dengan _fuMine. Sebelumnya customer
+  // yang di-centang lewat halaman CRM tapi TIDAK ada di daftar Follow Up
+  // (mis. sudah ditandai "tidak bisa dihubungi"/fu_unreachable, atau bukan
+  // bagian dari daftar prioritas hari ini) lognya tersimpan tapi ring-nya
+  // tidak ikut naik — jadi kelihatan "sudah dicentang di CRM tapi progress
+  // di Follow Up tidak berubah". Sekarang keduanya baca angka yang sama.
+  const doneCount = followupDoneTodayIds.size;
+  const doneInList = _fuMine.filter(c => followupDoneTodayIds.has(_followupCustKey(c))).length;
   const target = FOLLOWUP_DAILY_TARGET;
-  const pendingCount = Math.max(0, _fuMine.length - doneCount);
+  const pendingCount = Math.max(0, _fuMine.length - doneInList); // sisa = isi daftar yg belum disentuh (bukan dikurangi log luar daftar)
   const pct = target ? Math.min(100, Math.round((doneCount/target)*100)) : 0;
   const hit = doneCount >= target;
   const circ = 2 * Math.PI * 34;
@@ -24876,8 +24884,8 @@ async function initFollowupBadge() {
   try {
     await loadFollowupLogsToday();
     const mine = await loadFollowupMine();
-    const doneCount = mine.filter(c => followupDoneTodayIds.has(_followupCustKey(c))).length;
-    const pending = Math.max(0, mine.length - doneCount);
+    const doneInList = mine.filter(c => followupDoneTodayIds.has(_followupCustKey(c))).length;
+    const pending = Math.max(0, mine.length - doneInList);
     const badge = document.getElementById('fu-pending-badge');
     if (badge) { badge.textContent = pending; badge.style.display = pending > 0 ? '' : 'none'; }
   } catch(e) { console.warn('[DHP] initFollowupBadge gagal:', e); }
@@ -24894,10 +24902,14 @@ async function renderFollowupPage() {
   } catch(e) { console.warn('[DHP] renderFollowupPage gagal muat data:', e); }
 
   syncFollowupTargetForCurrentUser();
-  const doneCount = mine.filter(c => followupDoneTodayIds.has(_followupCustKey(c))).length;
+  // v89-FIX: sama seperti _fuApplyLiveStats() — angka "followed up today"
+  // dibaca dari log hari ini (sumber yang sama dengan centang di CRM),
+  // sedangkan "remaining" tetap dihitung dari isi daftar Follow Up.
+  const doneCount = followupDoneTodayIds.size;
+  const doneInList = mine.filter(c => followupDoneTodayIds.has(_followupCustKey(c))).length;
   const target = FOLLOWUP_DAILY_TARGET;
   const pct = target ? Math.min(100, Math.round((doneCount/target)*100)) : 0;
-  const pendingCount = Math.max(0, mine.length - doneCount);
+  const pendingCount = Math.max(0, mine.length - doneInList);
   const circ = 2 * Math.PI * 34;
   const hit = doneCount >= target;
 
