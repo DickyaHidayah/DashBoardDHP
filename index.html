@@ -22594,7 +22594,7 @@ async function csHunterDailyBreakdown(uid, wsStr, weStr) {
 /* ═══════════════════════════════════════════════════════════
    ㉕-b2 SISTEM TRACKING REPORT (v48) — laporan kinerja jam 12:00 (Siang) &
    17:00 (Sore) khusus role CS Hunter / Admin / B2B Marketing. Tiap slot
-   dicatat: Jumlah Leads Masuk, Leads Baru Terlayani, Follow Up Leads Lama,
+   dicatat: Jumlah Leads Masuk, Leads Terlayani, Follow Up Leads Lama,
    Total Cold, Total Warm, Total Hot & Total Nominal Closing. Kedua slot
    otomatis digabung jadi "Laporan Harian" oleh get_tracking_daily_recap()
    di database. Reminder H-45 menit & lewat-deadline dihitung di client
@@ -23020,7 +23020,7 @@ async function renderTrackingOwnView(root) {
     </div>
     <div class="trk-recap-strip">
       <div class="trk-recap-box"><div class="rb-ico tm-masuk" style="background:rgba(201,169,110,.18);color:var(--gold)">${TRK_ICO.masuk}</div><b>${row ? row.total_leads_masuk : 0}</b><span>Leads Masuk</span></div>
-      <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(122,191,142,.18);color:var(--green)">${TRK_ICO.terlayani}</div><b>${row ? row.total_leads_terlayani : 0}</b><span>Leads Baru Terlayani</span></div>
+      <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(122,191,142,.18);color:var(--green)">${TRK_ICO.terlayani}</div><b>${row ? row.total_leads_terlayani : 0}</b><span>Leads Terlayani</span></div>
       <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(126,168,201,.18);color:var(--blue)">${TRK_ICO.fulama}</div><b>${row ? row.total_fu_leads_lama : 0}</b><span>FU Leads Lama</span></div>
       <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(126,168,201,.22);color:#7ea8c9">${TRK_ICO.cold}</div><b>${row ? row.total_cold : 0}</b><span>Total Cold</span></div>
       <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(232,184,110,.22);color:#e8a840">${TRK_ICO.warm}</div><b>${row ? row.total_warm : 0}</b><span>Total Warm</span></div>
@@ -23052,7 +23052,7 @@ async function renderTrackingOwnView(root) {
     <div class="tbl-wrap"><div class="tbl-scroll">
       <table class="fu-table"><thead><tr>
         <th>Tanggal</th><th>Siang</th><th>Sore</th>
-        <th>Leads Masuk</th><th>Baru Terlayani</th><th>FU Lama</th>
+        <th>Leads Masuk</th><th>Terlayani</th><th>FU Lama</th>
         <th>Cold</th><th>Warm</th><th>Hot</th><th>Nominal Closing</th>
       </tr></thead>
       <tbody id="trk-hist-tbody"><tr><td colspan="10" style="text-align:center;color:var(--muted)">Memuat…</td></tr></tbody>
@@ -23296,7 +23296,7 @@ function trkRenderOwnDash(targetRow, compliance) {
      (kalau sudah diatur moderator) & persentase kepatuhan lapor.
    ═══════════════════════════════════════════════════════════ */
 function trkHistTableAoa(data) {
-  const head = ['Tanggal', 'Siang', 'Sore', 'Leads Masuk', 'Baru Terlayani', 'FU Lama', 'Cold', 'Warm', 'Hot', 'Nominal Closing'];
+  const head = ['Tanggal', 'Siang', 'Sore', 'Leads Masuk', 'Terlayani', 'FU Lama', 'Cold', 'Warm', 'Hot', 'Nominal Closing'];
   const slotTxt = (filled, status, late) => !filled ? 'Belum Lapor' : (status === 'approved' ? 'Disetujui' : status === 'rejected' ? 'Ditolak' : 'Menunggu') + (late ? ' (Telat)' : '');
   const body = data.rows.map(r => trkIsSunday(r.report_date) ? [trkFmtDMY(r.report_date), 'Libur', 'Libur', '', '', '', '', '', '', ''] : [
     trkFmtDMY(r.report_date),
@@ -23339,7 +23339,7 @@ async function trkExportHistoryExcel(data, btnId, fileTag) {
       ['Persentase', data.workDaysTotal > 0 ? Math.round((data.completeCount / data.workDaysTotal) * 100) + '%' : '-'],
       [],
       ['RINGKASAN ANGKA (TOTAL 1 BULAN)'],
-      ['Leads Masuk', data.totals.leads_masuk], ['Leads Baru Terlayani', data.totals.leads_terlayani],
+      ['Leads Masuk', data.totals.leads_masuk], ['Leads Terlayani', data.totals.leads_terlayani],
       ['FU Leads Lama', data.totals.fu_leads_lama], ['Total Cold', data.totals.cold],
       ['Total Warm', data.totals.warm], ['Total Hot', data.totals.hot],
       ['Total Nominal Closing', data.totals.nominal_closing]
@@ -23423,7 +23423,7 @@ async function trkExportHistoryPdf(data, btnId, fileTag, subtitle) {
     doc.text('Total Angka Sebulan', marginX, y); y += 8;
     doc.autoTable({
       startY: y + 4, margin: { left: marginX, right: marginX },
-      head: [['Leads Masuk', 'Baru Terlayani', 'FU Lama', 'Cold', 'Warm', 'Hot', 'Nominal Closing']],
+      head: [['Leads Masuk', 'Terlayani', 'FU Lama', 'Cold', 'Warm', 'Hot', 'Nominal Closing']],
       body: [[data.totals.leads_masuk, data.totals.leads_terlayani, data.totals.fu_leads_lama, data.totals.cold, data.totals.warm, data.totals.hot, crmFmtRupiah(data.totals.nominal_closing)]],
       styles: { font: 'helvetica', fontSize: 8.6, cellPadding: 6, textColor: [40, 40, 40], halign: 'center' },
       headStyles: { fillColor: [26, 26, 30], textColor: [230, 208, 166], fontStyle: 'bold', fontSize: 8.3 },
@@ -23514,7 +23514,7 @@ function trkOpenCatchup(dateStr, slotKey, targetUserId) {
     </div>
     <div class="trk-form-grid">
       <div class="trk-field"><label>${TRK_ICO.masuk} Jumlah Leads Masuk</label><input type="number" min="0" id="trk-cu-masuk" value="0"></div>
-      <div class="trk-field"><label>${TRK_ICO.terlayani} Leads Baru Terlayani</label><input type="number" min="0" id="trk-cu-terlayani" value="0"></div>
+      <div class="trk-field"><label>${TRK_ICO.terlayani} Leads Terlayani</label><input type="number" min="0" id="trk-cu-terlayani" value="0"></div>
       <div class="trk-field"><label>${TRK_ICO.fulama} Follow Up Leads Lama</label><input type="number" min="0" id="trk-cu-fulama" value="0"></div>
       <div class="trk-field"><label>${TRK_ICO.sysFollowup} Follow Up by Sistem</label>
         <input type="number" id="trk-cu-sysfu" value="…" disabled title="Otomatis diambil dari Follow Up List — tidak bisa diedit manual">
@@ -23593,7 +23593,7 @@ function trkSlotCardHtml(s, data) {
     ${filled ? `
     <div class="trk-mini-grid">
       <div class="trk-mini tm-masuk"><div class="tm-ico">${TRK_ICO.masuk}</div><div class="tm-body"><b>${data.leads_masuk}</b><span>Leads Masuk</span></div></div>
-      <div class="trk-mini tm-terlayani"><div class="tm-ico">${TRK_ICO.terlayani}</div><div class="tm-body"><b>${data.leads_terlayani}</b><span>Baru Terlayani</span></div></div>
+      <div class="trk-mini tm-terlayani"><div class="tm-ico">${TRK_ICO.terlayani}</div><div class="tm-body"><b>${data.leads_terlayani}</b><span>Terlayani</span></div></div>
       <div class="trk-mini tm-fulama"><div class="tm-ico">${TRK_ICO.fulama}</div><div class="tm-body"><b>${data.fu_leads_lama}</b><span>FU Lama</span></div></div>
       <div class="trk-mini tm-cold"><div class="tm-ico">${TRK_ICO.cold}</div><div class="tm-body"><b>${data.total_cold}</b><span>Cold</span></div></div>
       <div class="trk-mini tm-warm"><div class="tm-ico">${TRK_ICO.warm}</div><div class="tm-body"><b>${data.total_warm}</b><span>Warm</span></div></div>
@@ -23634,7 +23634,7 @@ function trkToggleForm(slotKey) {
   wrap.innerHTML = `
     <div class="trk-form-grid">
       <div class="trk-field"><label>${TRK_ICO.masuk} Jumlah Leads Masuk</label><input type="number" min="0" id="trk-in-${slotKey}-masuk" value="${d.leads_masuk||0}"></div>
-      <div class="trk-field"><label>${TRK_ICO.terlayani} Leads Baru Terlayani</label><input type="number" min="0" id="trk-in-${slotKey}-terlayani" value="${d.leads_terlayani||0}"></div>
+      <div class="trk-field"><label>${TRK_ICO.terlayani} Leads Terlayani</label><input type="number" min="0" id="trk-in-${slotKey}-terlayani" value="${d.leads_terlayani||0}"></div>
       <div class="trk-field"><label>${TRK_ICO.fulama} Follow Up Leads Lama</label><input type="number" min="0" id="trk-in-${slotKey}-fulama" value="${d.fu_leads_lama||0}"></div>
       <div class="trk-field"><label>${TRK_ICO.sysFollowup} Follow Up by Sistem</label>
         <input type="number" id="trk-in-${slotKey}-sysfu" value="…" disabled title="Otomatis diambil dari Follow Up List — tidak bisa diedit manual">
@@ -23819,24 +23819,24 @@ async function trkRenderTeamDailySection(root) {
     <div class="trk-section-title"><span class="st-ico">${TRACKING_SLOTS[0].icon}</span> Laporan Siang <span style="font-size:11px;color:var(--muted);font-family:'Inter',sans-serif;font-weight:500">· deadline 12:00</span></div>
     <div class="tbl-wrap"><div class="tbl-scroll">
       <table class="fu-table"><thead><tr>
-        <th>Nama</th><th>Role</th><th>Status</th><th>Leads Masuk</th><th>Baru Terlayani</th><th>FU Lama</th>
-        <th>Cold</th><th>Warm</th><th>Hot</th><th>Nominal Closing</th><th>Aksi</th>
-      </tr></thead><tbody id="trk-team-tbody-siang"><tr><td colspan="11" style="text-align:center;color:var(--muted)">Memuat…</td></tr></tbody></table>
+        <th>Nama</th><th>Role</th><th>Status</th><th>Leads Masuk</th><th>Terlayani</th><th>FU Lama</th>
+        <th>Cold</th><th>Warm</th><th>Hot</th><th>Nominal Closing</th><th>Total Closing</th><th>Aksi</th>
+      </tr></thead><tbody id="trk-team-tbody-siang"><tr><td colspan="12" style="text-align:center;color:var(--muted)">Memuat…</td></tr></tbody></table>
     </div></div>
     <div class="trk-section-title"><span class="st-ico">${TRACKING_SLOTS[1].icon}</span> Laporan Sore <span style="font-size:11px;color:var(--muted);font-family:'Inter',sans-serif;font-weight:500">· deadline 17:00</span></div>
     <div class="tbl-wrap"><div class="tbl-scroll">
       <table class="fu-table"><thead><tr>
-        <th>Nama</th><th>Role</th><th>Status</th><th>Leads Masuk</th><th>Baru Terlayani</th><th>FU Lama</th>
-        <th>Cold</th><th>Warm</th><th>Hot</th><th>Nominal Closing</th><th>Aksi</th>
-      </tr></thead><tbody id="trk-team-tbody-sore"><tr><td colspan="11" style="text-align:center;color:var(--muted)">Memuat…</td></tr></tbody></table>
+        <th>Nama</th><th>Role</th><th>Status</th><th>Leads Masuk</th><th>Terlayani</th><th>FU Lama</th>
+        <th>Cold</th><th>Warm</th><th>Hot</th><th>Nominal Closing</th><th>Total Closing</th><th>Aksi</th>
+      </tr></thead><tbody id="trk-team-tbody-sore"><tr><td colspan="12" style="text-align:center;color:var(--muted)">Memuat…</td></tr></tbody></table>
     </div></div>
     <div class="trk-section-title"><span class="st-ico">${TRK_ICO.closing}</span> Laporan Harian <span style="font-size:11px;color:var(--muted);font-family:'Inter',sans-serif;font-weight:500">· gabungan Siang + Sore</span></div>
     <div class="tbl-wrap"><div class="tbl-scroll">
       <table class="fu-table"><thead><tr>
         <th>Nama</th><th>Role</th><th>Siang</th><th>Sore</th>
-        <th>Leads Masuk</th><th>Baru Terlayani</th><th>FU Lama</th>
-        <th>Cold</th><th>Warm</th><th>Hot</th><th>Nominal Closing</th>
-      </tr></thead><tbody id="trk-team-tbody-harian"><tr><td colspan="11" style="text-align:center;color:var(--muted)">Memuat…</td></tr></tbody></table>
+        <th>Leads Masuk</th><th>Terlayani</th><th>FU Lama</th>
+        <th>Cold</th><th>Warm</th><th>Hot</th><th>Nominal Closing</th><th>Total Closing</th>
+      </tr></thead><tbody id="trk-team-tbody-harian"><tr><td colspan="12" style="text-align:center;color:var(--muted)">Memuat…</td></tr></tbody></table>
     </div></div>`;
   await trkLoadTeamRecap();
 }
@@ -24117,7 +24117,7 @@ function trkRenderTeamMonthlyDetailTable(byUserArg) {
     <div class="tbl-wrap"><div class="tbl-scroll">
       <table class="fu-table"><thead><tr>
         <th>Tanggal</th><th>Siang</th><th>Sore</th>
-        <th>Leads Masuk</th><th>Baru Terlayani</th><th>FU Lama</th>
+        <th>Leads Masuk</th><th>Terlayani</th><th>FU Lama</th>
         <th>Cold</th><th>Warm</th><th>Hot</th><th>Nominal Closing</th>
       </tr></thead><tbody>${rowsHtml}</tbody><tfoot>${totalRowHtml}</tfoot></table>
     </div></div>`;
@@ -24146,7 +24146,7 @@ const trkModActionsHtml = (reportId, filled, status) => {
 };
 
 async function trkLoadTeamRecap() {
-  ['siang','sore','harian'].forEach(k => { const t = document.getElementById('trk-team-tbody-' + k); if (t) t.innerHTML = `<tr><td colspan="11" style="text-align:center;color:var(--muted)">Memuat…</td></tr>`; });
+  ['siang','sore','harian'].forEach(k => { const t = document.getElementById('trk-team-tbody-' + k); if (t) t.innerHTML = `<tr><td colspan="12" style="text-align:center;color:var(--muted)">Memuat…</td></tr>`; });
   let rows = [], yRows = [];
   const yDateObj = new Date(_trkTeamDate + 'T00:00:00'); yDateObj.setDate(yDateObj.getDate() - 1);
   const yDate = ymdKey(yDateObj);
@@ -24164,9 +24164,10 @@ async function trkLoadTeamRecap() {
   const sumOf = (list) => list.reduce((a,r) => {
     a.masuk += r.total_leads_masuk||0; a.terlayani += r.total_leads_terlayani||0; a.fulama += r.total_fu_leads_lama||0;
     a.cold += r.total_cold||0; a.warm += r.total_warm||0; a.hot += r.total_hot||0; a.closing += Number(r.total_nominal_closing)||0;
+    a.closingCount += r.total_closing_count||0;
     a.lengkap += (r.siang_filled && r.sore_filled) ? 1 : 0;
     return a;
-  }, { masuk:0, terlayani:0, fulama:0, cold:0, warm:0, hot:0, closing:0, lengkap:0 });
+  }, { masuk:0, terlayani:0, fulama:0, cold:0, warm:0, hot:0, closing:0, closingCount:0, lengkap:0 });
   const grand = sumOf(rows), grandY = sumOf(yRows);
   const missingCount = rows.length - grand.lengkap;
 
@@ -24196,12 +24197,13 @@ async function trkLoadTeamRecap() {
     summaryEl.innerHTML = allComplete ? `
     <div class="trk-recap-strip">
       <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(201,169,110,.18);color:var(--gold)">${TRK_ICO.masuk}</div><b>${grand.masuk}</b><span>Leads Masuk</span></div>
-      <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(122,191,142,.18);color:var(--green)">${TRK_ICO.terlayani}</div><b>${grand.terlayani}</b><span>Leads Baru Terlayani</span></div>
+      <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(122,191,142,.18);color:var(--green)">${TRK_ICO.terlayani}</div><b>${grand.terlayani}</b><span>Leads Terlayani</span></div>
       <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(126,168,201,.18);color:var(--blue)">${TRK_ICO.fulama}</div><b>${grand.fulama}</b><span>FU Leads Lama</span></div>
       <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(126,168,201,.22);color:#7ea8c9">${TRK_ICO.cold}</div><b>${grand.cold}</b><span>Total Cold</span></div>
       <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(232,184,110,.22);color:#e8a840">${TRK_ICO.warm}</div><b>${grand.warm}</b><span>Total Warm</span></div>
       <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(232,112,112,.22);color:#e87070">${TRK_ICO.hot}</div><b>${grand.hot}</b><span>Total Hot</span></div>
       <div class="trk-recap-box hi" style="grid-column:span 2"><div class="rb-ico" style="background:rgba(122,191,142,.2);color:var(--green)">${TRK_ICO.closing}</div><b style="font-size:16px">${crmFmtRupiah(grand.closing)}</b><span>Total Nominal Closing Tim</span></div>
+      <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(232,184,110,.2);color:var(--gold)">${TRK_ICO.closingCount}</div><b>${grand.closingCount}</b><span>Total Closing Tim</span></div>
     </div>
     ${progressCard}` : progressCard;
   }
@@ -24239,7 +24241,7 @@ async function trkLoadTeamRecap() {
   const tbSore = document.getElementById('trk-team-tbody-sore');
   const tbHarian = document.getElementById('trk-team-tbody-harian');
   if (!rows.length) {
-    const emptyRow = `<tr><td colspan="11" style="text-align:center;color:var(--muted)">Belum ada staff CS Hunter/Admin/B2B Marketing aktif.</td></tr>`;
+    const emptyRow = `<tr><td colspan="12" style="text-align:center;color:var(--muted)">Belum ada staff CS Hunter/Admin/B2B Marketing aktif.</td></tr>`;
     if (tbSiang) tbSiang.innerHTML = emptyRow;
     if (tbSore) tbSore.innerHTML = emptyRow;
     if (tbHarian) tbHarian.innerHTML = emptyRow;
@@ -24255,15 +24257,18 @@ async function trkLoadTeamRecap() {
   // mengembalikan siang_leads_masuk dkk / sore_leads_masuk dkk per staff, jadi
   // begitu satu role selesai isi laporan, angkanya langsung tampil di sini —
   // real-time per slot, tanpa harus buka halaman staff ybs satu-satu.
+  // v91: kolom Total Closing (JUMLAH transaksi, bukan nominal) ditambahkan di
+  // sini — nunggu get_tracking_recap_team dilebarkan (belum, ||0 dulu).
   const slotMetricCells = (r, slotKey, filled) => {
-    if (!filled) return `<td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>`;
+    if (!filled) return `<td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>`;
     return `<td>${r[slotKey + '_leads_masuk']}</td>
       <td>${r[slotKey + '_leads_terlayani']}</td>
       <td>${r[slotKey + '_fu_leads_lama']}</td>
       <td>${r[slotKey + '_total_cold']}</td>
       <td>${r[slotKey + '_total_warm']}</td>
       <td><b style="color:#e87070">${r[slotKey + '_total_hot']}</b></td>
-      <td><b style="color:var(--green)">${crmFmtRupiah(r[slotKey + '_total_nominal_closing'])}</b></td>`;
+      <td><b style="color:var(--green)">${crmFmtRupiah(r[slotKey + '_total_nominal_closing'])}</b></td>
+      <td>${r[slotKey + '_total_closing_count'] || 0}</td>`;
   };
   const buildSlotTable = (slotKey) => rows.map(r => {
     const filled = r[slotKey + '_filled'], status = r[slotKey + '_status'], isLate = r[slotKey + '_is_late'];
@@ -24301,11 +24306,12 @@ async function trkLoadTeamRecap() {
         <td>${trkStatusPillHtml(r.siang_filled, r.siang_status, r.siang_is_late)}</td>
         <td>${trkStatusPillHtml(r.sore_filled, r.sore_status, r.sore_is_late)}</td>
         ${missing
-          ? `<td colspan="7" style="text-align:center;color:var(--muted);font-size:11.5px"><span class="trk-wait-note">${TRK_ICO.clock} ${waitLabel} — total harian menunggu slot ini masuk</span></td>`
+          ? `<td colspan="8" style="text-align:center;color:var(--muted);font-size:11.5px"><span class="trk-wait-note">${TRK_ICO.clock} ${waitLabel} — total harian menunggu slot ini masuk</span></td>`
           : `<td>${r.total_leads_masuk}</td><td>${r.total_leads_terlayani}</td><td>${r.total_fu_leads_lama}</td>
              <td>${r.total_cold}</td><td>${r.total_warm}</td>
              <td><b style="color:#e87070">${r.total_hot}</b></td>
-             <td><b style="color:var(--green)">${crmFmtRupiah(r.total_nominal_closing)}</b></td>`}
+             <td><b style="color:var(--green)">${crmFmtRupiah(r.total_nominal_closing)}</b></td>
+             <td>${r.total_closing_count || 0}</td>`}
       </tr>`;
     }).join('');
   }
