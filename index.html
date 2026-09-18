@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<meta name="dhp-build" content="2026-09-19T00-00-00-v94"/>
+<meta name="dhp-build" content="2026-09-19T01-00-00-v94b"/>
 <title>DHP Creative — Command Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Shippori+Mincho:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
@@ -27279,7 +27279,7 @@ function lbHandleRealtimeChange() {
   const HTML_POLL_INTERVAL_MS = 4 * 60 * 1000;   // cek file HTML tiap 4 menit
   const DB_POLL_INTERVAL_MS   = 2 * 60 * 1000;   // fallback cek tabel app_build tiap 2 menit (realtime tetap jalan duluan)
   const FIRST_CHECK_DELAY_MS  = 45 * 1000;       // tunggu 45 detik biar gak false-positive pas baru selesai deploy
-  const AUTO_REFRESH_SECONDS  = 25;              // hitung mundur sebelum refresh paksa otomatis — dikasih jeda lebih supaya sempat simpan isian yang lagi dikerjakan
+  const AUTO_REFRESH_SECONDS  = 15;              // hitung mundur sebelum refresh paksa otomatis
   let dupdShown = false;
   let dupdCountdownTimer = null;
 
@@ -27339,6 +27339,21 @@ function lbHandleRealtimeChange() {
     #dhp-force-refresh .dfr-meta .dfr-sign{display:block;margin-top:3px;font-family:'Cormorant Garamond',serif;
       font-size:13px;font-style:italic;color:var(--gold,#c9a96e);letter-spacing:.02em}
     @media(max-width:480px){#dhp-force-refresh .dfr-card{padding:30px 22px 24px}#dhp-force-refresh .dfr-title{font-size:20px}}
+
+    #dfr-corner-timer{position:fixed;top:18px;right:18px;z-index:1000000;display:flex;align-items:center;gap:8px;
+      padding:9px 16px 9px 12px;border-radius:30px;background:linear-gradient(135deg,#c94848,#8f1f1f);
+      border:1px solid rgba(255,120,120,.5);color:#fff;font-size:11.5px;font-weight:700;letter-spacing:.03em;
+      box-shadow:0 6px 24px rgba(180,40,40,.5),0 0 0 0 rgba(220,70,70,.6);
+      opacity:0;transform:translateY(-10px) scale(.9);transition:opacity .4s ease,transform .4s cubic-bezier(.34,1.56,.64,1);
+      animation:dfrCornerPulse 1.4s ease-in-out infinite}
+    #dfr-corner-timer.show{opacity:1;transform:translateY(0) scale(1)}
+    @keyframes dfrCornerPulse{0%,100%{box-shadow:0 6px 24px rgba(180,40,40,.5),0 0 0 0 rgba(220,70,70,.55)}
+      50%{box-shadow:0 6px 24px rgba(180,40,40,.6),0 0 0 8px rgba(220,70,70,0)}}
+    #dfr-corner-timer .dfr-corner-dot{width:7px;height:7px;border-radius:50%;background:#ffdede;flex-shrink:0;
+      animation:dfrCornerBlink 1s ease-in-out infinite}
+    @keyframes dfrCornerBlink{0%,100%{opacity:1}50%{opacity:.25}}
+    #dfr-corner-timer b{font-variant-numeric:tabular-nums;font-size:13px}
+    @media(max-width:480px){#dfr-corner-timer{top:12px;right:12px;left:12px;justify-content:center}}
     `;
     const s = document.createElement('style'); s.id = 'dupd-style'; s.textContent = css;
     document.head.appendChild(s);
@@ -27383,11 +27398,22 @@ function lbHandleRealtimeChange() {
     document.documentElement.style.overflow = 'hidden'; // kunci scroll layar belakang
     requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('show')));
 
+    // v94: badge timer merah di pojok — TIDAK ADA tombol tutup, memang
+    // sengaja tidak bisa di-dismiss, cuma buat mempertegas hitung mundurnya
+    // di luar kartu utama supaya lebih kelihatan/mencolok.
+    const corner = document.createElement('div');
+    corner.id = 'dfr-corner-timer';
+    corner.innerHTML = `<span class="dfr-corner-dot"></span><span>Restart akan dilakukan dalam <b id="dfr-corner-count">${AUTO_REFRESH_SECONDS}</b> detik</span>`;
+    document.body.appendChild(corner);
+    requestAnimationFrame(() => requestAnimationFrame(() => corner.classList.add('show')));
+
     let remain = AUTO_REFRESH_SECONDS;
     const countEl = () => document.getElementById('dfr-count');
+    const cornerCountEl = () => document.getElementById('dfr-corner-count');
     dupdCountdownTimer = setInterval(() => {
       remain -= 1;
       const c = countEl(); if (c) c.textContent = Math.max(0, remain);
+      const cc = cornerCountEl(); if (cc) cc.textContent = Math.max(0, remain);
       if (remain <= 0) { clearInterval(dupdCountdownTimer); window.__dupdRefresh(); }
     }, 1000);
   }
