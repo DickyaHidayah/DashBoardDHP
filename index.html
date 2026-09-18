@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<meta name="dhp-build" content="2026-09-19T01-00-00-v94b"/>
+<meta name="dhp-build" content="2026-09-19T02-00-00-v94c"/>
 <title>DHP Creative — Command Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Shippori+Mincho:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
@@ -27287,73 +27287,42 @@ function lbHandleRealtimeChange() {
     if (document.getElementById('dupd-style')) return;
     const css = `
     #dhp-force-refresh{position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;
-      background:rgba(10,9,7,.94);backdrop-filter:blur(10px) saturate(1.1);opacity:0;transition:opacity .4s ease;padding:20px}
+      background:rgba(10,9,7,.95);backdrop-filter:blur(8px);opacity:0;transition:opacity .4s ease;padding:20px}
     #dhp-force-refresh.show{opacity:1}
-    #dhp-force-refresh .dfr-card{position:relative;width:100%;max-width:440px;text-align:center;overflow:hidden;
-      background:linear-gradient(160deg,var(--surface2,#252018),var(--surface,#1e1b17));
-      border:1px solid var(--border-hi,rgba(201,169,110,.32));border-radius:20px;
-      box-shadow:0 30px 90px rgba(0,0,0,.6),0 0 0 1px rgba(201,169,110,.08),0 0 60px rgba(201,169,110,.06);
-      padding:38px 30px 30px;transform:scale(.9) translateY(18px);opacity:0;
-      transition:transform .55s cubic-bezier(.16,1,.3,1),opacity .5s ease}
-    #dhp-force-refresh.show .dfr-card{transform:scale(1) translateY(0);opacity:1}
-    #dhp-force-refresh .dfr-card::before{content:'';position:absolute;inset:-2px;border-radius:20px;padding:1px;z-index:-1;
-      background:linear-gradient(120deg,transparent,rgba(201,169,110,.5),transparent);
-      background-size:200% 200%;animation:dfrBorderGlow 5s ease-in-out infinite}
-    @keyframes dfrBorderGlow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-    #dhp-force-refresh .dfr-ico-wrap{position:relative;width:64px;height:64px;margin:0 auto 18px;display:flex;align-items:center;justify-content:center}
-    #dhp-force-refresh .dfr-ico-ring{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(201,169,110,.4);
-      animation:dfrRingPulse 2.4s ease-out infinite}
-    #dhp-force-refresh .dfr-ico-ring.r2{animation-delay:.8s}
-    @keyframes dfrRingPulse{0%{transform:scale(.7);opacity:.9}100%{transform:scale(1.7);opacity:0}}
-    #dhp-force-refresh .dfr-ico{position:relative;width:56px;height:56px;border-radius:50%;
-      background:linear-gradient(135deg,rgba(201,169,110,.28),rgba(122,191,142,.16));
-      color:var(--gold,#c9a96e);display:flex;align-items:center;justify-content:center;
-      box-shadow:0 0 24px rgba(201,169,110,.25)}
-    #dhp-force-refresh .dfr-ico svg{width:26px;height:26px;animation:dupdSpin 2.6s linear infinite}
-    @keyframes dupdSpin{100%{transform:rotate(360deg)}}
-    #dhp-force-refresh .dfr-title{position:relative;font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;
-      letter-spacing:.02em;margin-bottom:10px;
-      background:linear-gradient(100deg,var(--gold,#c9a96e) 20%,var(--gold-hi,#f3e3bd) 40%,#fff8e8 50%,var(--gold-hi,#f3e3bd) 60%,var(--gold,#c9a96e) 80%);
-      background-size:250% auto;-webkit-background-clip:text;background-clip:text;color:transparent;
-      animation:dfrShimmer 3.2s linear infinite}
-    @keyframes dfrShimmer{0%{background-position:0% center}100%{background-position:-250% center}}
-    #dhp-force-refresh .dfr-desc{font-size:13.5px;color:var(--text2,rgba(232,228,220,.72));line-height:1.65;margin-bottom:22px}
+    #dhp-force-refresh .dfr-card{width:100%;max-width:380px;text-align:center;
+      background:var(--surface,#1e1b17);border:1px solid var(--border,rgba(201,169,110,.16));border-radius:16px;
+      box-shadow:0 20px 60px rgba(0,0,0,.5);
+      padding:36px 30px 28px;transform:translateY(8px);opacity:0;
+      transition:transform .5s cubic-bezier(.16,1,.3,1),opacity .5s ease}
+    #dhp-force-refresh.show .dfr-card{transform:translateY(0);opacity:1}
+    #dhp-force-refresh .dfr-ico{width:46px;height:46px;margin:0 auto 18px;border-radius:50%;
+      background:rgba(201,169,110,.12);color:var(--gold,#c9a96e);display:flex;align-items:center;justify-content:center}
+    #dhp-force-refresh .dfr-ico svg{width:20px;height:20px}
+    #dhp-force-refresh .dfr-title{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600;
+      letter-spacing:.01em;margin-bottom:10px;color:var(--gold,#c9a96e)}
+    #dhp-force-refresh .dfr-desc{font-size:13px;color:var(--text2,rgba(232,228,220,.68));line-height:1.6;margin-bottom:24px}
     #dhp-force-refresh .dfr-desc b{color:var(--gold-hi,#e8cc99);font-weight:600}
-    #dhp-force-refresh .dfr-btn{position:relative;overflow:hidden;width:100%;padding:15px 20px;font-size:12.5px;font-weight:800;
-      letter-spacing:.08em;text-transform:uppercase;border-radius:12px;cursor:pointer;border:none;
-      background:linear-gradient(135deg,#dcb877,var(--gold,#c9a96e) 45%,#a97c3f);
-      color:#181410;box-shadow:0 8px 28px rgba(201,169,110,.4),0 0 0 1px rgba(255,255,255,.08) inset;
-      transition:transform .2s ease,box-shadow .2s ease;animation:dfrBtnGlow 2.2s ease-in-out infinite}
-    @keyframes dfrBtnGlow{0%,100%{box-shadow:0 8px 28px rgba(201,169,110,.4),0 0 0 1px rgba(255,255,255,.08) inset}
-      50%{box-shadow:0 8px 34px rgba(201,169,110,.65),0 0 0 1px rgba(255,255,255,.12) inset}}
-    #dhp-force-refresh .dfr-btn:hover{transform:translateY(-2px);filter:brightness(1.06)}
-    #dhp-force-refresh .dfr-btn::after{content:'';position:absolute;top:0;left:-60%;width:40%;height:100%;
-      background:linear-gradient(115deg,transparent,rgba(255,255,255,.55),transparent);
-      transform:skewX(-20deg);animation:dfrShine 2.6s ease-in-out infinite}
-    @keyframes dfrShine{0%{left:-60%}45%{left:130%}100%{left:130%}}
-    #dhp-force-refresh .dfr-btn span{position:relative;display:inline-flex;align-items:center;gap:8px}
-    #dhp-force-refresh .dfr-countdown{margin-top:16px;font-size:11px;color:var(--muted,rgba(232,228,220,.45));letter-spacing:.02em}
+    #dhp-force-refresh .dfr-desc .dfr-note{display:block;opacity:.65;font-size:11.5px;margin-top:6px}
+    #dhp-force-refresh .dfr-btn{width:100%;padding:13px 18px;font-size:12px;font-weight:700;
+      letter-spacing:.05em;border-radius:10px;cursor:pointer;border:none;
+      background:var(--gold,#c9a96e);color:#181410;transition:filter .2s ease,transform .2s ease}
+    #dhp-force-refresh .dfr-btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+    #dhp-force-refresh .dfr-btn span{display:inline-flex;align-items:center;gap:7px}
+    #dhp-force-refresh .dfr-countdown{margin-top:14px;font-size:11px;color:var(--muted,rgba(232,228,220,.4))}
     #dhp-force-refresh .dfr-countdown b{color:var(--gold,#c9a96e);font-variant-numeric:tabular-nums}
-    #dhp-force-refresh .dfr-meta{margin-top:18px;padding-top:16px;border-top:1px solid rgba(201,169,110,.14);
-      font-size:10.5px;color:var(--muted,rgba(232,228,220,.4));line-height:1.7}
-    #dhp-force-refresh .dfr-meta .dfr-sign{display:block;margin-top:3px;font-family:'Cormorant Garamond',serif;
-      font-size:13px;font-style:italic;color:var(--gold,#c9a96e);letter-spacing:.02em}
-    @media(max-width:480px){#dhp-force-refresh .dfr-card{padding:30px 22px 24px}#dhp-force-refresh .dfr-title{font-size:20px}}
+    #dhp-force-refresh .dfr-meta{margin-top:18px;padding-top:16px;border-top:1px solid rgba(201,169,110,.1);
+      font-size:10px;color:var(--muted,rgba(232,228,220,.35));line-height:1.6}
+    #dhp-force-refresh .dfr-meta .dfr-sign{display:block;margin-top:2px;font-family:'Cormorant Garamond',serif;
+      font-size:12px;font-style:italic;color:var(--gold,#c9a96e)}
+    @media(max-width:480px){#dhp-force-refresh .dfr-card{padding:28px 22px 22px}#dhp-force-refresh .dfr-title{font-size:19px}}
 
-    #dfr-corner-timer{position:fixed;top:18px;right:18px;z-index:1000000;display:flex;align-items:center;gap:8px;
-      padding:9px 16px 9px 12px;border-radius:30px;background:linear-gradient(135deg,#c94848,#8f1f1f);
-      border:1px solid rgba(255,120,120,.5);color:#fff;font-size:11.5px;font-weight:700;letter-spacing:.03em;
-      box-shadow:0 6px 24px rgba(180,40,40,.5),0 0 0 0 rgba(220,70,70,.6);
-      opacity:0;transform:translateY(-10px) scale(.9);transition:opacity .4s ease,transform .4s cubic-bezier(.34,1.56,.64,1);
-      animation:dfrCornerPulse 1.4s ease-in-out infinite}
-    #dfr-corner-timer.show{opacity:1;transform:translateY(0) scale(1)}
-    @keyframes dfrCornerPulse{0%,100%{box-shadow:0 6px 24px rgba(180,40,40,.5),0 0 0 0 rgba(220,70,70,.55)}
-      50%{box-shadow:0 6px 24px rgba(180,40,40,.6),0 0 0 8px rgba(220,70,70,0)}}
-    #dfr-corner-timer .dfr-corner-dot{width:7px;height:7px;border-radius:50%;background:#ffdede;flex-shrink:0;
-      animation:dfrCornerBlink 1s ease-in-out infinite}
-    @keyframes dfrCornerBlink{0%,100%{opacity:1}50%{opacity:.25}}
-    #dfr-corner-timer b{font-variant-numeric:tabular-nums;font-size:13px}
-    @media(max-width:480px){#dfr-corner-timer{top:12px;right:12px;left:12px;justify-content:center}}
+    #dfr-corner-timer{position:fixed;top:16px;right:16px;z-index:1000000;display:flex;align-items:center;gap:7px;
+      padding:7px 13px;border-radius:20px;background:rgba(180,42,42,.92);color:#fff;font-size:11px;font-weight:600;
+      opacity:0;transition:opacity .3s ease}
+    #dfr-corner-timer.show{opacity:1}
+    #dfr-corner-timer .dfr-corner-dot{width:5px;height:5px;border-radius:50%;background:#fff;flex-shrink:0;opacity:.85}
+    #dfr-corner-timer b{font-variant-numeric:tabular-nums}
+    @media(max-width:480px){#dfr-corner-timer{top:10px;right:10px;left:10px;justify-content:center}}
     `;
     const s = document.createElement('style'); s.id = 'dupd-style'; s.textContent = css;
     document.head.appendChild(s);
@@ -27384,12 +27353,9 @@ function lbHandleRealtimeChange() {
     el.id = 'dhp-force-refresh';
     el.innerHTML = `
       <div class="dfr-card">
-        <div class="dfr-ico-wrap">
-          <span class="dfr-ico-ring"></span><span class="dfr-ico-ring r2"></span>
-          <div class="dfr-ico">${REFRESH_ICO}</div>
-        </div>
+        <div class="dfr-ico">${REFRESH_ICO}</div>
         <div class="dfr-title">Sistem Sudah Diperbarui</div>
-        <div class="dfr-desc">Sistem sudah ada <b>versi terbaru</b>. Harap refresh tampilan untuk mendapatkan versi terupdate ini.${reason ? ` — <i>${reason}</i>` : ''}<br><span style="opacity:.75;font-size:12px">Kalau ada isian yang belum disimpan, mohon disimpan dulu sebelum refresh.</span></div>
+        <div class="dfr-desc">Sistem sudah ada <b>versi terbaru</b>. Harap refresh tampilan untuk mendapatkan versi terupdate ini.${reason ? ` — <i>${reason}</i>` : ''}<span class="dfr-note">Kalau ada isian yang belum disimpan, mohon disimpan dulu sebelum refresh.</span></div>
         <button class="dfr-btn" onclick="window.__dupdRefresh()"><span>${REFRESH_ICO} Refresh Sekarang</span></button>
         <div class="dfr-countdown">Refresh otomatis dalam <b id="dfr-count">${AUTO_REFRESH_SECONDS}</b> detik…</div>
         <div class="dfr-meta">Diperbarui pada ${dfrFormatNow()}<span class="dfr-sign">Salam hangat, DHP Creative ✦</span></div>
