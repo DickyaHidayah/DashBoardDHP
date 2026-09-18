@@ -22633,6 +22633,11 @@ const TRK_ICO = {
   undo: '<svg viewBox="0 0 16 16" fill="none"><path d="M3 6.4h6.1a3.9 3.9 0 0 1 0 7.8H6.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.4 3.8 2.8 6.4l2.6 2.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   trash: '<svg viewBox="0 0 16 16" fill="none"><path d="M2.8 4.4h10.4M6.2 4.4V3a1 1 0 0 1 1-1h1.6a1 1 0 0 1 1 1v1.4M6.6 7.4v4M9.4 7.4v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.8 4.4 4.4 13a1.2 1.2 0 0 0 1.2 1.1h4.8A1.2 1.2 0 0 0 11.6 13l.6-8.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   plus: '<svg viewBox="0 0 16 16" fill="none"><path d="M8 3.2v9.6M3.2 8h9.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+  // v90: jumlah closing (COUNT transaksi, beda dari nominal Rp) — kotak
+  // centang bertumpuk, dan follow up otomatis dari sistem — balon chat
+  // dengan gembok kecil (nunjukin "otomatis & terkunci, tidak bisa diedit").
+  closingCount: '<svg viewBox="0 0 16 16" fill="none"><rect x="2.4" y="4.6" width="8.2" height="8.2" rx="1.3" stroke="currentColor" stroke-width="1.25"/><path d="M4.3 8.7l1.4 1.4 2.6-3" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.3 3.2h6.9a1.3 1.3 0 0 1 1.3 1.3v6.9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>',
+  sysFollowup: '<svg viewBox="0 0 16 16" fill="none"><path d="M2.4 4.3a1.3 1.3 0 0 1 1.3-1.3h6.6a1.3 1.3 0 0 1 1.3 1.3v3.9a1.3 1.3 0 0 1-1.3 1.3H6.8L4.2 11.7V9.5H3.7a1.3 1.3 0 0 1-1.3-1.3V4.3Z" stroke="currentColor" stroke-width="1.15" stroke-linejoin="round"/><rect x="9.3" y="7.6" width="5.1" height="4.3" rx="1" stroke="currentColor" stroke-width="1.1"/><path d="M10.5 7.6V6.5a1.3 1.3 0 0 1 2.6 0v1.1" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>',
   // v82: vektor bulan sabit + kilau — dipakai utk menandai "Hari Minggu/Libur"
   // di Rekap Bulanan, gaya garis tipis (line-art) konsisten dgn ikon lain di
   // TRK_ICO, menggantikan emoji 🌙 supaya lebih elegan & tajam di layar apa pun.
@@ -22657,6 +22662,37 @@ let _trkTeamMonthlySelected = null;   // user_id staff yg sedang dibuka detailny
 
 function trkNowJakarta() { return cshTodayJakarta(); }
 function trkTodayStr() { return ymdKey(trkNowJakarta()); }
+
+// v90 — FOLLOW UP BY SISTEM: hitung berapa follow-up yang BENERAN dilakukan
+// lewat sistem Follow Up (tabel followup_logs, sumber yang sama dipakai
+// ring 0/50 & centang di CRM) pada tanggal & slot laporan yang bersangkutan.
+// Siang = 00:00–12:00 WIB, Sore = 12:00–24:00 WIB (mengikuti jam deadline
+// laporan: 12:00 & 17:00). Read-only — ini yang bikin datanya nggak bisa
+// "dikarang" manual dan otomatis sinkron sama apa yang beneran terjadi.
+async function trkSystemFollowupCount(dateStr, slotKey, userId) {
+  if (!db) return 0;
+  const uid = userId || currentUser?.id;
+  if (!uid || !dateStr) return 0;
+  const startHour = slotKey === 'siang' ? 0 : 12;
+  const startISO = `${dateStr}T${String(startHour).padStart(2,'0')}:00:00+07:00`;
+  const endISO   = slotKey === 'siang'
+    ? `${dateStr}T12:00:00+07:00`
+    : `${dateStr}T23:59:59.999+07:00`;
+  try {
+    const res = await dbQ(d => d.from('followup_logs').select('id', { count: 'exact', head: true })
+      .eq('user_id', uid).gte('followed_up_at', startISO).lte('followed_up_at', endISO));
+    return (res && typeof res.count === 'number') ? res.count : 0;
+  } catch (e) { console.warn('[DHP] trkSystemFollowupCount gagal:', e); return 0; }
+}
+// Isi ulang field "Follow Up by Sistem" yang lagi kebuka di form (id sesuai
+// prefiks trk-in- utk form hari ini, atau trk-cu- utk form Laporan Susulan).
+async function trkFillSystemFollowupField(inputId, dateStr, slotKey, userId) {
+  const el = document.getElementById(inputId);
+  if (!el) return;
+  const n = await trkSystemFollowupCount(dateStr, slotKey, userId);
+  const el2 = document.getElementById(inputId); // form bisa udah ditutup/ganti pas fetch selesai
+  if (el2) el2.value = n;
+}
 function trkDeadlineDate(slotKey, base) {
   const d = new Date(base.getTime());
   const s = TRACKING_SLOTS.find(x => x.key === slotKey);
@@ -23480,9 +23516,13 @@ function trkOpenCatchup(dateStr, slotKey, targetUserId) {
       <div class="trk-field"><label>${TRK_ICO.masuk} Jumlah Leads Masuk</label><input type="number" min="0" id="trk-cu-masuk" value="0"></div>
       <div class="trk-field"><label>${TRK_ICO.terlayani} Leads Baru Terlayani</label><input type="number" min="0" id="trk-cu-terlayani" value="0"></div>
       <div class="trk-field"><label>${TRK_ICO.fulama} Follow Up Leads Lama</label><input type="number" min="0" id="trk-cu-fulama" value="0"></div>
+      <div class="trk-field"><label>${TRK_ICO.sysFollowup} Follow Up by Sistem</label>
+        <input type="number" id="trk-cu-sysfu" value="…" disabled title="Otomatis diambil dari Follow Up List — tidak bisa diedit manual">
+      </div>
       <div class="trk-field"><label>${TRK_ICO.cold} Total Cold</label><input type="number" min="0" id="trk-cu-cold" value="0"></div>
       <div class="trk-field"><label>${TRK_ICO.warm} Total Warm</label><input type="number" min="0" id="trk-cu-warm" value="0"></div>
       <div class="trk-field"><label>${TRK_ICO.hot} Total Hot</label><input type="number" min="0" id="trk-cu-hot" value="0"></div>
+      <div class="trk-field"><label>${TRK_ICO.closingCount} Jumlah Closing</label><input type="number" min="0" id="trk-cu-closingcount" value="0"></div>
       <div class="trk-field full"><label>${TRK_ICO.closing} Total Nominal Closing</label>
         <div class="fi-rp-wrap"><span class="fi-rp-prefix">Rp</span><input class="fi fi-rp-input" type="text" inputmode="numeric" id="trk-cu-closing" placeholder="0" oninput="crmFormatRpInput(this)"></div>
       </div>
@@ -23493,6 +23533,7 @@ function trkOpenCatchup(dateStr, slotKey, targetUserId) {
     <button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button>`;
   document.getElementById('modal-ov').classList.add('open');
   setTimeout(() => document.getElementById('trk-cu-masuk')?.focus(), 80);
+  trkFillSystemFollowupField('trk-cu-sysfu', dateStr, slotKey, targetUserId); // v90
 }
 async function _trkSubmitCatchup(dateStr, slotKey) {
   if (!db || !currentUser) { toast('Supabase tidak aktif.'); return; }
@@ -23509,6 +23550,13 @@ async function _trkSubmitCatchup(dateStr, slotKey) {
   };
   const res = await dbQ(d => d.rpc('submit_tracking_report', payload));
   if (!res || res.error) { toast('Gagal menyimpan laporan susulan: ' + (res && res.error ? res.error.message : 'unknown')); return; }
+  const extraRes = await dbQ(d => d.rpc('submit_tracking_report_extra', {
+    p_actor_id: currentUser.id, p_target_user_id: targetUserId,
+    p_report_date: dateStr, p_slot: slotKey,
+    p_total_closing_count: val('trk-cu-closingcount'),
+    p_total_followup_sistem: crmParseInt(document.getElementById('trk-cu-sysfu')?.value),
+  }));
+  if (!extraRes || extraRes.error) console.warn('[DHP] submit_tracking_report_extra (susulan) gagal:', extraRes?.error?.message);
   closeModal();
   toast(`Laporan susulan ${slotKey === 'siang' ? 'Siang' : 'Sore'} (${trkFmtDMY(dateStr)}) tersimpan ✓`);
   _trkCatchupTarget = null;
@@ -23588,9 +23636,13 @@ function trkToggleForm(slotKey) {
       <div class="trk-field"><label>${TRK_ICO.masuk} Jumlah Leads Masuk</label><input type="number" min="0" id="trk-in-${slotKey}-masuk" value="${d.leads_masuk||0}"></div>
       <div class="trk-field"><label>${TRK_ICO.terlayani} Leads Baru Terlayani</label><input type="number" min="0" id="trk-in-${slotKey}-terlayani" value="${d.leads_terlayani||0}"></div>
       <div class="trk-field"><label>${TRK_ICO.fulama} Follow Up Leads Lama</label><input type="number" min="0" id="trk-in-${slotKey}-fulama" value="${d.fu_leads_lama||0}"></div>
+      <div class="trk-field"><label>${TRK_ICO.sysFollowup} Follow Up by Sistem</label>
+        <input type="number" id="trk-in-${slotKey}-sysfu" value="…" disabled title="Otomatis diambil dari Follow Up List — tidak bisa diedit manual">
+      </div>
       <div class="trk-field"><label>${TRK_ICO.cold} Total Cold</label><input type="number" min="0" id="trk-in-${slotKey}-cold" value="${d.total_cold||0}"></div>
       <div class="trk-field"><label>${TRK_ICO.warm} Total Warm</label><input type="number" min="0" id="trk-in-${slotKey}-warm" value="${d.total_warm||0}"></div>
       <div class="trk-field"><label>${TRK_ICO.hot} Total Hot</label><input type="number" min="0" id="trk-in-${slotKey}-hot" value="${d.total_hot||0}"></div>
+      <div class="trk-field"><label>${TRK_ICO.closingCount} Jumlah Closing</label><input type="number" min="0" id="trk-in-${slotKey}-closingcount" value="${d.total_closing_count||0}"></div>
       <div class="trk-field full"><label>${TRK_ICO.closing} Total Nominal Closing</label>
         <div class="fi-rp-wrap"><span class="fi-rp-prefix">Rp</span><input class="fi fi-rp-input" type="text" inputmode="numeric" id="trk-in-${slotKey}-closing" value="${d.total_nominal_closing ? Number(d.total_nominal_closing).toLocaleString('id-ID') : ''}" placeholder="0" oninput="crmFormatRpInput(this)"></div>
       </div>
@@ -23601,6 +23653,7 @@ function trkToggleForm(slotKey) {
       <button class="btn-sm" onclick="trkToggleForm('${slotKey}')">Batal</button>
     </div>`;
   wrap.style.display = '';
+  trkFillSystemFollowupField(`trk-in-${slotKey}-sysfu`, trkTodayStr(), slotKey); // v90: isi async, tidak blokir buka form
 }
 
 async function trkSubmitSlot(slotKey) {
@@ -23618,6 +23671,16 @@ async function trkSubmitSlot(slotKey) {
   };
   const res = await dbQ(d => d.rpc('submit_tracking_report', payload));
   if (!res || res.error) { toast('Gagal menyimpan laporan: ' + (res && res.error ? res.error.message : 'unknown')); return; }
+  // v90: Jumlah Closing (count) & Follow Up by Sistem — disimpan lewat RPC
+  // TAMBAHAN terpisah (submit_tracking_report_extra) supaya tidak perlu
+  // mengubah/menimpa submit_tracking_report yang sudah ada.
+  const extraRes = await dbQ(d => d.rpc('submit_tracking_report_extra', {
+    p_actor_id: currentUser.id, p_target_user_id: currentUser.id,
+    p_report_date: trkTodayStr(), p_slot: slotKey,
+    p_total_closing_count: val(`trk-in-${slotKey}-closingcount`),
+    p_total_followup_sistem: crmParseInt(document.getElementById(`trk-in-${slotKey}-sysfu`)?.value),
+  }));
+  if (!extraRes || extraRes.error) console.warn('[DHP] submit_tracking_report_extra gagal:', extraRes?.error?.message);
   toast(`Laporan ${slotKey === 'siang' ? 'Siang' : 'Sore'} tersimpan ✓`);
   try { localStorage.removeItem(`dhp_trk_reminded_${currentUser.id}_${trkTodayStr()}_${slotKey}`); } catch(e){}
   renderTrackingReportPage();
