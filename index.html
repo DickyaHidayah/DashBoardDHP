@@ -23002,6 +23002,7 @@ async function renderTrackingOwnView(root) {
       leads_masuk: row.siang_leads_masuk, leads_terlayani: row.siang_leads_terlayani,
       fu_leads_lama: row.siang_fu_leads_lama, total_cold: row.siang_total_cold, total_warm: row.siang_total_warm,
       total_hot: row.siang_total_hot, total_nominal_closing: row.siang_total_nominal_closing,
+      total_closing_count: row.siang_total_closing_count, total_followup_sistem: row.siang_total_followup_sistem,
       is_late: row.siang_is_late, filled_at: row.siang_filled_at, approved_at: row.siang_approved_at
     } : { filled:false },
     sore: row ? {
@@ -23009,6 +23010,7 @@ async function renderTrackingOwnView(root) {
       leads_masuk: row.sore_leads_masuk, leads_terlayani: row.sore_leads_terlayani,
       fu_leads_lama: row.sore_fu_leads_lama, total_cold: row.sore_total_cold, total_warm: row.sore_total_warm,
       total_hot: row.sore_total_hot, total_nominal_closing: row.sore_total_nominal_closing,
+      total_closing_count: row.sore_total_closing_count, total_followup_sistem: row.sore_total_followup_sistem,
       is_late: row.sore_is_late, filled_at: row.sore_filled_at, approved_at: row.sore_approved_at
     } : { filled:false }
   };
@@ -23026,6 +23028,8 @@ async function renderTrackingOwnView(root) {
       <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(232,184,110,.22);color:#e8a840">${TRK_ICO.warm}</div><b>${row ? row.total_warm : 0}</b><span>Total Warm</span></div>
       <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(232,112,112,.22);color:#e87070">${TRK_ICO.hot}</div><b>${row ? row.total_hot : 0}</b><span>Total Hot</span></div>
       <div class="trk-recap-box hi" style="grid-column:span 2"><div class="rb-ico" style="background:rgba(122,191,142,.2);color:var(--green)">${TRK_ICO.closing}</div><b style="font-size:17px">${crmFmtRupiah(row ? row.total_nominal_closing : 0)}</b><span>Total Nominal Closing</span></div>
+      <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(232,184,110,.2);color:var(--gold)">${TRK_ICO.closingCount}</div><b>${row ? row.total_closing_count : 0}</b><span>Total Closing</span></div>
+      <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(232,112,112,.18);color:#e87070">${TRK_ICO.sysFollowup}</div><b>${row ? row.total_followup_sistem : 0}</b><span>Follow Up by Sistem</span></div>
     </div>
     <div style="font-size:11px;color:var(--muted);text-align:center">Laporan harian di atas otomatis digabung dari slot Siang (12:00) &amp; Sore (17:00).</div>
 
@@ -23598,6 +23602,8 @@ function trkSlotCardHtml(s, data) {
       <div class="trk-mini tm-cold"><div class="tm-ico">${TRK_ICO.cold}</div><div class="tm-body"><b>${data.total_cold}</b><span>Cold</span></div></div>
       <div class="trk-mini tm-warm"><div class="tm-ico">${TRK_ICO.warm}</div><div class="tm-body"><b>${data.total_warm}</b><span>Warm</span></div></div>
       <div class="trk-mini tm-hot"><div class="tm-ico">${TRK_ICO.hot}</div><div class="tm-body"><b>${data.total_hot}</b><span>Hot</span></div></div>
+      <div class="trk-mini tm-closingcount"><div class="tm-ico">${TRK_ICO.closingCount}</div><div class="tm-body"><b>${data.total_closing_count||0}</b><span>Jumlah Closing</span></div></div>
+      <div class="trk-mini tm-sysfu"><div class="tm-ico">${TRK_ICO.sysFollowup}</div><div class="tm-body"><b>${data.total_followup_sistem||0}</b><span>FU by Sistem</span></div></div>
     </div>
     <div class="trk-closing-bar"><div class="tm-ico">${TRK_ICO.closing}</div><div><span class="cb-label">Total Nominal Closing</span><span class="cb-val">${crmFmtRupiah(data.total_nominal_closing)}</span></div></div>
     ` : `<div style="font-size:12px;color:var(--muted)">Isi laporan sebelum jam ${s.time} ya, biar nggak kelewat deadline.</div>`}
