@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<meta name="dhp-build" content="2026-09-19T02-00-00-v94c"/>
+<meta name="dhp-build" content="2026-09-28T00-00-00-v95"/>
 <title>DHP Creative — Command Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Shippori+Mincho:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
@@ -23910,6 +23910,22 @@ function trkIsSunday(dateStr) {
    ("Belum Ngisi Laporan Terbanyak") — supaya definisi "hari kerja" &
    "belum lapor" (Minggu = libur, tidak dihitung) konsisten di kedua
    tempat, tidak dihitung dua cara yang beda. */
+// v95: urutan tampil staff di Tracking Report (Rekap Harian & Bulanan) —
+// Erni, Puji, Yuna, Murni, Fiqi, lalu Galih paling bawah. Nama lain (staff
+// baru) otomatis diselipkan sebelum Galih, urut abjad.
+const TRK_STAFF_ORDER = ['erni','puji','yuna','murni','fiqi'];
+function trkStaffRank(name) {
+  const n = String(name || '').trim().toLowerCase().split(/\s+/)[0];
+  if (n === 'galih') return 999;
+  const i = TRK_STAFF_ORDER.indexOf(n);
+  return i === -1 ? 500 : i;
+}
+function trkSortStaffRows(list) {
+  return (list || []).slice().sort((a, b) =>
+    trkStaffRank(a.full_name) - trkStaffRank(b.full_name) ||
+    String(a.full_name || '').localeCompare(String(b.full_name || '')));
+}
+
 function trkComputeStaffMonthlyStats(rows) {
   if (!rows || !rows.length) return [];
   const byUser = {};
@@ -23926,7 +23942,7 @@ function trkComputeStaffMonthlyStats(rows) {
     const pct = daysTotal ? Math.round((daysComplete / daysTotal) * 100) : 0;
     const missing = workDates.filter(d => !(d.siang_filled && d.sore_filled));
     return { user_id: uid, full_name: u.full_name, role: u.role, daysTotal, daysComplete, pct, missing, missingCount: missing.length };
-  });
+  }).sort((a, b) => trkStaffRank(a.full_name) - trkStaffRank(b.full_name) || String(a.full_name||'').localeCompare(String(b.full_name||'')));
 }
 
 async function trkLoadTeamMonthlyRecap() {
@@ -24161,8 +24177,8 @@ async function trkLoadTeamRecap() {
       dbQ(d => d.rpc('get_tracking_recap_team', { p_date: _trkTeamDate })),
       dbQ(d => d.rpc('get_tracking_recap_team', { p_date: yDate }))
     ]);
-    rows = (res && res.data) || [];
-    yRows = (resY && resY.data) || [];
+    rows = trkSortStaffRows((res && res.data) || []);
+    yRows = trkSortStaffRows((resY && resY.data) || []);
   } catch (e) { console.warn('[DHP] get_tracking_recap_team gagal:', e); }
   _trkTeamRows = rows;
 
