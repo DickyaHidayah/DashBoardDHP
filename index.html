@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<meta name="dhp-build" content="2026-09-28T03-00-00-v96"/>
+<meta name="dhp-build" content="2026-09-29T00-00-00-v97"/>
 <title>DHP Creative — Command Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Shippori+Mincho:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
@@ -2967,6 +2967,12 @@ body.light .ovt-owner-card{background:#f7f7f8}
 .adtask-card.cat-Product{border-left-color:var(--blue)}
 .adtask-card.cat-B2B{border-left-color:var(--amber)}
 .atc-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+/* v97 — tombol hapus task iklan (moderator-only) */
+.atc-del-btn{margin-left:auto;flex-shrink:0;width:24px;height:24px;border-radius:7px;border:1px solid transparent;
+  background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:.15s ease}
+.atc-del-btn:hover:not(:disabled){background:rgba(232,112,112,.12);border-color:rgba(232,112,112,.35);color:var(--red)}
+.atc-del-btn:disabled{opacity:.25;cursor:not-allowed}
 .atc-head-badges{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 /* v51: badge sumber task — Ads Schedule (dari moderator publish iklan) vs
    Harian (dari ensure_daily_task) — biar jelas asalnya, terutama saat ada
@@ -5948,6 +5954,11 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
               <button class="ads-vt-btn active" id="adtask-f-active" onclick="setTaskFilter('active',this)" data-i18n="taskFilterActive">Aktif</button>
               <button class="ads-vt-btn" id="adtask-f-done" onclick="setTaskFilter('done',this)" data-i18n="taskFilterDone">Selesai</button>
             </div>
+            <!-- v97: Moderator-only — hapus semua task yang sedang tampil (yang
+                 sudah ada leads-nya otomatis dilewati, tidak ikut terhapus) -->
+            <button class="btn-g btn-sm" id="adtask-delall-btn" onclick="confirmDeleteAllAdTasks()" style="display:none;color:var(--red);border-color:rgba(232,112,112,.4)" title="Hapus semua task iklan yang sedang tampil (task yang sudah ada leads-nya dilewati)">
+              🗑 Hapus Semua
+            </button>
           </div>
         </div>
         <div class="adtask-grid" id="adtask-grid"></div>
@@ -16501,7 +16512,9 @@ const CRM_ICONS = {
   chart: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.6 14.4V1.6M1.6 14.4h12.8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><rect x="3.7" y="9" width="2" height="4.4" rx=".4" fill="currentColor"/><rect x="7" y="6" width="2" height="7.4" rx=".4" fill="currentColor"/><rect x="10.3" y="3.2" width="2" height="10.2" rx=".4" fill="currentColor"/></svg>',
   database: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="8" cy="3.4" rx="5.6" ry="2" stroke="currentColor" stroke-width="1.2"/><path d="M2.4 3.4v9.2c0 1.1 2.5 2 5.6 2s5.6-.9 5.6-2V3.4" stroke="currentColor" stroke-width="1.2"/><path d="M2.4 8c0 1.1 2.5 2 5.6 2s5.6-.9 5.6-2" stroke="currentColor" stroke-width="1.2"/></svg>',
   crown: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 12.4l-1-6.8 3.2 2.4L8 3l3.8 5 3.2-2.4-1 6.8H2z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M2.4 14h11.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>',
-  clock: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8.4" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M8 5.2v3.4l2.4 1.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.6 1.4h4.8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>'
+  clock: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8.4" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M8 5.2v3.4l2.4 1.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.6 1.4h4.8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>',
+  // v97: tempat sampah — tombol hapus task iklan
+  trash: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 4.2h10.8" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M6.2 4.2V2.9c0-.4.3-.7.7-.7h2.2c.4 0 .7.3.7.7v1.3" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M4 4.2l.6 8.4c.05.7.6 1.2 1.3 1.2h4.2c.7 0 1.25-.5 1.3-1.2l.6-8.4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.6 7v3.6M9.4 7v3.6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>'
 };
 function crmIco(name, extra) { return `<span class="crm-ico-inline"${extra?` style="${extra}"`:''}>${CRM_ICONS[name]||''}</span>`; }
 
@@ -22311,8 +22324,11 @@ async function renderAdTaskPage() {
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.3"/><path d="M8.5 12.5l2.2 2.2L16 9.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <div>${taskPageFilter==='done' ? t('noDoneTasks') : t('noTasks')}</div>
     </div>`;
+    const delAllBtn0 = document.getElementById('adtask-delall-btn'); if (delAllBtn0) delAllBtn0.style.display = 'none';
     return;
   }
+  const delAllBtn = document.getElementById('adtask-delall-btn');
+  if (delAllBtn) delAllBtn.style.display = isMod ? '' : 'none';
 
   const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
   grid.innerHTML = list.map(tk => {
@@ -22357,6 +22373,7 @@ async function renderAdTaskPage() {
           ${tk.adId ? `<span class="cat-badge atc-src-badge is-ads">${crmIco('target')}<span>Ads Schedule</span></span>` : `<span class="cat-badge atc-src-badge is-daily">${crmIco('layers')}<span>Harian</span></span>`}
         </span>
         ${statusPill}
+        ${isMod ? `<button type="button" class="atc-del-btn" onclick="confirmDeleteAdTask('${tk.id}','${escHtml(tk.title).replace(/'/g,"\\'")}',${n})" title="${n ? 'Sudah ada '+n+' leads — hapus leads-nya dulu sebelum bisa hapus task ini' : 'Hapus task ini'}"${n ? ' disabled' : ''}>${crmIco('trash')}</button>` : ''}
       </div>
       <div class="atc-theme">${escHtml(tk.title)}</div>
       <div class="atc-meta">
@@ -22368,6 +22385,69 @@ async function renderAdTaskPage() {
       <div class="atc-acts">${actions}</div>
     </div>`;
   }).join('');
+}
+
+// v97 — Hapus Task Iklan (moderator-only). Task yang SUDAH ada leads-nya
+// sengaja tidak bisa dihapus langsung (tombolnya disabled) supaya data leads
+// yang sudah masuk CRM/Database Customer tidak jadi yatim (orphan) — leads-
+// nya harus dipindah/dihapus dulu lewat halaman Ads Customers kalau memang
+// mau task ini ikut dihapus juga.
+function confirmDeleteAdTask(taskId, title, leadCount) {
+  if (!can.isMod(currentUser?.role)) return;
+  if (leadCount > 0) { toast(`Task ini sudah punya ${leadCount} leads — hapus/pindahkan leads-nya dulu di Ads Customers sebelum task-nya bisa dihapus.`); return; }
+  document.getElementById('m-title').textContent = 'Hapus Task Iklan';
+  document.getElementById('m-body').innerHTML = `
+    <div style="font-size:13px;color:var(--text2);line-height:1.6">
+      Yakin mau hapus task <b style="color:var(--text)">"${escHtml(title)}"</b>? Task ini belum ada leads-nya, jadi aman dihapus. Tindakan ini <b style="color:var(--red)">tidak bisa dibatalkan</b>.
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button>
+    <button class="btn-sm" style="background:var(--red);color:#fff" onclick="_doDeleteAdTask('${taskId}')">🗑 Ya, Hapus</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+async function _doDeleteAdTask(taskId) {
+  const res = await dbQ(d => d.from('ad_tasks').delete().eq('id', taskId));
+  if (res && res.error) { toast('Gagal menghapus task: ' + res.error.message); return; }
+  adTasks = adTasks.filter(x => x.id !== taskId);
+  closeModal();
+  toast('Task iklan dihapus ✓');
+  renderAdTaskPage();
+}
+
+// v97 — Hapus Semua (moderator-only). Cuma menghapus task yang lagi tampil
+// di filter aktif (Aktif/Selesai) DAN belum ada leads-nya; task yang sudah
+// ada leads-nya otomatis DILEWATI (tidak ikut terhapus) supaya data leads
+// tidak jadi yatim, dan jumlah yang dilewati dilaporkan di akhir.
+async function confirmDeleteAllAdTasks() {
+  if (!can.isMod(currentUser?.role)) return;
+  let list = taskPageFilter === 'done'
+    ? adTasks.filter(tk => tk.status === 'done')
+    : adTasks.filter(tk => tk.status !== 'done');
+  const deletable = list.filter(tk => !(taskLeadCount[tk.id] > 0));
+  const skipped = list.length - deletable.length;
+  if (!list.length) { toast('Tidak ada task untuk dihapus di tampilan ini.'); return; }
+  document.getElementById('m-title').textContent = 'Hapus Semua Task Iklan';
+  document.getElementById('m-body').innerHTML = `
+    <div style="font-size:13px;color:var(--text2);line-height:1.6">
+      Akan menghapus <b style="color:var(--red)">${deletable.length} task</b> yang sedang tampil (filter "${taskPageFilter==='done'?'Selesai':'Aktif'}") dan belum ada leads-nya.
+      ${skipped ? `<br><span style="color:var(--amber)">${skipped} task lain dilewati</span> karena sudah punya leads — hapus/pindahkan leads-nya dulu kalau memang mau ikut dihapus.` : ''}
+      <br><br>Tindakan ini <b style="color:var(--red)">tidak bisa dibatalkan</b>. Lanjutkan?
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button>
+    <button class="btn-sm" style="background:var(--red);color:#fff" onclick="_doDeleteAllAdTasks()" ${deletable.length?'':'disabled'}>🗑 Ya, Hapus ${deletable.length} Task</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+  window._adDeletableIds = deletable.map(tk => tk.id);
+}
+async function _doDeleteAllAdTasks() {
+  const ids = window._adDeletableIds || [];
+  if (!ids.length) { closeModal(); return; }
+  const res = await dbQ(d => d.from('ad_tasks').delete().in('id', ids));
+  if (res && res.error) { toast('Gagal menghapus sebagian/semua task: ' + res.error.message); return; }
+  adTasks = adTasks.filter(x => !ids.includes(x.id));
+  closeModal();
+  toast(`${ids.length} task iklan dihapus ✓`);
+  renderAdTaskPage();
 }
 
 /* ═══════════════════════════════════════════════════════════
