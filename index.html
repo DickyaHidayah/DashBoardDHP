@@ -4366,57 +4366,48 @@ body.light .ktr-bar{background:rgba(0,0,0,.06)}
 .lb-title-ico svg{width:14px;height:14px}
 .lb-live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(122,191,142,.55);animation:lbDotPulse 1.8s ease-out infinite;flex-shrink:0}
 @keyframes lbDotPulse{0%{box-shadow:0 0 0 0 rgba(122,191,142,.5)}70%{box-shadow:0 0 0 6px rgba(122,191,142,0)}100%{box-shadow:0 0 0 0 rgba(122,191,142,0)}}
-/* v101 — Juara Bulan Lalu: kartu vertikal MENGAMBANG di celah kosong
-   sebelah podium (bukan banner full-width lagi), TANPA border, dengan
-   animasi yang terus hidup — aura keemasan berdenyut, kartu melayang
-   pelan (float), dan nama berkilau terus-menerus. Interactive: membesar
-   & aura-nya makin terang pas di-hover. */
-.lb-podium{position:relative} /* anchor utk kartu mengambang */
-.lb-prev-champ{position:absolute;left:0;top:50%;width:148px;z-index:2;
-  display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;
-  padding:20px 14px 18px;border-radius:20px;cursor:default;border:none;
-  background:linear-gradient(165deg,rgba(38,32,22,.9),rgba(24,20,14,.92));
-  box-shadow:0 14px 40px rgba(0,0,0,.35),0 0 0 1px rgba(201,169,110,.12) inset;
-  animation:lbChampFloat 5s ease-in-out infinite,lbChampGlowPulse 3.2s ease-in-out infinite,lbChampIn .7s cubic-bezier(.16,1,.3,1) both;
-  transition:transform .35s cubic-bezier(.34,1.56,.64,1),box-shadow .35s ease}
-.lb-prev-champ:hover{transform:translateY(calc(-50% - 6px)) scale(1.055);
-  box-shadow:0 20px 54px rgba(0,0,0,.45),0 0 0 1px rgba(201,169,110,.28) inset,0 0 36px rgba(201,169,110,.3)}
-@keyframes lbChampIn{from{opacity:0;transform:translateY(calc(-50% + 10px)) scale(.92)}to{opacity:1;transform:translateY(-50%) scale(1)}}
-@keyframes lbChampFloat{0%,100%{transform:translateY(-50%)}50%{transform:translateY(calc(-50% - 7px))}}
-@keyframes lbChampGlowPulse{0%,100%{box-shadow:0 14px 40px rgba(0,0,0,.35),0 0 0 1px rgba(201,169,110,.1) inset,0 0 18px rgba(201,169,110,.08)}
-  50%{box-shadow:0 14px 40px rgba(0,0,0,.35),0 0 0 1px rgba(201,169,110,.22) inset,0 0 30px rgba(201,169,110,.22)}}
-.lb-prev-champ-aura{position:absolute;inset:-30%;z-index:-1;border-radius:50%;
-  background:radial-gradient(circle,rgba(201,169,110,.22),transparent 70%);
-  animation:lbChampAura 4s ease-in-out infinite}
-@keyframes lbChampAura{0%,100%{opacity:.5;transform:scale(.9)}50%{opacity:1;transform:scale(1.08)}}
-.lb-prev-champ-ico{position:relative;width:34px;height:34px;border-radius:50%;margin-bottom:4px;
-  display:flex;align-items:center;justify-content:center;color:var(--gold-hi,#e8cc99);
-  background:radial-gradient(circle,rgba(201,169,110,.3),rgba(201,169,110,.08));
-  animation:lbChampIconSpin 7s linear infinite}
-.lb-prev-champ-ico svg{width:17px;height:17px}
-@keyframes lbChampIconSpin{0%,92%,100%{transform:rotate(0)}96%{transform:rotate(-8deg)}}
-.lb-prev-champ-lbl{font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;color:rgba(232,228,220,.45);margin-top:2px}
-.lb-prev-champ-period{font-size:9px;letter-spacing:.03em;color:rgba(201,169,110,.65);margin-bottom:2px}
-.lb-prev-champ-name{position:relative;font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;
-  letter-spacing:.015em;line-height:1.2;
-  background:linear-gradient(100deg,#c9a96e 15%,#f3e3bd 35%,#fff8e8 50%,#f3e3bd 65%,#c9a96e 85%);
-  background-size:260% auto;-webkit-background-clip:text;background-clip:text;color:transparent;
-  animation:lbChampShimmer 3.6s linear infinite}
-@keyframes lbChampShimmer{0%{background-position:0% center}100%{background-position:-260% center}}
-.lb-prev-champ-host{display:inline-flex;align-items:center;gap:3px;font-family:'Inter',sans-serif;font-size:7.5px;
-  font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(232,112,112,.16);
-  color:#f0a0a0;text-transform:uppercase;letter-spacing:.03em;margin-top:3px}
-.lb-prev-champ-host svg{width:7.5px;height:7.5px}
-.lb-prev-champ-stat{margin-top:7px;font-size:13px;font-weight:700;color:var(--gold,#c9a96e);font-variant-numeric:tabular-nums}
-.lb-prev-champ-sub{font-size:9.5px;color:rgba(232,228,220,.4);font-variant-numeric:tabular-nums;margin-top:1px}
-@media(max-width:900px){
-  .lb-podium{flex-wrap:wrap}
-  .lb-prev-champ{position:static;top:auto;left:auto;flex-basis:100%;width:auto;max-width:280px;margin:0 auto 18px;
-    flex-direction:row;flex-wrap:wrap;justify-content:center;padding:14px 18px;animation:lbChampIn .6s cubic-bezier(.16,1,.3,1) both,lbChampGlowPulse 3.2s ease-in-out infinite}
-  .lb-prev-champ:hover{transform:scale(1.03)}
-  .lb-prev-champ-ico{margin-bottom:0;margin-right:4px}
-  .lb-prev-champ-lbl,.lb-prev-champ-period{width:100%}
-}
+/* v101 — Juara Bulan Lalu: kartu TOP 1-3 di samping podium, ngisi ruang
+   kosong di kiri. Glow & shimmer jalan TERUS (bukan cuma sekali), tiap
+   baris interaktif pas di-hover — elegan & mewah tanpa jadi berisik. */
+.lb-podium-row{display:flex;align-items:center;gap:22px;justify-content:center;flex-wrap:wrap}
+.lb-podium-row .lb-podium{margin-bottom:0;flex:1 1 auto}
+
+.lb-prevtop-panel{position:relative;overflow:hidden;flex-shrink:0;width:208px;align-self:center;
+  padding:16px 16px 12px;border-radius:16px;background:var(--surface,#1e1b17);
+  border:1px solid rgba(201,169,110,.22);
+  opacity:0;transform:translateX(-10px);animation:lbPrevIn .6s cubic-bezier(.16,1,.3,1) forwards;
+  transition:transform .25s ease,border-color .25s ease}
+.lb-prevtop-panel:hover{transform:translateX(0) translateY(-2px);border-color:rgba(201,169,110,.45)}
+@keyframes lbPrevIn{to{opacity:1;transform:translateX(0)}}
+/* glow border yang nyala & "napas" terus-menerus, halus */
+.lb-prevtop-glow{position:absolute;inset:-1px;border-radius:17px;z-index:0;pointer-events:none;
+  background:conic-gradient(from 0deg,rgba(201,169,110,0),rgba(201,169,110,.55),rgba(201,169,110,0) 35%);
+  animation:lbPrevSpin 6s linear infinite;opacity:.55}
+@keyframes lbPrevSpin{to{transform:rotate(360deg)}}
+.lb-prevtop-panel::after{content:'';position:absolute;inset:1px;border-radius:15px;background:var(--surface,#1e1b17);z-index:0}
+.lb-prevtop-shine{position:absolute;top:0;left:-60%;width:40%;height:100%;z-index:1;pointer-events:none;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.14),transparent);
+  transform:skewX(-20deg);animation:lbPrevShine 3.2s ease-in-out infinite}
+@keyframes lbPrevShine{0%{left:-60%}55%{left:130%}100%{left:130%}}
+.lb-prevtop-head{position:relative;z-index:1;display:flex;align-items:center;gap:6px;margin-bottom:11px;
+  font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.lb-prevtop-ico{display:flex;color:var(--gold)}
+.lb-prevtop-ico svg{width:12px;height:12px}
+.lb-prevtop-ym{margin-left:auto;font-size:8.5px;letter-spacing:.02em;text-transform:none;color:var(--muted);opacity:.75}
+.lb-prevtop-rows{position:relative;z-index:1;display:flex;flex-direction:column;gap:3px}
+.lb-prevtop-row{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:9px;
+  cursor:default;transition:background .2s ease,transform .2s ease}
+.lb-prevtop-row:hover{background:rgba(201,169,110,.08);transform:translateX(2px)}
+.lb-prevtop-row.r1:hover{background:rgba(201,169,110,.13)}
+.lb-prevtop-medal{font-size:15px;flex-shrink:0;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+.lb-prevtop-info{display:flex;flex-direction:column;gap:1px;min-width:0}
+.lb-prevtop-name{font-family:'Cormorant Garamond',serif;font-size:13.5px;font-weight:600;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:4px}
+.lb-prevtop-row.r1 .lb-prevtop-name{color:var(--gold-hi)}
+.lb-prevtop-host{display:inline-flex;color:#e87070;flex-shrink:0}
+.lb-prevtop-host svg{width:9px;height:9px}
+.lb-prevtop-stat{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
+@media(max-width:860px){.lb-podium-row{flex-direction:column}.lb-prevtop-panel{width:100%;max-width:340px}}
 
 .lb-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px}
 .lb-countdown,.lb-updated-wrap{display:flex;align-items:center;gap:7px}
@@ -27356,7 +27347,7 @@ const LB_ICO = {
 let lbChannel = null;
 let lbCurrentYm = null;
 let lbCache = null;
-let lbPrevChampionCache = undefined; // v100: undefined = belum di-fetch, null = sudah dicoba tapi kosong
+let lbPrevTop3Cache = undefined; // v101: undefined = belum di-fetch, null = sudah dicoba tapi kosong (array of up to 3)
 let lbRealtimeTimer = null;
 
 function lbTodayJakarta() {
@@ -27570,14 +27561,14 @@ async function renderLeaderboardPage() {
   // v100: juara bulan lalu — fetch SEKALI per sesi (bukan ikut filter
   // periode yang lagi dilihat), cache-nya dipakai terus selama halaman
   // ini kebuka supaya tidak nge-query ulang tiap ganti filter/Muat Ulang.
-  if (lbPrevChampionCache === undefined) {
-    lbPrevChampionCache = null; // tandai "lagi diproses" biar ga nembak dobel kalau dipanggil cepat berturutan
+  if (lbPrevTop3Cache === undefined) {
+    lbPrevTop3Cache = null; // tandai "lagi diproses" biar ga nembak dobel kalau dipanggil cepat berturutan
     try {
       const prevYm = lbYmPrev(lbYmNow());
       const prevData = await lbFetchData(prevYm);
-      const top1 = (prevData.rows || []).find(r => r.sales > 0) || null;
-      lbPrevChampionCache = top1 ? { ...top1, ymLabel: lbYmLabel(prevYm) } : null;
-    } catch (e) { console.warn('[DHP] fetch juara bulan lalu gagal:', e); lbPrevChampionCache = null; }
+      const top3 = (prevData.rows || []).filter(r => r.sales > 0).slice(0, 3);
+      lbPrevTop3Cache = top3.length ? top3.map(r => ({ ...r, ymLabel: lbYmLabel(prevYm) })) : null;
+    } catch (e) { console.warn('[DHP] fetch juara bulan lalu gagal:', e); lbPrevTop3Cache = null; }
   }
 
   lbRenderContent(root, data);
@@ -27614,7 +27605,7 @@ function lbRenderContent(root, data) {
     </div>`;
 
   root.innerHTML = topbarHtml
-    + lbPodiumHtml(top3)
+    + `<div class="lb-podium-row">${lbPrevTop3PanelHtml()}${lbPodiumHtml(top3)}</div>`
     + lbAchievementsHtml(ach)
     + lbDiagramHtml(rows)
     + lbListHtml(rest, top3.length, meId, rows.length);
@@ -27624,36 +27615,42 @@ function lbRenderContent(root, data) {
   lbAnimateCountUps(root);
 }
 
-// v100 — "Juara Bulan Lalu": banner kecil & elegan di atas leaderboard,
-// nunjukin siapa peringkat #1 bulan sebelumnya (independen dari filter
-// periode yang lagi dibuka). Kalau belum ada data/juara, tidak render apa-apa.
-function lbPrevChampionHtml() {
-  const u = lbPrevChampionCache;
-  if (!u || !u.name) return '';
-  const hasTarget = u.target > 0;
-  const statTxt = hasTarget ? `${Math.round(u.pct * 100)}% target` : crmFmtRupiah(u.sales);
-  const subTxt = hasTarget ? crmFmtRupiah(u.sales) : '';
+// v101 — "Juara Bulan Lalu": kartu kecil elegan di SAMPING podium (ngisi
+// ruang kosong di kiri), nunjukin TOP 1-3 bulan sebelumnya (independen dari
+// filter periode yang lagi dibuka). Glow & shimmer jalan terus halus, tiap
+// baris interaktif (hover). Kalau belum ada data, tidak render apa-apa.
+function lbPrevTop3PanelHtml() {
+  const list = lbPrevTop3Cache;
+  if (!list || !list.length) return '';
+  const medal = ['🥇', '🥈', '🥉'];
+  const rowsHtml = list.map((u, i) => {
+    const hasTarget = u.target > 0;
+    const statTxt = hasTarget ? `${Math.round(u.pct * 100)}% target` : crmFmtRupiah(u.sales);
+    return `
+      <div class="lb-prevtop-row r${i + 1}">
+        <span class="lb-prevtop-medal">${medal[i]}</span>
+        <span class="lb-prevtop-info">
+          <span class="lb-prevtop-name">${escHtml(u.name)}${u.isHostLive ? ` <span class="lb-prevtop-host">${LB_ICO.camera}</span>` : ''}</span>
+          <span class="lb-prevtop-stat">${statTxt}</span>
+        </span>
+      </div>`;
+  }).join('');
   return `
-    <div class="lb-prev-champ" title="Juara bulan lalu: ${escHtml(u.name)} — ${escHtml(u.ymLabel)}">
-      <span class="lb-prev-champ-aura"></span>
-      <span class="lb-prev-champ-ico">${LB_ICO.crown}</span>
-      <span class="lb-prev-champ-lbl">Juara Bulan Lalu</span>
-      <span class="lb-prev-champ-period">${escHtml(u.ymLabel)}</span>
-      <span class="lb-prev-champ-name">${escHtml(u.name)}</span>
-      ${u.isHostLive ? `<span class="lb-prev-champ-host">${LB_ICO.camera} Host Live</span>` : ''}
-      <span class="lb-prev-champ-stat">${statTxt}</span>
-      ${subTxt ? `<span class="lb-prev-champ-sub">${subTxt}</span>` : ''}
+    <div class="lb-prevtop-panel">
+      <span class="lb-prevtop-glow"></span>
+      <span class="lb-prevtop-shine"></span>
+      <div class="lb-prevtop-head"><span class="lb-prevtop-ico">${LB_ICO.crown}</span>Juara Bulan Lalu<span class="lb-prevtop-ym">${escHtml(list[0].ymLabel)}</span></div>
+      <div class="lb-prevtop-rows">${rowsHtml}</div>
     </div>`;
 }
 
 function lbPodiumHtml(top3) {
-  const champHtml = lbPrevChampionHtml(); // v101: kartu "Juara Bulan Lalu" ngambang di dalam podium
   if (!top3.length || top3.every(u => !u || u.sales === 0)) {
-    return `<div class="lb-podium">${champHtml}<div class="lb-pod-empty">Belum ada data penjualan bulan ini — papan peringkat akan terisi begitu Tracking Report mulai diisi.</div></div>`;
+    return `<div class="lb-podium"><div class="lb-pod-empty">Belum ada data penjualan bulan ini — papan peringkat akan terisi begitu Tracking Report mulai diisi.</div></div>`;
   }
   const order = [top3[1], top3[0], top3[2]];
   const ranks = [2, 1, 3];
-  let html = `<div class="lb-podium">${champHtml}`;
+  let html = '<div class="lb-podium">';
   order.forEach((u, idx) => {
     const rank = ranks[idx];
     if (!u) { html += `<div class="lb-pod-card r${rank}" style="visibility:hidden"></div>`; return; }
