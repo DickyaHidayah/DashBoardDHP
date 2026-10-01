@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<meta name="dhp-build" content="2026-10-01T00-00-00-v99"/>
+<meta name="dhp-build" content="2026-10-01T02-00-00-v100"/>
 <title>DHP Creative — Command Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Shippori+Mincho:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
@@ -4366,6 +4366,34 @@ body.light .ktr-bar{background:rgba(0,0,0,.06)}
 .lb-title-ico svg{width:14px;height:14px}
 .lb-live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(122,191,142,.55);animation:lbDotPulse 1.8s ease-out infinite;flex-shrink:0}
 @keyframes lbDotPulse{0%{box-shadow:0 0 0 0 rgba(122,191,142,.5)}70%{box-shadow:0 0 0 6px rgba(122,191,142,0)}100%{box-shadow:0 0 0 0 rgba(122,191,142,0)}}
+/* v100 — Juara Bulan Lalu: banner kecil, elegan, minimalis, dengan shimmer
+   emas halus yang nyapu berkala (bukan efek rame terus-menerus) */
+.lb-prev-champ{position:relative;overflow:hidden;display:flex;align-items:center;gap:10px;
+  margin-bottom:14px;padding:9px 16px;border-radius:30px;
+  background:linear-gradient(100deg,rgba(201,169,110,.08),rgba(201,169,110,.14),rgba(201,169,110,.08));
+  border:1px solid rgba(201,169,110,.28);
+  opacity:0;transform:translateY(-6px);animation:lbChampIn .6s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes lbChampIn{to{opacity:1;transform:translateY(0)}}
+.lb-prev-champ-shine{position:absolute;top:0;left:-40%;width:30%;height:100%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);
+  transform:skewX(-20deg);animation:lbChampShine 4.5s ease-in-out infinite;animation-delay:1s}
+@keyframes lbChampShine{0%{left:-40%}18%{left:130%}100%{left:130%}}
+.lb-prev-champ-ico{position:relative;flex-shrink:0;width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;color:var(--gold);
+  background:rgba(201,169,110,.16)}
+.lb-prev-champ-ico svg{width:13px;height:13px}
+.lb-prev-champ-text{position:relative;display:flex;flex-direction:column;gap:1px;min-width:0}
+.lb-prev-champ-lbl{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.lb-prev-champ-name{font-family:'Cormorant Garamond',serif;font-size:14.5px;font-weight:600;color:var(--gold-hi);
+  letter-spacing:.01em;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.lb-prev-champ-host{display:inline-flex;align-items:center;gap:3px;font-family:'Inter',sans-serif;font-size:8px;
+  font-weight:700;padding:1.5px 6px;border-radius:10px;background:rgba(232,112,112,.14);
+  border:1px solid rgba(232,112,112,.3);color:#e87070;text-transform:uppercase;letter-spacing:.03em}
+.lb-prev-champ-host svg{width:8px;height:8px}
+.lb-prev-champ-stat{position:relative;margin-left:auto;flex-shrink:0;font-size:11px;color:var(--text2);
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:560px){.lb-prev-champ{flex-wrap:wrap;border-radius:14px}.lb-prev-champ-stat{margin-left:36px}}
+
 .lb-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px}
 .lb-countdown,.lb-updated-wrap{display:flex;align-items:center;gap:7px}
 .lb-icotxt{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;color:var(--gold-hi);flex-shrink:0}
@@ -27304,6 +27332,7 @@ const LB_ICO = {
 let lbChannel = null;
 let lbCurrentYm = null;
 let lbCache = null;
+let lbPrevChampionCache = undefined; // v100: undefined = belum di-fetch, null = sudah dicoba tapi kosong
 let lbRealtimeTimer = null;
 
 function lbTodayJakarta() {
@@ -27316,6 +27345,12 @@ function lbYmNow() {
 function lbYmLabel(ym) {
   const [y, m] = ym.split('-').map(Number);
   return (LB_MONTHS_ID[m - 1] || '') + ' ' + y;
+}
+// v100: bulan sebelumnya dari ym manapun — dipakai buat banner "Juara Bulan Lalu"
+function lbYmPrev(ym) {
+  const [y, m] = ym.split('-').map(Number);
+  const d = new Date(y, m - 2, 1); // m-2 krn Date bulan 0-based, mundur 1 bulan dari (m-1)
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
 }
 function lbMonthBounds(ym) {
   const [y, m] = ym.split('-').map(Number);
@@ -27507,6 +27542,20 @@ async function renderLeaderboardPage() {
 
   const data = await lbFetchData(lbCurrentYm);
   lbCache = data;
+
+  // v100: juara bulan lalu — fetch SEKALI per sesi (bukan ikut filter
+  // periode yang lagi dilihat), cache-nya dipakai terus selama halaman
+  // ini kebuka supaya tidak nge-query ulang tiap ganti filter/Muat Ulang.
+  if (lbPrevChampionCache === undefined) {
+    lbPrevChampionCache = null; // tandai "lagi diproses" biar ga nembak dobel kalau dipanggil cepat berturutan
+    try {
+      const prevYm = lbYmPrev(lbYmNow());
+      const prevData = await lbFetchData(prevYm);
+      const top1 = (prevData.rows || []).find(r => r.sales > 0) || null;
+      lbPrevChampionCache = top1 ? { ...top1, ymLabel: lbYmLabel(prevYm) } : null;
+    } catch (e) { console.warn('[DHP] fetch juara bulan lalu gagal:', e); lbPrevChampionCache = null; }
+  }
+
   lbRenderContent(root, data);
 }
 
@@ -27540,7 +27589,8 @@ function lbRenderContent(root, data) {
       <div class="lb-updated"><span class="lb-live-dot"></span> Sinkron real-time · update terakhir ${generatedAt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</div>
     </div>`;
 
-  root.innerHTML = topbarHtml
+  root.innerHTML = lbPrevChampionHtml()
+    + topbarHtml
     + lbPodiumHtml(top3)
     + lbAchievementsHtml(ach)
     + lbDiagramHtml(rows)
@@ -27549,6 +27599,26 @@ function lbRenderContent(root, data) {
   if (isCurrentMonth) lbStartCountdown();
   lbAnimateBars();
   lbAnimateCountUps(root);
+}
+
+// v100 — "Juara Bulan Lalu": banner kecil & elegan di atas leaderboard,
+// nunjukin siapa peringkat #1 bulan sebelumnya (independen dari filter
+// periode yang lagi dibuka). Kalau belum ada data/juara, tidak render apa-apa.
+function lbPrevChampionHtml() {
+  const u = lbPrevChampionCache;
+  if (!u || !u.name) return '';
+  const hasTarget = u.target > 0;
+  const statTxt = hasTarget ? `${Math.round(u.pct * 100)}% target · ${crmFmtRupiah(u.sales)}` : crmFmtRupiah(u.sales);
+  return `
+    <div class="lb-prev-champ">
+      <span class="lb-prev-champ-shine"></span>
+      <span class="lb-prev-champ-ico">${LB_ICO.crown}</span>
+      <span class="lb-prev-champ-text">
+        <span class="lb-prev-champ-lbl">Juara Bulan Lalu · ${escHtml(u.ymLabel)}</span>
+        <span class="lb-prev-champ-name">${escHtml(u.name)}${u.isHostLive ? ` <span class="lb-prev-champ-host">${LB_ICO.camera} Host Live</span>` : ''}</span>
+      </span>
+      <span class="lb-prev-champ-stat">${statTxt}</span>
+    </div>`;
 }
 
 function lbPodiumHtml(top3) {
