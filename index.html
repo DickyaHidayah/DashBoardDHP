@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<meta name="dhp-build" content="2026-09-29T00-00-00-v97"/>
+<meta name="dhp-build" content="2026-09-29T02-00-00-v98"/>
 <title>DHP Creative — Command Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Shippori+Mincho:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
@@ -5176,6 +5176,15 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
               <option value="KOL & Influencer">KOL &amp; Influencer</option>
               <option value="Ads / Iklan Berbayar">Ads / Iklan Berbayar</option>
             </select>
+            <!-- v98: Export — gaya & posisi sama persis dengan Export Excel/PDF di Live Schedule -->
+            <div class="ls-export-tools" style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn-g btn-sm" id="budget-export-xlsx-btn" onclick="exportBudgetExcel()" title="Export pengeluaran bulan ini ke Excel — rapi siap dibagikan">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px"><rect x="1.6" y="2" width="12.8" height="10.6" rx="1.4" stroke="currentColor" stroke-width="1.2"/><path d="M1.6 5.4h12.8M5.6 2v10.6M9.7 2v10.6" stroke="currentColor" stroke-width="1"/></svg>Export Excel
+              </button>
+              <button class="btn-g btn-sm" id="budget-export-pdf-btn" onclick="exportBudgetPDF()" title="Export pengeluaran bulan ini ke PDF — siap cetak">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px"><path d="M4 1.6h5.2L12.4 4.8V13.4a1 1 0 01-1 1H4a1 1 0 01-1-1V2.6a1 1 0 011-1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M9.2 1.6V4.8H12.4" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M4.6 8h5.2M4.6 10.2h5.2M4.6 5.8h2.4" stroke="currentColor" stroke-width="1"/></svg>Export PDF
+              </button>
+            </div>
           </div>
         </div>
 
@@ -18390,6 +18399,184 @@ function renderBudgetTable() {
     </tr>`;
 }
 window.renderBudgetTable = renderBudgetTable;
+
+// v98 — data siap-ekspor: ikut filter Periode & Kategori yang lagi aktif di
+// layar, jadi apa yang di-export = persis apa yang lagi dilihat user.
+function _budgetExportRows() {
+  const ymRaw = document.getElementById('budget-month-filter')?.value || 'all';
+  const catFilter = document.getElementById('budget-cat-filter')?.value || 'all';
+  let periodRows = budgetCache.slice();
+  if (ymRaw !== 'all') periodRows = periodRows.filter(r => String(r.tanggal || '').slice(0, 7) === ymRaw);
+  let rows = periodRows.slice();
+  if (catFilter !== 'all') rows = rows.filter(r => r.kategori === catFilter);
+  rows.sort((a, b) => String(a.tanggal || '').localeCompare(String(b.tanggal || '')));
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const periodLabel = ymRaw === 'all' ? 'Semua Periode' : (() => {
+    const [y, m] = ymRaw.split('-'); return `${months[Number(m) - 1]} ${y}`;
+  })();
+  const catLabel = catFilter === 'all' ? 'Semua Kategori' : catFilter;
+  const total = rows.reduce((s, r) => s + (Number(r.jumlah) || 0), 0);
+  const byCat = {}; BUDGET_CATEGORIES.forEach(c => byCat[c.value] = 0);
+  periodRows.forEach(r => { byCat[r.kategori] = (byCat[r.kategori] || 0) + (Number(r.jumlah) || 0); });
+  return { rows, ymRaw, periodLabel, catLabel, total, byCat, months };
+}
+
+function exportBudgetExcel() {
+  if (!window.XLSX) { toast(t('crmNoLib')); return; }
+  const btn = document.getElementById('budget-export-xlsx-btn');
+  if (btn) btn.disabled = true;
+  try {
+    const { rows, ymRaw, periodLabel, catLabel, total, byCat, months } = _budgetExportRows();
+    const exportedBy = currentUser?.full_name || currentUser?.name || currentUser?.id || '—';
+    const stamp = new Date().toLocaleString('id-ID');
+
+    const aoa = [
+      ['DHP CREATIVE — BUDGET MARKETING'],
+      [''],
+      ['Periode', periodLabel, '', 'Kategori', catLabel],
+      ['Diekspor oleh', exportedBy, '', 'Tanggal Export', stamp],
+      [''],
+      ['Total Pengeluaran', total, '', 'Jumlah Entri', rows.length],
+      ['Software & Tools', byCat['Software & Tools'] || 0, '', 'KOL & Influencer', byCat['KOL & Influencer'] || 0, '', 'Ads / Iklan Berbayar', byCat['Ads / Iklan Berbayar'] || 0],
+      [''],
+      ['Tanggal', 'Kategori', 'Keterangan', 'PIC', 'Jumlah'],
+      ...rows.map(r => {
+        const pic = r.pic_id ? (getUserMeta(r.pic_id).name || r.pic_id) : '—';
+        const dObj = r.tanggal ? new Date(r.tanggal + 'T00:00:00') : null;
+        const tglTxt = dObj ? `${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}` : '—';
+        return [tglTxt, r.kategori, r.keterangan || '—', pic, Number(r.jumlah) || 0];
+      }),
+      ['', '', '', 'TOTAL', total]
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = [{wch:16},{wch:20},{wch:32},{wch:16},{wch:16}];
+    ws['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:4} }];
+    ws['!freeze'] = { xSplit: 0, ySplit: 9 };
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Budget Marketing');
+    const fname = `Budget_Marketing_${ymRaw === 'all' ? 'SemuaPeriode' : ymRaw}.xlsx`;
+    XLSX.writeFile(wb, fname);
+    toast('✓ Export Excel Budget Marketing selesai');
+    pushActivity?.(`Budget Marketing: export Excel (${periodLabel})`, 'info');
+  } catch (e) {
+    console.error('[DHP] exportBudgetExcel gagal:', e);
+    toast('Gagal export Excel: ' + (e.message || e));
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+window.exportBudgetExcel = exportBudgetExcel;
+
+async function exportBudgetPDF() {
+  if (!_pdfLibsReady()) { toast('Komponen PDF belum siap, coba lagi sebentar lagi'); return; }
+  const btn = document.getElementById('budget-export-pdf-btn');
+  const origHTML = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Menyiapkan PDF…'; }
+  try {
+    const { rows, ymRaw, periodLabel, catLabel, total, byCat } = _budgetExportRows();
+    const exportedBy = currentUser?.full_name || currentUser?.name || currentUser?.id || 'Moderator';
+    const genDate = new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+    const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit:'pt', format:'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const marginX = 40;
+    let y = 0;
+
+    // ── Header brand (gelap + aksen emas, konsisten dengan tema sistem) ──
+    doc.setFillColor(20, 20, 24);
+    doc.rect(0, 0, pageW, 92, 'F');
+    doc.setTextColor(201, 169, 110);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(18);
+    doc.text('DHP CREATIVE', marginX, 38);
+    doc.setTextColor(230, 230, 230); doc.setFontSize(11); doc.setFont('helvetica', 'normal');
+    doc.text(`Budget Marketing — ${catLabel}`, marginX, 58);
+    doc.setFontSize(9); doc.setTextColor(190, 190, 190);
+    doc.text(`${periodLabel}  ·  diekspor oleh ${exportedBy}  ·  dibuat ${genDate}`, marginX, 76);
+    doc.setTextColor(0, 0, 0);
+    y = 116;
+
+    // ── Kartu ringkasan ──
+    const kpis = [
+      [crmFmtRupiah(total), 'Total Pengeluaran'],
+      [String(rows.length), 'Jumlah Entri'],
+      [crmFmtRupiah(byCat['Software & Tools'] || 0), 'Software & Tools'],
+      [crmFmtRupiah(byCat['KOL & Influencer'] || 0), 'KOL & Influencer'],
+      [crmFmtRupiah(byCat['Ads / Iklan Berbayar'] || 0), 'Ads / Iklan Berbayar'],
+    ];
+    const gap = 8;
+    const colW = (pageW - marginX*2 - gap*(kpis.length-1)) / kpis.length;
+    kpis.forEach(([num, lbl], i) => {
+      const x = marginX + i*(colW+gap);
+      doc.setDrawColor(222,222,222); doc.setLineWidth(0.8);
+      doc.roundedRect(x, y, colW, 48, 4, 4);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(11.5); doc.setTextColor(178,138,68);
+      doc.text(doc.splitTextToSize(num, colW-14), x+8, y+21);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.4); doc.setTextColor(95,95,95);
+      doc.text(doc.splitTextToSize(lbl, colW-16), x+8, y+40);
+    });
+    y += 48 + 24;
+    doc.setTextColor(0,0,0);
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11.5); doc.setTextColor(30,30,30);
+    doc.text('Rincian Pengeluaran', marginX, y); y += 8;
+
+    if (rows.length) {
+      doc.autoTable({
+        head: [['Tanggal','Kategori','Keterangan','PIC','Jumlah']],
+        body: rows.map(r => {
+          const pic = r.pic_id ? (getUserMeta(r.pic_id).name || r.pic_id) : '—';
+          const dObj = r.tanggal ? new Date(r.tanggal + 'T00:00:00') : null;
+          const tglTxt = dObj ? `${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}` : '—';
+          return [tglTxt, r.kategori, r.keterangan || '—', pic, crmFmtRupiah(r.jumlah)];
+        }),
+        foot: [['', '', '', 'TOTAL', crmFmtRupiah(total)]],
+        startY: y + 6, margin: { left: marginX, right: marginX },
+        styles: { font:'helvetica', fontSize: 8.4, cellPadding: 5, textColor: [40,40,40], overflow:'linebreak', valign:'middle', lineColor:[214,206,188], lineWidth:0.6 },
+        headStyles: { fillColor: [26,26,30], textColor: [230,208,166], fontStyle:'bold', fontSize: 8.5 },
+        footStyles: { fillColor: [245,240,228], textColor: [30,30,30], fontStyle:'bold', fontSize: 8.6 },
+        columnStyles: { 4: { halign:'right', fontStyle:'bold' } },
+        alternateRowStyles: { fillColor: [248,246,241] },
+        theme: 'grid',
+        didParseCell: (data) => {
+          if (data.section === 'body' && data.column.index === 1) {
+            const v = String(data.cell.raw || '');
+            if (v.startsWith('Software')) { data.cell.styles.textColor = [110,140,170]; data.cell.styles.fontStyle = 'bold'; }
+            else if (v.startsWith('KOL')) { data.cell.styles.textColor = [178,138,68]; data.cell.styles.fontStyle = 'bold'; }
+            else if (v.startsWith('Ads')) { data.cell.styles.textColor = [190,70,70]; data.cell.styles.fontStyle = 'bold'; }
+          }
+        }
+      });
+      y = doc.lastAutoTable.finalY + 20;
+    } else {
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(120,120,120);
+      doc.text('Belum ada pengeluaran tercatat untuk periode/kategori ini.', marginX, y + 14);
+      doc.setTextColor(0,0,0);
+    }
+
+    // ── Footer nomor halaman ──
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(150,150,150);
+      doc.text(`DHP Creative — Budget Marketing, dibuat ${genDate}`, marginX, pageH - 20);
+      doc.text(`Halaman ${i}/${pageCount}`, pageW - marginX - 60, pageH - 20);
+    }
+
+    doc.save(`Budget_Marketing_${ymRaw === 'all' ? 'SemuaPeriode' : ymRaw}.pdf`);
+    toast('✓ Export PDF Budget Marketing selesai');
+    pushActivity?.(`Budget Marketing: export PDF (${periodLabel})`, 'info');
+  } catch (e) {
+    console.error('[DHP] exportBudgetPDF gagal:', e);
+    toast('Gagal export PDF: ' + (e.message || e));
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = origHTML || 'Export PDF'; }
+  }
+}
+window.exportBudgetPDF = exportBudgetPDF;
 
 function openBudgetModal(id) {
   if (blockIfOwner()) return;
