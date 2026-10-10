@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<meta name="dhp-build" content="2026-10-01T03-00-00-v101"/>
+<meta name="dhp-build" content="2026-10-10T00-00-00-v102"/>
 <title>DHP Creative — Command Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Shippori+Mincho:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
@@ -4366,48 +4366,57 @@ body.light .ktr-bar{background:rgba(0,0,0,.06)}
 .lb-title-ico svg{width:14px;height:14px}
 .lb-live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(122,191,142,.55);animation:lbDotPulse 1.8s ease-out infinite;flex-shrink:0}
 @keyframes lbDotPulse{0%{box-shadow:0 0 0 0 rgba(122,191,142,.5)}70%{box-shadow:0 0 0 6px rgba(122,191,142,0)}100%{box-shadow:0 0 0 0 rgba(122,191,142,0)}}
-/* v101 — Juara Bulan Lalu: kartu TOP 1-3 di samping podium, ngisi ruang
-   kosong di kiri. Glow & shimmer jalan TERUS (bukan cuma sekali), tiap
-   baris interaktif pas di-hover — elegan & mewah tanpa jadi berisik. */
-.lb-podium-row{display:flex;align-items:center;gap:22px;justify-content:center;flex-wrap:wrap}
-.lb-podium-row .lb-podium{margin-bottom:0;flex:1 1 auto}
-
-.lb-prevtop-panel{position:relative;overflow:hidden;flex-shrink:0;width:208px;align-self:center;
-  padding:16px 16px 12px;border-radius:16px;background:var(--surface,#1e1b17);
-  border:1px solid rgba(201,169,110,.22);
-  opacity:0;transform:translateX(-10px);animation:lbPrevIn .6s cubic-bezier(.16,1,.3,1) forwards;
-  transition:transform .25s ease,border-color .25s ease}
-.lb-prevtop-panel:hover{transform:translateX(0) translateY(-2px);border-color:rgba(201,169,110,.45)}
-@keyframes lbPrevIn{to{opacity:1;transform:translateX(0)}}
-/* glow border yang nyala & "napas" terus-menerus, halus */
-.lb-prevtop-glow{position:absolute;inset:-1px;border-radius:17px;z-index:0;pointer-events:none;
-  background:conic-gradient(from 0deg,rgba(201,169,110,0),rgba(201,169,110,.55),rgba(201,169,110,0) 35%);
-  animation:lbPrevSpin 6s linear infinite;opacity:.55}
-@keyframes lbPrevSpin{to{transform:rotate(360deg)}}
-.lb-prevtop-panel::after{content:'';position:absolute;inset:1px;border-radius:15px;background:var(--surface,#1e1b17);z-index:0}
-.lb-prevtop-shine{position:absolute;top:0;left:-60%;width:40%;height:100%;z-index:1;pointer-events:none;
-  background:linear-gradient(100deg,transparent,rgba(255,255,255,.14),transparent);
-  transform:skewX(-20deg);animation:lbPrevShine 3.2s ease-in-out infinite}
-@keyframes lbPrevShine{0%{left:-60%}55%{left:130%}100%{left:130%}}
-.lb-prevtop-head{position:relative;z-index:1;display:flex;align-items:center;gap:6px;margin-bottom:11px;
-  font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
-.lb-prevtop-ico{display:flex;color:var(--gold)}
-.lb-prevtop-ico svg{width:12px;height:12px}
-.lb-prevtop-ym{margin-left:auto;font-size:8.5px;letter-spacing:.02em;text-transform:none;color:var(--muted);opacity:.75}
-.lb-prevtop-rows{position:relative;z-index:1;display:flex;flex-direction:column;gap:3px}
-.lb-prevtop-row{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:9px;
-  cursor:default;transition:background .2s ease,transform .2s ease}
-.lb-prevtop-row:hover{background:rgba(201,169,110,.08);transform:translateX(2px)}
-.lb-prevtop-row.r1:hover{background:rgba(201,169,110,.13)}
-.lb-prevtop-medal{font-size:15px;flex-shrink:0;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
-.lb-prevtop-info{display:flex;flex-direction:column;gap:1px;min-width:0}
-.lb-prevtop-name{font-family:'Cormorant Garamond',serif;font-size:13.5px;font-weight:600;color:var(--text);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:4px}
-.lb-prevtop-row.r1 .lb-prevtop-name{color:var(--gold-hi)}
-.lb-prevtop-host{display:inline-flex;color:#e87070;flex-shrink:0}
-.lb-prevtop-host svg{width:9px;height:9px}
-.lb-prevtop-stat{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
-@media(max-width:860px){.lb-podium-row{flex-direction:column}.lb-prevtop-panel{width:100%;max-width:340px}}
+/* v101 — Juara Bulan Lalu: kartu vertikal MENGAMBANG di celah kosong
+   sebelah podium (bukan banner full-width lagi), TANPA border, dengan
+   animasi yang terus hidup — aura keemasan berdenyut, kartu melayang
+   pelan (float), dan nama berkilau terus-menerus. Interactive: membesar
+   & aura-nya makin terang pas di-hover. */
+.lb-podium{position:relative} /* anchor utk kartu mengambang */
+.lb-prev-champ{position:absolute;left:0;top:50%;width:148px;z-index:2;
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;
+  padding:20px 14px 18px;border-radius:20px;cursor:default;border:none;
+  background:linear-gradient(165deg,rgba(38,32,22,.9),rgba(24,20,14,.92));
+  box-shadow:0 14px 40px rgba(0,0,0,.35),0 0 0 1px rgba(201,169,110,.12) inset;
+  animation:lbChampFloat 5s ease-in-out infinite,lbChampGlowPulse 3.2s ease-in-out infinite,lbChampIn .7s cubic-bezier(.16,1,.3,1) both;
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1),box-shadow .35s ease}
+.lb-prev-champ:hover{transform:translateY(calc(-50% - 6px)) scale(1.055);
+  box-shadow:0 20px 54px rgba(0,0,0,.45),0 0 0 1px rgba(201,169,110,.28) inset,0 0 36px rgba(201,169,110,.3)}
+@keyframes lbChampIn{from{opacity:0;transform:translateY(calc(-50% + 10px)) scale(.92)}to{opacity:1;transform:translateY(-50%) scale(1)}}
+@keyframes lbChampFloat{0%,100%{transform:translateY(-50%)}50%{transform:translateY(calc(-50% - 7px))}}
+@keyframes lbChampGlowPulse{0%,100%{box-shadow:0 14px 40px rgba(0,0,0,.35),0 0 0 1px rgba(201,169,110,.1) inset,0 0 18px rgba(201,169,110,.08)}
+  50%{box-shadow:0 14px 40px rgba(0,0,0,.35),0 0 0 1px rgba(201,169,110,.22) inset,0 0 30px rgba(201,169,110,.22)}}
+.lb-prev-champ-aura{position:absolute;inset:-30%;z-index:-1;border-radius:50%;
+  background:radial-gradient(circle,rgba(201,169,110,.22),transparent 70%);
+  animation:lbChampAura 4s ease-in-out infinite}
+@keyframes lbChampAura{0%,100%{opacity:.5;transform:scale(.9)}50%{opacity:1;transform:scale(1.08)}}
+.lb-prev-champ-ico{position:relative;width:34px;height:34px;border-radius:50%;margin-bottom:4px;
+  display:flex;align-items:center;justify-content:center;color:var(--gold-hi,#e8cc99);
+  background:radial-gradient(circle,rgba(201,169,110,.3),rgba(201,169,110,.08));
+  animation:lbChampIconSpin 7s linear infinite}
+.lb-prev-champ-ico svg{width:17px;height:17px}
+@keyframes lbChampIconSpin{0%,92%,100%{transform:rotate(0)}96%{transform:rotate(-8deg)}}
+.lb-prev-champ-lbl{font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;color:rgba(232,228,220,.45);margin-top:2px}
+.lb-prev-champ-period{font-size:9px;letter-spacing:.03em;color:rgba(201,169,110,.65);margin-bottom:2px}
+.lb-prev-champ-name{position:relative;font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;
+  letter-spacing:.015em;line-height:1.2;
+  background:linear-gradient(100deg,#c9a96e 15%,#f3e3bd 35%,#fff8e8 50%,#f3e3bd 65%,#c9a96e 85%);
+  background-size:260% auto;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:lbChampShimmer 3.6s linear infinite}
+@keyframes lbChampShimmer{0%{background-position:0% center}100%{background-position:-260% center}}
+.lb-prev-champ-host{display:inline-flex;align-items:center;gap:3px;font-family:'Inter',sans-serif;font-size:7.5px;
+  font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(232,112,112,.16);
+  color:#f0a0a0;text-transform:uppercase;letter-spacing:.03em;margin-top:3px}
+.lb-prev-champ-host svg{width:7.5px;height:7.5px}
+.lb-prev-champ-stat{margin-top:7px;font-size:13px;font-weight:700;color:var(--gold,#c9a96e);font-variant-numeric:tabular-nums}
+.lb-prev-champ-sub{font-size:9.5px;color:rgba(232,228,220,.4);font-variant-numeric:tabular-nums;margin-top:1px}
+@media(max-width:900px){
+  .lb-podium{flex-wrap:wrap}
+  .lb-prev-champ{position:static;top:auto;left:auto;flex-basis:100%;width:auto;max-width:280px;margin:0 auto 18px;
+    flex-direction:row;flex-wrap:wrap;justify-content:center;padding:14px 18px;animation:lbChampIn .6s cubic-bezier(.16,1,.3,1) both,lbChampGlowPulse 3.2s ease-in-out infinite}
+  .lb-prev-champ:hover{transform:scale(1.03)}
+  .lb-prev-champ-ico{margin-bottom:0;margin-right:4px}
+  .lb-prev-champ-lbl,.lb-prev-champ-period{width:100%}
+}
 
 .lb-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px}
 .lb-countdown,.lb-updated-wrap{display:flex;align-items:center;gap:7px}
@@ -6287,6 +6296,7 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
             <div class="ps">Tugas harian closing sesuai pangkat &amp; progress mingguan, level Bronze → Diamond</div>
           </div>
           <div class="ph-acts">
+            <button class="btn-sm" id="csh-preview-btn" style="display:none" onclick="cshPreviewLevelUp(2)" title="Lihat tampilan popup Level Up (hanya preview, tidak mengubah data)">✦ Preview Level Up</button>
             <button class="btn-sm btn-gold" onclick="loadCsHunterPage()" title="Muat ulang">⟲ Muat Ulang</button>
           </div>
         </div>
@@ -8635,6 +8645,8 @@ async function initDashboard() {
   // Leaderboard — subscribe realtime langsung setelah login, pola sama seperti
   // Tracking Report: begitu ada tracking_reports/crm_customers/ad_tasks berubah,
   // papan peringkat ikut ter-refresh tanpa perlu klik Muat Ulang.
+  // v102: CS Hunter ⇄ Tracking Report — sinkron realtime + popup Level Up (CS Hunter sendiri, Moderator & Owner yang memantau)
+  if (can.isCsHunter(r) || isMod || isOwner) { try { initCsHunterSync(); } catch (e) { console.warn('[DHP] initCsHunterSync gagal:', e); } }
   if (true) { try { initLeaderboardRealtime(); } catch (e) { console.warn('[DHP] initLeaderboardRealtime gagal:', e); } } // v87: semua role bisa buka Leaderboard, jadi realtime-nya juga di-init utk semua
 
   try { renderStats(); renderActivity(); }
@@ -22931,7 +22943,7 @@ async function initCsHunterOwnBadge() {
   }
   try {
     const st = await csHunterEnsureState(currentUser.id);
-    if (st) renderSidebarTierBadge(st.tier_order);
+    if (st) { renderSidebarTierBadge(st.tier_order); cshCheckLevelUp(st); }
   } catch (e) { console.warn('[DHP] initCsHunterOwnBadge gagal:', e); }
 }
 
@@ -22950,10 +22962,30 @@ function cshMondayOf(d) {
 }
 function cshAddDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
 
+// v102 — SUMBER CLOSING GABUNGAN. Dulu cuma dihitung dari tabel `leads`
+// (category = 'Closing'). Sekarang ikut membaca "Jumlah Closing" di Tracking
+// Report (siang + sore). Per HARI diambil yang TERBESAR dari dua sumber itu
+// (bukan dijumlah) supaya closing yang dicatat di dua tempat sekaligus tidak
+// terhitung dobel, tapi closing yang cuma dilaporkan di salah satunya tetap masuk.
+async function csHunterClosingByDay(uid, wsStr, weStr) {
+  const [rl, rt] = await Promise.all([
+    dbQ(d => d.from('leads').select('ad_date')
+      .eq('owner_id', uid).eq('category', 'Closing').gte('ad_date', wsStr).lt('ad_date', weStr)),
+    Promise.resolve(dbQ(d => d.from('tracking_reports').select('report_date,total_closing_count')
+      .eq('user_id', uid).gte('report_date', wsStr).lt('report_date', weStr))).catch(() => null),
+  ]);
+  const fromLeads = {}, fromReport = {};
+  ((rl && rl.data) || []).forEach(r => { fromLeads[r.ad_date] = (fromLeads[r.ad_date] || 0) + 1; });
+  ((rt && rt.data) || []).forEach(r => { fromReport[r.report_date] = (fromReport[r.report_date] || 0) + (Number(r.total_closing_count) || 0); });
+  const out = {};
+  new Set([...Object.keys(fromLeads), ...Object.keys(fromReport)]).forEach(k => {
+    out[k] = Math.max(fromLeads[k] || 0, fromReport[k] || 0);
+  });
+  return out;
+}
 async function csHunterCountClosing(uid, wsStr, weStr) {
-  const res = await dbQ(d => d.from('leads').select('id', { count:'exact', head:true })
-    .eq('owner_id', uid).eq('category', 'Closing').gte('ad_date', wsStr).lt('ad_date', weStr));
-  return (res && typeof res.count === 'number') ? res.count : 0;
+  const byDay = await csHunterClosingByDay(uid, wsStr, weStr);
+  return Object.values(byDay).reduce((a, b) => a + b, 0);
 }
 async function csHunterCountLeads(uid, wsStr, weStr) {
   const res = await dbQ(d => d.from('leads').select('id', { count:'exact', head:true })
@@ -22961,14 +22993,8 @@ async function csHunterCountLeads(uid, wsStr, weStr) {
   return (res && typeof res.count === 'number') ? res.count : 0;
 }
 // Rincian closing per-hari dalam satu minggu — dasar tampilan "Tugas Harian".
-// Satu query (bukan 7), lalu di-kelompokkan per tanggal di client.
 async function csHunterDailyBreakdown(uid, wsStr, weStr) {
-  const res = await dbQ(d => d.from('leads').select('ad_date')
-    .eq('owner_id', uid).eq('category', 'Closing').gte('ad_date', wsStr).lt('ad_date', weStr));
-  const rows = (res && res.data) ? res.data : [];
-  const counts = {};
-  rows.forEach(row => { const k = row.ad_date; counts[k] = (counts[k] || 0) + 1; });
-  return counts;
+  return csHunterClosingByDay(uid, wsStr, weStr);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -24169,6 +24195,7 @@ async function _trkSubmitCatchup(dateStr, slotKey) {
     p_total_followup_sistem: crmParseInt(document.getElementById('trk-cu-sysfu')?.value),
   }));
   if (!extraRes || extraRes.error) console.warn('[DHP] submit_tracking_report_extra (susulan) gagal:', extraRes?.error?.message);
+  try { cshSyncSoon(); } catch (e) {} // v102
   closeModal();
   toast(`Laporan susulan ${slotKey === 'siang' ? 'Siang' : 'Sore'} (${trkFmtDMY(dateStr)}) tersimpan ✓`);
   _trkCatchupTarget = null;
@@ -24295,6 +24322,7 @@ async function trkSubmitSlot(slotKey) {
     p_total_followup_sistem: crmParseInt(document.getElementById(`trk-in-${slotKey}-sysfu`)?.value),
   }));
   if (!extraRes || extraRes.error) console.warn('[DHP] submit_tracking_report_extra gagal:', extraRes?.error?.message);
+  try { cshSyncSoon(); } catch (e) {} // v102: progress CS Hunter ikut ter-update
   toast(`Laporan ${slotKey === 'siang' ? 'Siang' : 'Sore'} tersimpan ✓`);
   try { localStorage.removeItem(`dhp_trk_reminded_${currentUser.id}_${trkTodayStr()}_${slotKey}`); } catch(e){}
   renderTrackingReportPage();
@@ -25786,14 +25814,15 @@ async function csHunterEnsureState(uid) {
   return state;
 }
 
-async function loadCsHunterPage() {
+async function loadCsHunterPage(silent) {
   const root = document.getElementById('csh-root');
   if (!root) return;
   const r = currentUser.role;
   const pillTxt = document.getElementById('csh-role-pill-txt');
   if (pillTxt) pillTxt.textContent = (can.isCsHunter(r) && !can.isMod(r)) ? 'Tugas Harian Saya' : 'Overview Tim CS Hunter';
-  root.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);font-size:12px">Memuat progress…</div>';
+  if (!silent) root.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);font-size:12px">Memuat progress…</div>';
   cshInjectStyle();
+  const prevBtn = document.getElementById('csh-preview-btn'); if (prevBtn) prevBtn.style.display = (can.isMod(r) || can.isOwnerView?.(r)) ? '' : 'none';
 
   if (!db) {
     root.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);font-size:12px">Progress CS Hunter butuh koneksi Supabase (tidak tersedia dalam mode lokal).</div>';
@@ -25803,7 +25832,8 @@ async function loadCsHunterPage() {
   if (can.isCsHunter(r) && !can.isMod(r)) {
     const state = await csHunterEnsureState(currentUser.id);
     if (!state) { root.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted)">Gagal memuat data.</div>'; return; }
-    root.innerHTML = `<div class="csh-wrap">${await cshRenderCard(currentUser.id, currentUser.name, state)}</div>`;
+    cshPaint(root, `<div class="csh-wrap">${await cshRenderCard(currentUser.id, currentUser.name, state)}</div>`, silent);
+    cshCheckLevelUp(state);
   } else {
     let hunters = [];
     const res = await dbQ(d => d.from('users').select('user_id, full_name').eq('role', 'cs_hunter').eq('is_active', true));
@@ -25815,7 +25845,7 @@ async function loadCsHunterPage() {
       if (!state) continue;
       cards += await cshRenderCard(h.user_id, h.full_name, state);
     }
-    root.innerHTML = `<div class="csh-wrap csh-team">${cards || '<div style="padding:20px;color:var(--muted)">Data belum tersedia.</div>'}</div>`;
+    cshPaint(root, `<div class="csh-wrap csh-team">${cards || '<div style="padding:20px;color:var(--muted)">Data belum tersedia.</div>'}</div>`, silent);
   }
 }
 
@@ -25917,7 +25947,7 @@ async function cshRenderCard(uid, name, state) {
       </div>
     </div>
     <div class="csh-status">${statusMsg}</div>
-    <div class="csh-meta">Minggu ${cshFmtDate(ws)} – ${cshFmtDate(cshAddDays(we,-1))} · Target ${tier.targetPerDay}/hari · Jatah leads ${tier.leadsPerDay}/hari</div>
+    <div class="csh-meta">Minggu ${cshFmtDate(ws)} – ${cshFmtDate(cshAddDays(we,-1))} · Target ${tier.targetPerDay}/hari · Jatah leads ${tier.leadsPerDay}/hari · Closing sinkron Tracking Report</div>
   </div>`;
 }
 
@@ -25986,6 +26016,214 @@ function cshAnimate() {
       document.querySelectorAll('.csh-bar-fill').forEach(el => { el.style.width = el.dataset.final; });
     }, 60);
   });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   v102 — CS HUNTER × TRACKING REPORT: sinkron realtime + POPUP LEVEL UP
+   • Closing di kartu CS Hunter sekarang ikut membaca Tracking Report
+     (lihat csHunterClosingByDay di atas).
+   • Begitu laporan disimpan / lead masuk / status level berubah, kartu
+     langsung ter-refresh tanpa kedip (mode silent) lewat realtime +
+     fallback poll lembut.
+   • Level naik → overlay layar penuh (vector badge pangkat, animasi halus).
+   ═══════════════════════════════════════════════════════════ */
+
+// Render hasil ke #csh-root. Mode silent: tanpa animasi-dari-nol supaya
+// refresh realtime tidak bikin batang/ring "berkedip" dari 0.
+function cshPaint(root, html, silent) {
+  root.innerHTML = html;
+  const bars = () => root.querySelectorAll('.csh-ring-fg,.csh-bar-fill');
+  if (silent) {
+    bars().forEach(el => {
+      el.style.transition = 'none';
+      if (el.classList.contains('csh-ring-fg')) el.style.strokeDashoffset = el.dataset.final;
+      else el.style.width = el.dataset.final;
+    });
+    requestAnimationFrame(() => requestAnimationFrame(() => bars().forEach(el => { el.style.transition = ''; })));
+  }
+  cshAnimate();
+}
+
+function cshLvUpStyleOnce() {
+  if (document.getElementById('csh-lvup-style')) return;
+  const css = `
+  .csh-lvup{position:fixed;inset:0;z-index:99990;display:flex;align-items:center;justify-content:center;padding:24px;
+    text-align:center;font-family:'Inter',sans-serif;opacity:0;transition:opacity .55s ease;
+    background:radial-gradient(ellipse at 50% 40%,color-mix(in srgb,var(--tc) 17%,rgb(12,10,8)),rgb(8,7,5) 72%);
+    backdrop-filter:blur(10px)}
+  .csh-lvup.show{opacity:1}
+  .csh-lvup.leaving{opacity:0;transition:opacity .35s ease}
+  .csh-lvup-dust{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+  .csh-lvup-dust i{position:absolute;bottom:-12px;left:var(--x);width:var(--s);height:var(--s);border-radius:50%;
+    background:var(--tc);opacity:0;animation:cshLvDust var(--t) ease-in var(--d) infinite}
+  @keyframes cshLvDust{0%{opacity:0;transform:translateY(0)}14%{opacity:.5}100%{opacity:0;transform:translateY(-74vh)}}
+  .csh-lvup-inner{position:relative;width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center}
+  .csh-lvup-stage{position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+  .csh-lvup-ring{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+  .csh-lvup-ring circle{fill:none;stroke-linecap:round}
+  .csh-lvup-ring .r0{stroke:color-mix(in srgb,var(--tc) 22%,transparent);stroke-width:1}
+  .csh-lvup-ring .r1{stroke:var(--tc);stroke-width:1.7;stroke-dasharray:578;stroke-dashoffset:578}
+  .csh-lvup.show .csh-lvup-ring .r1{animation:cshLvDraw 1.7s cubic-bezier(.65,0,.2,1) .3s forwards}
+  @keyframes cshLvDraw{to{stroke-dashoffset:0}}
+  .csh-lvup-halo{position:absolute;left:-25%;top:-25%;width:150%;height:150%;border-radius:50%;opacity:0;
+    background:radial-gradient(circle,var(--tg),transparent 62%)}
+  .csh-lvup.show .csh-lvup-halo{animation:cshLvHalo 4.2s ease-in-out .5s infinite}
+  @keyframes cshLvHalo{0%,100%{opacity:.32;transform:scale(.92)}50%{opacity:.68;transform:scale(1.04)}}
+  .csh-lvup-badge{position:relative;opacity:0;transform:scale(.45) rotate(-10deg)}
+  .csh-lvup-badge svg{display:block;filter:drop-shadow(0 8px 24px var(--tg))}
+  .csh-lvup.show .csh-lvup-badge{animation:cshLvBadgeIn .95s cubic-bezier(.34,1.5,.5,1) .2s forwards,cshLvFloat 5.2s ease-in-out 1.3s infinite}
+  @keyframes cshLvBadgeIn{to{opacity:1;transform:scale(1) rotate(0)}}
+  @keyframes cshLvFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  .csh-lvup-eyebrow{font-size:10.5px;font-weight:700;color:var(--tc);text-transform:uppercase;opacity:0;letter-spacing:.9em;margin-left:.9em}
+  .csh-lvup.show .csh-lvup-eyebrow{animation:cshLvEyebrow 1.5s cubic-bezier(.16,1,.3,1) 1s forwards}
+  @keyframes cshLvEyebrow{from{opacity:0;letter-spacing:.9em}to{opacity:1;letter-spacing:.44em}}
+  .csh-lvup-rv{opacity:0;transform:translateY(10px)}
+  .csh-lvup.show .csh-lvup-rv{animation:cshLvRise .85s cubic-bezier(.16,1,.3,1) var(--rd,1s) forwards}
+  @keyframes cshLvRise{to{opacity:1;transform:translateY(0)}}
+  .csh-lvup-title{font-family:'Cormorant Garamond',serif;font-size:33px;font-weight:600;color:#f4ecd9;margin:12px 0 6px;letter-spacing:.01em}
+  .csh-lvup-sub{font-size:14px;color:rgba(244,236,217,.72)}
+  .csh-lvup-tier{font-weight:700;background:linear-gradient(100deg,var(--tc) 20%,#fff 50%,var(--tc) 80%);background-size:250% auto;
+    -webkit-background-clip:text;background-clip:text;color:transparent;animation:cshLvShimmer 3.4s linear infinite}
+  @keyframes cshLvShimmer{0%{background-position:0% center}100%{background-position:-250% center}}
+  .csh-lvup-path{display:flex;align-items:center;gap:12px;margin:20px 0 14px;font-size:10.5px;letter-spacing:.16em;
+    text-transform:uppercase;color:rgba(244,236,217,.45)}
+  .csh-lvup-path .to{color:var(--tc);font-weight:700}
+  .csh-lvup-path svg{width:26px;height:10px;color:var(--tc)}
+  .csh-lvup-facts{font-size:11.5px;line-height:1.85;color:rgba(244,236,217,.55)}
+  .csh-lvup-facts b{color:#f4ecd9;font-weight:600}
+  .csh-lvup-btn{margin-top:26px;padding:11px 36px;border-radius:30px;cursor:pointer;font-size:10.5px;font-weight:700;
+    letter-spacing:.22em;text-transform:uppercase;color:#f4ecd9;
+    border:1px solid color-mix(in srgb,var(--tc) 55%,transparent);background:color-mix(in srgb,var(--tc) 12%,transparent);
+    transition:background .25s ease,color .25s ease,transform .25s ease}
+  .csh-lvup-btn:hover{background:var(--tc);color:#1a1206;transform:translateY(-1px)}
+  @media(max-width:480px){.csh-lvup-stage{width:168px;height:168px}.csh-lvup-title{font-size:27px}}
+  @media(prefers-reduced-motion:reduce){
+    .csh-lvup *{animation:none!important}
+    .csh-lvup-badge,.csh-lvup-rv,.csh-lvup-eyebrow{opacity:1!important;transform:none!important;letter-spacing:.44em}
+    .csh-lvup-ring .r1{stroke-dashoffset:0}
+  }
+  /* polesan tema terang untuk kartu CS Hunter (track/ring tadinya putih di atas putih) */
+  body.light .csh-bar{background:rgba(0,0,0,.08)}
+  body.light .csh-ring-bg{stroke:rgba(0,0,0,.09)}
+  body.light .csh-node-dot{background:rgba(0,0,0,.08);border-color:rgba(0,0,0,.16)}
+  body.light .csh-node-line{background:rgba(0,0,0,.1)}
+  body.light .csh-day{background:rgba(0,0,0,.03);border-color:rgba(0,0,0,.07)}
+  body.light .csh-day-dot{background:rgba(0,0,0,.07)}
+  body.light .csh-status{background:rgba(0,0,0,.035)}
+  `;
+  const st = document.createElement('style'); st.id = 'csh-lvup-style'; st.textContent = css;
+  document.head.appendChild(st);
+}
+
+// Overlay layar penuh. opts: { name, fromTier, toTier, achieved, target }
+function cshShowLevelUp(opts) {
+  if (document.getElementById('csh-lvup')) return;
+  cshLvUpStyleOnce();
+  const to = csh(opts.toTier), from = csh(opts.fromTier || Math.max(1, opts.toTier - 1));
+  const dust = Array.from({ length: 10 }, (_, i) =>
+    `<i style="--x:${7 + i * 9 + (i % 3) * 2}%;--d:${(i * 0.55).toFixed(2)}s;--t:${(5.6 + (i % 4) * 1.1).toFixed(1)}s;--s:${2 + (i % 3)}px"></i>`).join('');
+  const facts = [
+    (opts.achieved != null && opts.target) ? `Closing minggu lalu <b>${opts.achieved} / ${opts.target}</b> — target tercapai` : '',
+    `Target harian baru <b>${to.targetPerDay} closing</b> · jatah leads <b>${to.leadsPerDay}/hari</b>`,
+  ].filter(Boolean).join('<br>');
+  const el = document.createElement('div');
+  el.id = 'csh-lvup'; el.className = 'csh-lvup';
+  el.style.setProperty('--tc', to.color); el.style.setProperty('--tg', to.glow);
+  el.innerHTML = `
+    <div class="csh-lvup-dust">${dust}</div>
+    <div class="csh-lvup-inner">
+      <div class="csh-lvup-stage">
+        <svg class="csh-lvup-ring" viewBox="0 0 200 200"><circle class="r0" cx="100" cy="100" r="92"/><circle class="r1" cx="100" cy="100" r="92"/></svg>
+        <span class="csh-lvup-halo"></span>
+        <div class="csh-lvup-badge">${cshBadgeSVG(to.order, 118)}</div>
+      </div>
+      <div class="csh-lvup-eyebrow">Level Up</div>
+      <div class="csh-lvup-title csh-lvup-rv" style="--rd:1.15s">Selamat, ${escHtml(opts.name || 'CS Hunter')}</div>
+      <div class="csh-lvup-sub csh-lvup-rv" style="--rd:1.3s">Kamu naik ke level <span class="csh-lvup-tier">${to.name}</span></div>
+      <div class="csh-lvup-path csh-lvup-rv" style="--rd:1.45s">
+        <span>${from.name}</span>
+        <svg viewBox="0 0 26 10" fill="none"><path d="M1 5h22M19 1.5 23.5 5 19 8.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="to">${to.name}</span>
+      </div>
+      <div class="csh-lvup-facts csh-lvup-rv" style="--rd:1.6s">${facts}</div>
+      <button type="button" class="csh-lvup-btn csh-lvup-rv" style="--rd:1.8s">Lanjutkan</button>
+    </div>`;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('show')));
+  const onKey = (e) => { if (e.key === 'Escape') close(); };
+  function close() {
+    document.removeEventListener('keydown', onKey);
+    el.classList.add('leaving');
+    setTimeout(() => el.remove(), 380);
+  }
+  el.querySelector('.csh-lvup-btn').onclick = close;
+  el.addEventListener('click', (e) => { if (e.target === el) close(); });
+  document.addEventListener('keydown', onKey);
+}
+
+// Uji tampilan tanpa menunggu naik level beneran: window.cshPreviewLevelUp(3)
+window.cshPreviewLevelUp = function (toTier) {
+  const t = Math.min(5, Math.max(2, parseInt(toTier || 2, 10) || 2));
+  const prev = csh(t - 1);
+  cshShowLevelUp({ name: currentUser?.name || 'CS Hunter', fromTier: t - 1, toTier: t,
+    achieved: prev.targetPerDay * 7, target: prev.targetPerDay * 7 });
+};
+
+// Cek apakah pangkat CS Hunter yang login naik sejak terakhir kali dilihat
+// di perangkat ini. Pertama kali (belum ada catatan) cuma dicatat sebagai
+// titik awal — TIDAK memunculkan popup, supaya tidak "meledak" saat rilis.
+let _cshLvBusy = false;
+async function cshCheckLevelUp(state) {
+  if (_cshLvBusy || !db || !currentUser) return;
+  if (!can.isCsHunter(currentUser.role) || can.isMod(currentUser.role)) return;
+  _cshLvBusy = true;
+  try {
+    state = state || await csHunterEnsureState(currentUser.id);
+    if (!state) return;
+    const key = 'dhp_csh_seen_tier_' + currentUser.id;
+    let seen = 0; try { seen = parseInt(localStorage.getItem(key) || '0', 10) || 0; } catch (e) {}
+    const cur = state.tier_order;
+    const save = () => { try { localStorage.setItem(key, String(cur)); } catch (e) {} };
+    renderSidebarTierBadge(cur);
+    if (!seen) { save(); return; }
+    if (cur > seen) {
+      save(); // simpan DULU supaya realtime + login tidak memunculkan popup dobel
+      let achieved = null, target = null;
+      try {
+        const h = await dbQ(d => d.from('cs_hunter_history').select('actual_closing,target_closing,passed')
+          .eq('user_id', currentUser.id).order('week_start', { ascending: false }).limit(1));
+        const row = h && h.data && h.data[0];
+        if (row && row.passed) { achieved = row.actual_closing; target = row.target_closing; }
+      } catch (e) {}
+      cshShowLevelUp({ name: currentUser.name, fromTier: seen, toTier: cur, achieved, target });
+    } else if (cur !== seen) { save(); }
+  } catch (e) { console.warn('[DHP] cshCheckLevelUp gagal:', e); }
+  finally { _cshLvBusy = false; }
+}
+
+// ── Sinkron realtime: Tracking Report / leads / status level → kartu ikut ter-update ──
+let _cshSyncChannel = null, _cshSyncTimer = null, _cshSyncPoll = null;
+function cshSyncSoon() {
+  clearTimeout(_cshSyncTimer);
+  _cshSyncTimer = setTimeout(cshSyncNow, 700); // debounce: beberapa event beruntun → 1x refresh
+}
+async function cshSyncNow() {
+  if (!db || !currentUser) return;
+  const pg = document.getElementById('pg-cs_hunter');
+  if (pg && pg.classList.contains('active')) { try { await loadCsHunterPage(true); } catch (e) {} }
+  else { await cshCheckLevelUp(); }
+}
+function initCsHunterSync() {
+  if (!db || _cshSyncChannel || !currentUser) return;
+  try {
+    _cshSyncChannel = db.channel('dhp_csh_sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tracking_reports' }, cshSyncSoon)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, cshSyncSoon)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'cs_hunter_status' }, cshSyncSoon)
+      .subscribe();
+  } catch (e) { console.warn('[DHP] initCsHunterSync gagal:', e); }
+  // Jaring pengaman: kalau realtime belum aktif untuk salah satu tabel, tetap sinkron tiap ~90 dtk (tab terlihat saja)
+  if (!_cshSyncPoll) _cshSyncPoll = setInterval(() => { if (!document.hidden) cshSyncSoon(); }, 90000);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -27347,7 +27585,7 @@ const LB_ICO = {
 let lbChannel = null;
 let lbCurrentYm = null;
 let lbCache = null;
-let lbPrevTop3Cache = undefined; // v101: undefined = belum di-fetch, null = sudah dicoba tapi kosong (array of up to 3)
+let lbPrevChampionCache = undefined; // v100: undefined = belum di-fetch, null = sudah dicoba tapi kosong
 let lbRealtimeTimer = null;
 
 function lbTodayJakarta() {
@@ -27561,14 +27799,14 @@ async function renderLeaderboardPage() {
   // v100: juara bulan lalu — fetch SEKALI per sesi (bukan ikut filter
   // periode yang lagi dilihat), cache-nya dipakai terus selama halaman
   // ini kebuka supaya tidak nge-query ulang tiap ganti filter/Muat Ulang.
-  if (lbPrevTop3Cache === undefined) {
-    lbPrevTop3Cache = null; // tandai "lagi diproses" biar ga nembak dobel kalau dipanggil cepat berturutan
+  if (lbPrevChampionCache === undefined) {
+    lbPrevChampionCache = null; // tandai "lagi diproses" biar ga nembak dobel kalau dipanggil cepat berturutan
     try {
       const prevYm = lbYmPrev(lbYmNow());
       const prevData = await lbFetchData(prevYm);
-      const top3 = (prevData.rows || []).filter(r => r.sales > 0).slice(0, 3);
-      lbPrevTop3Cache = top3.length ? top3.map(r => ({ ...r, ymLabel: lbYmLabel(prevYm) })) : null;
-    } catch (e) { console.warn('[DHP] fetch juara bulan lalu gagal:', e); lbPrevTop3Cache = null; }
+      const top1 = (prevData.rows || []).find(r => r.sales > 0) || null;
+      lbPrevChampionCache = top1 ? { ...top1, ymLabel: lbYmLabel(prevYm) } : null;
+    } catch (e) { console.warn('[DHP] fetch juara bulan lalu gagal:', e); lbPrevChampionCache = null; }
   }
 
   lbRenderContent(root, data);
@@ -27605,7 +27843,7 @@ function lbRenderContent(root, data) {
     </div>`;
 
   root.innerHTML = topbarHtml
-    + `<div class="lb-podium-row">${lbPrevTop3PanelHtml()}${lbPodiumHtml(top3)}</div>`
+    + lbPodiumHtml(top3)
     + lbAchievementsHtml(ach)
     + lbDiagramHtml(rows)
     + lbListHtml(rest, top3.length, meId, rows.length);
@@ -27615,42 +27853,36 @@ function lbRenderContent(root, data) {
   lbAnimateCountUps(root);
 }
 
-// v101 — "Juara Bulan Lalu": kartu kecil elegan di SAMPING podium (ngisi
-// ruang kosong di kiri), nunjukin TOP 1-3 bulan sebelumnya (independen dari
-// filter periode yang lagi dibuka). Glow & shimmer jalan terus halus, tiap
-// baris interaktif (hover). Kalau belum ada data, tidak render apa-apa.
-function lbPrevTop3PanelHtml() {
-  const list = lbPrevTop3Cache;
-  if (!list || !list.length) return '';
-  const medal = ['🥇', '🥈', '🥉'];
-  const rowsHtml = list.map((u, i) => {
-    const hasTarget = u.target > 0;
-    const statTxt = hasTarget ? `${Math.round(u.pct * 100)}% target` : crmFmtRupiah(u.sales);
-    return `
-      <div class="lb-prevtop-row r${i + 1}">
-        <span class="lb-prevtop-medal">${medal[i]}</span>
-        <span class="lb-prevtop-info">
-          <span class="lb-prevtop-name">${escHtml(u.name)}${u.isHostLive ? ` <span class="lb-prevtop-host">${LB_ICO.camera}</span>` : ''}</span>
-          <span class="lb-prevtop-stat">${statTxt}</span>
-        </span>
-      </div>`;
-  }).join('');
+// v100 — "Juara Bulan Lalu": banner kecil & elegan di atas leaderboard,
+// nunjukin siapa peringkat #1 bulan sebelumnya (independen dari filter
+// periode yang lagi dibuka). Kalau belum ada data/juara, tidak render apa-apa.
+function lbPrevChampionHtml() {
+  const u = lbPrevChampionCache;
+  if (!u || !u.name) return '';
+  const hasTarget = u.target > 0;
+  const statTxt = hasTarget ? `${Math.round(u.pct * 100)}% target` : crmFmtRupiah(u.sales);
+  const subTxt = hasTarget ? crmFmtRupiah(u.sales) : '';
   return `
-    <div class="lb-prevtop-panel">
-      <span class="lb-prevtop-glow"></span>
-      <span class="lb-prevtop-shine"></span>
-      <div class="lb-prevtop-head"><span class="lb-prevtop-ico">${LB_ICO.crown}</span>Juara Bulan Lalu<span class="lb-prevtop-ym">${escHtml(list[0].ymLabel)}</span></div>
-      <div class="lb-prevtop-rows">${rowsHtml}</div>
+    <div class="lb-prev-champ" title="Juara bulan lalu: ${escHtml(u.name)} — ${escHtml(u.ymLabel)}">
+      <span class="lb-prev-champ-aura"></span>
+      <span class="lb-prev-champ-ico">${LB_ICO.crown}</span>
+      <span class="lb-prev-champ-lbl">Juara Bulan Lalu</span>
+      <span class="lb-prev-champ-period">${escHtml(u.ymLabel)}</span>
+      <span class="lb-prev-champ-name">${escHtml(u.name)}</span>
+      ${u.isHostLive ? `<span class="lb-prev-champ-host">${LB_ICO.camera} Host Live</span>` : ''}
+      <span class="lb-prev-champ-stat">${statTxt}</span>
+      ${subTxt ? `<span class="lb-prev-champ-sub">${subTxt}</span>` : ''}
     </div>`;
 }
 
 function lbPodiumHtml(top3) {
+  const champHtml = lbPrevChampionHtml(); // v101: kartu "Juara Bulan Lalu" ngambang di dalam podium
   if (!top3.length || top3.every(u => !u || u.sales === 0)) {
-    return `<div class="lb-podium"><div class="lb-pod-empty">Belum ada data penjualan bulan ini — papan peringkat akan terisi begitu Tracking Report mulai diisi.</div></div>`;
+    return `<div class="lb-podium">${champHtml}<div class="lb-pod-empty">Belum ada data penjualan bulan ini — papan peringkat akan terisi begitu Tracking Report mulai diisi.</div></div>`;
   }
   const order = [top3[1], top3[0], top3[2]];
   const ranks = [2, 1, 3];
-  let html = '<div class="lb-podium">';
+  let html = `<div class="lb-podium">${champHtml}`;
   order.forEach((u, idx) => {
     const rank = ranks[idx];
     if (!u) { html += `<div class="lb-pod-card r${rank}" style="visibility:hidden"></div>`; return; }
