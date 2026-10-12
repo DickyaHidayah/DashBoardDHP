@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<meta name="dhp-build" content="2026-10-10T00-00-00-v102"/>
+<meta name="dhp-build" content="2026-10-10T06-00-00-v103"/>
 <title>DHP Creative — Command Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Shippori+Mincho:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
@@ -14522,7 +14522,7 @@ async function openMyProfile() {
     csHunterEnsureState(u.id).then(st => {
       const el = document.getElementById('profile-csh-banner');
       if (!el || !st) return;
-      const missNote = st.consecutive_miss === 1 ? '⚠️ Minggu lalu belum capai target — jaga performa minggu ini.' : 'Progress minggu berjalan aktif.';
+      const missNote = st.consecutive_miss === 1 ? '⚠️ Bulan lalu belum capai target — jaga performa bulan ini.' : 'Progress bulan berjalan aktif.';
       el.innerHTML = `${cshBadgeChip(st.tier_order)}<div class="csh-rank-note">${missNote}</div>`;
     }).catch(e => console.warn('[DHP] load badge profil gagal:', e));
   }
@@ -22852,19 +22852,19 @@ function loadPageData(page) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ㉕-b CS HUNTER — sistem level Bronze→Diamond, leads & closing mingguan.
+   ㉕-b CS HUNTER — sistem level Bronze→Diamond, leads & closing BULANAN (v103: 1 closing/hari tanpa Minggu, atau nominal Leaderboard).
    Tabel Supabase: cs_hunter_status (state saat ini per user) &
-   cs_hunter_history (rekap tiap minggu yang sudah selesai). Reset mingguan
+   cs_hunter_history (rekap tiap BULAN yang sudah selesai; kolom week_start/week_end dipakai utk awal/akhir bulan). Reset bulanan
    dihitung otomatis "on read" (self-healing) tiap kali dashboard dibuka —
    tidak butuh cron. Closing dihitung langsung dari tabel `leads`
    (category = 'Closing') milik CS Hunter tsb pada rentang minggu terkait.
    ═══════════════════════════════════════════════════════════ */
 const CSH_TIERS = [
-  { order:1, key:'bronze',   name:'Bronze',   color:'#c47a3d', glow:'rgba(196,122,61,.45)',  leadsPerDay:25, targetPerDay:2  },
-  { order:2, key:'silver',   name:'Silver',   color:'#a7b0ba', glow:'rgba(167,176,186,.45)', leadsPerDay:22, targetPerDay:4  },
-  { order:3, key:'gold',     name:'Gold',     color:'#e0b03e', glow:'rgba(224,176,62,.5)',   leadsPerDay:19, targetPerDay:6  },
-  { order:4, key:'platinum', name:'Platinum', color:'#5fd0c8', glow:'rgba(95,208,200,.5)',   leadsPerDay:16, targetPerDay:8  },
-  { order:5, key:'diamond',  name:'Diamond',  color:'#8fc6ff', glow:'rgba(143,198,255,.55)', leadsPerDay:13, targetPerDay:10 },
+  { order:1, key:'bronze',   name:'Bronze',   color:'#c47a3d', glow:'rgba(196,122,61,.45)',  leadsPerDay:25, targetPerDay:1  },
+  { order:2, key:'silver',   name:'Silver',   color:'#a7b0ba', glow:'rgba(167,176,186,.45)', leadsPerDay:22, targetPerDay:1  },
+  { order:3, key:'gold',     name:'Gold',     color:'#e0b03e', glow:'rgba(224,176,62,.5)',   leadsPerDay:19, targetPerDay:1  },
+  { order:4, key:'platinum', name:'Platinum', color:'#5fd0c8', glow:'rgba(95,208,200,.5)',   leadsPerDay:16, targetPerDay:1  },
+  { order:5, key:'diamond',  name:'Diamond',  color:'#8fc6ff', glow:'rgba(143,198,255,.55)', leadsPerDay:13, targetPerDay:1 },
 ];
 const csh = t => CSH_TIERS.find(x => x.order === t) || CSH_TIERS[0];
 
@@ -25775,42 +25775,92 @@ async function ensureCsHunterDailyTask() {
   } catch (e) { console.warn('[DHP] ensureCsHunterDailyTask gagal:', e); return null; }
 }
 
-// Self-healing weekly reset: baca state terakhir, "catch up" tiap minggu yang
-// sudah lewat (naik/tetap/turun level sesuai hasil closing minggu itu), lalu
-// simpan state terbaru. Aman dipanggil berkali-kali (idempotent per minggu).
+// ── v103: EVALUASI BULANAN (menggantikan evaluasi mingguan) ─────────────────
+// Target bulan ini = 1 closing per hari kerja (Senin–Sabtu, Minggu TIDAK
+// wajib). Closing di hari Minggu tetap dihitung sebagai bonus. Lolos kalau
+// salah satu terpenuhi: jumlah closing >= jumlah hari kerja bulan itu, ATAU
+// nominal omzet >= target nominal CS Hunter tsb di Leaderboard.
+function cshMonthStart(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
+function cshNextMonthStart(d) { return new Date(d.getFullYear(), d.getMonth() + 1, 1); }
+function cshWorkdaysInMonth(ms) {
+  const last = new Date(ms.getFullYear(), ms.getMonth() + 1, 0).getDate();
+  let n = 0;
+  for (let i = 1; i <= last; i++) if (new Date(ms.getFullYear(), ms.getMonth(), i).getDay() !== 0) n++;
+  return n;
+}
+// Sisa hari kerja (Sen–Sab) dari hari ini s/d akhir bulan, hari ini ikut dihitung.
+function cshWorkdaysLeft(today, nextMs) {
+  let n = 0;
+  for (let d = new Date(today.getFullYear(), today.getMonth(), today.getDate()); d < nextMs; d = cshAddDays(d, 1)) {
+    if (d.getDay() !== 0) n++;
+  }
+  return n;
+}
+
+// Nominal & target omzet per orang untuk satu bulan — diambil dari sumber
+// yang SAMA dengan papan Leaderboard (get_leaderboard_monthly), jadi angkanya
+// pasti identik dengan yang tampil di sana. null = gagal ambil (jangan dihakimi).
+let _cshNomCache = {};
+async function cshMonthlyNominal(uid, ym) {
+  let c = _cshNomCache[ym];
+  if (!c || Date.now() - c.t > 15000) {
+    const res = await dbQ(d => d.rpc('get_leaderboard_monthly', { p_period_ym: ym }));
+    if (!res || res.error || !Array.isArray(res.data)) return null;
+    c = _cshNomCache[ym] = { t: Date.now(), rows: res.data };
+  }
+  const row = c.rows.find(r => r.user_id === uid);
+  return row ? { sales: Number(row.total_sales) || 0, target: Number(row.target_amount) || 0 } : { sales: 0, target: 0 };
+}
+
+// Self-healing bulanan: baca state terakhir, "catch up" tiap bulan yang sudah
+// lewat (naik / tetap / turun level sesuai hasil bulan itu), lalu simpan.
+// Kolom week_start dipakai ulang untuk menyimpan AWAL BULAN (YYYY-MM-01),
+// jadi tidak perlu ubah skema database. Aman dipanggil berkali-kali.
 async function csHunterEnsureState(uid) {
   if (!db) return null;
   const res = await dbQ(d => d.from('cs_hunter_status').select('*').eq('user_id', uid).maybeSingle());
   let state = (res && res.data) ? { ...res.data } : null;
-  const todayMon = cshMondayOf(cshTodayJakarta());
+  const curMs = cshMonthStart(cshTodayJakarta());
+  const curMsStr = cshFmtDate(curMs);
+  const save = () => dbQ(d => d.from('cs_hunter_status').upsert(
+    { user_id: uid, tier_order: state.tier_order, consecutive_miss: state.consecutive_miss, week_start: state.week_start },
+    { onConflict: 'user_id' }));
   if (!state) {
-    state = { user_id: uid, tier_order: 1, consecutive_miss: 0, week_start: cshFmtDate(todayMon) };
-    await dbQ(d => d.from('cs_hunter_status').upsert(state, { onConflict:'user_id' }));
+    state = { user_id: uid, tier_order: 1, consecutive_miss: 0, week_start: curMsStr };
+    await save();
+    return state;
   }
-  let ws = new Date(state.week_start + 'T00:00:00');
-  let guard = 0;
-  while (ws < todayMon && guard < 26) {
+  // Migrasi dari aturan mingguan: week_start lama = hari Senin, bukan tanggal 1.
+  // Mulai bulan berjalan dengan pangkat yang sekarang — TANPA menghakimi mundur.
+  if (!/-01$/.test(String(state.week_start))) {
+    state.week_start = curMsStr;
+    await save();
+    return state;
+  }
+  let ms = new Date(state.week_start + 'T00:00:00');
+  let guard = 0, changed = false;
+  while (ms < curMs && guard < 12) {
     guard++;
-    const we = cshAddDays(ws, 7);
-    const tier = csh(state.tier_order);
-    const target = tier.targetPerDay * 7;
-    const actual = await csHunterCountClosing(uid, cshFmtDate(ws), cshFmtDate(we));
-    const passed = actual >= target;
+    const me = cshNextMonthStart(ms);
+    const ym = cshFmtDate(ms).slice(0, 7);
+    const nom = await cshMonthlyNominal(uid, ym);
+    if (!nom) break; // data Leaderboard gagal diambil → jangan menghakimi, coba lagi nanti
+    const target = cshWorkdaysInMonth(ms);
+    const actual = await csHunterCountClosing(uid, cshFmtDate(ms), cshFmtDate(me));
+    const passed = actual >= target || (nom.target > 0 && nom.sales >= nom.target);
     let newTier = state.tier_order, newMiss = state.consecutive_miss;
     if (passed) { newTier = Math.min(state.tier_order + 1, 5); newMiss = 0; }
     else if (state.consecutive_miss === 0) { newMiss = 1; }               // gagal 1x — tetap, coba lagi
     else { newTier = Math.max(state.tier_order - 1, 1); newMiss = 0; }    // gagal 2x berturut — turun level
     await dbQ(d => d.from('cs_hunter_history').insert({
-      user_id: uid, week_start: cshFmtDate(ws), week_end: cshFmtDate(cshAddDays(we, -1)),
+      user_id: uid, week_start: cshFmtDate(ms), week_end: cshFmtDate(cshAddDays(me, -1)),
       tier_order: state.tier_order, target_closing: target, actual_closing: actual, passed
     }));
     state.tier_order = newTier; state.consecutive_miss = newMiss;
-    ws = we;
+    ms = me; changed = true;
+    state.week_start = cshFmtDate(ms);
   }
-  state.week_start = cshFmtDate(ws);
-  await dbQ(d => d.from('cs_hunter_status').upsert(
-    { user_id: uid, tier_order: state.tier_order, consecutive_miss: state.consecutive_miss, week_start: state.week_start },
-    { onConflict:'user_id' }));
+  if (changed) await save();
   return state;
 }
 
@@ -25851,43 +25901,58 @@ async function loadCsHunterPage(silent) {
 
 async function cshRenderCard(uid, name, state) {
   const today = cshTodayJakarta();
-  const ws = new Date(state.week_start + 'T00:00:00');
-  const we = cshAddDays(ws, 7);
+  const ms = cshMonthStart(today), me = cshNextMonthStart(ms);
+  const ym = cshFmtDate(ms).slice(0, 7);
   const tier = csh(state.tier_order);
   const nextTier = state.tier_order < 5 ? csh(state.tier_order + 1) : null;
-  const weeklyTarget = tier.targetPerDay * 7;
-  const weeklyLeadsQuota = tier.leadsPerDay * 7;
-  const actualClosing = await csHunterCountClosing(uid, cshFmtDate(ws), cshFmtDate(we));
-  const actualLeads = await csHunterCountLeads(uid, cshFmtDate(ws), cshFmtDate(we));
-  const dailyCounts = await csHunterDailyBreakdown(uid, cshFmtDate(ws), cshFmtDate(we));
-  const pct = Math.min(100, Math.round((actualClosing / weeklyTarget) * 100));
-  const leadsPct = Math.min(100, Math.round((actualLeads / weeklyLeadsQuota) * 100));
-  const daysLeft = Math.max(0, Math.ceil((we - today) / 86400000));
-  const remaining = Math.max(0, weeklyTarget - actualClosing);
+  const workdays = cshWorkdaysInMonth(ms);            // target closing bulan ini: 1 per hari kerja (tanpa Minggu)
+  const leadsQuota = tier.leadsPerDay * workdays;
+  const wkStart = cshMondayOf(today), wkEnd = cshAddDays(wkStart, 7);
+  const [actualClosing, actualLeads, dailyCounts, nom] = await Promise.all([
+    csHunterCountClosing(uid, cshFmtDate(ms), cshFmtDate(me)),
+    csHunterCountLeads(uid, cshFmtDate(ms), cshFmtDate(me)),
+    csHunterDailyBreakdown(uid, cshFmtDate(wkStart), cshFmtDate(wkEnd)),
+    cshMonthlyNominal(uid, ym),
+  ]);
+  const nomSales = nom ? nom.sales : 0, nomTarget = nom ? nom.target : 0;
+  const hasNom = nomTarget > 0;
+  const countPct = Math.min(100, Math.round((actualClosing / workdays) * 100));
+  const nomPct = hasNom ? Math.min(100, Math.round((nomSales / nomTarget) * 100)) : 0;
+  const pct = Math.max(countPct, nomPct);              // progres = jalur yang paling dekat ke target
+  const leadsPct = Math.min(100, Math.round((actualLeads / leadsQuota) * 100));
+  const passedNow = actualClosing >= workdays || (hasNom && nomSales >= nomTarget);
+  const remaining = Math.max(0, workdays - actualClosing);
+  const workLeft = cshWorkdaysLeft(today, me);
 
-  // ── Tugas Harian — target closing hari ini + strip status Sen–Min minggu berjalan ──
+  // ── Tugas Harian — 1 closing/hari (Sen–Sab); Minggu opsional (bonus) ──
   const todayStr = cshFmtDate(today);
+  const isSundayToday = today.getDay() === 0;
   const dayLbls = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
   const todayCount = dailyCounts[todayStr] || 0;
-  const todayPct = Math.min(100, Math.round((todayCount / tier.targetPerDay) * 100));
+  const dailyTarget = 1;
+  const todayPct = isSundayToday ? (todayCount > 0 ? 100 : 0) : Math.min(100, Math.round((todayCount / dailyTarget) * 100));
   let dayStrip = '';
   for (let i = 0; i < 7; i++) {
-    const dDate = cshAddDays(ws, i);
+    const dDate = cshAddDays(wkStart, i);
     const dStr = cshFmtDate(dDate);
     const cnt = dailyCounts[dStr] || 0;
     const isToday = dStr === todayStr;
     const isFuture = dDate > today;
-    const hit = cnt >= tier.targetPerDay;
-    const cls = isToday ? 'today' : (isFuture ? 'future' : (hit ? 'hit' : 'miss'));
-    const mark = hit ? '✓' : (isFuture ? '' : cnt);
-    dayStrip += `<div class="csh-day ${cls}" title="${dayLbls[i]}: ${cnt}/${tier.targetPerDay} closing">
+    const isSun = i === 6;
+    const hit = isSun ? cnt > 0 : cnt >= dailyTarget;
+    const cls = isToday ? 'today' : (isFuture ? 'future' : (isSun ? (hit ? 'hit' : 'optional') : (hit ? 'hit' : 'miss')));
+    const mark = hit ? '✓' : (isFuture ? '' : (isSun ? '–' : cnt));
+    dayStrip += `<div class="csh-day ${cls}" title="${dayLbls[i]}: ${cnt} closing${isSun ? ' (opsional · bonus)' : ''}">
       <span class="csh-day-lbl">${dayLbls[i]}</span>
       <span class="csh-day-dot">${mark}</span>
     </div>`;
   }
-  const dailyStatusMsg = todayCount >= tier.targetPerDay
-    ? `✅ Target hari ini tercapai — ${todayCount}/${tier.targetPerDay} closing.`
-    : `Butuh <b>${tier.targetPerDay - todayCount}</b> closing lagi hari ini untuk capai target harian.`;
+  const dailyStatusMsg = isSundayToday
+    ? (todayCount > 0 ? `🎉 Bonus hari Minggu — ${todayCount} closing. Mantap!` : `Hari Minggu bersifat opsional — closing hari ini jadi bonus, tidak wajib.`)
+    : (todayCount >= dailyTarget
+        ? `✅ Target hari ini tercapai — ${todayCount}/${dailyTarget} closing.`
+        : `Butuh <b>${dailyTarget - todayCount}</b> closing lagi hari ini untuk capai target harian.`);
+  const dailyCountTxt = isSundayToday ? `${todayCount} <span style="font-weight:600;font-size:10px;opacity:.7">bonus</span>` : `${todayCount} / ${dailyTarget}`;
 
   const ladder = CSH_TIERS.map(tr => {
     const cls = tr.order < tier.order ? 'done' : (tr.order === tier.order ? 'current' : 'upcoming');
@@ -25898,15 +25963,31 @@ async function cshRenderCard(uid, name, state) {
   const dashoffset = circumference - (pct / 100) * circumference;
 
   let statusMsg;
-  if (state.tier_order === 5) {
-    statusMsg = `🏆 Level maksimum — Diamond! Pertahankan performa closing minggu ini.`;
-  } else if (state.consecutive_miss === 1) {
-    statusMsg = `⚠️ Minggu lalu belum capai target — ini kesempatan terakhir sebelum turun ke level <b>${csh(Math.max(state.tier_order-1,1)).name}</b>.`;
-  } else if (remaining === 0) {
-    statusMsg = `✅ Target minggu ini tercapai! Naik ke <b>${nextTier ? nextTier.name : 'level berikutnya'}</b> di minggu depan.`;
+  if (passedNow && state.tier_order < 5) {
+    const via = (actualClosing >= workdays) ? 'jumlah closing' : 'nominal Leaderboard';
+    statusMsg = `✅ Target bulan ini tercapai lewat ${via}! Naik ke <b>${nextTier.name}</b> di awal bulan depan.`;
+  } else if (state.tier_order === 5) {
+    statusMsg = `🏆 Level maksimum — Diamond! Pertahankan performa closing bulan ini.`;
   } else {
-    statusMsg = `Butuh <b>${remaining}</b> closing lagi dalam ${daysLeft} hari untuk naik ke <b>${nextTier ? nextTier.name : '—'}</b>.`;
+    statusMsg = `Butuh <b>${remaining}</b> closing lagi dalam ${workLeft} hari kerja`
+      + (hasNom ? ` <b>atau</b> capai nominal ${crmFmtRupiah(nomTarget)} (kurang ${crmFmtRupiah(Math.max(0, nomTarget - nomSales))})` : '')
+      + ` untuk naik ke <b>${nextTier ? nextTier.name : '—'}</b>.`;
   }
+  if (!passedNow && state.consecutive_miss === 1 && state.tier_order < 5) {
+    statusMsg += `<br><span style="opacity:.8">⚠️ Bulan lalu belum capai target — kesempatan terakhir sebelum turun ke <b>${csh(Math.max(state.tier_order - 1, 1)).name}</b>.</span>`;
+  }
+
+  const nomBlock = hasNom
+    ? `<div class="csh-stat">
+        <span class="csh-stat-lbl">Nominal bulan ini (Leaderboard)</span>
+        <div class="csh-bar"><div class="csh-bar-fill nominal" style="width:0%" data-final="${nomPct}%"></div></div>
+        <span class="csh-stat-val">${crmFmtRupiah(nomSales)} / ${crmFmtRupiah(nomTarget)}</span>
+      </div>`
+    : `<div class="csh-stat">
+        <span class="csh-stat-lbl">Nominal bulan ini (Leaderboard)</span>
+        <div class="csh-bar"><div class="csh-bar-fill nominal" style="width:0%" data-final="0%"></div></div>
+        <span class="csh-stat-val" style="font-weight:600;opacity:.75">${nom ? crmFmtRupiah(nomSales) + ' · target belum diatur Moderator' : 'Data nominal belum tersedia'}</span>
+      </div>`;
 
   return `
   <div class="csh-card" style="--tier-color:${tier.color};--tier-glow:${tier.glow}">
@@ -25927,7 +26008,7 @@ async function cshRenderCard(uid, name, state) {
     <div class="csh-daily">
       <div class="csh-daily-head">
         <span>🎯 Tugas Harian Hari Ini</span>
-        <span class="csh-daily-count">${todayCount} / ${tier.targetPerDay}</span>
+        <span class="csh-daily-count">${dailyCountTxt}</span>
       </div>
       <div class="csh-bar"><div class="csh-bar-fill" style="width:0%;background:${tier.color}" data-final="${todayPct}%"></div></div>
       <div class="csh-daily-msg">${dailyStatusMsg}</div>
@@ -25936,18 +26017,19 @@ async function cshRenderCard(uid, name, state) {
     <div class="csh-ladder">${ladder}</div>
     <div class="csh-stats">
       <div class="csh-stat">
-        <span class="csh-stat-lbl">Closing minggu ini</span>
-        <div class="csh-bar"><div class="csh-bar-fill" style="width:0%;background:${tier.color}" data-final="${pct}%"></div></div>
-        <span class="csh-stat-val">${actualClosing} / ${weeklyTarget}</span>
+        <span class="csh-stat-lbl">Closing bulan ini (1/hari, Minggu bonus)</span>
+        <div class="csh-bar"><div class="csh-bar-fill" style="width:0%;background:${tier.color}" data-final="${countPct}%"></div></div>
+        <span class="csh-stat-val">${actualClosing} / ${workdays}</span>
       </div>
+      ${nomBlock}
       <div class="csh-stat">
         <span class="csh-stat-lbl">Leads dikerjakan</span>
         <div class="csh-bar"><div class="csh-bar-fill leads" style="width:0%" data-final="${leadsPct}%"></div></div>
-        <span class="csh-stat-val">${actualLeads} / ${weeklyLeadsQuota}</span>
+        <span class="csh-stat-val">${actualLeads} / ${leadsQuota}</span>
       </div>
     </div>
     <div class="csh-status">${statusMsg}</div>
-    <div class="csh-meta">Minggu ${cshFmtDate(ws)} – ${cshFmtDate(cshAddDays(we,-1))} · Target ${tier.targetPerDay}/hari · Jatah leads ${tier.leadsPerDay}/hari · Closing sinkron Tracking Report</div>
+    <div class="csh-meta">${lbYmLabel(ym)} · Naik level: ${workdays} closing (1/hari, tanpa Minggu) <b>atau</b> capai nominal target Leaderboard · Jatah leads ${tier.leadsPerDay}/hari · Closing sinkron Tracking Report</div>
   </div>`;
 }
 
@@ -26031,6 +26113,7 @@ function cshAnimate() {
 // Render hasil ke #csh-root. Mode silent: tanpa animasi-dari-nol supaya
 // refresh realtime tidak bikin batang/ring "berkedip" dari 0.
 function cshPaint(root, html, silent) {
+  cshLvUpStyleOnce(); // style kartu bulanan + tema terang selalu ter-inject, bukan hanya saat popup
   root.innerHTML = html;
   const bars = () => root.querySelectorAll('.csh-ring-fg,.csh-bar-fill');
   if (silent) {
@@ -26102,6 +26185,9 @@ function cshLvUpStyleOnce() {
     .csh-lvup-badge,.csh-lvup-rv,.csh-lvup-eyebrow{opacity:1!important;transform:none!important;letter-spacing:.44em}
     .csh-lvup-ring .r1{stroke-dashoffset:0}
   }
+  .csh-bar-fill.nominal{background:linear-gradient(90deg,#2fae6a,#7fd6a4)}
+  .csh-day.optional .csh-day-dot{opacity:.5}
+  .csh-meta b{font-weight:700}
   /* polesan tema terang untuk kartu CS Hunter (track/ring tadinya putih di atas putih) */
   body.light .csh-bar{background:rgba(0,0,0,.08)}
   body.light .csh-ring-bg{stroke:rgba(0,0,0,.09)}
@@ -26123,8 +26209,9 @@ function cshShowLevelUp(opts) {
   const dust = Array.from({ length: 10 }, (_, i) =>
     `<i style="--x:${7 + i * 9 + (i % 3) * 2}%;--d:${(i * 0.55).toFixed(2)}s;--t:${(5.6 + (i % 4) * 1.1).toFixed(1)}s;--s:${2 + (i % 3)}px"></i>`).join('');
   const facts = [
-    (opts.achieved != null && opts.target) ? `Closing minggu lalu <b>${opts.achieved} / ${opts.target}</b> — target tercapai` : '',
-    `Target harian baru <b>${to.targetPerDay} closing</b> · jatah leads <b>${to.leadsPerDay}/hari</b>`,
+    opts.viaNominal ? `Target nominal Leaderboard bulan lalu <b>tercapai</b>`
+      : ((opts.achieved != null && opts.target) ? `Closing bulan lalu <b>${opts.achieved} / ${opts.target}</b> — target tercapai` : ''),
+    `Syarat bulan ini: <b>1 closing/hari</b> (Minggu bonus) atau <b>nominal Leaderboard</b>`,
   ].filter(Boolean).join('<br>');
   const el = document.createElement('div');
   el.id = 'csh-lvup'; el.className = 'csh-lvup';
@@ -26166,7 +26253,7 @@ window.cshPreviewLevelUp = function (toTier) {
   const t = Math.min(5, Math.max(2, parseInt(toTier || 2, 10) || 2));
   const prev = csh(t - 1);
   cshShowLevelUp({ name: currentUser?.name || 'CS Hunter', fromTier: t - 1, toTier: t,
-    achieved: prev.targetPerDay * 7, target: prev.targetPerDay * 7 });
+    achieved: 27, target: 27 });
 };
 
 // Cek apakah pangkat CS Hunter yang login naik sejak terakhir kali dilihat
@@ -26188,14 +26275,17 @@ async function cshCheckLevelUp(state) {
     if (!seen) { save(); return; }
     if (cur > seen) {
       save(); // simpan DULU supaya realtime + login tidak memunculkan popup dobel
-      let achieved = null, target = null;
+      let achieved = null, target = null, viaNominal = false;
       try {
         const h = await dbQ(d => d.from('cs_hunter_history').select('actual_closing,target_closing,passed')
           .eq('user_id', currentUser.id).order('week_start', { ascending: false }).limit(1));
         const row = h && h.data && h.data[0];
-        if (row && row.passed) { achieved = row.actual_closing; target = row.target_closing; }
+        if (row && row.passed) {
+          achieved = row.actual_closing; target = row.target_closing;
+          viaNominal = !(Number(achieved) >= Number(target)); // lolos lewat nominal Leaderboard, bukan jumlah closing
+        }
       } catch (e) {}
-      cshShowLevelUp({ name: currentUser.name, fromTier: seen, toTier: cur, achieved, target });
+      cshShowLevelUp({ name: currentUser.name, fromTier: seen, toTier: cur, achieved, target, viaNominal });
     } else if (cur !== seen) { save(); }
   } catch (e) { console.warn('[DHP] cshCheckLevelUp gagal:', e); }
   finally { _cshLvBusy = false; }
@@ -26209,6 +26299,7 @@ function cshSyncSoon() {
 }
 async function cshSyncNow() {
   if (!db || !currentUser) return;
+  _cshNomCache = {}; // nominal Leaderboard diambil ulang supaya angka selalu segar
   const pg = document.getElementById('pg-cs_hunter');
   if (pg && pg.classList.contains('active')) { try { await loadCsHunterPage(true); } catch (e) {} }
   else { await cshCheckLevelUp(); }
@@ -26220,6 +26311,7 @@ function initCsHunterSync() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tracking_reports' }, cshSyncSoon)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, cshSyncSoon)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'cs_hunter_status' }, cshSyncSoon)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'cs_hunter_sales_target' }, cshSyncSoon)
       .subscribe();
   } catch (e) { console.warn('[DHP] initCsHunterSync gagal:', e); }
   // Jaring pengaman: kalau realtime belum aktif untuk salah satu tabel, tetap sinkron tiap ~90 dtk (tab terlihat saja)
