@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<meta name="dhp-build" content="2026-10-10T06-00-00-v103"/>
+<meta name="dhp-build" content="2026-10-14T00-00-00-v104"/>
 <title>DHP Creative — Command Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Shippori+Mincho:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
@@ -9912,13 +9912,17 @@ window.exportLsSchedulePDF = exportLsSchedulePDF;
 async function loadLsPendingBanner() {
   const el = document.getElementById('ls-pending-banner');
   if (!el || !db) return;
-  const res = await dbQ(d => d.from('v_live_sessions_pending').select('*').limit(50));
+  // v104: khusus BULAN INI — sesi bulan-bulan lalu yang belum dilapor tidak lagi memenuhi banner
+  const pendYm = lbYmNow(), pendB = lbMonthBounds(pendYm);
+  const res = await dbQ(d => d.from('v_live_sessions_pending').select('*')
+    .gte('schedule_date', pendB.start).lte('schedule_date', pendB.end)
+    .order('schedule_date', { ascending: true }).order('time_end', { ascending: true }).limit(200));
   const rows = res?.data || [];
   if (!rows.length) { el.style.display = 'none'; return; }
   el.style.display = '';
   el.innerHTML = `
     <div class="tbl-wrap" style="margin:10px 0;border:1px solid rgba(232,112,112,.35);background:rgba(232,112,112,.06)">
-      <div class="tbl-head"><div class="tbl-title" style="color:#e87070">⚠ ${rows.length} sesi belum diisi laporan</div></div>
+      <div class="tbl-head"><div class="tbl-title" style="color:#e87070">⚠ ${rows.length} sesi belum diisi laporan · ${lbYmLabel(pendYm)}</div></div>
       <div style="padding:0 14px 12px;font-size:13px;color:var(--text2)">
         ${rows.slice(0,8).map(r => {
           const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
@@ -10133,7 +10137,7 @@ async function loadLiveDashboard() {
       if (db) {
         const [statRes, pendRes] = await Promise.all([
           dbQ(d => d.rpc('host_dashboard_stats', { p_host_id: id, p_period_ym: ym })),
-          dbQ(d => d.from('v_live_sessions_pending').select('id').eq('host_user_id', id))
+          dbQ(d => d.from('v_live_sessions_pending').select('id').eq('host_user_id', id).gte('schedule_date', first).lte('schedule_date', last))
         ]);
         const st = statRes?.data?.[0];
         target        = Number(st?.target_amount) || 0;
@@ -22872,33 +22876,65 @@ const csh = t => CSH_TIERS.find(x => x.order === t) || CSH_TIERS[0];
    Dipakai di manapun tier perlu ditampilkan: sidebar, profile modal, kartu CS Hunter.
    Warna & bentuk mengikuti tier (Bronze→Diamond), pip di bawah menunjukkan pangkat
    (1–5) supaya "level" nya kebaca sekilas tanpa perlu baca teks. */
+// v104 — EMBLEM PANGKAT: perisai logam dengan lambang berbeda tiap level.
+// Bronze 1 chevron · Silver 2 chevron · Gold 3 chevron · Platinum bintang + sayap · Diamond permata + sayap.
+// Palet logam (terang → tengah → gelap) dipakai juga oleh kartu & batang progres.
+const CSH_METAL = {
+  1: { hi:'#f0c196', mid:'#c47a3d', lo:'#7a4520', ink:'#8a4f1f' },
+  2: { hi:'#f4f7fa', mid:'#a7b0ba', lo:'#5f6873', ink:'#59626d' },
+  3: { hi:'#fdeeb4', mid:'#e0b03e', lo:'#8a6414', ink:'#8a6414' },
+  4: { hi:'#e9fffc', mid:'#5fd0c8', lo:'#1d7a73', ink:'#1d7a73' },
+  5: { hi:'#eef7ff', mid:'#8fc6ff', lo:'#3b73bd', ink:'#2f66ad' },
+};
 function cshBadgeSVG(tierOrder, size) {
   size = size || 44;
-  const tier = csh(tierOrder);
-  const uid = 'cshg' + tierOrder + Math.random().toString(36).slice(2, 8);
-  let pips = '';
-  for (let i = 0; i < 5; i++) {
-    const on = i < tierOrder;
-    const x = 22 + (i - 2) * 7.2;
-    pips += `<circle cx="${x}" cy="41.5" r="${on ? 1.9 : 1.4}" fill="${on ? tier.color : 'rgba(255,255,255,.16)'}"/>`;
+  const o = Math.min(5, Math.max(1, parseInt(tierOrder, 10) || 1));
+  const m = CSH_METAL[o];
+  const id = 'cshe' + o + Math.random().toString(36).slice(2, 7);
+  const W = size, H = Math.round(size * 1.125);
+  const stroke = `stroke="url(#${id}-m)" stroke-linecap="round" stroke-linejoin="round" fill="none"`;
+  const chev = (y, sw) => `<path d="M22.5 ${y + 7} L32 ${y} L41.5 ${y + 7}" ${stroke} stroke-width="${sw || 3.2}"/>`;
+  let glyph = '';
+  if (o === 1) glyph = chev(29);
+  else if (o === 2) glyph = chev(24) + chev(34);
+  else if (o === 3) glyph = chev(19) + chev(28.5) + chev(38);
+  else if (o === 4) {
+    const cx = 32, cy = 31, R = 12, r = 5, pts = [];
+    for (let i = 0; i < 10; i++) {
+      const rad = i % 2 ? r : R, a = -Math.PI / 2 + i * Math.PI / 5;
+      pts.push((cx + rad * Math.cos(a)).toFixed(2) + ',' + (cy + rad * Math.sin(a)).toFixed(2));
+    }
+    glyph = `<polygon points="${pts.join(' ')}" fill="url(#${id}-m)" stroke="${m.lo}" stroke-width=".6" stroke-linejoin="round"/>` + chev(43, 2.4);
+  } else {
+    glyph = `<path d="M22 27 L26.5 21 H37.5 L42 27 L32 45 Z" fill="url(#${id}-m)" stroke="${m.lo}" stroke-width=".9" stroke-linejoin="round"/>
+      <path d="M22 27 H42 M26.5 21 L29.5 27 L32 45 M37.5 21 L34.5 27 L32 45 M29.5 27 L32 21 L34.5 27" stroke="${m.lo}" stroke-width=".7" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity=".75"/>
+      <path d="M44.5 14.5 L45.6 18 L49 19 L45.6 20 L44.5 23.5 L43.4 20 L40 19 L43.4 18 Z" fill="${m.hi}"/>`;
   }
+  const wings = o >= 4 ? `
+    <path d="M8 19 C1.5 28 1.5 42 9 51" ${stroke} stroke-width="1.6"/>
+    <path d="M10.2 25 C5.4 31.5 5.8 40 11 46" ${stroke} stroke-width="1.1" opacity=".7"/>
+    <path d="M56 19 C62.5 28 62.5 42 55 51" ${stroke} stroke-width="1.6"/>
+    <path d="M53.8 25 C58.6 31.5 58.2 40 53 46" ${stroke} stroke-width="1.1" opacity=".7"/>` : '';
+  const shield = 'M32 3 L54 11 V34 C54 49 44 59 32 66 C20 59 10 49 10 34 V11 Z';
+  const inner  = 'M32 8.2 L49.4 14.4 V34 C49.4 46 41.6 54.6 32 60.4 C22.4 54.6 14.6 46 14.6 34 V14.4 Z';
   return `
-  <svg class="csh-badge-svg" width="${size}" height="${size}" viewBox="0 0 44 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg class="csh-badge-svg" width="${W}" height="${H}" viewBox="0 0 64 72" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pangkat ${csh(o).name}">
     <defs>
-      <linearGradient id="${uid}" x1="0" y1="0" x2="44" y2="46" gradientUnits="userSpaceOnUse">
-        <stop offset="0%" stop-color="${tier.color}"/>
-        <stop offset="100%" stop-color="${tier.color}" stop-opacity=".3"/>
+      <linearGradient id="${id}-m" x1="8" y1="4" x2="56" y2="66" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="${m.hi}"/><stop offset=".48" stop-color="${m.mid}"/><stop offset="1" stop-color="${m.lo}"/>
       </linearGradient>
-      <radialGradient id="${uid}-gl" cx="50%" cy="34%" r="65%">
-        <stop offset="0%" stop-color="${tier.color}" stop-opacity=".5"/>
-        <stop offset="100%" stop-color="${tier.color}" stop-opacity="0"/>
-      </radialGradient>
+      <linearGradient id="${id}-f" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#2a231a"/><stop offset="1" stop-color="#0d0a07"/>
+      </linearGradient>
+      <linearGradient id="${id}-s" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fff" stop-opacity=".34"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+      </linearGradient>
     </defs>
-    <polygon points="22,1 40,11 40,29 22,39 4,29 4,11" fill="url(#${uid}-gl)"/>
-    <polygon points="22,2.5 38,11.5 38,28.5 22,37.5 6,28.5 6,11.5" fill="rgba(13,11,8,.55)" stroke="url(#${uid})" stroke-width="1.4"/>
-    <polygon points="22,9.5 29.5,16 26.5,26.5 17.5,26.5 14.5,16" fill="${tier.color}22" stroke="${tier.color}" stroke-width="1.1" stroke-linejoin="round"/>
-    <path d="M22 12.5 L22 23.5 M18 16 L26 20.5 M26 16 L18 20.5" stroke="${tier.color}" stroke-width=".75" opacity=".75"/>
-    ${pips}
+    ${wings}
+    <path d="${shield}" fill="url(#${id}-f)" stroke="url(#${id}-m)" stroke-width="2.4" stroke-linejoin="round"/>
+    <path d="${inner}" fill="${m.mid}" fill-opacity=".09" stroke="url(#${id}-m)" stroke-width=".8" stroke-opacity=".75" stroke-linejoin="round"/>
+    <path d="M32 3 L54 11 V29 C43 23.5 21 23.5 10 29 V11 Z" fill="url(#${id}-s)"/>
+    ${glyph}
   </svg>`;
 }
 // Chip lengkap (badge + nama tier), dipakai di sidebar (compact) & profile (besar)
@@ -25954,9 +25990,10 @@ async function cshRenderCard(uid, name, state) {
         : `Butuh <b>${dailyTarget - todayCount}</b> closing lagi hari ini untuk capai target harian.`);
   const dailyCountTxt = isSundayToday ? `${todayCount} <span style="font-weight:600;font-size:10px;opacity:.7">bonus</span>` : `${todayCount} / ${dailyTarget}`;
 
+  const m = CSH_METAL[tier.order];
   const ladder = CSH_TIERS.map(tr => {
     const cls = tr.order < tier.order ? 'done' : (tr.order === tier.order ? 'current' : 'upcoming');
-    return `<div class="csh-node ${cls}" style="--tc:${tr.color}"><div class="csh-node-dot"></div><div class="csh-node-lbl">${tr.name}</div></div>`;
+    return `<div class="csh-node ${cls}" style="--tc:${tr.color}"><div class="csh-node-emb">${cshBadgeSVG(tr.order, 24)}</div><div class="csh-node-lbl">${tr.name}</div></div>`;
   }).join('<div class="csh-node-line"></div>');
 
   const circumference = 2 * Math.PI * 42;
@@ -25990,17 +26027,19 @@ async function cshRenderCard(uid, name, state) {
       </div>`;
 
   return `
-  <div class="csh-card" style="--tier-color:${tier.color};--tier-glow:${tier.glow}">
+  <div class="csh-card csh-themed csh-t-${tier.key}" style="--tier-color:${tier.color};--tier-glow:${tier.glow};--tier-ink:${m.ink};--tier-hi:${m.hi};--tier-grad:linear-gradient(90deg,${m.lo},${m.mid} 55%,${m.hi})">
+    <span class="csh-sheen"></span>
+    ${tier.order === 5 ? '<span class="csh-sparkle s1"></span><span class="csh-sparkle s2"></span><span class="csh-sparkle s3"></span>' : ''}
     <div class="csh-card-head">
-      <div class="csh-avatar" style="background:${tier.color}">${(name||'?').charAt(0).toUpperCase()}</div>
-      <div>
+      <div class="csh-emblem">${cshBadgeSVG(tier.order, 56)}</div>
+      <div class="csh-head-txt">
         <div class="csh-name">${name}</div>
-        <div class="csh-tier-badge" style="color:${tier.color};border-color:${tier.color}55;background:${tier.color}1a">★ ${tier.name}</div>
+        <div class="csh-tier-line"><span class="csh-tier-name">${tier.name.toUpperCase()}</span><span class="csh-tier-lv">Level ${tier.order} dari 5</span></div>
       </div>
       <div class="csh-ring-wrap">
         <svg viewBox="0 0 100 100" class="csh-ring">
           <circle cx="50" cy="50" r="42" class="csh-ring-bg"/>
-          <circle cx="50" cy="50" r="42" class="csh-ring-fg" style="stroke:${tier.color};stroke-dasharray:${circumference};stroke-dashoffset:${circumference}" data-final="${dashoffset}"/>
+          <circle cx="50" cy="50" r="42" class="csh-ring-fg" style="stroke:${tier.order === 2 ? m.lo : m.mid};stroke-dasharray:${circumference};stroke-dashoffset:${circumference}" data-final="${dashoffset}"/>
         </svg>
         <div class="csh-ring-txt">${pct}%</div>
       </div>
@@ -26010,7 +26049,7 @@ async function cshRenderCard(uid, name, state) {
         <span>🎯 Tugas Harian Hari Ini</span>
         <span class="csh-daily-count">${dailyCountTxt}</span>
       </div>
-      <div class="csh-bar"><div class="csh-bar-fill" style="width:0%;background:${tier.color}" data-final="${todayPct}%"></div></div>
+      <div class="csh-bar"><div class="csh-bar-fill" style="width:0%;background:var(--tier-grad)" data-final="${todayPct}%"></div></div>
       <div class="csh-daily-msg">${dailyStatusMsg}</div>
       <div class="csh-week-strip">${dayStrip}</div>
     </div>
@@ -26018,7 +26057,7 @@ async function cshRenderCard(uid, name, state) {
     <div class="csh-stats">
       <div class="csh-stat">
         <span class="csh-stat-lbl">Closing bulan ini (1/hari, Minggu bonus)</span>
-        <div class="csh-bar"><div class="csh-bar-fill" style="width:0%;background:${tier.color}" data-final="${countPct}%"></div></div>
+        <div class="csh-bar"><div class="csh-bar-fill" style="width:0%;background:var(--tier-grad)" data-final="${countPct}%"></div></div>
         <span class="csh-stat-val">${actualClosing} / ${workdays}</span>
       </div>
       ${nomBlock}
@@ -26188,6 +26227,45 @@ function cshLvUpStyleOnce() {
   .csh-bar-fill.nominal{background:linear-gradient(90deg,#2fae6a,#7fd6a4)}
   .csh-day.optional .csh-day-dot{opacity:.5}
   .csh-meta b{font-weight:700}
+  /* v104 — kartu bertema per pangkat: warna logam, tekstur & kilau naik bertahap dari Bronze ke Diamond */
+  .csh-card.csh-themed{isolation:isolate;border:1px solid color-mix(in srgb,var(--tier-color) 45%,transparent);
+    background:linear-gradient(165deg,color-mix(in srgb,var(--tier-hi) 26%,transparent),color-mix(in srgb,var(--tier-color) 8%,transparent) 50%,transparent 88%);
+    box-shadow:0 14px 34px -18px var(--tier-glow)}
+  .csh-card.csh-themed::after{content:'';position:absolute;left:16px;right:16px;top:0;height:2px;z-index:2;
+    background:linear-gradient(90deg,transparent,var(--tier-color),transparent)}
+  .csh-card.csh-t-silver{background:repeating-linear-gradient(115deg,transparent 0 7px,rgba(255,255,255,.22) 7px 8px),
+    linear-gradient(165deg,color-mix(in srgb,var(--tier-hi) 40%,transparent),color-mix(in srgb,var(--tier-color) 10%,transparent) 55%,transparent 90%)}
+  .csh-card.csh-t-gold,.csh-card.csh-t-platinum,.csh-card.csh-t-diamond{
+    box-shadow:0 14px 34px -16px var(--tier-glow),inset 0 0 0 1px color-mix(in srgb,var(--tier-color) 24%,transparent)}
+  .csh-card.csh-t-diamond::after{height:3px}
+  .csh-watermark{position:absolute;right:-18px;bottom:-26px;opacity:.07;pointer-events:none;z-index:-1}
+  .csh-watermark svg{display:block}
+  .csh-sheen{position:absolute;top:0;bottom:0;left:-60%;width:38%;pointer-events:none;display:none;z-index:1;transform:skewX(-18deg);
+    background:linear-gradient(105deg,transparent,color-mix(in srgb,var(--tier-color) 17%,transparent),transparent)}
+  .csh-t-gold .csh-sheen,.csh-t-platinum .csh-sheen,.csh-t-diamond .csh-sheen{display:block;animation:cshSheen 9s ease-in-out infinite}
+  .csh-t-platinum .csh-sheen{animation-duration:8s}
+  .csh-t-diamond .csh-sheen{animation-duration:6.5s}
+  @keyframes cshSheen{0%{left:-60%}24%{left:145%}100%{left:145%}}
+  .csh-sparkle{position:absolute;width:9px;height:9px;background:var(--tier-color);opacity:0;pointer-events:none;z-index:1;
+    clip-path:polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 39%);animation:cshTwinkle 3.4s ease-in-out infinite}
+  .csh-sparkle.s1{top:16px;right:84px}
+  .csh-sparkle.s2{top:58px;right:18px;animation-delay:1.1s;width:7px;height:7px}
+  .csh-sparkle.s3{top:30px;left:78px;animation-delay:2.1s;width:6px;height:6px}
+  @keyframes cshTwinkle{0%,100%{opacity:0;transform:scale(.4) rotate(0)}45%{opacity:.85;transform:scale(1) rotate(45deg)}70%{opacity:0}}
+  .csh-card-head{gap:14px}
+  .csh-emblem{flex-shrink:0;line-height:0;filter:drop-shadow(0 6px 10px var(--tier-glow))}
+  .csh-head-txt{min-width:0}
+  .csh-tier-line{display:flex;align-items:baseline;gap:9px;margin-top:3px;flex-wrap:wrap}
+  .csh-tier-name{font-weight:800;font-size:11px;letter-spacing:.2em;color:var(--tier-ink)}
+  .csh-tier-lv{font-size:9.5px;letter-spacing:.04em;color:var(--muted)}
+  .csh-card .csh-daily-count{color:var(--tier-ink)}
+  .csh-ladder .csh-node{gap:3px}
+  .csh-node-emb{opacity:.36;filter:grayscale(1);transition:all .5s ease;line-height:0}
+  .csh-node.done .csh-node-emb{opacity:.92;filter:none}
+  .csh-node.current .csh-node-emb{opacity:1;transform:scale(1.3);margin:3px 0 4px;animation:cshEmbPulse 2.8s ease-in-out infinite}
+  @keyframes cshEmbPulse{0%,100%{filter:drop-shadow(0 0 4px var(--tc))}50%{filter:drop-shadow(0 0 11px var(--tc))}}
+  .csh-ladder .csh-node-line{margin-bottom:16px}
+  @media(prefers-reduced-motion:reduce){.csh-sheen,.csh-sparkle,.csh-node.current .csh-node-emb{animation:none!important}}
   /* polesan tema terang untuk kartu CS Hunter (track/ring tadinya putih di atas putih) */
   body.light .csh-bar{background:rgba(0,0,0,.08)}
   body.light .csh-ring-bg{stroke:rgba(0,0,0,.09)}
