@@ -22858,11 +22858,11 @@ function loadPageData(page) {
    (category = 'Closing') milik CS Hunter tsb pada rentang minggu terkait.
    ═══════════════════════════════════════════════════════════ */
 const CSH_TIERS = [
-  { order:1, key:'bronze',   name:'Bronze',   color:'#c47a3d', glow:'rgba(196,122,61,.45)',  leadsPerDay:25, targetPerDay:1  },
-  { order:2, key:'silver',   name:'Silver',   color:'#a7b0ba', glow:'rgba(167,176,186,.45)', leadsPerDay:22, targetPerDay:1  },
-  { order:3, key:'gold',     name:'Gold',     color:'#e0b03e', glow:'rgba(224,176,62,.5)',   leadsPerDay:19, targetPerDay:1  },
-  { order:4, key:'platinum', name:'Platinum', color:'#5fd0c8', glow:'rgba(95,208,200,.5)',   leadsPerDay:16, targetPerDay:1  },
-  { order:5, key:'diamond',  name:'Diamond',  color:'#8fc6ff', glow:'rgba(143,198,255,.55)', leadsPerDay:13, targetPerDay:1 },
+  { order:1, key:'bronze',   name:'Bronze',   color:'#b97a4b', glow:'rgba(185,122,75,.45)',  leadsPerDay:25, targetPerDay:1  },
+  { order:2, key:'silver',   name:'Silver',   color:'#b5bdc7', glow:'rgba(181,189,199,.42)', leadsPerDay:22, targetPerDay:1  },
+  { order:3, key:'gold',     name:'Gold',     color:'#d8b45c', glow:'rgba(216,180,92,.5)',   leadsPerDay:19, targetPerDay:1  },
+  { order:4, key:'platinum', name:'Platinum', color:'#74c3b5', glow:'rgba(116,195,181,.5)',  leadsPerDay:16, targetPerDay:1  },
+  { order:5, key:'diamond',  name:'Diamond',  color:'#9db5f2', glow:'rgba(157,181,242,.55)', leadsPerDay:13, targetPerDay:1  },
 ];
 const csh = t => CSH_TIERS.find(x => x.order === t) || CSH_TIERS[0];
 
@@ -22874,61 +22874,91 @@ const csh = t => CSH_TIERS.find(x => x.order === t) || CSH_TIERS[0];
 // Bronze 1 chevron · Silver 2 chevron · Gold 3 chevron · Platinum bintang + sayap · Diamond permata + sayap.
 // Palet logam (terang → tengah → gelap) dipakai juga oleh kartu & batang progres.
 const CSH_METAL = {
-  1: { hi:'#f0c196', mid:'#c47a3d', lo:'#7a4520', ink:'#8a4f1f' },
-  2: { hi:'#f4f7fa', mid:'#a7b0ba', lo:'#5f6873', ink:'#59626d' },
-  3: { hi:'#fdeeb4', mid:'#e0b03e', lo:'#8a6414', ink:'#8a6414' },
-  4: { hi:'#e9fffc', mid:'#5fd0c8', lo:'#1d7a73', ink:'#1d7a73' },
-  5: { hi:'#eef7ff', mid:'#8fc6ff', lo:'#3b73bd', ink:'#2f66ad' },
+  1: { hi:'#f4d3b3', mid:'#b97a4b', lo:'#6a3e22', ink:'#a86a3d' },   // tembaga antik
+  2: { hi:'#f8fafc', mid:'#b5bdc7', lo:'#69737f', ink:'#6c7580' },   // baja perak
+  3: { hi:'#fff2c6', mid:'#d8b45c', lo:'#8a6a22', ink:'#a07d2c' },   // emas champagne
+  4: { hi:'#e8fbf6', mid:'#74c3b5', lo:'#2a6e66', ink:'#2f7d74' },   // teal mutiara
+  5: { hi:'#f2f6ff', mid:'#9db5f2', lo:'#4a5fb0', ink:'#4558a8' },   // safir es
 };
 function cshBadgeSVG(tierOrder, size) {
+  // v110 — EMBLEM BARU: perisai bergaya "crest" netral & elegan — bingkai logam berbevel, enamel gelap,
+  // permata faset di tengah, dan hiasan yang makin kaya per pangkat (finial → mahkota → sinar/sayap).
+  // Jumlah titik berlian kecil di bawah permata = nomor pangkat (1–5).
   size = size || 44;
   const o = Math.min(5, Math.max(1, parseInt(tierOrder, 10) || 1));
   const m = CSH_METAL[o];
   const id = 'cshe' + o + Math.random().toString(36).slice(2, 7);
   const W = size, H = Math.round(size * 1.125);
-  const stroke = `stroke="url(#${id}-m)" stroke-linecap="round" stroke-linejoin="round" fill="none"`;
-  const chev = (y, sw) => `<path d="M22.5 ${y + 7} L32 ${y} L41.5 ${y + 7}" ${stroke} stroke-width="${sw || 3.2}"/>`;
-  let glyph = '';
-  if (o === 1) glyph = chev(29);
-  else if (o === 2) glyph = chev(24) + chev(34);
-  else if (o === 3) glyph = chev(19) + chev(28.5) + chev(38);
-  else if (o === 4) {
-    const cx = 32, cy = 31, R = 12, r = 5, pts = [];
-    for (let i = 0; i < 10; i++) {
-      const rad = i % 2 ? r : R, a = -Math.PI / 2 + i * Math.PI / 5;
-      pts.push((cx + rad * Math.cos(a)).toFixed(2) + ',' + (cy + rad * Math.sin(a)).toFixed(2));
-    }
-    glyph = `<polygon points="${pts.join(' ')}" fill="url(#${id}-m)" stroke="${m.lo}" stroke-width=".6" stroke-linejoin="round"/>` + chev(43, 2.4);
-  } else {
-    glyph = `<path d="M22 27 L26.5 21 H37.5 L42 27 L32 45 Z" fill="url(#${id}-m)" stroke="${m.lo}" stroke-width=".9" stroke-linejoin="round"/>
-      <path d="M22 27 H42 M26.5 21 L29.5 27 L32 45 M37.5 21 L34.5 27 L32 45 M29.5 27 L32 21 L34.5 27" stroke="${m.lo}" stroke-width=".7" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity=".75"/>
-      <path d="M44.5 14.5 L45.6 18 L49 19 L45.6 20 L44.5 23.5 L43.4 20 L40 19 L43.4 18 Z" fill="${m.hi}"/>`;
-  }
+  const rim   = 'M32 4 L52 10 Q55 11 55 14 V36 C55 50 45.5 60.5 32 68 C18.5 60.5 9 50 9 36 V14 Q9 11 12 10 Z';
+  const inner = 'M32 8.6 L49.6 13.8 Q51.8 14.5 51.8 16.6 V36 C51.8 48 43.6 57 32 63.6 C20.4 57 12.2 48 12.2 36 V16.6 Q12.2 14.5 14.4 13.8 Z';
+  const line2 = 'M32 11.8 L47.2 16.3 Q48.8 16.8 48.8 18.4 V36 C48.8 46.2 41.8 54 32 59.8 C22.2 54 15.2 46.2 15.2 36 V18.4 Q15.2 16.8 16.8 16.3 Z';
+  const gloss = 'M32 4 L52 10 Q55 11 55 14 V27 C44 22.5 20 22.5 9 27 V14 Q9 11 12 10 Z';
   const wings = o >= 4 ? `
-    <path d="M8 19 C1.5 28 1.5 42 9 51" ${stroke} stroke-width="1.6"/>
-    <path d="M10.2 25 C5.4 31.5 5.8 40 11 46" ${stroke} stroke-width="1.1" opacity=".7"/>
-    <path d="M56 19 C62.5 28 62.5 42 55 51" ${stroke} stroke-width="1.6"/>
-    <path d="M53.8 25 C58.6 31.5 58.2 40 53 46" ${stroke} stroke-width="1.1" opacity=".7"/>` : '';
-  const shield = 'M32 3 L54 11 V34 C54 49 44 59 32 66 C20 59 10 49 10 34 V11 Z';
-  const inner  = 'M32 8.2 L49.4 14.4 V34 C49.4 46 41.6 54.6 32 60.4 C22.4 54.6 14.6 46 14.6 34 V14.4 Z';
+    <path d="M8.2 18 C1.6 27 1.6 42 8.6 51.5" stroke="url(#${id}-m)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+    <path d="M10.4 24 C5.8 30.6 6 39.6 10.8 45.6" stroke="url(#${id}-m)" stroke-width="1" stroke-linecap="round" fill="none" opacity=".75"/>
+    <path d="M55.8 18 C62.4 27 62.4 42 55.4 51.5" stroke="url(#${id}-m)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+    <path d="M53.6 24 C58.2 30.6 58 39.6 53.2 45.6" stroke="url(#${id}-m)" stroke-width="1" stroke-linecap="round" fill="none" opacity=".75"/>` : '';
+  // sinar halus di belakang permata (Diamond)
+  let rays = '';
+  if (o === 5) {
+    for (let i = 0; i < 12; i++) {
+      const a = i * Math.PI / 6, x1 = 32 + 15 * Math.cos(a), y1 = 33 + 15 * Math.sin(a), x2 = 32 + (i % 2 ? 17 : 19.5) * Math.cos(a), y2 = 33 + (i % 2 ? 17 : 19.5) * Math.sin(a);
+      rays += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`;
+    }
+    rays = `<g stroke="${m.hi}" stroke-width=".7" stroke-linecap="round" opacity=".55">${rays}</g>`;
+  }
+  // hiasan di atas permata
+  let crest = '';
+  if (o === 2) crest = `<path d="M25 18 L32 14 L39 18" stroke="url(#${id}-m)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+  else if (o === 3) crest = `<path d="M25.5 18.2 L26.6 13.6 L29.6 16 L32 12.4 L34.4 16 L37.4 13.6 L38.5 18.2 Z" fill="url(#${id}-m)" stroke="${m.lo}" stroke-width=".5" stroke-linejoin="round"/>`;
+  else if (o >= 4) crest = `<path d="M24.6 18.2 L25.4 13.4 L28.6 16 L32 11.4 L35.4 16 L38.6 13.4 L39.4 18.2 Z" fill="url(#${id}-m)" stroke="${m.lo}" stroke-width=".5" stroke-linejoin="round"/>
+      <circle cx="32" cy="15.6" r="1.2" fill="${m.hi}"/>`;
+  const finial = o >= 2 ? `<path d="M32 .9 L34.2 3.9 L32 6.9 L29.8 3.9 Z" fill="url(#${id}-m)" stroke="${m.lo}" stroke-width=".4" stroke-linejoin="round"/>` : '';
+  const pips = Array.from({ length: o }, (_, i) => {
+    const x = 32 + (i - (o - 1) / 2) * 5.4;
+    return `<path d="M${(x).toFixed(1)} 50.6 l1.7 1.7 -1.7 1.7 -1.7 -1.7 Z" fill="${m.hi}"/>`;
+  }).join('');
+  const bigGem = o >= 3 ? 1 : 0;
   return `
   <svg class="csh-badge-svg" width="${W}" height="${H}" viewBox="0 0 64 72" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pangkat ${csh(o).name}">
     <defs>
-      <linearGradient id="${id}-m" x1="8" y1="4" x2="56" y2="66" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="${m.hi}"/><stop offset=".48" stop-color="${m.mid}"/><stop offset="1" stop-color="${m.lo}"/>
+      <linearGradient id="${id}-m" x1="8" y1="4" x2="56" y2="68" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="${m.hi}"/><stop offset=".42" stop-color="${m.mid}"/><stop offset=".7" stop-color="${m.lo}"/><stop offset="1" stop-color="${m.mid}"/>
       </linearGradient>
-      <linearGradient id="${id}-f" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#2a231a"/><stop offset="1" stop-color="#0d0a07"/>
+      <linearGradient id="${id}-e" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#26221d"/><stop offset="1" stop-color="#0a0908"/>
+      </linearGradient>
+      <linearGradient id="${id}-g" x1="21" y1="20" x2="43" y2="46" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="${m.hi}"/><stop offset=".5" stop-color="${m.mid}"/><stop offset="1" stop-color="${m.lo}"/>
       </linearGradient>
       <linearGradient id="${id}-s" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#fff" stop-opacity=".34"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+        <stop offset="0" stop-color="#fff" stop-opacity=".30"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
       </linearGradient>
+      <radialGradient id="${id}-r" cx="32" cy="32" r="22" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="${m.mid}" stop-opacity=".42"/><stop offset="1" stop-color="${m.mid}" stop-opacity="0"/>
+      </radialGradient>
     </defs>
     ${wings}
-    <path d="${shield}" fill="url(#${id}-f)" stroke="url(#${id}-m)" stroke-width="2.4" stroke-linejoin="round"/>
-    <path d="${inner}" fill="${m.mid}" fill-opacity=".09" stroke="url(#${id}-m)" stroke-width=".8" stroke-opacity=".75" stroke-linejoin="round"/>
-    <path d="M32 3 L54 11 V29 C43 23.5 21 23.5 10 29 V11 Z" fill="url(#${id}-s)"/>
-    ${glyph}
+    <path d="${rim}" fill="url(#${id}-m)" stroke="${m.lo}" stroke-width=".6" stroke-linejoin="round"/>
+    <path d="${inner}" fill="url(#${id}-e)" stroke="${m.hi}" stroke-opacity=".55" stroke-width=".6" stroke-linejoin="round"/>
+    ${o >= 3 ? `<path d="${line2}" stroke="${m.hi}" stroke-opacity=".28" stroke-width=".5" stroke-linejoin="round"/>` : ''}
+    <path d="${inner}" fill="url(#${id}-r)"/>
+    <path d="${gloss}" fill="url(#${id}-s)"/>
+    ${rays}
+    ${crest}
+    <g>
+      <polygon points="27,20 37,20 43,28 32,46 21,28" fill="url(#${id}-g)" stroke="${m.hi}" stroke-opacity=".7" stroke-width=".6" stroke-linejoin="round"/>
+      <polygon points="27,20 32,20 30,28 21,28" fill="#fff" fill-opacity=".5"/>
+      <polygon points="32,20 37,20 43,28 34,28" fill="#fff" fill-opacity=".14"/>
+      <polygon points="32,20 34,28 30,28" fill="#fff" fill-opacity=".28"/>
+      <polygon points="21,28 30,28 32,46" fill="#000" fill-opacity=".2"/>
+      <polygon points="30,28 34,28 32,46" fill="#fff" fill-opacity=".16"/>
+      <polygon points="34,28 43,28 32,46" fill="#000" fill-opacity=".42"/>
+      <path d="M21 28 H43" stroke="#fff" stroke-opacity=".45" stroke-width=".5"/>
+      <path d="M35.6 22.4 l.7 1.6 1.6 .7 -1.6 .7 -.7 1.6 -.7 -1.6 -1.6 -.7 1.6 -.7 Z" fill="#fff" fill-opacity="${bigGem ? .95 : .7}"/>
+    </g>
+    ${pips}
+    ${finial}
   </svg>`;
 }
 // Chip lengkap (badge + nama tier), dipakai di sidebar (compact) & profile (besar)
@@ -26297,7 +26327,7 @@ async function cshRenderCard(uid, name, state) {
     const cls = isDone ? 'done' : (isCur ? 'current' : 'locked') + (isNext ? ' next' : '');
     const mark = isDone ? `<span class="fx-nd-mk ck">${ICO.check}</span>` : (isCur ? '' : `<span class="fx-nd-mk lk">${ICO.lock}</span>`);
     const node = `<div class="fx-nd ${cls}" style="--nc:${tr.color};--ng:${tr.glow}">
-      <div class="fx-nd-emb">${cshBadgeSVG(tr.order, isCur ? 52 : 36)}${mark}</div>
+      <div class="fx-nd-emb">${cshBadgeSVG(tr.order, isCur ? 42 : 38)}${mark}</div>
       <div class="fx-nd-lbl">${tr.name}</div>
       ${isCur ? '<div class="fx-nd-now">Sekarang</div>' : (isNext ? '<div class="fx-nd-now nx">Naik!</div>' : '')}
     </div>`;
@@ -26551,25 +26581,33 @@ function cshFxStyleOnce() {
   .fx-day.optional .fx-day-coin{border-style:dotted}
 
   /* ── JALUR PANGKAT ── */
-  .fx-ladder{display:flex;align-items:flex-start;justify-content:space-between;padding:4px 2px 0}
-  .fx-nd{display:flex;flex-direction:column;align-items:center;gap:5px;flex:0 0 auto;width:52px;position:relative}
-  .fx-nd-emb{position:relative;line-height:0;min-height:52px;display:flex;align-items:center;justify-content:center}
-  .fx-nd.locked .fx-nd-emb svg.csh-badge-svg{filter:grayscale(1) brightness(.55);opacity:.7}
-  .fx-nd.done .fx-nd-emb svg.csh-badge-svg{filter:drop-shadow(0 0 6px var(--ng))}
-  .fx-nd.current .fx-nd-emb::before{content:'';position:absolute;inset:-9px;border-radius:50%;background:radial-gradient(circle,var(--ng),transparent 68%);animation:fxBreath 3s ease-in-out infinite}
-  .fx-nd.current .fx-nd-emb svg.csh-badge-svg{position:relative;filter:drop-shadow(0 0 12px var(--nc));animation:fxFloat 4.5s ease-in-out infinite}
-  .fx-nd.next .fx-nd-emb svg.csh-badge-svg{filter:grayscale(.2) brightness(.9) drop-shadow(0 0 10px var(--nc));opacity:1;animation:fxNext 1.8s ease-in-out infinite}
-  @keyframes fxNext{0%,100%{transform:scale(.96)}50%{transform:scale(1.08)}}
-  .fx-nd-mk{position:absolute;right:-3px;bottom:-1px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:3px;border:1px solid rgba(255,255,255,.25)}
+  .fx-ladder{display:flex;align-items:flex-start;justify-content:space-between;padding:8px 0 0}
+  .fx-nd{display:flex;flex-direction:column;align-items:center;gap:8px;flex:0 0 auto;width:60px;position:relative}
+  .fx-nd-emb{position:relative;line-height:0;width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 30%,rgba(255,255,255,.09),rgba(0,0,0,.6) 76%);border:1px solid color-mix(in srgb,var(--nc) 60%,transparent);
+    box-shadow:inset 0 0 14px rgba(0,0,0,.65)}
+  .fx-nd.locked .fx-nd-emb{border-style:dashed;border-color:rgba(255,255,255,.18)}
+  .fx-nd.locked svg.csh-badge-svg{filter:grayscale(.8) brightness(.82);opacity:.6}
+  .fx-nd.done .fx-nd-emb{box-shadow:inset 0 0 14px rgba(0,0,0,.65),0 0 16px -3px var(--ng)}
+  .fx-nd.done svg.csh-badge-svg{filter:drop-shadow(0 0 4px var(--ng))}
+  .fx-nd.current .fx-nd-emb{transform:scale(1.14);border-color:var(--nc);box-shadow:inset 0 0 16px rgba(0,0,0,.6),0 0 24px var(--ng)}
+  .fx-nd.current .fx-nd-emb::before{content:'';position:absolute;inset:-6px;border-radius:50%;border:1px solid var(--nc);opacity:.5;animation:fxRingPulse 2.8s ease-out infinite}
+  @keyframes fxRingPulse{0%{transform:scale(.92);opacity:.7}100%{transform:scale(1.22);opacity:0}}
+  .fx-nd.current svg.csh-badge-svg{filter:drop-shadow(0 0 8px var(--nc));animation:fxFloat 4.5s ease-in-out infinite}
+  .fx-nd.next .fx-nd-emb{border-style:solid;border-color:var(--nc);animation:fxNext 1.8s ease-in-out infinite}
+  .fx-nd.next svg.csh-badge-svg{filter:grayscale(.2) brightness(.95) drop-shadow(0 0 8px var(--nc));opacity:1}
+  @keyframes fxNext{0%,100%{transform:scale(.97)}50%{transform:scale(1.06)}}
+  .fx-nd-mk{position:absolute;right:-2px;bottom:-2px;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:3.5px;border:1px solid rgba(255,255,255,.22)}
   .fx-nd-mk svg{width:100%;height:100%}
-  .fx-nd-mk.ck{background:#2fc98a;color:#04231a;border-color:#8ef0c3}
-  .fx-nd-mk.lk{background:#1a1612;color:rgba(243,234,216,.6)}
-  .fx-nd-lbl{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(243,234,216,.5)}
+  .fx-nd-mk.ck{background:#2a9d73;color:#04231a;border-color:#7fe0b8}
+  .fx-nd-mk.lk{background:#15120f;color:rgba(243,234,216,.55)}
+  .fx-nd-lbl{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(243,234,216,.5)}
+  .fx-nd.current .fx-nd-lbl{margin-top:5px}
   .fx-nd.done .fx-nd-lbl,.fx-nd.current .fx-nd-lbl{color:var(--nc);font-weight:700}
-  .fx-nd-now{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:#160e05;background:var(--nc);padding:1px 8px;border-radius:9px;font-weight:800;margin-top:-1px}
+  .fx-nd-now{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:#160e05;background:var(--nc);padding:1px 8px;border-radius:9px;font-weight:800;margin-top:-2px}
   .fx-nd-now.nx{animation:fxNext 1.8s ease-in-out infinite}
-  .fx-seg{flex:1;height:2px;margin-top:26px;background:rgba(255,255,255,.1);border-radius:2px;position:relative;overflow:hidden}
-  .fx-seg.on{background:linear-gradient(90deg,var(--tc),var(--hi));box-shadow:0 0 8px var(--tg)}
+  .fx-seg{flex:1;height:2px;margin-top:28px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.22) 0 4px,transparent 4px 8px);position:relative;overflow:hidden}
+  .fx-seg.on{background:linear-gradient(90deg,var(--tc),var(--hi));box-shadow:0 0 8px var(--tg);border-radius:2px}
   .fx-seg.on::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,#fff,transparent);width:40%;animation:fxFlow 2.6s linear infinite}
   @keyframes fxFlow{from{transform:translateX(-100%)}to{transform:translateX(260%)}}
 
@@ -26617,9 +26655,12 @@ function cshFxStyleOnce() {
     .fx-week{gap:4px}
     .fx-day-coin{width:22px;height:22px}
   }
+  @container (max-width:520px){
+    .fx-nd-mk{width:14px;height:14px;padding:2.5px;right:-3px;bottom:-3px}.fx-nd{width:50px}.fx-nd-emb{width:48px;height:48px}.fx-nd-emb svg.csh-badge-svg{width:31px;height:35px}.fx-seg{margin-top:23px}
+  }
   @container (max-width:380px){
-    .fx-ladder .fx-nd{width:44px}
-    .fx-nd-lbl{font-size:8.5px;letter-spacing:.08em}
+    .fx-nd{width:44px}.fx-nd-emb{width:42px;height:42px}.fx-nd-emb svg.csh-badge-svg{width:27px;height:30px}.fx-seg{margin-top:20px}
+    .fx-nd-lbl{font-size:8.5px;letter-spacing:.06em}
     .fx-stage{width:132px;height:132px}
   }
   @media(max-width:520px){.csh-fx{padding:22px 16px 16px;border-radius:18px}.fx-panel{padding:14px 13px 14px}}
