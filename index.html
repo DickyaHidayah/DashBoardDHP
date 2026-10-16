@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<meta name="dhp-build" content="2026-10-14T00-00-00-v104"/>
+<meta name="dhp-build" content="2026-10-16T18-00-00-v107"/>
 <title>DHP Creative — Command Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Shippori+Mincho:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
@@ -4459,6 +4459,20 @@ body.light .ktr-bar{background:rgba(0,0,0,.06)}
 .lb-pod-empty{color:var(--muted);font-size:12px;text-align:center;padding:30px 0;width:100%}
 
 /* ── ACHIEVEMENT CHIPS ── */
+/* v105 — DATABASE BARU (CS Hunter): otomatis dari CRM + Ads Task */
+.trk-sun-opt{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:9px;font-size:9.5px;font-weight:700;letter-spacing:.02em;background:rgba(201,169,110,.16);color:var(--gold);vertical-align:1px;white-space:nowrap}
+.ndb-wrap{margin-bottom:18px}
+.ndb-note{font-size:11px;color:var(--muted);text-align:center;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
+.ndb-live{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(122,191,142,.6);animation:ndbPulse 2s infinite}
+@keyframes ndbPulse{0%{box-shadow:0 0 0 0 rgba(122,191,142,.55)}70%{box-shadow:0 0 0 7px rgba(122,191,142,0)}100%{box-shadow:0 0 0 0 rgba(122,191,142,0)}}
+.ndb-rank{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--bg3);color:var(--text2);font-size:11px;font-weight:700}
+.ndb-rank.r1{background:linear-gradient(135deg,var(--gold-lo),var(--gold-hi));color:#1a1408}
+.ndb-rank.r2{background:#c9ced6;color:#20242a}
+.ndb-rank.r3{background:#c48a5a;color:#241608}
+.ndb-big{font-weight:800;color:var(--green);font-variant-numeric:tabular-nums}
+.ndb-zero{color:var(--muted)}
+.ndb-err{font-size:12px;color:var(--red);padding:10px 0}
+.lb-dbar-fill.ndb{background:linear-gradient(90deg,#4f9a6a,var(--green) 55%,#a4dbb4)}
 .lb-ach-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px;margin-bottom:22px}
 .lb-ach-chip{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;transition:border-color var(--trans),transform var(--trans)}
 .lb-ach-chip:hover{border-color:var(--border-hi);transform:translateY(-1px)}
@@ -23102,6 +23116,284 @@ let _trkTeamMonthlyTargets = {};      // v85: map user_id -> {target,sales,pct} 
 let _trkTeamMonthlyExport = null;     // v85: cache data staff yg sedang dibuka, dipakai exportTrkTeamStaffExcel/Pdf
 let _trkTeamMonthlySelected = null;   // user_id staff yg sedang dibuka detailnya
 
+/* ═══════════════════════════════════════════════════════════
+   v105 — DATABASE BARU (khusus CS Hunter) — OTOMATIS, tidak ada isian manual.
+   Sumber tunggal: baris yang benar-benar masuk ke crm_customers (dari Ads Task
+   lewat add_lead, atau dari CRM lewat Add Customer/Import). Dihitung di database
+   (get_new_db_daily / get_new_db_team / get_new_db_monthly) — nomor yang sudah
+   pernah ada di CRM tidak dihitung lagi. Siang = 00:00–12:00, Sore = 12:00–24:00 WIB.
+   Realtime: listen crm_customers + polling 45 dtk sebagai jaring pengaman.
+   ═══════════════════════════════════════════════════════════ */
+TRK_ICO.newDb = '<svg viewBox="0 0 16 16" fill="none"><ellipse cx="7" cy="3.6" rx="4.6" ry="1.9" stroke="currentColor" stroke-width="1.25"/><path d="M2.4 3.6v3.8c0 1.05 2.06 1.9 4.6 1.9M2.4 7.4v3.8c0 1.05 2.06 1.9 4.6 1.9" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M11.6 3.6v2.2M12.5 10v4M10.5 12h4" stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/></svg>';
+let _ndbChannel = null, _ndbPoll = null, _ndbDebounce = null;
+
+function ndbPageActive() {
+  const pg = document.getElementById('pg-tracking_report');
+  return !!(pg && pg.classList.contains('active'));
+}
+function ndbRefreshSoon() {
+  clearTimeout(_ndbDebounce);
+  _ndbDebounce = setTimeout(() => {
+    if (!ndbPageActive()) return;
+    if (document.getElementById('trk-newdb-own'))  trkLoadOwnNewDb();
+    if (document.getElementById('trk-newdb-team')) trkLoadTeamNewDb();
+  }, 500);
+}
+function initNewDbSync() {
+  if (!db || !currentUser) return;
+  if (!_ndbChannel) {
+    try {
+      _ndbChannel = db.channel('dhp_newdb_sync')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'crm_customers' }, ndbRefreshSoon)
+        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'crm_customers' }, ndbRefreshSoon)
+        .subscribe();
+    } catch (e) { console.warn('[DHP] initNewDbSync gagal:', e); }
+  }
+  if (!_ndbPoll) _ndbPoll = setInterval(ndbRefreshSoon, 45000);
+}
+
+// ── Tampilan staff sendiri (CS Hunter) ──
+async function trkLoadOwnNewDb() {
+  const el = document.getElementById('trk-newdb-own');
+  if (!el || !db || !currentUser) return;
+  initNewDbSync();
+  const today = trkTodayStr();
+  let r = null, err = null;
+  try {
+    const res = await dbQ(d => d.rpc('get_new_db_daily', { p_user_id: currentUser.id, p_date: today }));
+    if (res && res.error) err = res.error.message;
+    r = res && res.data && res.data[0] ? res.data[0] : null;
+  } catch (e) { err = e.message || String(e); }
+  const el2 = document.getElementById('trk-newdb-own');
+  if (!el2) return;
+  if (err) { el2.innerHTML = `<div class="ndb-err">Database Baru belum bisa dimuat — jalankan <b>v105_database_baru.sql</b> di Supabase lalu muat ulang. (${escHtml(err)})</div>`; return; }
+  const n = k => (r && r[k]) || 0;
+  const box = (ico, color, bg, val, label, hi) => `<div class="trk-recap-box${hi ? ' hi' : ''}"><div class="rb-ico" style="background:${bg};color:${color}">${ico}</div><b class="${val ? '' : 'ndb-zero'}">${val}</b><span>${label}</span></div>`;
+  el2.innerHTML = `
+    <div class="ndb-wrap">
+      <div class="trk-section-title" style="margin-top:4px"><span class="st-ico">${TRK_ICO.newDb}</span> Database Baru Hari Ini <span style="font-size:11px;color:var(--muted);font-family:'Inter',sans-serif;font-weight:500">· otomatis dari Ads Task &amp; CRM</span></div>
+      <div class="trk-recap-strip">
+        ${box(TRK_ICO.newDb, 'var(--green)', 'rgba(122,191,142,.2)', n('total'), 'Total Hari Ini', true)}
+        ${box(TRK_ICO.clock, 'var(--gold)', 'rgba(201,169,110,.18)', n('siang_total'), 'Siang (s/d 12:00)')}
+        ${box(TRK_ICO.clock, 'var(--blue)', 'rgba(126,168,201,.18)', n('sore_total'), 'Sore (12:00+)')}
+        ${box(TRK_ICO.masuk, '#e8a840', 'rgba(232,184,110,.22)', n('total_ads'), 'Dari Ads Task')}
+        ${box(TRK_ICO.sysFollowup, '#7ea8c9', 'rgba(126,168,201,.22)', n('total_crm'), 'Dari CRM')}
+      </div>
+      <div class="ndb-note"><span class="ndb-live"></span> Sinkron realtime${r && r.last_added_at ? ` · terakhir bertambah ${trkFmtHM(r.last_added_at)}` : ''}${n('total_import') ? ` · Import CRM ${n('total_import')} (dipisah dari total)` : ''} · dihitung sistem, tidak bisa diisi/diubah manual · nomor yang sudah pernah ada di CRM tidak dihitung lagi</div>
+      <div class="trk-hist-export-grp" style="margin:10px 0 0;justify-content:flex-end">
+        <button class="trk-export-btn xls" onclick="ndbExportMonthly('xls','own')" title="Export Database Baru saya bulan ini ke Excel"><span>Export Excel Bulan Ini</span></button>
+        <button class="trk-export-btn pdf" onclick="ndbExportMonthly('pdf','own')" title="Export Database Baru saya bulan ini ke PDF"><span>Export PDF Bulan Ini</span></button>
+      </div>
+    </div>`;
+}
+
+// ── Tampilan Moderator / Owner: semua CS Hunter pada tanggal yang dipilih ──
+async function trkLoadTeamNewDb() {
+  const el = document.getElementById('trk-newdb-team');
+  if (!el || !db) return;
+  initNewDbSync();
+  const dateStr = _trkTeamDate || trkTodayStr();
+  let rows = [], err = null;
+  try {
+    const res = await dbQ(d => d.rpc('get_new_db_team', { p_date: dateStr }));
+    if (res && res.error) err = res.error.message;
+    rows = (res && res.data) || [];
+  } catch (e) { err = e.message || String(e); }
+  const el2 = document.getElementById('trk-newdb-team');
+  if (!el2 || dateStr !== (_trkTeamDate || trkTodayStr())) return; // tanggal sudah diganti saat fetch
+  if (err) { el2.innerHTML = `<div class="ndb-err">Database Baru belum bisa dimuat — jalankan <b>v105_database_baru.sql</b> di Supabase lalu muat ulang. (${escHtml(err)})</div>`; return; }
+  _ndbTeamCache = { date: dateStr, rows };
+  const sum = k => rows.reduce((a, r) => a + (r[k] || 0), 0);
+  const top = rows.length && rows[0].total > 0 ? rows[0].total : 0;
+  const cell = v => v ? `<b>${v}</b>` : `<span class="ndb-zero">0</span>`;
+  const body = rows.length ? rows.map((r, i) => {
+    const rk = r.total > 0 ? (i + 1) : null;
+    return `<tr class="${r.total === 0 ? 'trk-team-row missing' : ''}">
+      <td>${rk ? `<span class="ndb-rank ${rk <= 3 ? 'r' + rk : ''}">${rk}</span>` : '<span class="ndb-rank">–</span>'}</td>
+      <td>${escHtml(r.full_name)}${top && r.total === top ? ` <span class="trk-status-pill approved" style="margin-left:4px">Terbanyak</span>` : ''}</td>
+      <td>${cell(r.siang_total)}</td>
+      <td>${cell(r.sore_total)}</td>
+      <td>${cell(r.total_ads)}</td>
+      <td>${cell(r.total_crm)}</td>
+      <td title="Import CRM massal — ditampilkan terpisah">${r.total_import ? `<span style="color:var(--muted)">${r.total_import}</span>` : '<span class="ndb-zero">0</span>'}</td>
+      <td><span class="ndb-big">${r.total}</span></td>
+      <td style="font-size:11px;color:var(--muted)">${r.last_added_at ? trkFmtHM(r.last_added_at) : '—'}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="9" style="text-align:center;color:var(--muted)">Belum ada CS Hunter aktif.</td></tr>`;
+  el2.innerHTML = `
+    <div class="ndb-wrap">
+      <div class="trk-section-title"><span class="st-ico">${TRK_ICO.newDb}</span> Database Baru CS Hunter <span style="font-size:11px;color:var(--muted);font-family:'Inter',sans-serif;font-weight:500">· ${escHtml(dateStr)} · otomatis &amp; realtime</span></div>
+      <div class="trk-hist-toolbar" style="justify-content:flex-end;flex-wrap:wrap">
+        <div class="trk-hist-export-grp" style="margin-left:0">
+          <button class="trk-export-btn xls" onclick="ndbExportDaily('xls')" title="Export tabel tanggal ini ke Excel"><span>Excel Harian</span></button>
+          <button class="trk-export-btn pdf" onclick="ndbExportDaily('pdf')" title="Export tabel tanggal ini ke PDF"><span>PDF Harian</span></button>
+          <button class="trk-export-btn xls" onclick="ndbExportMonthly('xls','team')" title="Export rincian per tanggal sebulan ke Excel"><span>Excel Bulanan</span></button>
+          <button class="trk-export-btn pdf" onclick="ndbExportMonthly('pdf','team')" title="Export rincian per tanggal sebulan ke PDF"><span>PDF Bulanan</span></button>
+        </div>
+      </div>
+      <div class="tbl-wrap"><div class="tbl-scroll">
+        <table class="fu-table"><thead><tr>
+          <th>#</th><th>Nama</th><th>Siang (s/d 12:00)</th><th>Sore (12:00+)</th><th>Dari Ads Task</th><th>Dari CRM</th><th>Import CRM</th><th>Total</th><th>Input Terakhir</th>
+        </tr></thead><tbody>${body}</tbody>
+        ${rows.length ? `<tfoot><tr><td></td><td><b>Total Tim</b></td><td><b>${sum('siang_total')}</b></td><td><b>${sum('sore_total')}</b></td><td><b>${sum('total_ads')}</b></td><td><b>${sum('total_crm')}</b></td><td><span style="color:var(--muted)">${sum('total_import')}</span></td><td><span class="ndb-big">${sum('total')}</span></td><td></td></tr></tfoot>` : ''}
+        </table>
+      </div></div>
+      <div class="ndb-note"><span class="ndb-live"></span> Dihitung dari data CRM yang benar-benar masuk (Ads Task + Add CRM) · Import CRM massal ditandai khusus &amp; ditampilkan terpisah (ikut/tidak ke Total diatur di <code>portal_config.newdb_count_import</code>) · nomor yang sudah pernah ada tidak dihitung</div>
+    </div>`;
+}
+
+/* ═══ v106 — EXPORT DATABASE BARU (Excel & PDF) ═══
+   • Harian  : tabel CS Hunter pada tanggal yang sedang dipilih (Moderator/Owner)
+   • Bulanan : rincian per tanggal per CS Hunter (Moderator/Owner = semua; CS Hunter = punya sendiri)
+   Angka sama persis dengan yang tampil di layar (sumber: RPC get_new_db_*). */
+let _ndbTeamCache = null;
+
+function ndbHeaderPdf(doc, subtitle, line3) {
+  const pageW = doc.internal.pageSize.getWidth();
+  doc.setFillColor(20, 20, 24); doc.rect(0, 0, pageW, 84, 'F');
+  doc.setTextColor(201, 169, 110); doc.setFont('helvetica', 'bold'); doc.setFontSize(17);
+  doc.text('DHP CREATIVE', 36, 34);
+  doc.setTextColor(230, 230, 230); doc.setFont('helvetica', 'normal'); doc.setFontSize(10.5);
+  doc.text(subtitle, 36, 53);
+  doc.setFontSize(9); doc.setTextColor(190, 190, 190);
+  doc.text(line3, 36, 70);
+  doc.setTextColor(0, 0, 0);
+}
+function ndbFooterPdf(doc) {
+  const pageW = doc.internal.pageSize.getWidth(), pageH = doc.internal.pageSize.getHeight();
+  const gen = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+  const n = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= n; i++) {
+    doc.setPage(i); doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(150, 150, 150);
+    doc.text(`DHP Creative — dibuat ${gen} · dihitung otomatis dari CRM`, 36, pageH - 20);
+    doc.text(`Halaman ${i}/${n}`, pageW - 36 - 60, pageH - 20);
+  }
+}
+const NDB_PDF_HEAD = { fillColor: [26, 26, 30], textColor: [230, 208, 166], fontStyle: 'bold', fontSize: 8 };
+
+function ndbExportDaily(fmt) {
+  const c = _ndbTeamCache;
+  if (!c || !c.rows || !c.rows.length) { toast('Belum ada data Database Baru untuk diexport.'); return; }
+  const head = ['No', 'Nama', 'Siang (s/d 12:00)', 'Sore (12:00+)', 'Dari Ads Task', 'Dari CRM', 'Import CRM', 'Total', 'Input Terakhir'];
+  const body = c.rows.map((r, i) => [
+    r.total > 0 ? i + 1 : '-', r.full_name, r.siang_total || 0, r.sore_total || 0, r.total_ads || 0,
+    r.total_crm || 0, r.total_import || 0, r.total || 0, r.last_added_at ? trkFmtHM(r.last_added_at) : '-'
+  ]);
+  const sum = k => c.rows.reduce((a, r) => a + (r[k] || 0), 0);
+  const total = ['', 'TOTAL TIM', sum('siang_total'), sum('sore_total'), sum('total_ads'), sum('total_crm'), sum('total_import'), sum('total'), ''];
+  const file = `Database_Baru_CS_Hunter_${c.date}`;
+  try {
+    if (fmt === 'xls') {
+      const aoa = [[`DATABASE BARU CS HUNTER — ${c.date}`], ['Dihitung otomatis dari CRM (Ads Task + Add CRM). Import CRM ditampilkan terpisah.'], [], head, ...body, total];
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      ws['!cols'] = [{ wch: 5 }, { wch: 24 }, { wch: 17 }, { wch: 14 }, { wch: 14 }, { wch: 11 }, { wch: 12 }, { wch: 9 }, { wch: 14 }];
+      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Database Baru');
+      XLSX.writeFile(wb, file + '.xlsx');
+      toast('Database Baru berhasil diexport ke Excel');
+    } else {
+      if (!_pdfLibsReady()) { toast('Komponen PDF belum siap, coba lagi sebentar lagi'); return; }
+      const doc = new window.jspdf.jsPDF({ unit: 'pt', format: 'a4' });
+      ndbHeaderPdf(doc, 'Database Baru CS Hunter — Harian', `Tanggal ${c.date}  ·  otomatis dari Ads Task & CRM`);
+      doc.autoTable({
+        head: [head], body: [...body, total], startY: 104, margin: { left: 36, right: 36 },
+        styles: { font: 'helvetica', fontSize: 8.4, cellPadding: 5, textColor: [40, 40, 40], valign: 'middle' },
+        headStyles: NDB_PDF_HEAD, alternateRowStyles: { fillColor: [248, 246, 241] },
+        columnStyles: { 2:{halign:'right'},3:{halign:'right'},4:{halign:'right'},5:{halign:'right'},6:{halign:'right'},7:{halign:'right',fontStyle:'bold'} },
+        didParseCell: h => { if (h.section === 'body' && h.row.index === body.length) { h.cell.styles.fontStyle = 'bold'; h.cell.styles.fillColor = [238, 228, 206]; h.cell.styles.textColor = [110, 80, 20]; } },
+        theme: 'grid'
+      });
+      ndbFooterPdf(doc);
+      doc.save(file + '.pdf');
+      toast('Database Baru berhasil diexport ke PDF');
+    }
+  } catch (e) { console.error('[DHP] ndbExportDaily gagal:', e); toast('Gagal export: ' + (e.message || e)); }
+}
+
+async function ndbExportMonthly(fmt, scope) {
+  if (!db || !currentUser) return;
+  const own = scope === 'own';
+  const ym = ((own ? trkTodayStr() : (_trkTeamDate || trkTodayStr())) || '').slice(0, 7);
+  let rows = [];
+  try {
+    const res = await dbQ(d => d.rpc('get_new_db_by_day', { p_period_ym: ym }));
+    if (res && res.error) { toast('Gagal memuat data export: ' + res.error.message); return; }
+    rows = (res && res.data) || [];
+  } catch (e) { toast('Gagal memuat data export: ' + (e.message || e)); return; }
+  if (own) rows = rows.filter(r => r.user_id === currentUser.id);
+  if (!rows.length) { toast('Belum ada data Database Baru untuk diexport.'); return; }
+
+  const ymLabel = trkHistYmLabel(ym);
+  const who = own ? (currentUser.name || currentUser.id) : 'Semua CS Hunter';
+  // ringkasan per hunter
+  const byUser = {};
+  rows.forEach(r => {
+    const u = byUser[r.user_id] || (byUser[r.user_id] = { name: r.full_name, siang: 0, sore: 0, ads: 0, crm: 0, imp: 0, total: 0, days: 0, best: 0 });
+    u.siang += r.siang_total; u.sore += r.sore_total; u.ads += r.total_ads; u.crm += r.total_crm; u.imp += r.total_import; u.total += r.total;
+    if (r.total > 0) u.days++; if (r.total > u.best) u.best = r.total;
+  });
+  const sumList = Object.values(byUser).sort((a, b) => b.total - a.total || a.name.localeCompare(b.name));
+  const sumHead = ['Peringkat', 'Nama', 'Total Bulan', 'Siang', 'Sore', 'Dari Ads Task', 'Dari CRM', 'Import CRM', 'Hari Aktif', 'Terbanyak / Hari'];
+  const sumBody = sumList.map((u, i) => [u.total > 0 ? i + 1 : '-', u.name, u.total, u.siang, u.sore, u.ads, u.crm, u.imp, u.days, u.best]);
+  const g = k => sumList.reduce((a, u) => a + u[k], 0);
+  const sumTotal = ['', 'TOTAL', g('total'), g('siang'), g('sore'), g('ads'), g('crm'), g('imp'), '', ''];
+  const dayHead = ['Tanggal', 'Nama', 'Siang', 'Sore', 'Dari Ads Task', 'Dari CRM', 'Import CRM', 'Total'];
+  const dayBody = rows.slice().sort((a, b) => String(a.report_date).localeCompare(String(b.report_date)) || a.full_name.localeCompare(b.full_name))
+    .map(r => [String(r.report_date), r.full_name, r.siang_total, r.sore_total, r.total_ads, r.total_crm, r.total_import, r.total]);
+  const file = `Database_Baru_${own ? _pdfFileSafe(who) : 'Tim'}_${_pdfFileSafe(ymLabel)}`;
+  try {
+    if (fmt === 'xls') {
+      const wb = XLSX.utils.book_new();
+      const ws1 = XLSX.utils.aoa_to_sheet([[`DATABASE BARU — ${who} — ${ymLabel}`], ['Dihitung otomatis dari CRM (Ads Task + Add CRM). Import CRM ditampilkan terpisah.'], [], sumHead, ...sumBody, sumTotal]);
+      ws1['!cols'] = [{ wch: 10 }, { wch: 24 }, { wch: 12 }, { wch: 8 }, { wch: 8 }, { wch: 14 }, { wch: 10 }, { wch: 12 }, { wch: 10 }, { wch: 16 }];
+      XLSX.utils.book_append_sheet(wb, ws1, 'Ringkasan');
+      // matriks tanggal x hunter (total harian)
+      const dates = [...new Set(dayBody.map(r => r[0]))];
+      const mHead = ['Tanggal', ...sumList.map(u => u.name), 'Total Tim'];
+      const mBody = dates.map(d => {
+        const vals = sumList.map(u => { const r = rows.find(x => String(x.report_date) === d && x.full_name === u.name); return r ? r.total : 0; });
+        return [d, ...vals, vals.reduce((a, b) => a + b, 0)];
+      });
+      const ws2 = XLSX.utils.aoa_to_sheet([mHead, ...mBody, ['TOTAL', ...sumList.map(u => u.total), g('total')]]);
+      ws2['!cols'] = [{ wch: 12 }, ...sumList.map(() => ({ wch: 16 })), { wch: 11 }];
+      XLSX.utils.book_append_sheet(wb, ws2, 'Matriks Harian');
+      const ws3 = XLSX.utils.aoa_to_sheet([dayHead, ...dayBody]);
+      ws3['!cols'] = [{ wch: 12 }, { wch: 24 }, { wch: 8 }, { wch: 8 }, { wch: 14 }, { wch: 10 }, { wch: 12 }, { wch: 8 }];
+      ws3['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: dayBody.length, c: dayHead.length - 1 } }) };
+      XLSX.utils.book_append_sheet(wb, ws3, 'Rincian Harian');
+      XLSX.writeFile(wb, file + '.xlsx');
+      toast('Database Baru berhasil diexport ke Excel');
+    } else {
+      if (!_pdfLibsReady()) { toast('Komponen PDF belum siap, coba lagi sebentar lagi'); return; }
+      const doc = new window.jspdf.jsPDF({ unit: 'pt', format: 'a4' });
+      ndbHeaderPdf(doc, 'Database Baru CS Hunter — Bulanan', `${who}  ·  ${ymLabel}`);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(30, 30, 30);
+      doc.text('Ringkasan per CS Hunter', 36, 108);
+      doc.autoTable({
+        head: [sumHead], body: [...sumBody, sumTotal], startY: 114, margin: { left: 36, right: 36 },
+        styles: { font: 'helvetica', fontSize: 8, cellPadding: 4.5, textColor: [40, 40, 40] },
+        headStyles: NDB_PDF_HEAD, alternateRowStyles: { fillColor: [248, 246, 241] },
+        columnStyles: { 2:{halign:'right',fontStyle:'bold'},3:{halign:'right'},4:{halign:'right'},5:{halign:'right'},6:{halign:'right'},7:{halign:'right'},8:{halign:'right'},9:{halign:'right'} },
+        didParseCell: h => { if (h.section === 'body' && h.row.index === sumBody.length) { h.cell.styles.fontStyle = 'bold'; h.cell.styles.fillColor = [238, 228, 206]; h.cell.styles.textColor = [110, 80, 20]; } },
+        theme: 'grid'
+      });
+      let y = doc.lastAutoTable.finalY + 22;
+      if (y > doc.internal.pageSize.getHeight() - 140) { doc.addPage(); y = 40; }
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(30, 30, 30);
+      doc.text(`Rincian Harian — ${ymLabel}`, 36, y);
+      doc.autoTable({
+        head: [dayHead], body: dayBody.filter(r => r[7] > 0 || r[6] > 0), startY: y + 6, margin: { left: 36, right: 36 },
+        styles: { font: 'helvetica', fontSize: 7.8, cellPadding: 4, textColor: [40, 40, 40] },
+        headStyles: NDB_PDF_HEAD, alternateRowStyles: { fillColor: [248, 246, 241] },
+        columnStyles: { 2:{halign:'right'},3:{halign:'right'},4:{halign:'right'},5:{halign:'right'},6:{halign:'right'},7:{halign:'right',fontStyle:'bold'} },
+        theme: 'grid'
+      });
+      ndbFooterPdf(doc);
+      doc.save(file + '.pdf');
+      toast('Database Baru berhasil diexport ke PDF');
+    }
+  } catch (e) { console.error('[DHP] ndbExportMonthly gagal:', e); toast('Gagal export: ' + (e.message || e)); }
+}
+
 function trkNowJakarta() { return cshTodayJakarta(); }
 function trkTodayStr() { return ymdKey(trkNowJakarta()); }
 
@@ -23459,6 +23751,7 @@ async function renderTrackingOwnView(root) {
 
   root.innerHTML = `
     <div id="trk-reminder-banner" class="trk-banner ok">${TRK_ICO.bell} Memuat status reminder…</div>
+    ${can.isCsHunter(currentUser.role) ? '<div id="trk-newdb-own"></div>' : ''}
     <div class="trk-slots">
       ${TRACKING_SLOTS.map(s => trkSlotCardHtml(s, slotData[s.key])).join('')}
     </div>
@@ -23508,6 +23801,7 @@ async function renderTrackingOwnView(root) {
   `;
   trkTickReminder();
   trkLoadOwnHistory();
+  if (can.isCsHunter(currentUser.role)) trkLoadOwnNewDb();
 }
 
 /* ── RIWAYAT LAPORAN SENDIRI (CS Hunter / Admin / B2B Marketing) ──
@@ -23586,25 +23880,27 @@ async function trkLoadOwnHistory() {
     // belum pernah diisi sama sekali) — Minggu jadi ikut muncul, jadi perlu
     // ditandai libur di sini juga (sama seperti Rekap Bulanan Tim) supaya
     // tidak keliru dianggap "belum lapor" & tidak memicu ajakan susulan.
-    if (trkIsSunday(r.report_date)) {
+    if (trkIsSunday(r.report_date) && !(r.siang_filled || r.sore_filled)) {
       return `<tr class="trk-team-row sunday">
         <td>${trkFmtDMY(r.report_date)}</td>
         <td colspan="9" style="text-align:center"><span style="display:inline-flex;width:12px;height:12px;color:var(--gold);vertical-align:-2px;margin-right:5px">${TRK_ICO.sunday}</span>Hari Minggu — Libur</td>
       </tr>`;
     }
     const isPast = r.report_date < todayStr;
-    const missing = !r.siang_filled || !r.sore_filled;
-    if (isPast) {
+    const sunOpt = trkIsSunday(r.report_date); // v107: Minggu opsional (sudah pasti ada isinya di sini)
+    const missing = !sunOpt && (!r.siang_filled || !r.sore_filled);
+    if (isPast && !sunOpt) {
       if (!r.siang_filled) missingPast.push({ date: r.report_date, slot: 'siang' });
       if (!r.sore_filled) missingPast.push({ date: r.report_date, slot: 'sore' });
     }
     const cell = (filled, status, isLate, slotKey) => {
       const pill = trkStatusPillHtml(filled, status, isLate);
+      if (sunOpt && !filled) return '<span class="trk-status-pill pending">Opsional</span>';
       if (filled || !isPast) return pill; // hanya tawarkan susulan utk slot yg SUDAH lewat & belum diisi
       return `<span class="trk-catchup-cell">${pill}<button class="trk-catchup-btn" onclick="trkOpenCatchup('${r.report_date}','${slotKey}')">${TRK_ICO.plus || '+'} Isi Susulan</button></span>`;
     };
     return `<tr class="${missing ? 'trk-team-row missing' : ''}">
-      <td>${trkFmtDMY(r.report_date)}</td>
+      <td>${trkFmtDMY(r.report_date)}${sunOpt ? '<span class="trk-sun-opt">Minggu · Opsional</span>' : ''}</td>
       <td>${cell(r.siang_filled, r.siang_status, r.siang_is_late, 'siang')}</td>
       <td>${cell(r.sore_filled, r.sore_status, r.sore_is_late, 'sore')}</td>
       <td>${r.total_leads_masuk||0}</td><td>${r.total_leads_terlayani||0}</td><td>${r.total_fu_leads_lama||0}</td>
@@ -23641,7 +23937,9 @@ async function trkLoadOwnHistory() {
   tbody.innerHTML = rowsHtml;
 
   // ── v84: baris TOTAL di kaki tabel (dijumlah dari semua tanggal kerja) ──
-  const totals = trkOwnHistoryTotals(workRows);
+  // v107: Minggu opsional — kalau diisi tetap dijumlah ke total (sama dengan Leaderboard)
+  const sumRows = rows.filter(r => !trkIsSunday(r.report_date) || r.siang_filled || r.sore_filled);
+  const totals = trkOwnHistoryTotals(sumRows);
   if (tfoot) {
     tfoot.innerHTML = `<tr>
       <td colspan="3" class="trk-total-lbl">TOTAL · ${trkHistYmLabel(trkHistCurrentYm)}</td>
@@ -23659,7 +23957,7 @@ async function trkLoadOwnHistory() {
   _trkOwnHistoryExport = {
     ym: trkHistCurrentYm, ymLabel: trkHistYmLabel(trkHistCurrentYm),
     userName: currentUser.name, roleLabel: rn(currentUser.role),
-    rows: workRows, totals, targetRow, completeCount, workDaysTotal: workRows.length
+    rows: sumRows, totals, targetRow, completeCount, workDaysTotal: workRows.length
   };
 }
 
@@ -23745,7 +24043,7 @@ function trkRenderOwnDash(targetRow, compliance) {
 function trkHistTableAoa(data) {
   const head = ['Tanggal', 'Siang', 'Sore', 'Leads Masuk', 'Terlayani', 'FU Lama', 'Cold', 'Warm', 'Hot', 'Jumlah Closing', 'Nominal Closing'];
   const slotTxt = (filled, status, late) => !filled ? 'Belum Lapor' : (status === 'approved' ? 'Disetujui' : status === 'rejected' ? 'Ditolak' : 'Menunggu') + (late ? ' (Telat)' : '');
-  const body = data.rows.map(r => trkIsSunday(r.report_date) ? [trkFmtDMY(r.report_date), 'Libur', 'Libur', '', '', '', '', '', '', '', ''] : [
+  const body = data.rows.map(r => (trkIsSunday(r.report_date) && !(r.siang_filled || r.sore_filled)) ? [trkFmtDMY(r.report_date), 'Libur', 'Libur', '', '', '', '', '', '', '', ''] : [
     trkFmtDMY(r.report_date),
     slotTxt(r.siang_filled, r.siang_status, r.siang_is_late),
     slotTxt(r.sore_filled, r.sore_status, r.sore_is_late),
@@ -23999,7 +24297,7 @@ async function exportTrkTeamAllExcel() {
     const detBody = [];
     data.perStaff.forEach(s => {
       s.dates.forEach(r => {
-        if (trkIsSunday(r.report_date)) { detBody.push([s.full_name, s.roleLabel, trkFmtDMY(r.report_date), 'Libur','','','','','','','']); return; }
+        if (trkIsSunday(r.report_date) && !(r.siang_filled || r.sore_filled)) { detBody.push([s.full_name, s.roleLabel, trkFmtDMY(r.report_date), 'Libur','','','','','','','']); return; }
         detBody.push([
           s.full_name, s.roleLabel, trkFmtDMY(r.report_date),
           r.total_leads_masuk || 0, r.total_leads_terlayani || 0, r.total_fu_leads_lama || 0,
@@ -24109,7 +24407,7 @@ async function exportTrkTeamAllPdf() {
     const detBody = [];
     data.perStaff.forEach(s => {
       s.dates.forEach(r => {
-        if (trkIsSunday(r.report_date)) { detBody.push([s.full_name, trkFmtDMY(r.report_date), 'Libur','','','','','','','']); return; }
+        if (trkIsSunday(r.report_date) && !(r.siang_filled || r.sore_filled)) { detBody.push([s.full_name, trkFmtDMY(r.report_date), 'Libur','','','','','','','']); return; }
         detBody.push([s.full_name, trkFmtDMY(r.report_date),
           r.total_leads_masuk || 0, r.total_leads_terlayani || 0, r.total_fu_leads_lama || 0,
           r.total_cold || 0, r.total_warm || 0, r.total_hot || 0,
@@ -24372,11 +24670,12 @@ function trkTickReminder() {
     const r = currentUser.role;
     if (!can.canTrackingReport(r) || can.isMod(r)) return;
     const now = trkNowJakarta();
+    const isSun = now.getDay() === 0; // v107: Minggu opsional — tidak ada warning/notif/badge
     const state = _trkOwnRecap;
     const filledMap = { siang: state ? state.siang_filled : false, sore: state ? state.sore_filled : false };
     let worst = null; // {level:'warn'|'late', slot, minutes}
     TRACKING_SLOTS.forEach(s => {
-      if (filledMap[s.key]) return;
+      if (isSun || filledMap[s.key]) return;
       const deadline = trkDeadlineDate(s.key, now);
       const diffMin = Math.round((deadline.getTime() - now.getTime()) / 60000);
       if (diffMin <= 0) {
@@ -24396,6 +24695,9 @@ function trkTickReminder() {
       } else if (allFilled) {
         banner.className = 'trk-banner ok';
         banner.innerHTML = `${TRK_ICO.okCircle} Laporan Siang &amp; Sore hari ini sudah lengkap. Terima kasih!`;
+      } else if (isSun) {
+        banner.className = 'trk-banner ok';
+        banner.innerHTML = `${TRK_ICO.sunday} Hari Minggu — mengisi laporan <b>opsional</b>. Kalau kamu isi, angkanya tetap dihitung ke total &amp; Leaderboard.`;
       } else if (worst && worst.level === 'late') {
         banner.className = 'trk-banner late';
         banner.innerHTML = `${TRK_ICO.warnTri} Laporan <b>${worst.slot.label} (${worst.slot.time})</b> BELUM diisi — sudah lewat ${Math.abs(worst.diffMin)} menit dari deadline. Segera isi ya.`;
@@ -24410,7 +24712,7 @@ function trkTickReminder() {
     // badge di sidebar
     const badge = document.getElementById('trk-pending-badge');
     if (badge) {
-      const n = (filledMap.siang ? 0 : 1) + (filledMap.sore ? 0 : 1);
+      const n = isSun ? 0 : (filledMap.siang ? 0 : 1) + (filledMap.sore ? 0 : 1);
       badge.textContent = n; badge.style.display = n > 0 ? '' : 'none';
     }
     // notif bel sekali per slot per hari saat masuk status warn/late
@@ -24494,6 +24796,7 @@ async function trkRenderTeamDailySection(root) {
     </div>
     <div id="trk-team-summary"></div>
     <div id="trk-cmp-dash"></div>
+    <div id="trk-newdb-team"></div>
     <div class="trk-section-title"><span class="st-ico">${TRACKING_SLOTS[0].icon}</span> Laporan Siang <span style="font-size:11px;color:var(--muted);font-family:'Inter',sans-serif;font-weight:500">· deadline 12:00</span></div>
     <div class="tbl-wrap"><div class="tbl-scroll">
       <table class="fu-table"><thead><tr>
@@ -24682,7 +24985,7 @@ function trkRenderTeamMonthlyFromCache() {
   const roleLabel = { 'admin':'Admin', 'b2b_marketing':'B2B Marketing', 'cs_hunter':'CS Hunter' };
   const staffList = trkComputeStaffMonthlyStats(rows);
 
-  if (countEl) countEl.textContent = `${staffList.length} staff · ${ymLabel} · Minggu dihitung libur`;
+  if (countEl) countEl.textContent = `${staffList.length} staff · ${ymLabel} · Minggu opsional (kalau diisi tetap dihitung)`;
   if (!_trkTeamMonthlySelected || !byUser[_trkTeamMonthlySelected]) {
     _trkTeamMonthlySelected = staffList[0]?.user_id || null;
   }
@@ -24711,7 +25014,7 @@ function trkRenderTeamMonthlyFromCache() {
   if (sumEl) {
     sumEl.innerHTML = `
     <div class="trk-section-title"><span class="st-ico">${TRK_ICO.compare}</span> Kelengkapan Laporan per Staff <span style="font-size:11px;color:var(--muted);font-family:'Inter',sans-serif;font-weight:500">· ${ymLabel} · klik kartu untuk lihat detail per tanggal</span></div>
-    <div style="font-size:11px;color:var(--muted);margin:-4px 0 12px;display:flex;align-items:center;gap:6px"><span style="display:inline-flex;width:14px;height:14px;color:var(--gold)">${TRK_ICO.sunday}</span> Hari Minggu dihitung libur — tidak masuk hitungan total hari kerja &amp; kelengkapan lapor di bawah.</div>
+    <div style="font-size:11px;color:var(--muted);margin:-4px 0 12px;display:flex;align-items:center;gap:6px"><span style="display:inline-flex;width:14px;height:14px;color:var(--gold)">${TRK_ICO.sunday}</span> Hari Minggu opsional — tidak wajib &amp; tidak mengurangi kelengkapan lapor, tapi kalau diisi tetap dijumlah ke total dan Leaderboard.</div>
     <div class="trk-staff-grid">
       ${staffList.map(u => `
         <div class="trk-staff-card ${u.user_id === _trkTeamMonthlySelected ? 'selected' : ''} ${u.pct === 100 ? 'perfect' : ''}" onclick="trkSelectStaffMonthly('${u.user_id}')">
@@ -24758,19 +25061,21 @@ function trkRenderTeamMonthlyDetailTable(byUserArg) {
 
   const canModerate = can.isMod(currentUser.role); // Owner: view-only, tidak bisa isi susulan
   const rowsHtml = u.dates.map(r => {
-    if (trkIsSunday(r.report_date)) {
+    if (trkIsSunday(r.report_date) && !(r.siang_filled || r.sore_filled)) {
       return `<tr class="trk-team-row sunday">
         <td>${trkFmtDMY(r.report_date)}</td>
-        <td colspan="9" style="text-align:center"><span style="display:inline-flex;width:12px;height:12px;color:var(--gold);vertical-align:-2px;margin-right:5px">${TRK_ICO.sunday}</span>Hari Minggu — Libur, tidak dihitung dalam rekap kelengkapan</td>
+        <td colspan="9" style="text-align:center"><span style="display:inline-flex;width:12px;height:12px;color:var(--gold);vertical-align:-2px;margin-right:5px">${TRK_ICO.sunday}</span>Hari Minggu — Libur (belum ada laporan; opsional)</td>
       </tr>`;
     }
-    const missing = !(r.siang_filled && r.sore_filled);
-    const cuBtn = (slotKey, filled) => (!filled && canModerate)
+    const sunOpt = trkIsSunday(r.report_date); // v107: Minggu opsional
+    const missing = !sunOpt && !(r.siang_filled && r.sore_filled);
+    const pillOf = (filled, status, late) => (sunOpt && !filled) ? '<span class="trk-status-pill pending">Opsional</span>' : trkStatusPillHtml(filled, status, late);
+    const cuBtn = (slotKey, filled) => (!filled && canModerate && !sunOpt)
       ? `<button class="trk-catchup-btn" onclick="trkOpenCatchup('${r.report_date}','${slotKey}','${u.user_id}')">${TRK_ICO.plus} Isi</button>` : '';
     return `<tr class="${missing ? 'trk-team-row missing' : ''}">
-      <td>${trkFmtDMY(r.report_date)}</td>
-      <td><span class="trk-catchup-cell">${trkStatusPillHtml(r.siang_filled, r.siang_status, r.siang_is_late)}${cuBtn('siang', r.siang_filled)}</span></td>
-      <td><span class="trk-catchup-cell">${trkStatusPillHtml(r.sore_filled, r.sore_status, r.sore_is_late)}${cuBtn('sore', r.sore_filled)}</span></td>
+      <td>${trkFmtDMY(r.report_date)}${sunOpt ? '<span class="trk-sun-opt">Minggu · Opsional</span>' : ''}</td>
+      <td><span class="trk-catchup-cell">${pillOf(r.siang_filled, r.siang_status, r.siang_is_late)}${cuBtn('siang', r.siang_filled)}</span></td>
+      <td><span class="trk-catchup-cell">${pillOf(r.sore_filled, r.sore_status, r.sore_is_late)}${cuBtn('sore', r.sore_filled)}</span></td>
       <td>${r.total_leads_masuk || 0}</td><td>${r.total_leads_terlayani || 0}</td><td>${r.total_fu_leads_lama || 0}</td>
       <td>${r.total_cold || 0}</td><td>${r.total_warm || 0}</td>
       <td><b style="color:#e87070">${r.total_hot || 0}</b></td>
@@ -24852,6 +25157,7 @@ const trkModActionsHtml = (reportId, filled, status) => {
 };
 
 async function trkLoadTeamRecap() {
+  trkLoadTeamNewDb(); // v105: Database Baru CS Hunter (otomatis)
   ['siang','sore','harian'].forEach(k => { const t = document.getElementById('trk-team-tbody-' + k); if (t) t.innerHTML = `<tr><td colspan="12" style="text-align:center;color:var(--muted)">Memuat…</td></tr>`; });
   let rows = [], yRows = [];
   const yDateObj = new Date(_trkTeamDate + 'T00:00:00'); yDateObj.setDate(yDateObj.getDate() - 1);
@@ -24883,13 +25189,15 @@ async function trkLoadTeamRecap() {
   //    daftar siapa yang belum — bukan angka total yang keliatan final
   //    padahal masih separuh jalan. Detail real-time per orang tetap bisa
   //    dipantau lewat tabel Laporan Siang / Laporan Sore di bawah.
-  const allComplete = rows.length > 0 && missingCount === 0;
+  const isSunDay = trkIsSunday(_trkTeamDate); // v107: Minggu opsional — tidak menunggu semua staff lengkap
+  const allComplete = rows.length > 0 && (isSunDay || missingCount === 0);
   const completePct = rows.length ? Math.round((grand.lengkap / rows.length) * 100) : 0;
   const belumList = rows.filter(r => !(r.siang_filled && r.sore_filled));
 
   const summaryEl = document.getElementById('trk-team-summary');
   if (summaryEl) {
-    const progressCard = `
+    const sunCard = `<div class="trk-progress-card done"><div class="trk-progress-head"><span>${TRK_ICO.sunday} Hari Minggu — laporan opsional. Staff yang mengisi tetap dijumlah ke total &amp; Leaderboard.</span></div></div>`;
+    const progressCardWeekday = `
     <div class="trk-progress-card ${allComplete ? 'done' : ''}">
       <div class="trk-progress-head">
         <span>${allComplete ? TRK_ICO.okCircle : TRK_ICO.warnTri} ${allComplete ? 'Laporan tim hari ini sudah 100% lengkap' : `Menunggu laporan lengkap — ${grand.lengkap} dari ${rows.length} staff (${completePct}%)`}</span>
@@ -24900,6 +25208,7 @@ async function trkLoadTeamRecap() {
       ${belumList.length ? `<div class="trk-progress-missing">${belumList.map(r => `<span class="trk-missing-chip">${escHtml(r.full_name)}${!r.siang_filled && !r.sore_filled ? ' · Siang &amp; Sore' : !r.siang_filled ? ' · Siang' : ' · Sore'}</span>`).join('')}</div>` : ''}` : `<div class="trk-progress-note">Total harian tim &amp; perbandingan vs kemarin di bawah ini sudah final untuk hari ini.</div>`}
     </div>`;
 
+    const progressCard = isSunDay ? sunCard : progressCardWeekday;
     summaryEl.innerHTML = allComplete ? `
     <div class="trk-recap-strip">
       <div class="trk-recap-box"><div class="rb-ico" style="background:rgba(201,169,110,.18);color:var(--gold)">${TRK_ICO.masuk}</div><b>${grand.masuk}</b><span>Leads Masuk</span></div>
@@ -24917,7 +25226,7 @@ async function trkLoadTeamRecap() {
   // ── Dashboard perbandingan vs kemarin — sama, cuma tampil kalau semua staff sudah lengkap ──
   const cmpEl = document.getElementById('trk-cmp-dash');
   if (cmpEl) {
-    if (!allComplete) { cmpEl.innerHTML = ''; }
+    if (!allComplete || isSunDay) { cmpEl.innerHTML = ''; }
     else {
       const cmpBox = (label, ico, todayVal, yVal, isRupiah) => {
         const diff = todayVal - yVal;
@@ -24981,11 +25290,11 @@ async function trkLoadTeamRecap() {
     const reportId = r[slotKey + '_id'];
     const rejectReason = r[slotKey + '_reject_reason'];
     const filledAt = r[slotKey + '_filled_at'];
-    return `<tr class="${!filled ? 'trk-team-row missing' : ''}">
+    return `<tr class="${(!filled && !trkIsSunday(_trkTeamDate)) ? 'trk-team-row missing' : ''}">
       <td>${escHtml(r.full_name)}</td>
       <td>${roleLabel[r.role] || r.role}</td>
       <td>${trkStatusPillHtml(filled, status, isLate)}
-        ${(!filled && canRemind) ? `<button class="btn-sm" style="padding:2px 8px;font-size:10px;margin-left:4px" onclick="trkSendReminder('${r.user_id}','${slotKey}')">Ingatkan</button>` : ''}
+        ${(!filled && canRemind && !trkIsSunday(_trkTeamDate)) ? `<button class="btn-sm" style="padding:2px 8px;font-size:10px;margin-left:4px" onclick="trkSendReminder('${r.user_id}','${slotKey}')">Ingatkan</button>` : ''}
         ${(!filled && canModerate) ? `<button class="trk-catchup-btn" style="margin-left:4px" onclick="trkOpenCatchup('${_trkTeamDate}','${slotKey}','${r.user_id}')">${TRK_ICO.plus} Isi Susulan</button>` : ''}
         ${(filled && filledAt) ? `<div style="font-size:9.5px;color:var(--muted);margin-top:3px">Diisi ${trkFmtHM(filledAt)}</div>` : ''}
         ${(filled && status === 'rejected' && rejectReason) ? `<div style="font-size:10px;color:var(--red);margin-top:3px;max-width:220px;line-height:1.4">${escHtml(rejectReason)}</div>` : ''}</td>
@@ -25002,8 +25311,9 @@ async function trkLoadTeamRecap() {
   // kelihatan seperti total final padahal baru separuh data.
   if (tbHarian) {
     tbHarian.innerHTML = rows.map(r => {
-      const missing = !r.siang_filled || !r.sore_filled;
-      const waitLabel = (!r.siang_filled && !r.sore_filled) ? 'Belum lapor Siang & Sore'
+      const missing = trkIsSunday(_trkTeamDate) ? (!r.siang_filled && !r.sore_filled) : (!r.siang_filled || !r.sore_filled);
+      const waitLabel = trkIsSunday(_trkTeamDate) ? 'Hari Minggu — opsional, belum ada laporan'
+        : (!r.siang_filled && !r.sore_filled) ? 'Belum lapor Siang & Sore'
         : !r.siang_filled ? 'Menunggu Laporan Siang'
         : 'Menunggu Laporan Sore';
       return `<tr class="${missing ? 'trk-team-row missing' : ''}">
@@ -27817,7 +28127,7 @@ function lbPeriodChange(ym) {
 async function lbFetchData(ym) {
   const isCurrentMonth = ym === lbYmNow();
   const { start, end } = lbMonthBounds(ym);
-  const [res, resTrk, resHostTarget, resHostSessions] = await Promise.all([
+  const [res, resTrk, resHostTarget, resHostSessions, resNewDb] = await Promise.all([
     dbQ(d => d.rpc('get_leaderboard_monthly', { p_period_ym: ym })),
     dbQ(d => d.rpc('get_tracking_report_history_month_team', { p_period_ym: ym })).catch(() => null),
     // v87: target omzet Host Live bulan berjalan — pakai view yang sama
@@ -27829,6 +28139,8 @@ async function lbFetchData(ym) {
     // JALAN utk semua bulan karena difilter dari tanggal, bukan view.
     db ? dbQ(d => d.from('live_schedule').select('host_user_id,status')
       .gte('schedule_date', start).lte('schedule_date', end)).catch(() => null) : Promise.resolve(null),
+    // v105: Database Baru per CS Hunter (otomatis dari CRM) — bulan yg dipilih + hari ini
+    dbQ(d => d.rpc('get_new_db_monthly', { p_period_ym: ym })).catch(() => null),
   ]);
 
   if (!res || res.error) {
@@ -27888,6 +28200,13 @@ async function lbFetchData(ym) {
   }).filter(r => LOCAL_USERS[r.id] && LOCAL_USERS[r.id].role === 'host_live'); // buang id nyasar (akun dihapus, dsb) — cuma host_live asli yang tampil
 
   const allRows = rows.concat(hostRows);
+  // v105: tempelkan Database Baru ke baris CS Hunter + siapkan daftar peringkatnya
+  const ndList = ((resNewDb && resNewDb.data) || []).map(x => ({
+    id: x.user_id, name: x.full_name, month: Number(x.month_total) || 0, ads: Number(x.month_ads) || 0,
+    crm: Number(x.month_crm) || 0, today: Number(x.today_total) || 0, days: Number(x.active_days) || 0, best: Number(x.best_day) || 0,
+  })).sort((a, b) => b.month - a.month || b.today - a.today || a.name.localeCompare(b.name));
+  const ndMap = {}; ndList.forEach(x => { ndMap[x.id] = x; });
+  allRows.forEach(r => { const x = ndMap[r.id]; r.newDbMonth = x ? x.month : 0; r.newDbToday = x ? x.today : 0; });
 
   // v70: peringkat sekarang berdasar PERSENTASE pencapaian terhadap target
   // masing-masing orang (bukan nominal mentah) — siapa yang paling dekat/
@@ -27903,7 +28222,7 @@ async function lbFetchData(ym) {
   });
   allRows.forEach((r, i) => { r.rank = i + 1; });
 
-  return { rows: allRows, generatedAt: new Date(), rpcMissing: false };
+  return { rows: allRows, newDb: ndList, newDbMissing: !!(resNewDb && resNewDb.error), generatedAt: new Date(), rpcMissing: false };
 }
 
 function lbComputeAchievements(rows) {
@@ -27925,6 +28244,7 @@ function lbComputeAchievements(rows) {
   const fu = pick('followup');
   const hot = pick('hot');
   const crm = pick('crmTotal');
+  const ndb = pick('newDbMonth'); // v105
   // v82: "Iklan Paling Aktif" diganti "Belum Ngisi Laporan Terbanyak" — staff
   // dengan jumlah laporan Tracking Report (Siang+Sore, Minggu tidak dihitung)
   // yang paling banyak BELUM diisi bulan ini, supaya kepatuhan lapor kelihatan
@@ -27942,6 +28262,7 @@ function lbComputeAchievements(rows) {
     topFollowup: fu && fu.followup > 0 ? fu : null,
     topHot: hot && hot.hot > 0 ? hot : null,
     topCrm: crm && crm.crmTotal > 0 ? crm : null,
+    topNewDb: ndb && ndb.newDbMonth > 0 ? ndb : null, // v105
     leastCompliant: worst && worst.missingReports > 0 ? worst : null,
     topHostLive: topHost && topHost.sessionsDone > 0 ? topHost : null,
     _hasHost: hostRows.length > 0,
@@ -27983,7 +28304,7 @@ async function renderLeaderboardPage() {
 }
 
 function lbRenderContent(root, data) {
-  const { rows, generatedAt, rpcMissing } = data;
+  const { rows, generatedAt, rpcMissing } = data; // v105: data.newDb dipakai lbNewDbHtml
   if (rpcMissing) {
     root.innerHTML = `
       <div class="lb-empty-state" style="color:var(--red)">
@@ -28015,6 +28336,7 @@ function lbRenderContent(root, data) {
   root.innerHTML = topbarHtml
     + lbPodiumHtml(top3)
     + lbAchievementsHtml(ach)
+    + lbNewDbHtml(data)
     + lbDiagramHtml(rows)
     + lbListHtml(rest, top3.length, meId, rows.length);
 
@@ -28088,6 +28410,8 @@ function lbAchievementsHtml(ach) {
     { key: 'topFollowup', icon: LB_ICO.phone,     color: 'var(--blue)',  lbl: 'Rajin Follow Up',   val: (u) => `${u.followup}x follow up` },
     { key: 'topHot',      icon: TRK_ICO.hot,      color: 'var(--green)', lbl: 'Leads Terpanas',    val: (u) => `${u.hot} hot leads` },
     { key: 'topCrm',      icon: LB_ICO.users,     color: 'var(--blue)',  lbl: 'CRM Terbanyak',     val: (u) => `${u.crmTotal} customer` },
+    { key: 'topNewDb',    icon: TRK_ICO.newDb,    color: 'var(--green)', lbl: 'Database Baru Terbanyak', val: (u) => `${u.newDbMonth} database baru${u.newDbToday ? ` · ${u.newDbToday} hari ini` : ''}`,
+      emptyMsg: 'Belum ada database baru bulan ini' },
     { key: 'leastCompliant', icon: LB_ICO.clipboardAlert, color: 'var(--red)', lbl: 'Belum Ngisi Laporan Terbanyak',
       val: (u) => `${u.missingReports} laporan belum diisi${u.workDays ? ` dari ${u.workDays} hari kerja` : ''}`,
       emptyMsg: '🎉 Semua staff lapor lengkap' },
@@ -28114,6 +28438,31 @@ function lbAchievementsHtml(ach) {
   });
   html += '</div>';
   return html;
+}
+
+// v105 — PERINGKAT DATABASE BARU (CS Hunter). Angka bulan ini dihitung otomatis
+// dari CRM (Ads Task + Add/Import CRM); kolom kanan = bertambah hari ini.
+function lbNewDbHtml(data) {
+  if (data.newDbMissing) {
+    return `<div class="lb-diagram"><div class="lb-diagram-title"><span class="lb-icotxt">${TRK_ICO.newDb}</span> Database Baru Terbanyak</div>
+      <div class="lb-diagram-sub" style="color:var(--red)">Jalankan <b>v105_database_baru.sql</b> di Supabase untuk mengaktifkan peringkat ini.</div></div>`;
+  }
+  const list = data.newDb || [];
+  if (!list.length) return '';
+  const meId = currentUser?.id;
+  const max = Math.max(1, ...list.map(x => x.month));
+  const bars = list.map((x, i) => `
+    <div class="lb-dbar-row">
+      <div class="lb-dbar-name" title="${escHtml(x.name)}"><b style="color:var(--muted);margin-right:4px">${x.month > 0 ? (i + 1) : '–'}</b>${escHtml(x.name)}</div>
+      <div class="lb-dbar-track"><div class="lb-dbar-fill ndb${x.id === meId ? ' me' : ''}" data-pct="${x.month > 0 ? Math.max(3, Math.round(x.month / max * 100)) : 0}" style="width:0"></div></div>
+      <div class="lb-dbar-val" style="width:150px" title="Ads Task ${x.ads} · CRM ${x.crm}">${x.month}${x.today ? ` <span style="color:var(--green);font-weight:600">+${x.today} hari ini</span>` : ''}</div>
+    </div>`).join('');
+  return `
+    <div class="lb-diagram">
+      <div class="lb-diagram-title"><span class="lb-icotxt">${TRK_ICO.newDb}</span> Database Baru Terbanyak — CS Hunter</div>
+      <div class="lb-diagram-sub">Total database baru bulan ${lbYmLabel(lbCurrentYm)}, otomatis dari Ads Task &amp; CRM · nomor yang sudah pernah ada tidak dihitung</div>
+      ${bars}
+    </div>`;
 }
 
 function lbDiagramHtml(rows) {
