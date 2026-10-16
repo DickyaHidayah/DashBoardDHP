@@ -26250,7 +26250,7 @@ async function cshRenderCard(uid, name, state) {
   const remaining = Math.max(0, workdays - actualClosing);
   const workLeft = cshWorkdaysLeft(today, me);
 
-  // ── Tugas Harian — 1 closing/hari (Sen–Sab); Minggu opsional (bonus) ──
+  // ── Quest Harian — 1 closing/hari (Sen–Sab); Minggu opsional (bonus) ──
   const todayStr = cshFmtDate(today);
   const isSundayToday = today.getDay() === 0;
   const dayLbls = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
@@ -26267,99 +26267,369 @@ async function cshRenderCard(uid, name, state) {
     const isSun = i === 6;
     const hit = isSun ? cnt > 0 : cnt >= dailyTarget;
     const cls = isToday ? 'today' : (isFuture ? 'future' : (isSun ? (hit ? 'hit' : 'optional') : (hit ? 'hit' : 'miss')));
-    const mark = hit ? '✓' : (isFuture ? '' : (isSun ? '–' : cnt));
-    dayStrip += `<div class="csh-day ${cls}" title="${dayLbls[i]}: ${cnt} closing${isSun ? ' (opsional · bonus)' : ''}">
-      <span class="csh-day-lbl">${dayLbls[i]}</span>
-      <span class="csh-day-dot">${mark}</span>
-    </div>`;
+    const mark = hit ? '✓' : (isFuture ? '' : (isSun ? '★' : cnt));
+    dayStrip += `<div class="fx-day ${cls}${isToday && hit ? ' hit' : ''}" title="${dayLbls[i]}: ${cnt} closing${isSun ? ' (opsional · bonus)' : ''}">
+      <span class="fx-day-coin">${mark}</span><span class="fx-day-lbl">${dayLbls[i]}</span></div>`;
   }
   const dailyStatusMsg = isSundayToday
-    ? (todayCount > 0 ? `🎉 Bonus hari Minggu — ${todayCount} closing. Mantap!` : `Hari Minggu bersifat opsional — closing hari ini jadi bonus, tidak wajib.`)
+    ? (todayCount > 0 ? `Bonus hari Minggu — ${todayCount} closing. Mantap!` : `Hari Minggu bersifat opsional — closing hari ini jadi bonus, tidak wajib.`)
     : (todayCount >= dailyTarget
-        ? `✅ Target hari ini tercapai — ${todayCount}/${dailyTarget} closing.`
+        ? `Target hari ini tercapai — ${todayCount}/${dailyTarget} closing.`
         : `Butuh <b>${dailyTarget - todayCount}</b> closing lagi hari ini untuk capai target harian.`);
-  const dailyCountTxt = isSundayToday ? `${todayCount} <span style="font-weight:600;font-size:10px;opacity:.7">bonus</span>` : `${todayCount} / ${dailyTarget}`;
+  const dailyCountTxt = isSundayToday ? `${todayCount}<small>bonus</small>` : `${todayCount}<small>/ ${dailyTarget}</small>`;
+  const questDone = isSundayToday ? todayCount > 0 : todayCount >= dailyTarget;
 
-  const m = CSH_METAL[tier.order];
+  const o = tier.order, fx = CSH_FX[o], m = CSH_METAL[o];
+  const ICO = {
+    quest: '<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.6" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="2.6" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r=".8" fill="currentColor"/></svg>',
+    path:  '<svg viewBox="0 0 16 16" fill="none"><path d="M2 12.5h12M2.8 11.5L2 5l3.4 3L8 3l2.6 5L14 5l-.8 6.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>',
+    stat:  '<svg viewBox="0 0 16 16" fill="none"><path d="M3 13V8M8 13V3M13 13V6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+    lock:  '<svg viewBox="0 0 16 16" fill="none"><rect x="3.5" y="7" width="9" height="6.5" rx="1.4" stroke="currentColor" stroke-width="1.3"/><path d="M5.5 7V5.2a2.5 2.5 0 0 1 5 0V7" stroke="currentColor" stroke-width="1.3"/></svg>',
+    check: '<svg viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    warn:  '<svg viewBox="0 0 16 16" fill="none"><path d="M8 2.2L14.2 13H1.8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8 6.4v3.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.4" r=".8" fill="currentColor"/></svg>',
+    info:  '<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2v3.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="5.2" r=".8" fill="currentColor"/></svg>',
+  };
+
+  // ── Jalur pangkat: medali bertingkat (selesai ✓ · sekarang bersinar · belum terbuka 🔒) ──
   const ladder = CSH_TIERS.map(tr => {
-    const cls = tr.order < tier.order ? 'done' : (tr.order === tier.order ? 'current' : 'upcoming');
-    return `<div class="csh-node ${cls}" style="--tc:${tr.color}"><div class="csh-node-emb">${cshBadgeSVG(tr.order, 24)}</div><div class="csh-node-lbl">${tr.name}</div></div>`;
-  }).join('<div class="csh-node-line"></div>');
+    const isDone = tr.order < o, isCur = tr.order === o;
+    const isNext = passedNow && o < 5 && tr.order === o + 1;
+    const cls = isDone ? 'done' : (isCur ? 'current' : 'locked') + (isNext ? ' next' : '');
+    const mark = isDone ? `<span class="fx-nd-mk ck">${ICO.check}</span>` : (isCur ? '' : `<span class="fx-nd-mk lk">${ICO.lock}</span>`);
+    const node = `<div class="fx-nd ${cls}" style="--nc:${tr.color};--ng:${tr.glow}">
+      <div class="fx-nd-emb">${cshBadgeSVG(tr.order, isCur ? 52 : 36)}${mark}</div>
+      <div class="fx-nd-lbl">${tr.name}</div>
+      ${isCur ? '<div class="fx-nd-now">Sekarang</div>' : (isNext ? '<div class="fx-nd-now nx">Naik!</div>' : '')}
+    </div>`;
+    const seg = tr.order < 5 ? `<div class="fx-seg${tr.order < o ? ' on' : ''}"></div>` : '';
+    return node + seg;
+  }).join('');
 
-  const circumference = 2 * Math.PI * 42;
-  const dashoffset = circumference - (pct / 100) * circumference;
-
-  let statusMsg;
-  if (passedNow && state.tier_order < 5) {
+  let statusMsg, stateCls, stateIco;
+  if (passedNow && o < 5) {
     const via = (actualClosing >= workdays) ? 'jumlah closing' : 'nominal Leaderboard';
-    statusMsg = `✅ Target bulan ini tercapai lewat ${via}! Naik ke <b>${nextTier.name}</b> di awal bulan depan.`;
-  } else if (state.tier_order === 5) {
-    statusMsg = `🏆 Level maksimum — Diamond! Pertahankan performa closing bulan ini.`;
+    statusMsg = `Target bulan ini tercapai lewat ${via}! Naik ke <b>${nextTier.name}</b> di awal bulan depan.`;
+    stateCls = 'ok'; stateIco = ICO.check;
+  } else if (o === 5) {
+    statusMsg = `Level maksimum — Diamond! Pertahankan performa closing bulan ini.`;
+    stateCls = 'max'; stateIco = ICO.path;
   } else {
     statusMsg = `Butuh <b>${remaining}</b> closing lagi dalam ${workLeft} hari kerja`
       + (hasNom ? ` <b>atau</b> capai nominal ${crmFmtRupiah(nomTarget)} (kurang ${crmFmtRupiah(Math.max(0, nomTarget - nomSales))})` : '')
       + ` untuk naik ke <b>${nextTier ? nextTier.name : '—'}</b>.`;
+    stateCls = 'info'; stateIco = ICO.info;
   }
-  if (!passedNow && state.consecutive_miss === 1 && state.tier_order < 5) {
-    statusMsg += `<br><span style="opacity:.8">⚠️ Bulan lalu belum capai target — kesempatan terakhir sebelum turun ke <b>${csh(Math.max(state.tier_order - 1, 1)).name}</b>.</span>`;
+  if (!passedNow && state.consecutive_miss === 1 && o < 5) {
+    statusMsg += `<br><span class="fx-warn">Bulan lalu belum capai target — kesempatan terakhir sebelum turun ke <b>${csh(Math.max(o - 1, 1)).name}</b>.</span>`;
+    stateCls = 'warn'; stateIco = ICO.warn;
   }
 
-  const nomBlock = hasNom
-    ? `<div class="csh-stat">
-        <span class="csh-stat-lbl">Nominal bulan ini (Leaderboard)</span>
-        <div class="csh-bar"><div class="csh-bar-fill nominal" style="width:0%" data-final="${nomPct}%"></div></div>
-        <span class="csh-stat-val">${crmFmtRupiah(nomSales)} / ${crmFmtRupiah(nomTarget)}</span>
-      </div>`
-    : `<div class="csh-stat">
-        <span class="csh-stat-lbl">Nominal bulan ini (Leaderboard)</span>
-        <div class="csh-bar"><div class="csh-bar-fill nominal" style="width:0%" data-final="0%"></div></div>
-        <span class="csh-stat-val" style="font-weight:600;opacity:.75">${nom ? crmFmtRupiah(nomSales) + ' · target belum diatur Moderator' : 'Data nominal belum tersedia'}</span>
-      </div>`;
+  const xpLbl = o === 5 ? 'Level <b>Maksimum</b>' : (passedNow ? `Siap naik ke <b>${nextTier.name}</b>` : `Menuju <b>${nextTier.name}</b>`);
+  const nomVal = hasNom
+    ? `<b class="sm">${crmFmtRupiah(nomSales)}</b><span>/ ${crmFmtRupiah(nomTarget)}</span>`
+    : `<b class="sm">${nom ? crmFmtRupiah(nomSales) : '—'}</b><span>${nom ? 'target belum diatur' : 'belum tersedia'}</span>`;
+  const gems = [1,2,3,4,5].map(i => `<i class="fx-gem${i < o ? ' on' : (i === o ? ' on cur' : '')}" style="--gc:${csh(i).color}"></i>`).join('');
+  const runeA = `<svg class="fx-rune r1" viewBox="0 0 200 200" fill="none" aria-hidden="true">
+      <circle cx="100" cy="100" r="97" stroke="currentColor" stroke-opacity=".5" stroke-width="1"/>
+      <circle cx="100" cy="100" r="90" stroke="currentColor" stroke-opacity=".85" stroke-width="3" stroke-dasharray="1 7.05" stroke-linecap="round"/>
+      <circle cx="100" cy="100" r="80" stroke="currentColor" stroke-opacity=".32" stroke-width="1" stroke-dasharray="34 10 6 10"/>
+      <g fill="currentColor"><rect x="-3.5" y="-3.5" width="7" height="7" transform="translate(100 3) rotate(45)"/><rect x="-3.5" y="-3.5" width="7" height="7" transform="translate(197 100) rotate(45)"/><rect x="-3.5" y="-3.5" width="7" height="7" transform="translate(100 197) rotate(45)"/><rect x="-3.5" y="-3.5" width="7" height="7" transform="translate(3 100) rotate(45)"/></g></svg>`;
+  const runeB = `<svg class="fx-rune r2" viewBox="0 0 200 200" fill="none" aria-hidden="true">
+      <circle cx="100" cy="100" r="72" stroke="currentColor" stroke-opacity=".4" stroke-width="1.4" stroke-dasharray="2 9" stroke-linecap="round"/>
+      <circle cx="100" cy="100" r="76" stroke="currentColor" stroke-opacity=".8" stroke-width="2" stroke-dasharray="92 386" stroke-linecap="round"/></svg>`;
 
   return `
-  <div class="csh-card csh-themed csh-t-${tier.key}" style="--tier-color:${tier.color};--tier-glow:${tier.glow};--tier-ink:${m.ink};--tier-hi:${m.hi};--tier-grad:linear-gradient(90deg,${m.lo},${m.mid} 55%,${m.hi})">
-    <span class="csh-sheen"></span>
-    ${tier.order === 5 ? '<span class="csh-sparkle s1"></span><span class="csh-sparkle s2"></span><span class="csh-sparkle s3"></span>' : ''}
-    <div class="csh-card-head">
-      <div class="csh-emblem">${cshBadgeSVG(tier.order, 56)}</div>
-      <div class="csh-head-txt">
-        <div class="csh-name">${name}</div>
-        <div class="csh-tier-line"><span class="csh-tier-name">${tier.name.toUpperCase()}</span><span class="csh-tier-lv">Level ${tier.order} dari 5</span></div>
+  <div class="csh-fx csh-fx-${tier.key}" style="--tc:${m.mid};--hi:${m.hi};--lo:${m.lo};--tg:${tier.glow};--aux:${fx.aux};--b1:${fx.b1};--b2:${fx.b2};--rays:${fx.rays}">
+    <div class="fx-fog"></div>
+    <div class="fx-parts">${cshFxParticles(o)}</div>
+    <i class="fx-cn c1"></i><i class="fx-cn c2"></i><i class="fx-cn c3"></i><i class="fx-cn c4"></i>
+
+    <div class="fx-hero fx-in" style="--i:0">
+      <div class="fx-stage">
+        <span class="fx-rays"></span>${runeA}${runeB}<span class="fx-aura"></span>
+        <div class="fx-emblem">${cshBadgeSVG(o, 92)}</div>
+        <div class="fx-gems">${gems}</div>
       </div>
-      <div class="csh-ring-wrap">
-        <svg viewBox="0 0 100 100" class="csh-ring">
-          <circle cx="50" cy="50" r="42" class="csh-ring-bg"/>
-          <circle cx="50" cy="50" r="42" class="csh-ring-fg" style="stroke:${tier.order === 2 ? m.lo : m.mid};stroke-dasharray:${circumference};stroke-dashoffset:${circumference}" data-final="${dashoffset}"/>
-        </svg>
-        <div class="csh-ring-txt">${pct}%</div>
+      <div class="fx-id">
+        <div class="fx-eyebrow">${fx.epi} · CS Hunter</div>
+        <div class="fx-name">${escHtml(name)}</div>
+        <div class="fx-tier"><span class="fx-tier-name">${tier.name.toUpperCase()}</span><span class="fx-tier-lv">Level ${o} dari 5</span></div>
+      </div>
+      <div class="fx-lv" title="Level ${o} dari 5"><small>Level</small><b>${o}</b><em>/ 5</em></div>
+    </div>
+
+    <div class="fx-xp fx-in" style="--i:1">
+      <div class="fx-xp-top"><span class="fx-xp-lbl">${xpLbl}</span><span class="fx-xp-pct"><span class="fx-count" data-n="${pct}">${pct}</span>%</span></div>
+      <div class="fx-track"><div class="csh-bar-fill fx-fill" style="width:0%" data-final="${pct}%"></div><i class="fx-segs"></i></div>
+    </div>
+
+    <div class="fx-panel fx-quest${questDone ? ' done' : ''} fx-in" style="--i:2">
+      <div class="fx-h"><span class="fx-h-ico">${ICO.quest}</span>Quest Harian<span class="fx-quest-count">${dailyCountTxt}</span></div>
+      <div class="fx-track sm"><div class="csh-bar-fill fx-fill" style="width:0%" data-final="${todayPct}%"></div><i class="fx-segs"></i></div>
+      <div class="fx-quest-msg">${dailyStatusMsg}</div>
+      <div class="fx-week">${dayStrip}</div>
+    </div>
+
+    <div class="fx-panel fx-path fx-in" style="--i:3">
+      <div class="fx-h"><span class="fx-h-ico">${ICO.path}</span>Jalur Pangkat</div>
+      <div class="fx-ladder">${ladder}</div>
+    </div>
+
+    <div class="fx-stats fx-in" style="--i:4">
+      <div class="fx-stat">
+        <div class="fx-stat-lbl">Closing Bulan Ini</div>
+        <div class="fx-stat-val"><b>${actualClosing}</b><span>/ ${workdays}</span></div>
+        <div class="fx-track sm"><div class="csh-bar-fill fx-fill" style="width:0%" data-final="${countPct}%"></div><i class="fx-segs"></i></div>
+        <div class="fx-stat-sub">1 per hari · Minggu bonus</div>
+      </div>
+      <div class="fx-stat">
+        <div class="fx-stat-lbl">Nominal Leaderboard</div>
+        <div class="fx-stat-val wrap">${nomVal}</div>
+        <div class="fx-track sm"><div class="csh-bar-fill fx-fill nominal" style="width:0%" data-final="${nomPct}%"></div><i class="fx-segs"></i></div>
+        <div class="fx-stat-sub">${hasNom ? nomPct + '% dari target' : 'Target diatur Moderator'}</div>
+      </div>
+      <div class="fx-stat">
+        <div class="fx-stat-lbl">Leads Dikerjakan</div>
+        <div class="fx-stat-val"><b>${actualLeads}</b><span>/ ${leadsQuota}</span></div>
+        <div class="fx-track sm"><div class="csh-bar-fill fx-fill leads" style="width:0%" data-final="${leadsPct}%"></div><i class="fx-segs"></i></div>
+        <div class="fx-stat-sub">Jatah ${tier.leadsPerDay} leads / hari</div>
       </div>
     </div>
-    <div class="csh-daily">
-      <div class="csh-daily-head">
-        <span>🎯 Tugas Harian Hari Ini</span>
-        <span class="csh-daily-count">${dailyCountTxt}</span>
-      </div>
-      <div class="csh-bar"><div class="csh-bar-fill" style="width:0%;background:var(--tier-grad)" data-final="${todayPct}%"></div></div>
-      <div class="csh-daily-msg">${dailyStatusMsg}</div>
-      <div class="csh-week-strip">${dayStrip}</div>
-    </div>
-    <div class="csh-ladder">${ladder}</div>
-    <div class="csh-stats">
-      <div class="csh-stat">
-        <span class="csh-stat-lbl">Closing bulan ini (1/hari, Minggu bonus)</span>
-        <div class="csh-bar"><div class="csh-bar-fill" style="width:0%;background:var(--tier-grad)" data-final="${countPct}%"></div></div>
-        <span class="csh-stat-val">${actualClosing} / ${workdays}</span>
-      </div>
-      ${nomBlock}
-      <div class="csh-stat">
-        <span class="csh-stat-lbl">Leads dikerjakan</span>
-        <div class="csh-bar"><div class="csh-bar-fill leads" style="width:0%" data-final="${leadsPct}%"></div></div>
-        <span class="csh-stat-val">${actualLeads} / ${leadsQuota}</span>
-      </div>
-    </div>
-    <div class="csh-status">${statusMsg}</div>
-    <div class="csh-meta">${lbYmLabel(ym)} · Naik level: ${workdays} closing (1/hari, tanpa Minggu) <b>atau</b> capai nominal target Leaderboard · Jatah leads ${tier.leadsPerDay}/hari · Closing sinkron Tracking Report</div>
+
+    <div class="fx-scroll ${stateCls} fx-in" style="--i:5"><span class="fx-scroll-ico">${stateIco}</span><div class="fx-scroll-txt">${statusMsg}</div></div>
+    <div class="fx-meta fx-in" style="--i:6">${lbYmLabel(ym)} · Naik level: ${workdays} closing (1/hari, tanpa Minggu) <b>atau</b> capai nominal target Leaderboard · Closing sinkron Tracking Report</div>
   </div>`;
+}
+
+// ── v109 — PALET & PARTIKEL kartu CS Hunter bergaya RPG (Bronze → Diamond) ──
+const CSH_FX = {
+  1: { b1:'#150d07', b2:'#2e1b0e', aux:'#ff9a4d', rays:.22, epi:'Rekrut',   fx:'ember'  },
+  2: { b1:'#0f1318', b2:'#222b35', aux:'#cfe3ff', rays:.18, epi:'Penjaga',  fx:'moon'   },
+  3: { b1:'#171104', b2:'#30230a', aux:'#ffd76a', rays:.5,  epi:'Ksatria',  fx:'gold'   },
+  4: { b1:'#041516', b2:'#0b3033', aux:'#7ff5e8', rays:.42, epi:'Penakluk', fx:'aurora' },
+  5: { b1:'#060d20', b2:'#17214d', aux:'#c8a8ff', rays:.6,  epi:'Legenda',  fx:'prism'  },
+};
+function cshFxParticles(o) {
+  const kind = CSH_FX[o].fx, n = { 1:16, 2:12, 3:18, 4:14, 5:20 }[o] || 14;
+  let h = '';
+  for (let i = 0; i < n; i++) {
+    const x = (i * 37 + 11) % 100, y = (i * 53 + 7) % 88 + 4, s = 2 + ((i * 5) % 4);
+    const d = 7 + ((i * 3) % 7), dl = (-((i * 1.9) % d)).toFixed(1);
+    h += `<i class="fx-p ${kind}" style="--x:${x}%;--y:${y}%;--s:${s}px;--d:${d}s;--dl:${dl}s"></i>`;
+  }
+  return h;
+}
+function cshCountUp(root) {
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  root.querySelectorAll('.fx-count[data-n]').forEach(el => {
+    const n = parseInt(el.dataset.n, 10) || 0, t0 = performance.now(), dur = 1100;
+    el.textContent = '0';
+    const step = t => { const k = Math.min(1, (t - t0) / dur); el.textContent = Math.round(n * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  });
+}
+
+// v109 — gaya kartu CS Hunter RPG: gelap-mewah, bingkai berhias, aura & partikel per pangkat.
+// Kartu sengaja memakai palet gelap sendiri supaya tampil sama megahnya di tema terang maupun gelap.
+function cshFxStyleOnce() {
+  if (document.getElementById('csh-fx-style')) return;
+  const css = `
+  @property --ang{syntax:'<angle>';initial-value:0deg;inherits:false}
+  .csh-fx{position:relative;isolation:isolate;overflow:hidden;container-type:inline-size;border-radius:20px;padding:24px 22px 18px;margin-bottom:16px;
+    color:#f3ead8;font-family:'Inter',sans-serif;
+    background:radial-gradient(120% 85% at 15% -5%,color-mix(in srgb,var(--tc) 24%,transparent),transparent 62%),
+      radial-gradient(90% 70% at 100% 100%,color-mix(in srgb,var(--aux) 13%,transparent),transparent 62%),
+      linear-gradient(160deg,var(--b2),var(--b1) 72%);
+    border:1px solid color-mix(in srgb,var(--tc) 40%,transparent);
+    box-shadow:0 26px 54px -26px var(--tg),0 0 0 1px rgba(0,0,0,.45),inset 0 1px 0 color-mix(in srgb,var(--hi) 34%,transparent),inset 0 0 60px rgba(0,0,0,.35)}
+  .csh-fx::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1.5px;z-index:4;pointer-events:none;
+    background:conic-gradient(from var(--ang),transparent 0 52%,var(--hi) 70%,var(--tc) 80%,transparent 94%);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+    mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);mask-composite:exclude;animation:fxSpin 8s linear infinite}
+  .csh-fx-gold::before,.csh-fx-platinum::before{animation-duration:6s}
+  .csh-fx-diamond::before{animation-duration:4.5s;background:conic-gradient(from var(--ang),#8fc6ff,#c8a8ff,#ff9ad5,#ffd98a,#8fffd8,#8fc6ff)}
+  .csh-fx::after{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.7;
+    background:repeating-linear-gradient(45deg,rgba(255,255,255,.028) 0 1px,transparent 1px 14px),repeating-linear-gradient(-45deg,rgba(255,255,255,.028) 0 1px,transparent 1px 14px)}
+  @keyframes fxSpin{to{--ang:360deg}}
+  .fx-fog{position:absolute;inset:0;z-index:0;pointer-events:none;mix-blend-mode:screen;opacity:.55;
+    background:radial-gradient(60% 45% at 20% 30%,color-mix(in srgb,var(--tc) 22%,transparent),transparent 70%);animation:fxFog 14s ease-in-out infinite alternate}
+  @keyframes fxFog{0%{transform:translate(-6%,-2%) scale(1)}100%{transform:translate(18%,6%) scale(1.25)}}
+  .fx-parts{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+  .fx-p{position:absolute;left:var(--x);width:var(--s);height:var(--s);border-radius:50%;opacity:0}
+  .fx-p.ember,.fx-p.gold,.fx-p.moon,.fx-p.aurora{bottom:-8px;animation:fxRise var(--d) linear var(--dl) infinite}
+  .fx-p.ember{background:#ffb067;box-shadow:0 0 8px 2px rgba(255,140,60,.8)}
+  .fx-p.gold{background:#ffe08a;box-shadow:0 0 9px 2px rgba(255,205,90,.85)}
+  .fx-p.moon{background:#e9f2ff;box-shadow:0 0 7px 1px rgba(200,225,255,.7);animation-duration:calc(var(--d)*1.6)}
+  .fx-p.aurora{background:#9ffcf1;box-shadow:0 0 9px 2px rgba(95,230,215,.8)}
+  .fx-p.prism{left:var(--x);top:var(--y);border-radius:0;width:calc(var(--s)*2.6);height:calc(var(--s)*2.6);background:#fff;
+    clip-path:polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 39%);animation:fxTwinkle calc(var(--d)*.6) ease-in-out var(--dl) infinite}
+  @keyframes fxRise{0%{transform:translate(0,0) scale(.6);opacity:0}12%{opacity:.95}70%{opacity:.7}100%{transform:translate(18px,-330px) scale(1);opacity:0}}
+  @keyframes fxTwinkle{0%,100%{opacity:0;transform:scale(.3) rotate(0)}50%{opacity:.95;transform:scale(1) rotate(45deg)}}
+  .fx-cn{position:absolute;width:16px;height:16px;z-index:3;pointer-events:none;border:2px solid var(--hi);opacity:.8;filter:drop-shadow(0 0 4px var(--tg))}
+  .fx-cn.c1{top:9px;left:9px;border-right:0;border-bottom:0;border-top-left-radius:8px}
+  .fx-cn.c2{top:9px;right:9px;border-left:0;border-bottom:0;border-top-right-radius:8px}
+  .fx-cn.c3{bottom:9px;left:9px;border-right:0;border-top:0;border-bottom-left-radius:8px}
+  .fx-cn.c4{bottom:9px;right:9px;border-left:0;border-top:0;border-bottom-right-radius:8px}
+  .csh-fx:not(.no-intro) .fx-in{opacity:0;animation:fxIn .8s cubic-bezier(.16,1,.3,1) forwards;animation-delay:calc(var(--i,0)*90ms + 80ms)}
+  @keyframes fxIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  .fx-in{position:relative;z-index:2}
+
+  /* ── HERO ── */
+  .fx-hero{display:flex;align-items:center;gap:24px;margin-bottom:18px}
+  .fx-stage{position:relative;width:148px;height:148px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--hi)}
+  .fx-rays{position:absolute;left:50%;top:50%;width:360px;height:360px;margin:-180px 0 0 -180px;pointer-events:none;opacity:var(--rays);
+    background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--hi) 30%,transparent) 0 5deg,transparent 5deg 22.5deg);
+    -webkit-mask:radial-gradient(circle,#000 0,transparent 66%);mask:radial-gradient(circle,#000 0,transparent 66%);animation:fxRot 70s linear infinite}
+  .fx-rune{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 0 5px var(--tg))}
+  .fx-rune.r1{animation:fxRot 48s linear infinite}
+  .fx-rune.r2{animation:fxRot 26s linear infinite reverse;color:var(--aux)}
+  @keyframes fxRot{to{transform:rotate(360deg)}}
+  .fx-aura{position:absolute;inset:18%;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--tc) 55%,transparent),transparent 68%);animation:fxBreath 4s ease-in-out infinite}
+  @keyframes fxBreath{0%,100%{transform:scale(.85);opacity:.55}50%{transform:scale(1.18);opacity:1}}
+  .fx-emblem{position:relative;line-height:0;animation:fxFloat 5s ease-in-out infinite;filter:drop-shadow(0 8px 14px rgba(0,0,0,.55)) drop-shadow(0 0 14px var(--tg))}
+  @keyframes fxFloat{0%,100%{transform:translateY(2px)}50%{transform:translateY(-5px)}}
+  .fx-gems{position:absolute;left:0;right:0;bottom:-3px;display:flex;justify-content:center;gap:7px}
+  .fx-gem{width:9px;height:9px;transform:rotate(45deg);border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);border-radius:2px}
+  .fx-gem.on{background:linear-gradient(135deg,#fff,var(--gc) 55%);border-color:var(--gc);box-shadow:0 0 8px var(--gc)}
+  .fx-gem.cur{animation:fxGem 1.9s ease-in-out infinite}
+  @keyframes fxGem{0%,100%{box-shadow:0 0 5px var(--gc);transform:rotate(45deg) scale(1)}50%{box-shadow:0 0 14px 2px var(--gc);transform:rotate(45deg) scale(1.28)}}
+  .fx-id{min-width:0;flex:1}
+  .fx-eyebrow{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:color-mix(in srgb,var(--hi) 80%,#fff);opacity:.85}
+  .fx-name{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:700;line-height:1.05;margin:3px 0 6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    background:linear-gradient(100deg,var(--hi) 10%,#fff 42%,var(--tc) 68%,var(--hi) 92%);background-size:250% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:fxShimmer 7s linear infinite}
+  @keyframes fxShimmer{to{background-position:-250% center}}
+  .fx-tier{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .fx-tier-name{font-weight:800;font-size:12px;letter-spacing:.34em;color:var(--hi);padding:3px 12px 3px 14px;border-radius:20px;
+    background:linear-gradient(90deg,color-mix(in srgb,var(--tc) 30%,transparent),transparent);border-left:2px solid var(--tc)}
+  .fx-tier-lv{font-size:10.5px;letter-spacing:.06em;color:rgba(243,234,216,.55);display:none}
+  .fx-lv{margin-left:auto;text-align:center;line-height:1;padding:0 6px 0 18px;border-left:1px solid color-mix(in srgb,var(--tc) 30%,transparent)}
+  .fx-lv small{display:block;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:rgba(243,234,216,.5)}
+  .fx-lv b{display:block;font-family:'Cormorant Garamond',serif;font-size:54px;font-weight:700;margin:2px 0 0;
+    background:linear-gradient(180deg,#fff,var(--hi) 40%,var(--tc));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 10px var(--tg))}
+  .fx-lv em{font-style:normal;font-size:11px;color:rgba(243,234,216,.45);letter-spacing:.12em}
+
+  /* ── XP BAR ── */
+  .fx-xp{margin-bottom:16px}
+  .fx-xp-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+  .fx-xp-lbl{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(243,234,216,.62)}
+  .fx-xp-lbl b{color:var(--hi);font-weight:700}
+  .fx-xp-pct{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:var(--hi);font-variant-numeric:tabular-nums}
+  .fx-track{position:relative;height:14px;border-radius:9px;background:rgba(0,0,0,.45);border:1px solid color-mix(in srgb,var(--tc) 30%,rgba(255,255,255,.05));box-shadow:inset 0 2px 5px rgba(0,0,0,.6)}
+  .fx-track.sm{height:8px;border-radius:6px}
+  .fx-fill{position:relative;height:100%;border-radius:inherit;min-width:0;background:linear-gradient(90deg,var(--lo),var(--tc) 55%,var(--hi));box-shadow:0 0 14px var(--tg);overflow:hidden}
+  .fx-fill::before{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.55) 48%,transparent 66%);background-size:260% 100%;animation:fxBar 3.2s ease-in-out infinite}
+  @keyframes fxBar{0%{background-position:150% 0}100%{background-position:-110% 0}}
+  .fx-fill::after{content:'';position:absolute;right:0;top:0;bottom:0;width:6px;background:#fff;opacity:.85;filter:blur(2px)}
+  .fx-segs{position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:repeating-linear-gradient(90deg,transparent 0 calc(5% - 1px),rgba(0,0,0,.5) calc(5% - 1px) 5%)}
+  .fx-fill.nominal{background:linear-gradient(90deg,#17795a,#2fc98a 60%,#aef0cf);box-shadow:0 0 12px rgba(47,201,138,.45)}
+  .fx-fill.leads{background:linear-gradient(90deg,#3b6c9c,#7ea8c9 60%,#cfe3f5);box-shadow:0 0 12px rgba(126,168,201,.45)}
+
+  /* ── PANEL ── */
+  .fx-panel{padding:15px 17px 16px;margin-bottom:14px;border-radius:15px;border:1px solid color-mix(in srgb,var(--tc) 24%,rgba(255,255,255,.06));
+    background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.018));box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+  .fx-h{display:flex;align-items:center;gap:9px;margin-bottom:12px;font-size:10.5px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--hi)}
+  .fx-h::after{content:'';order:1;flex:1;height:1px;background:linear-gradient(90deg,color-mix(in srgb,var(--tc) 55%,transparent),transparent)}
+  .fx-h-ico{width:17px;height:17px;display:inline-flex;color:var(--tc);filter:drop-shadow(0 0 5px var(--tg))}
+  .fx-h-ico svg{width:100%;height:100%}
+  .fx-quest-count{order:2;font-family:'Cormorant Garamond',serif;font-size:22px;letter-spacing:0;font-weight:700;color:#fff;line-height:1;text-transform:none}
+  .fx-quest-count small{font-size:12px;font-weight:600;color:rgba(243,234,216,.55);margin-left:4px;letter-spacing:.04em}
+  .fx-quest-msg{font-size:11.5px;margin:10px 0 13px;color:rgba(243,234,216,.7);line-height:1.5}
+  .fx-quest-msg b{color:var(--hi)}
+  .fx-quest.done{border-color:color-mix(in srgb,#2fc98a 55%,transparent);box-shadow:0 0 22px -8px rgba(47,201,138,.6),inset 0 1px 0 rgba(255,255,255,.05)}
+  .fx-week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .fx-day{display:flex;flex-direction:column;align-items:center;gap:5px;padding:9px 0 7px;border-radius:11px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.05)}
+  .fx-day-lbl{font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:rgba(243,234,216,.45)}
+  .fx-day-coin{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;
+    background:rgba(255,255,255,.06);border:1px dashed rgba(255,255,255,.16);color:rgba(243,234,216,.4)}
+  .fx-day.hit .fx-day-coin{background:radial-gradient(circle at 35% 30%,#fff3c4,#ffc94d 45%,#b97a10);border:1px solid #ffe08a;color:#4a2f00;box-shadow:0 0 12px rgba(255,200,80,.6)}
+  .fx-day.miss .fx-day-coin{background:rgba(220,80,80,.14);border:1px solid rgba(220,90,90,.4);color:#ef9a9a}
+  .fx-day.today{border-color:var(--tc);background:color-mix(in srgb,var(--tc) 16%,rgba(0,0,0,.28))}
+  .fx-day.today .fx-day-coin{animation:fxRing 2s ease-out infinite}
+  .fx-day.today:not(.hit) .fx-day-coin{background:var(--tc);border:1px solid var(--hi);color:#160e05}
+  @keyframes fxRing{0%{box-shadow:0 0 0 0 var(--tg)}100%{box-shadow:0 0 0 10px transparent}}
+  .fx-day.future{opacity:.5}
+  .fx-day.optional .fx-day-coin{border-style:dotted}
+
+  /* ── JALUR PANGKAT ── */
+  .fx-ladder{display:flex;align-items:flex-start;justify-content:space-between;padding:4px 2px 0}
+  .fx-nd{display:flex;flex-direction:column;align-items:center;gap:5px;flex:0 0 auto;width:52px;position:relative}
+  .fx-nd-emb{position:relative;line-height:0;min-height:52px;display:flex;align-items:center;justify-content:center}
+  .fx-nd.locked .fx-nd-emb svg.csh-badge-svg{filter:grayscale(1) brightness(.55);opacity:.7}
+  .fx-nd.done .fx-nd-emb svg.csh-badge-svg{filter:drop-shadow(0 0 6px var(--ng))}
+  .fx-nd.current .fx-nd-emb::before{content:'';position:absolute;inset:-9px;border-radius:50%;background:radial-gradient(circle,var(--ng),transparent 68%);animation:fxBreath 3s ease-in-out infinite}
+  .fx-nd.current .fx-nd-emb svg.csh-badge-svg{position:relative;filter:drop-shadow(0 0 12px var(--nc));animation:fxFloat 4.5s ease-in-out infinite}
+  .fx-nd.next .fx-nd-emb svg.csh-badge-svg{filter:grayscale(.2) brightness(.9) drop-shadow(0 0 10px var(--nc));opacity:1;animation:fxNext 1.8s ease-in-out infinite}
+  @keyframes fxNext{0%,100%{transform:scale(.96)}50%{transform:scale(1.08)}}
+  .fx-nd-mk{position:absolute;right:-3px;bottom:-1px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:3px;border:1px solid rgba(255,255,255,.25)}
+  .fx-nd-mk svg{width:100%;height:100%}
+  .fx-nd-mk.ck{background:#2fc98a;color:#04231a;border-color:#8ef0c3}
+  .fx-nd-mk.lk{background:#1a1612;color:rgba(243,234,216,.6)}
+  .fx-nd-lbl{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(243,234,216,.5)}
+  .fx-nd.done .fx-nd-lbl,.fx-nd.current .fx-nd-lbl{color:var(--nc);font-weight:700}
+  .fx-nd-now{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:#160e05;background:var(--nc);padding:1px 8px;border-radius:9px;font-weight:800;margin-top:-1px}
+  .fx-nd-now.nx{animation:fxNext 1.8s ease-in-out infinite}
+  .fx-seg{flex:1;height:2px;margin-top:26px;background:rgba(255,255,255,.1);border-radius:2px;position:relative;overflow:hidden}
+  .fx-seg.on{background:linear-gradient(90deg,var(--tc),var(--hi));box-shadow:0 0 8px var(--tg)}
+  .fx-seg.on::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,#fff,transparent);width:40%;animation:fxFlow 2.6s linear infinite}
+  @keyframes fxFlow{from{transform:translateX(-100%)}to{transform:translateX(260%)}}
+
+  /* ── STAT ── */
+  .fx-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:14px}
+  .fx-stat{padding:13px 14px 12px;border-radius:14px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.07);min-width:0}
+  .fx-stat-lbl{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:rgba(243,234,216,.55)}
+  .fx-stat-val{display:flex;align-items:baseline;gap:6px;margin:6px 0 9px;min-height:30px}
+  .fx-stat-val.wrap{flex-wrap:wrap;gap:2px 6px}
+  .fx-stat-val b{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:700;line-height:1;color:#fff;font-variant-numeric:tabular-nums}
+  .fx-stat-val b.sm{font-size:19px;line-height:1.15}
+  .fx-stat-val span{font-size:11.5px;color:rgba(243,234,216,.5);font-variant-numeric:tabular-nums}
+  .fx-stat-sub{font-size:9.5px;color:rgba(243,234,216,.42);margin-top:8px}
+
+  /* ── GULUNGAN STATUS ── */
+  .fx-scroll{display:flex;gap:12px;align-items:flex-start;padding:13px 16px;border-radius:13px;margin-bottom:10px;font-size:12px;line-height:1.55;color:rgba(243,234,216,.85);
+    background:linear-gradient(90deg,color-mix(in srgb,var(--tc) 16%,rgba(0,0,0,.35)),rgba(0,0,0,.3));border:1px solid color-mix(in srgb,var(--tc) 26%,transparent);border-left:3px solid var(--tc)}
+  .fx-scroll b{color:var(--hi)}
+  .fx-scroll-ico{width:20px;height:20px;flex-shrink:0;color:var(--tc);margin-top:1px;filter:drop-shadow(0 0 5px var(--tg))}
+  .fx-scroll-ico svg{width:100%;height:100%}
+  .fx-scroll.ok{border-left-color:#2fc98a;background:linear-gradient(90deg,rgba(47,201,138,.16),rgba(0,0,0,.3));border-color:rgba(47,201,138,.3)}
+  .fx-scroll.ok .fx-scroll-ico{color:#4fe0a2;filter:drop-shadow(0 0 6px rgba(47,201,138,.6))}
+  .fx-scroll.warn{border-left-color:#e8a33d}
+  .fx-warn{display:inline-block;margin-top:4px;color:#f0c27a}
+  .fx-meta{font-size:9.5px;line-height:1.6;color:rgba(243,234,216,.38);text-align:center;padding:0 6px}
+  .fx-meta b{color:rgba(243,234,216,.6)}
+
+  /* ── RESPONSIVE (mengikuti lebar kartu, bukan layar) ── */
+  @container (max-width:640px){
+    .fx-stats{grid-template-columns:1fr}
+    .fx-stat{display:grid;grid-template-columns:1fr auto;column-gap:12px;align-items:center}
+    .fx-stat-lbl{grid-column:1 / -1}
+    .fx-stat-val{margin:4px 0 0}
+    .fx-stat .fx-track{grid-column:1 / -1;margin-top:9px}
+    .fx-stat-sub{grid-column:1 / -1;margin-top:7px}
+  }
+  @container (max-width:520px){
+    .csh-fx-pad{padding:0}
+    .fx-hero{flex-direction:column;text-align:center;gap:14px;margin-bottom:16px}
+    .fx-lv{display:none}
+    .fx-tier{justify-content:center}
+    .fx-tier-lv{display:inline}
+    .fx-name{font-size:30px}
+    .fx-quest-count{font-size:20px}
+    .fx-week{gap:4px}
+    .fx-day-coin{width:22px;height:22px}
+  }
+  @container (max-width:380px){
+    .fx-ladder .fx-nd{width:44px}
+    .fx-nd-lbl{font-size:8.5px;letter-spacing:.08em}
+    .fx-stage{width:132px;height:132px}
+  }
+  @media(max-width:520px){.csh-fx{padding:22px 16px 16px;border-radius:18px}.fx-panel{padding:14px 13px 14px}}
+  @media(prefers-reduced-motion:reduce){
+    .csh-fx *,.csh-fx::before{animation:none!important}
+    .csh-fx .fx-in{opacity:1!important;transform:none!important}
+    .fx-p{display:none}
+  }`;
+  const s = document.createElement('style'); s.id = 'csh-fx-style'; s.textContent = css;
+  document.head.appendChild(s);
 }
 
 function cshInjectStyle() {
@@ -26443,7 +26713,9 @@ function cshAnimate() {
 // refresh realtime tidak bikin batang/ring "berkedip" dari 0.
 function cshPaint(root, html, silent) {
   cshLvUpStyleOnce(); // style kartu bulanan + tema terang selalu ter-inject, bukan hanya saat popup
+  cshFxStyleOnce();   // v109: gaya kartu RPG
   root.innerHTML = html;
+  if (silent) root.querySelectorAll('.csh-fx').forEach(e => e.classList.add('no-intro')); // refresh realtime: tanpa animasi masuk ulang
   const bars = () => root.querySelectorAll('.csh-ring-fg,.csh-bar-fill');
   if (silent) {
     bars().forEach(el => {
@@ -26454,6 +26726,7 @@ function cshPaint(root, html, silent) {
     requestAnimationFrame(() => requestAnimationFrame(() => bars().forEach(el => { el.style.transition = ''; })));
   }
   cshAnimate();
+  if (!silent) cshCountUp(root);
 }
 
 function cshLvUpStyleOnce() {
