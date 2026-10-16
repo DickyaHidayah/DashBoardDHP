@@ -4366,56 +4366,35 @@ body.light .ktr-bar{background:rgba(0,0,0,.06)}
 .lb-title-ico svg{width:14px;height:14px}
 .lb-live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(122,191,142,.55);animation:lbDotPulse 1.8s ease-out infinite;flex-shrink:0}
 @keyframes lbDotPulse{0%{box-shadow:0 0 0 0 rgba(122,191,142,.5)}70%{box-shadow:0 0 0 6px rgba(122,191,142,0)}100%{box-shadow:0 0 0 0 rgba(122,191,142,0)}}
-/* v101 — Juara Bulan Lalu: kartu vertikal MENGAMBANG di celah kosong
-   sebelah podium (bukan banner full-width lagi), TANPA border, dengan
-   animasi yang terus hidup — aura keemasan berdenyut, kartu melayang
-   pelan (float), dan nama berkilau terus-menerus. Interactive: membesar
-   & aura-nya makin terang pas di-hover. */
-.lb-podium{position:relative} /* anchor utk kartu mengambang */
-.lb-prev-champ{position:absolute;left:0;top:50%;width:148px;z-index:2;
-  display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;
-  padding:20px 14px 18px;border-radius:20px;cursor:default;border:none;
-  background:linear-gradient(165deg,rgba(38,32,22,.9),rgba(24,20,14,.92));
-  box-shadow:0 14px 40px rgba(0,0,0,.35),0 0 0 1px rgba(201,169,110,.12) inset;
-  animation:lbChampFloat 5s ease-in-out infinite,lbChampGlowPulse 3.2s ease-in-out infinite,lbChampIn .7s cubic-bezier(.16,1,.3,1) both;
-  transition:transform .35s cubic-bezier(.34,1.56,.64,1),box-shadow .35s ease}
-.lb-prev-champ:hover{transform:translateY(calc(-50% - 6px)) scale(1.055);
-  box-shadow:0 20px 54px rgba(0,0,0,.45),0 0 0 1px rgba(201,169,110,.28) inset,0 0 36px rgba(201,169,110,.3)}
-@keyframes lbChampIn{from{opacity:0;transform:translateY(calc(-50% + 10px)) scale(.92)}to{opacity:1;transform:translateY(-50%) scale(1)}}
-@keyframes lbChampFloat{0%,100%{transform:translateY(-50%)}50%{transform:translateY(calc(-50% - 7px))}}
-@keyframes lbChampGlowPulse{0%,100%{box-shadow:0 14px 40px rgba(0,0,0,.35),0 0 0 1px rgba(201,169,110,.1) inset,0 0 18px rgba(201,169,110,.08)}
-  50%{box-shadow:0 14px 40px rgba(0,0,0,.35),0 0 0 1px rgba(201,169,110,.22) inset,0 0 30px rgba(201,169,110,.22)}}
-.lb-prev-champ-aura{position:absolute;inset:-30%;z-index:-1;border-radius:50%;
-  background:radial-gradient(circle,rgba(201,169,110,.22),transparent 70%);
-  animation:lbChampAura 4s ease-in-out infinite}
-@keyframes lbChampAura{0%,100%{opacity:.5;transform:scale(.9)}50%{opacity:1;transform:scale(1.08)}}
-.lb-prev-champ-ico{position:relative;width:34px;height:34px;border-radius:50%;margin-bottom:4px;
-  display:flex;align-items:center;justify-content:center;color:var(--gold-hi,#e8cc99);
-  background:radial-gradient(circle,rgba(201,169,110,.3),rgba(201,169,110,.08));
-  animation:lbChampIconSpin 7s linear infinite}
-.lb-prev-champ-ico svg{width:17px;height:17px}
-@keyframes lbChampIconSpin{0%,92%,100%{transform:rotate(0)}96%{transform:rotate(-8deg)}}
-.lb-prev-champ-lbl{font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;color:rgba(232,228,220,.45);margin-top:2px}
-.lb-prev-champ-period{font-size:9px;letter-spacing:.03em;color:rgba(201,169,110,.65);margin-bottom:2px}
-.lb-prev-champ-name{position:relative;font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;
-  letter-spacing:.015em;line-height:1.2;
-  background:linear-gradient(100deg,#c9a96e 15%,#f3e3bd 35%,#fff8e8 50%,#f3e3bd 65%,#c9a96e 85%);
-  background-size:260% auto;-webkit-background-clip:text;background-clip:text;color:transparent;
-  animation:lbChampShimmer 3.6s linear infinite}
-@keyframes lbChampShimmer{0%{background-position:0% center}100%{background-position:-260% center}}
-.lb-prev-champ-host{display:inline-flex;align-items:center;gap:3px;font-family:'Inter',sans-serif;font-size:7.5px;
-  font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(232,112,112,.16);
-  color:#f0a0a0;text-transform:uppercase;letter-spacing:.03em;margin-top:3px}
-.lb-prev-champ-host svg{width:7.5px;height:7.5px}
-.lb-prev-champ-stat{margin-top:7px;font-size:13px;font-weight:700;color:var(--gold,#c9a96e);font-variant-numeric:tabular-nums}
-.lb-prev-champ-sub{font-size:9.5px;color:rgba(232,228,220,.4);font-variant-numeric:tabular-nums;margin-top:1px}
-@media(max-width:900px){
-  .lb-podium{flex-wrap:wrap}
-  .lb-prev-champ{position:static;top:auto;left:auto;flex-basis:100%;width:auto;max-width:280px;margin:0 auto 18px;
-    flex-direction:row;flex-wrap:wrap;justify-content:center;padding:14px 18px;animation:lbChampIn .6s cubic-bezier(.16,1,.3,1) both,lbChampGlowPulse 3.2s ease-in-out infinite}
-  .lb-prev-champ:hover{transform:scale(1.03)}
-  .lb-prev-champ-ico{margin-bottom:0;margin-right:4px}
-  .lb-prev-champ-lbl,.lb-prev-champ-period{width:100%}
+/* v108 — Juara Bulan Lalu: top 3, minimalis. Tanpa animasi/aura; hairline + tipografi.
+   Desktop = 3 kolom sejajar; HP (<=640px) = daftar baris rapi (angka | nama | nilai). */
+.lbp{margin:0 0 20px;padding:16px 20px 6px;background:var(--surface);border:1px solid var(--border);border-radius:14px}
+.lbp-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.lbp-ttl{font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text2)}
+.lbp-per{font-size:11px;color:var(--muted);white-space:nowrap}
+.lbp-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.lbp-item{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;padding:18px 12px 16px;min-width:0}
+.lbp-item+.lbp-item{border-left:1px solid var(--border)}
+.lbp-rk{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;line-height:1;color:var(--muted)}
+.lbp-item.r1 .lbp-rk{color:var(--gold-hi)}
+.lbp-who{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0;max-width:100%;margin-top:8px}
+.lbp-name{font-size:14px;font-weight:600;color:var(--text);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lbp-item.r1 .lbp-name{font-size:15px}
+.lbp-role{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.lbp-val{display:flex;flex-direction:column;align-items:center;margin-top:8px}
+.lbp-val b{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;line-height:1.1}
+.lbp-item.r1 .lbp-val b{color:var(--gold-hi)}
+.lbp-val i{font-style:normal;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:1px}
+@media(max-width:640px){
+  .lbp{padding:14px 14px 2px;border-radius:12px}
+  .lbp-list{grid-template-columns:1fr}
+  .lbp-item{flex-direction:row;align-items:center;text-align:left;gap:12px;padding:12px 0}
+  .lbp-item+.lbp-item{border-left:0;border-top:1px solid var(--border)}
+  .lbp-rk{width:24px;flex-shrink:0;font-size:22px;text-align:center}
+  .lbp-who{flex:1;align-items:flex-start;margin-top:0}
+  .lbp-name,.lbp-item.r1 .lbp-name{font-size:14px}
+  .lbp-val{align-items:flex-end;margin-top:0;flex-shrink:0}
+  .lbp-val b{font-size:17px}
 }
 
 .lb-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px}
@@ -6633,6 +6612,7 @@ const can = {
   viewAll:     r => ['head_moderator','moderator'].includes(r) || r === 'owner',
   any:         r => !!r,
   isCsHunter:  r => r === 'cs_hunter',
+  isNdbStaff:  r => r === 'cs_hunter' || r === 'admin' || r === 'b2b_marketing', // v108: Database Baru — semua staff input
   // v54: role yang boleh pakai fitur Follow Up (tabel customer + target
   // harian) — sebelumnya cs_hunter + b2b_marketing, sekarang Admin
   // (Puji, Erni) juga bisa, memakai database customer miliknya sendiri
@@ -23219,10 +23199,10 @@ async function trkLoadTeamNewDb() {
       <td><span class="ndb-big">${r.total}</span></td>
       <td style="font-size:11px;color:var(--muted)">${r.last_added_at ? trkFmtHM(r.last_added_at) : '—'}</td>
     </tr>`;
-  }).join('') : `<tr><td colspan="9" style="text-align:center;color:var(--muted)">Belum ada CS Hunter aktif.</td></tr>`;
+  }).join('') : `<tr><td colspan="9" style="text-align:center;color:var(--muted)">Belum ada staff aktif.</td></tr>`;
   el2.innerHTML = `
     <div class="ndb-wrap">
-      <div class="trk-section-title"><span class="st-ico">${TRK_ICO.newDb}</span> Database Baru CS Hunter <span style="font-size:11px;color:var(--muted);font-family:'Inter',sans-serif;font-weight:500">· ${escHtml(dateStr)} · otomatis &amp; realtime</span></div>
+      <div class="trk-section-title"><span class="st-ico">${TRK_ICO.newDb}</span> Database Baru Tim <span style="font-size:11px;color:var(--muted);font-family:'Inter',sans-serif;font-weight:500">· ${escHtml(dateStr)} · otomatis &amp; realtime</span></div>
       <div class="trk-hist-toolbar" style="justify-content:flex-end;flex-wrap:wrap">
         <div class="trk-hist-export-grp" style="margin-left:0">
           <button class="trk-export-btn xls" onclick="ndbExportDaily('xls')" title="Export tabel tanggal ini ke Excel"><span>Excel Harian</span></button>
@@ -23281,10 +23261,10 @@ function ndbExportDaily(fmt) {
   ]);
   const sum = k => c.rows.reduce((a, r) => a + (r[k] || 0), 0);
   const total = ['', 'TOTAL TIM', sum('siang_total'), sum('sore_total'), sum('total_ads'), sum('total_crm'), sum('total_import'), sum('total'), ''];
-  const file = `Database_Baru_CS_Hunter_${c.date}`;
+  const file = `Database_Baru_Tim_${c.date}`;
   try {
     if (fmt === 'xls') {
-      const aoa = [[`DATABASE BARU CS HUNTER — ${c.date}`], ['Dihitung otomatis dari CRM (Ads Task + Add CRM). Import CRM ditampilkan terpisah.'], [], head, ...body, total];
+      const aoa = [[`DATABASE BARU TIM — ${c.date}`], ['Dihitung otomatis dari CRM (Ads Task + Add CRM). Import CRM ditampilkan terpisah.'], [], head, ...body, total];
       const ws = XLSX.utils.aoa_to_sheet(aoa);
       ws['!cols'] = [{ wch: 5 }, { wch: 24 }, { wch: 17 }, { wch: 14 }, { wch: 14 }, { wch: 11 }, { wch: 12 }, { wch: 9 }, { wch: 14 }];
       const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Database Baru');
@@ -23293,7 +23273,7 @@ function ndbExportDaily(fmt) {
     } else {
       if (!_pdfLibsReady()) { toast('Komponen PDF belum siap, coba lagi sebentar lagi'); return; }
       const doc = new window.jspdf.jsPDF({ unit: 'pt', format: 'a4' });
-      ndbHeaderPdf(doc, 'Database Baru CS Hunter — Harian', `Tanggal ${c.date}  ·  otomatis dari Ads Task & CRM`);
+      ndbHeaderPdf(doc, 'Database Baru Tim — Harian', `Tanggal ${c.date}  ·  otomatis dari Ads Task & CRM`);
       doc.autoTable({
         head: [head], body: [...body, total], startY: 104, margin: { left: 36, right: 36 },
         styles: { font: 'helvetica', fontSize: 8.4, cellPadding: 5, textColor: [40, 40, 40], valign: 'middle' },
@@ -23323,7 +23303,7 @@ async function ndbExportMonthly(fmt, scope) {
   if (!rows.length) { toast('Belum ada data Database Baru untuk diexport.'); return; }
 
   const ymLabel = trkHistYmLabel(ym);
-  const who = own ? (currentUser.name || currentUser.id) : 'Semua CS Hunter';
+  const who = own ? (currentUser.name || currentUser.id) : 'Semua Staff';
   // ringkasan per hunter
   const byUser = {};
   rows.forEach(r => {
@@ -23365,9 +23345,9 @@ async function ndbExportMonthly(fmt, scope) {
     } else {
       if (!_pdfLibsReady()) { toast('Komponen PDF belum siap, coba lagi sebentar lagi'); return; }
       const doc = new window.jspdf.jsPDF({ unit: 'pt', format: 'a4' });
-      ndbHeaderPdf(doc, 'Database Baru CS Hunter — Bulanan', `${who}  ·  ${ymLabel}`);
+      ndbHeaderPdf(doc, 'Database Baru Tim — Bulanan', `${who}  ·  ${ymLabel}`);
       doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(30, 30, 30);
-      doc.text('Ringkasan per CS Hunter', 36, 108);
+      doc.text('Ringkasan per Staff', 36, 108);
       doc.autoTable({
         head: [sumHead], body: [...sumBody, sumTotal], startY: 114, margin: { left: 36, right: 36 },
         styles: { font: 'helvetica', fontSize: 8, cellPadding: 4.5, textColor: [40, 40, 40] },
@@ -23751,7 +23731,7 @@ async function renderTrackingOwnView(root) {
 
   root.innerHTML = `
     <div id="trk-reminder-banner" class="trk-banner ok">${TRK_ICO.bell} Memuat status reminder…</div>
-    ${can.isCsHunter(currentUser.role) ? '<div id="trk-newdb-own"></div>' : ''}
+    ${can.isNdbStaff(currentUser.role) ? '<div id="trk-newdb-own"></div>' : ''}
     <div class="trk-slots">
       ${TRACKING_SLOTS.map(s => trkSlotCardHtml(s, slotData[s.key])).join('')}
     </div>
@@ -23801,7 +23781,7 @@ async function renderTrackingOwnView(root) {
   `;
   trkTickReminder();
   trkLoadOwnHistory();
-  if (can.isCsHunter(currentUser.role)) trkLoadOwnNewDb();
+  if (can.isNdbStaff(currentUser.role)) trkLoadOwnNewDb();
 }
 
 /* ── RIWAYAT LAPORAN SENDIRI (CS Hunter / Admin / B2B Marketing) ──
@@ -25157,7 +25137,7 @@ const trkModActionsHtml = (reportId, filled, status) => {
 };
 
 async function trkLoadTeamRecap() {
-  trkLoadTeamNewDb(); // v105: Database Baru CS Hunter (otomatis)
+  trkLoadTeamNewDb(); // v105: Database Baru Tim (otomatis)
   ['siang','sore','harian'].forEach(k => { const t = document.getElementById('trk-team-tbody-' + k); if (t) t.innerHTML = `<tr><td colspan="12" style="text-align:center;color:var(--muted)">Memuat…</td></tr>`; });
   let rows = [], yRows = [];
   const yDateObj = new Date(_trkTeamDate + 'T00:00:00'); yDateObj.setDate(yDateObj.getDate() - 1);
@@ -28295,8 +28275,8 @@ async function renderLeaderboardPage() {
     try {
       const prevYm = lbYmPrev(lbYmNow());
       const prevData = await lbFetchData(prevYm);
-      const top1 = (prevData.rows || []).find(r => r.sales > 0) || null;
-      lbPrevChampionCache = top1 ? { ...top1, ymLabel: lbYmLabel(prevYm) } : null;
+      const top3 = (prevData.rows || []).filter(r => r.sales > 0).slice(0, 3);
+      lbPrevChampionCache = top3.length ? { list: top3, ymLabel: lbYmLabel(prevYm) } : null;
     } catch (e) { console.warn('[DHP] fetch juara bulan lalu gagal:', e); lbPrevChampionCache = null; }
   }
 
@@ -28334,6 +28314,7 @@ function lbRenderContent(root, data) {
     </div>`;
 
   root.innerHTML = topbarHtml
+    + lbPrevChampionHtml()
     + lbPodiumHtml(top3)
     + lbAchievementsHtml(ach)
     + lbNewDbHtml(data)
@@ -28345,36 +28326,37 @@ function lbRenderContent(root, data) {
   lbAnimateCountUps(root);
 }
 
-// v100 — "Juara Bulan Lalu": banner kecil & elegan di atas leaderboard,
-// nunjukin siapa peringkat #1 bulan sebelumnya (independen dari filter
-// periode yang lagi dibuka). Kalau belum ada data/juara, tidak render apa-apa.
+// v108 — "Juara Bulan Lalu": 3 besar bulan sebelumnya, tampilan minimalis.
+// Independen dari filter periode. Kosong = tidak render apa-apa.
 function lbPrevChampionHtml() {
-  const u = lbPrevChampionCache;
-  if (!u || !u.name) return '';
-  const hasTarget = u.target > 0;
-  const statTxt = hasTarget ? `${Math.round(u.pct * 100)}% target` : crmFmtRupiah(u.sales);
-  const subTxt = hasTarget ? crmFmtRupiah(u.sales) : '';
+  const c = lbPrevChampionCache;
+  if (!c || !c.list || !c.list.length) return '';
+  const items = c.list.map((u, i) => {
+    const hasTarget = u.target > 0;
+    const big = hasTarget ? Math.round(u.pct * 100) + '%' : crmFmtRupiah(u.sales);
+    const small = hasTarget ? crmFmtRupiah(u.sales) : '';
+    const role = u.isHostLive ? rn('host_live') : rn(roleFromDb(u.role));
+    return `
+      <li class="lbp-item r${i + 1}">
+        <span class="lbp-rk">${i + 1}</span>
+        <span class="lbp-who"><span class="lbp-name" title="${escHtml(u.name)}">${escHtml(u.name)}</span><span class="lbp-role">${escHtml(role)}</span></span>
+        <span class="lbp-val"><b>${big}</b>${small ? `<i>${small}</i>` : ''}</span>
+      </li>`;
+  }).join('');
   return `
-    <div class="lb-prev-champ" title="Juara bulan lalu: ${escHtml(u.name)} — ${escHtml(u.ymLabel)}">
-      <span class="lb-prev-champ-aura"></span>
-      <span class="lb-prev-champ-ico">${LB_ICO.crown}</span>
-      <span class="lb-prev-champ-lbl">Juara Bulan Lalu</span>
-      <span class="lb-prev-champ-period">${escHtml(u.ymLabel)}</span>
-      <span class="lb-prev-champ-name">${escHtml(u.name)}</span>
-      ${u.isHostLive ? `<span class="lb-prev-champ-host">${LB_ICO.camera} Host Live</span>` : ''}
-      <span class="lb-prev-champ-stat">${statTxt}</span>
-      ${subTxt ? `<span class="lb-prev-champ-sub">${subTxt}</span>` : ''}
-    </div>`;
+    <section class="lbp" aria-label="Juara bulan lalu">
+      <div class="lbp-head"><span class="lbp-ttl">Juara Bulan Lalu</span><span class="lbp-per">${escHtml(c.ymLabel)}</span></div>
+      <ol class="lbp-list">${items}</ol>
+    </section>`;
 }
 
 function lbPodiumHtml(top3) {
-  const champHtml = lbPrevChampionHtml(); // v101: kartu "Juara Bulan Lalu" ngambang di dalam podium
   if (!top3.length || top3.every(u => !u || u.sales === 0)) {
-    return `<div class="lb-podium">${champHtml}<div class="lb-pod-empty">Belum ada data penjualan bulan ini — papan peringkat akan terisi begitu Tracking Report mulai diisi.</div></div>`;
+    return `<div class="lb-podium"><div class="lb-pod-empty">Belum ada data penjualan bulan ini — papan peringkat akan terisi begitu Tracking Report mulai diisi.</div></div>`;
   }
   const order = [top3[1], top3[0], top3[2]];
   const ranks = [2, 1, 3];
-  let html = `<div class="lb-podium">${champHtml}`;
+  let html = `<div class="lb-podium">`;
   order.forEach((u, idx) => {
     const rank = ranks[idx];
     if (!u) { html += `<div class="lb-pod-card r${rank}" style="visibility:hidden"></div>`; return; }
@@ -28459,7 +28441,7 @@ function lbNewDbHtml(data) {
     </div>`).join('');
   return `
     <div class="lb-diagram">
-      <div class="lb-diagram-title"><span class="lb-icotxt">${TRK_ICO.newDb}</span> Database Baru Terbanyak — CS Hunter</div>
+      <div class="lb-diagram-title"><span class="lb-icotxt">${TRK_ICO.newDb}</span> Database Baru Terbanyak — Tim</div>
       <div class="lb-diagram-sub">Total database baru bulan ${lbYmLabel(lbCurrentYm)}, otomatis dari Ads Task &amp; CRM · nomor yang sudah pernah ada tidak dihitung</div>
       ${bars}
     </div>`;
