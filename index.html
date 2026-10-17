@@ -3019,6 +3019,60 @@ body.light .atc-note{color:#a05800;background:#fffbf0;border:1px solid rgba(160,
 body.light .atc-await{color:rgba(13,13,13,.45)}
 body.light .adtask-empty{color:rgba(13,13,13,.38)}
 
+
+/* v111 — ADS TASK: dikelompokkan per hari → Hari Ini · Terlewat · Mendatang (rapi, mudah dipindai) */
+.adt-chips{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+.adt-chip{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);
+  color:var(--text2);font-family:inherit;font-size:11px;font-weight:600;letter-spacing:.04em;cursor:pointer;transition:.15s ease}
+.adt-chip b{font-size:10.5px;font-weight:700;padding:1px 8px;border-radius:9px;background:rgba(127,127,127,.16);color:var(--text);font-variant-numeric:tabular-nums}
+.adt-chip:hover{border-color:var(--border-hi);color:var(--text)}
+.adt-chip.on{background:rgba(201,169,110,.14);color:var(--gold);border-color:var(--gold)}
+.adt-chip.on b{background:var(--gold);color:#1a1408}
+.adt-chip .adt-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.adt-sec{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin-top:10px;padding:11px 16px;border-radius:12px;
+  background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--sc,var(--border-hi))}
+.adt-sec-dot{width:9px;height:9px;border-radius:50%;background:var(--sc);box-shadow:0 0 0 3px color-mix(in srgb,var(--sc) 22%,transparent);flex-shrink:0}
+.adt-sec-ttl{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:700;color:var(--text);line-height:1}
+.adt-sec-sub{font-size:11px;color:var(--muted)}
+.adt-sec-cnt{margin-left:auto;font-size:11px;font-weight:700;padding:2px 11px;border-radius:999px;color:var(--sc);background:color-mix(in srgb,var(--sc) 14%,transparent);font-variant-numeric:tabular-nums;white-space:nowrap}
+.adt-sec.s-today{--sc:var(--green)}
+.adt-sec.s-past{--sc:var(--red)}
+.adt-sec.s-future{--sc:var(--blue)}
+.adt-sec.s-done{--sc:var(--muted)}
+.adt-date{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin:4px 2px -4px}
+.adt-date-main{font-size:12px;font-weight:700;color:var(--text);letter-spacing:.02em;white-space:nowrap}
+.adt-date-rel{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:2px 9px;border-radius:999px;background:rgba(127,127,127,.15);color:var(--text2);white-space:nowrap}
+.adt-date-rel.is-today{background:color-mix(in srgb,var(--green) 18%,transparent);color:var(--green)}
+.adt-date-line{flex:1;height:1px;background:var(--border);min-width:12px}
+.adt-date-cnt{font-size:10.5px;color:var(--muted);white-space:nowrap}
+.adtask-card.is-today{box-shadow:0 0 0 1px color-mix(in srgb,var(--green) 38%,transparent),0 6px 18px -10px color-mix(in srgb,var(--green) 55%,transparent)}
+.adtask-card.is-past{background:color-mix(in srgb,var(--surface2) 92%,var(--red) 8%)}
+.adtask-card.is-future{border-style:dashed;border-left-style:solid}
+body.light .adt-chip{background:#f7f7f8;border-color:rgba(0,0,0,.12);color:rgba(13,13,13,.6)}
+body.light .adt-chip b{background:rgba(0,0,0,.08);color:#0d0d0d}
+body.light .adt-chip.on{background:#0d0d0d;color:#fff;border-color:#0d0d0d}
+body.light .adt-chip.on b{background:#fff;color:#0d0d0d}
+body.light .adt-sec{background:#fff;border-color:rgba(0,0,0,.1);border-left-color:var(--sc);box-shadow:0 1px 4px rgba(0,0,0,.04)}
+body.light .adt-sec.s-past{--sc:#c0392b}
+body.light .adt-sec.s-future{--sc:#1f527e}
+body.light .adt-sec-ttl{color:#0d0d0d}
+body.light .adt-sec-sub,body.light .adt-date-cnt{color:rgba(13,13,13,.5)}
+body.light .adt-date-main{color:#0d0d0d}
+body.light .adt-date-line{background:rgba(0,0,0,.1)}
+body.light .adt-date-rel{background:rgba(0,0,0,.07);color:rgba(13,13,13,.6)}
+body.light .adt-date-rel.is-today{background:rgba(31,107,56,.14);color:#1f6b38}
+body.light .adtask-card.is-today{box-shadow:0 0 0 1.5px rgba(31,107,56,.5),0 6px 18px -10px rgba(31,107,56,.5)}
+body.light .adtask-card.is-past{background:#fff8f7}
+@media(max-width:640px){
+  .adt-chips{flex-wrap:nowrap;overflow-x:auto;margin:0 -2px;padding:2px 2px 4px;scrollbar-width:none}
+  .adt-chips::-webkit-scrollbar{display:none}
+  .adt-chip{flex-shrink:0;padding:7px 12px}
+  .adt-sec{padding:10px 12px;margin-top:6px;gap:8px}
+  .adt-sec-ttl{font-size:17px}
+  .adt-sec-sub{display:none}
+  .adt-date{margin-top:2px}
+}
+
 /* v51: HALAMAN TASK IKLAN — lebih nyaman & responsif di HP.
    Di layar sempit: 1 kartu per baris (bukan dipaksa muat 280px yang bikin
    sempit/terpotong), padding & ukuran font disesuaikan, tombol aksi jadi
@@ -22513,6 +22567,9 @@ if (!crmUsesDB()) loadCRM();
    ADS TASK PAGE — daftar task dalam bentuk halaman penuh
    ═══════════════════════════════════════════════════════════ */
 let taskPageFilter = 'active';
+let adTaskDayFilter = 'all'; // v111: all | today | past | future
+function setTaskDayFilter(k) { adTaskDayFilter = k; renderAdTaskPage(); }
+window.setTaskDayFilter = setTaskDayFilter;
 
 function setTaskFilter(f, btn) {
   taskPageFilter = f;
@@ -22571,9 +22628,25 @@ async function renderAdTaskPage() {
   if (delAllBtn) delAllBtn.style.display = isMod ? '' : 'none';
 
   const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
-  grid.innerHTML = list.map(tk => {
-    const dObj = new Date(tk.date + 'T00:00:00');
-    const dateStr = `${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
+  const isID = currentLang === 'id';
+  const L = (idTxt, enTxt) => isID ? idTxt : enTxt;
+  const dayNames = isID ? ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'] : ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const todayKey = ymdKey(new Date());
+  const catOrder = { Product: 0, Reseller: 1, B2B: 2 };
+  const nameOf = tk => (getUserMeta(tk.assignee).name || '');
+  // urut rapi dalam satu hari: kategori → nama assignee → judul
+  const cmpTask = (x, y) => ((catOrder[x.category] ?? 9) - (catOrder[y.category] ?? 9))
+    || nameOf(x).localeCompare(nameOf(y)) || String(x.title).localeCompare(String(y.title));
+  const dayDiff = key => Math.round((Date.UTC(...key.split('-').map((v, i) => i === 1 ? +v - 1 : +v)) - Date.UTC(...todayKey.split('-').map((v, i) => i === 1 ? +v - 1 : +v))) / 86400000);
+  const relLabel = key => {
+    const d = dayDiff(key);
+    if (d === 0) return L('Hari ini', 'Today');
+    if (d === -1) return L('Kemarin', 'Yesterday');
+    if (d === 1) return L('Besok', 'Tomorrow');
+    return d < 0 ? L(`${-d} hari lalu`, `${-d} days ago`) : L(`${d} hari lagi`, `in ${d} days`);
+  };
+
+  const cardHtml = (tk, tone) => {
     const n = taskLeadCount[tk.id] || 0;
     const open = taskIsOpen(tk);
     const who = getUserMeta(tk.assignee);
@@ -22606,7 +22679,7 @@ async function renderAdTaskPage() {
     }
 
     return `
-    <div class="adtask-card cat-${tk.category}">
+    <div class="adtask-card cat-${tk.category}${tone ? ' is-' + tone : ''}">
       <div class="atc-head">
         <span class="atc-head-badges">
           <span class="cat-badge cat-${tk.category}">${tk.category}</span>
@@ -22616,15 +22689,58 @@ async function renderAdTaskPage() {
         ${isMod ? `<button type="button" class="atc-del-btn" onclick="confirmDeleteAdTask('${tk.id}','${escHtml(tk.title).replace(/'/g,"\\'")}',${n})" title="${n ? 'Sudah ada '+n+' leads — hapus leads-nya dulu sebelum bisa hapus task ini' : 'Hapus task ini'}"${n ? ' disabled' : ''}>${crmIco('trash')}</button>` : ''}
       </div>
       <div class="atc-theme">${escHtml(tk.title)}</div>
-      <div class="atc-meta">
-        <span>📅 ${dateStr}</span>
-        ${n ? `<span style="color:var(--green)">▣ ${n} ${t('leadsCount')}</span>` : ''}
-      </div>
+      ${n ? `<div class="atc-meta"><span style="color:var(--green)">▣ ${n} ${t('leadsCount')}</span></div>` : ''}
       ${isMod ? `<div class="atc-assignee"><span class="atc-assignee-lbl">${t('assignee')}</span><span class="atc-assignee-name"><span class="role-dot" style="background:${clr}"></span>${escHtml(who.name)}</span></div>` : ''}
       ${tk.unlockNote && tk.status==='unlock_requested' ? `<div class="atc-note">"${escHtml(tk.unlockNote)}"</div>` : ''}
       <div class="atc-acts">${actions}</div>
     </div>`;
-  }).join('');
+  };
+
+  // satu "baris" = satu tanggal: judul tanggal + kartu-kartunya
+  const dateRows = (tasks, tone, dir) => {
+    const byDate = {};
+    tasks.forEach(tk => { (byDate[tk.date] = byDate[tk.date] || []).push(tk); });
+    const keys = Object.keys(byDate).sort();
+    if (dir === 'desc') keys.reverse();
+    return keys.map(k => {
+      const dObj = new Date(k + 'T00:00:00');
+      const label = `${dayNames[dObj.getDay()]}, ${dObj.getDate()} ${months[dObj.getMonth()]} ${dObj.getFullYear()}`;
+      const rows = byDate[k].slice().sort(cmpTask);
+      return `<div class="adt-date"><span class="adt-date-main">${label}</span><span class="adt-date-rel${k === todayKey ? ' is-today' : ''}">${relLabel(k)}</span><span class="adt-date-line"></span><span class="adt-date-cnt">${rows.length} task</span></div>`
+        + rows.map(tk => cardHtml(tk, tone)).join('');
+    }).join('');
+  };
+  const secHead = (cls, title, sub, count) =>
+    `<div class="adt-sec ${cls}"><span class="adt-sec-dot"></span><span class="adt-sec-ttl">${title}</span><span class="adt-sec-sub">${sub}</span><span class="adt-sec-cnt">${count} task</span></div>`;
+
+  if (taskPageFilter === 'done') {
+    grid.innerHTML = secHead('s-done', L('Task Selesai', 'Completed Tasks'), L('Diurutkan dari tanggal terbaru', 'Newest date first'), list.length)
+      + dateRows(list, '', 'desc');
+    return;
+  }
+
+  // ── Aktif: pisah menjadi Hari Ini · Terlewat · Mendatang ──
+  const todayL  = list.filter(tk => tk.date === todayKey);
+  const pastL   = list.filter(tk => tk.date <  todayKey);
+  const futureL = list.filter(tk => tk.date >  todayKey);
+  const valid = ['all','today','past','future'];
+  if (!valid.includes(adTaskDayFilter)) adTaskDayFilter = 'all';
+  const chip = (k, dot, label, n) =>
+    `<button type="button" class="adt-chip${adTaskDayFilter === k ? ' on' : ''}" onclick="setTaskDayFilter('${k}')">${dot ? `<span class="adt-dot" style="background:${dot}"></span>` : ''}${label}<b>${n}</b></button>`;
+  const chips = `<div class="adt-chips">`
+    + chip('all', '', L('Semua', 'All'), list.length)
+    + chip('today', 'var(--green)', L('Hari Ini', 'Today'), todayL.length)
+    + chip('past', 'var(--red)', L('Terlewat', 'Overdue'), pastL.length)
+    + chip('future', 'var(--blue)', L('Mendatang', 'Upcoming'), futureL.length)
+    + `</div>`;
+
+  let body = '';
+  const show = k => adTaskDayFilter === 'all' || adTaskDayFilter === k;
+  if (show('today') && todayL.length)  body += secHead('s-today', L('Hari Ini', 'Today'), L('Kerjakan sekarang', 'Work on these now'), todayL.length) + dateRows(todayL, 'today', 'asc');
+  if (show('past') && pastL.length)    body += secHead('s-past', L('Terlewat', 'Overdue'), L('Hari sudah lewat · belum selesai', 'Day has passed · not completed'), pastL.length) + dateRows(pastL, 'past', 'desc');
+  if (show('future') && futureL.length) body += secHead('s-future', L('Mendatang', 'Upcoming'), L('Jadwal hari berikutnya', 'Scheduled for later days'), futureL.length) + dateRows(futureL, 'future', 'asc');
+  if (!body) body = `<div class="adtask-empty">${L('Tidak ada task di kategori ini.', 'No tasks in this category.')}</div>`;
+  grid.innerHTML = chips + body;
 }
 
 // v97 — Hapus Task Iklan (moderator-only). Task yang SUDAH ada leads-nya
