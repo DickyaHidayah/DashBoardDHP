@@ -3020,6 +3020,145 @@ body.light .atc-await{color:rgba(13,13,13,.45)}
 body.light .adtask-empty{color:rgba(13,13,13,.38)}
 
 
+
+/* v112 — JADWAL MINGGUAN LIVE (planner moderator) */
+body.lsw-open{overflow:hidden}
+.lsw-ov{position:fixed;inset:0;z-index:1200;background:rgba(6,5,3,.66);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:18px}
+.lsw{width:min(1180px,100%);max-height:100%;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border-hi,var(--border));border-radius:18px;
+  box-shadow:0 30px 80px -20px rgba(0,0,0,.7);overflow:hidden;color:var(--text)}
+.lsw-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:18px 22px 14px;border-bottom:1px solid var(--border)}
+.lsw-title{font-family:'Cormorant Garamond',serif;font-size:25px;font-weight:700;line-height:1.1;color:var(--text)}
+.lsw-sub{font-size:11.5px;color:var(--muted);margin-top:4px}
+.lsw-x{width:32px;height:32px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;font-size:13px;flex-shrink:0}
+.lsw-x:hover{color:var(--red);border-color:var(--red)}
+.lsw-body{flex:1;overflow:auto;padding:16px 22px 18px;display:flex;flex-direction:column;gap:14px}
+.lsw-body.loading{opacity:.55;pointer-events:none}
+.lsw-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.lsw-week{display:flex;align-items:center;gap:8px}
+.lsw-nav{width:34px;height:34px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:18px;line-height:1;cursor:pointer}
+.lsw-nav:hover{border-color:var(--gold);color:var(--gold)}
+.lsw-range{min-width:178px;text-align:center;line-height:1.15}
+.lsw-range b{display:block;font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--text)}
+.lsw-range small{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.lsw-hosts{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.lsw-lbl{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-right:2px}
+.lsw-chip{padding:6px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font:600 11.5px inherit;font-family:inherit;cursor:pointer;transition:.15s}
+.lsw-chip:hover{border-color:var(--border-hi)}
+.lsw-chip.on{background:rgba(201,169,110,.15);border-color:var(--gold);color:var(--gold)}
+.lsw-note{font-size:11.5px;color:var(--amber);background:rgba(232,184,110,.08);border:1px solid rgba(232,184,110,.25);border-radius:10px;padding:9px 13px}
+.lsw-card{border:1px solid var(--border);background:var(--surface2);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:11px}
+.lsw-card-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.lsw-card-h b{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+.lsw-card-h span{font-size:11px;color:var(--muted)}
+.lsw-trows{display:flex;flex-direction:column;gap:8px}
+.lsw-trow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lsw-in{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:8px 10px;font:500 12px inherit;font-family:inherit;min-width:0;color-scheme:dark}
+body.light .lsw-in{color-scheme:light}
+.lsw-in:focus{outline:none;border-color:var(--gold)}
+.lsw-in:disabled{opacity:.6;cursor:not-allowed}
+.lsw-time{width:122px;text-align:center}
+.lsw-ro-time{flex:1;font-weight:700;font-size:13px;color:var(--text2);font-variant-numeric:tabular-nums}
+.lsw-dash{color:var(--muted)}
+.lsw-tin{min-width:0}
+.lsw-trow .lsw-tin{flex:1;min-width:150px}
+.lsw-rx{width:26px;height:26px;border-radius:8px;border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer;font-size:11px;flex-shrink:0}
+.lsw-rx:hover{background:rgba(232,112,112,.12);border-color:rgba(232,112,112,.35);color:var(--red)}
+.lsw-add{align-self:flex-start;background:none;border:1px dashed var(--border-hi,var(--border));color:var(--text2);border-radius:9px;padding:6px 12px;font:600 11px inherit;font-family:inherit;cursor:pointer}
+.lsw-add:hover{color:var(--gold);border-color:var(--gold)}
+.lsw-link{background:none;border:none;color:var(--text2);font:600 11px inherit;font-family:inherit;cursor:pointer;padding:4px 6px;border-radius:6px;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--border-hi,var(--border))}
+.lsw-link:hover{color:var(--gold)}
+.lsw-pickrow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.lsw-pills{display:flex;gap:6px;flex-wrap:wrap}
+.lsw-pill{min-width:46px;padding:7px 0;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font:700 11px inherit;font-family:inherit;cursor:pointer;transition:.15s}
+.lsw-pill.on{background:var(--gold);border-color:var(--gold);color:#1a1408}
+.lsw-quick{display:flex;gap:2px}
+.lsw-actions{display:flex;gap:8px;flex-wrap:wrap}
+.lsw-btn-libur{background:rgba(155,139,212,.14);border:1px solid rgba(155,139,212,.4);color:#b6a8e6}
+.lsw-btn-libur:hover{background:rgba(155,139,212,.24)}
+.lsw-err{font-size:12px;color:var(--red);background:rgba(232,112,112,.1);border:1px solid rgba(232,112,112,.32);border-radius:10px;padding:10px 14px;line-height:1.5}
+.lsw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.lsw-day{border:1px solid var(--border);background:var(--surface2);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.lsw-day.is-today{box-shadow:0 0 0 1px color-mix(in srgb,var(--green) 45%,transparent)}
+.lsw-day.bad{border-color:var(--red);box-shadow:0 0 0 1px var(--red)}
+.lsw-day.is-libur{border-color:rgba(155,139,212,.45);background:linear-gradient(180deg,rgba(155,139,212,.12),var(--surface2))}
+.lsw-day-head{display:flex;align-items:center;gap:9px;padding:10px 12px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.lsw-dow{font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+.lsw-dnum{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:700;line-height:1;color:var(--text)}
+.lsw-dnum small{font-family:inherit;font-size:10px;font-weight:600;color:var(--muted);margin-left:4px;letter-spacing:.06em}
+.lsw-tag{font-size:8.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:999px}
+.lsw-tag.today{background:color-mix(in srgb,var(--green) 18%,transparent);color:var(--green)}
+.lsw-tag.att{background:rgba(232,184,110,.16);color:var(--amber)}
+.lsw-switch{margin-left:auto;display:inline-flex;align-items:center;gap:7px;cursor:pointer;user-select:none}
+.lsw-switch.off{opacity:.45;cursor:not-allowed}
+.lsw-switch input{position:absolute;opacity:0;pointer-events:none}
+.lsw-switch em{font-style:normal;font-size:10.5px;font-weight:700;color:var(--text2)}
+.lsw-sw{width:32px;height:18px;border-radius:999px;background:rgba(127,127,127,.3);position:relative;transition:.2s;flex-shrink:0}
+.lsw-sw::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.lsw-switch input:checked + .lsw-sw{background:#9b8bd4}
+.lsw-switch input:checked + .lsw-sw::after{transform:translateX(14px)}
+.lsw-switch input:checked ~ em{color:#b6a8e6}
+.lsw-day-body{padding:11px 12px 12px;display:flex;flex-direction:column;gap:9px;flex:1}
+.lsw-row{display:flex;flex-direction:column;gap:6px;padding:9px 10px;border-radius:11px;background:var(--surface);border:1px solid var(--border)}
+.lsw-row.locked{border-style:dashed;background:transparent}
+.lsw-row-t{display:flex;align-items:center;gap:6px}
+.lsw-row-t .lsw-time{flex:1;width:auto;min-width:0}
+.lsw-row-m{display:flex;gap:6px;flex-wrap:wrap}
+.lsw-row-m .lsw-in{flex:1 1 110px;font-size:11.5px;padding:7px 9px}
+.lsw-plat-ro{font-size:11px;color:var(--muted);padding:6px 2px}
+.lsw-lock{font-size:9.5px;font-weight:700;color:var(--amber);white-space:nowrap}
+.lsw-empty{font-size:11.5px;color:var(--muted);font-style:italic;padding:6px 2px}
+.lsw-libur-note{display:flex;align-items:center;gap:9px;font-size:12px;color:#b6a8e6;padding:16px 4px;font-weight:600}
+.lsw-libur-note span{font-size:20px}
+.lsw-day-acts{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto}
+.lsw-foot{border-top:1px solid var(--border);padding:12px 22px 14px;display:flex;flex-direction:column;gap:11px;background:var(--surface)}
+.lsw-foot-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.lsw-seg{display:inline-flex;border:1px solid var(--border);border-radius:11px;overflow:hidden;background:var(--surface2)}
+.lsw-seg button{border:none;background:none;color:var(--text2);padding:8px 14px;font:700 11px inherit;font-family:inherit;cursor:pointer}
+.lsw-seg button.on{background:rgba(201,169,110,.16);color:var(--gold)}
+.lsw-help{font-size:11px;color:var(--muted);flex:1;min-width:200px;line-height:1.45}
+.lsw-sum{font-size:11.5px;color:var(--text2);white-space:nowrap}
+.lsw-sum b{color:var(--text);font-variant-numeric:tabular-nums}
+.lsw-foot-btns{display:flex;align-items:center;gap:8px}
+.lsw-clearweek{color:var(--red)}
+.lsw-foot-btns button:disabled{opacity:.5;cursor:not-allowed}
+body.light .lsw{background:#fff}
+body.light .lsw-foot{background:#fff}
+body.light .lsw-card,body.light .lsw-day{background:#fafafa;border-color:rgba(0,0,0,.1)}
+body.light .lsw-in{background:#fff;border-color:rgba(0,0,0,.14);color:#0d0d0d}
+body.light .lsw-row{background:#fff}
+body.light .lsw-chip.on,body.light .lsw-seg button.on{background:#0d0d0d;color:#fff;border-color:#0d0d0d}
+body.light .lsw-pill.on{background:#0d0d0d;border-color:#0d0d0d;color:#fff}
+body.light .lsw-dow,body.light .lsw-card-h b{color:#8a6a22}
+body.light .lsw-day.is-libur{background:linear-gradient(180deg,rgba(120,100,200,.1),#fafafa)}
+body.light .lsw-libur-note,body.light .lsw-btn-libur{color:#5b4cae}
+@media(max-width:760px){
+  .lsw-ov{padding:0;align-items:flex-end}
+  .lsw{width:100%;max-height:96dvh;border-radius:18px 18px 0 0;border-bottom:none}
+  .lsw-head{padding:14px 14px 11px}
+  .lsw-title{font-size:21px}
+  .lsw-sub{display:none}
+  .lsw-body{padding:12px 14px 14px;gap:12px}
+  .lsw-bar{flex-direction:column;align-items:stretch}
+  .lsw-week{justify-content:space-between}
+  .lsw-range{flex:1;min-width:0}
+  .lsw-grid{grid-template-columns:1fr}
+  .lsw-trow{display:grid;grid-template-columns:1fr auto 1fr auto;gap:7px}
+  .lsw-trow .lsw-time{width:auto}
+  .lsw-trow .lsw-in:not(.lsw-time){grid-column:1 / -1}
+  .lsw-trow .lsw-rx{grid-column:4;grid-row:1}
+  .lsw-pills{width:100%;justify-content:space-between}
+  .lsw-pill{flex:1;min-width:0}
+  .lsw-foot{padding:11px 14px calc(12px + env(safe-area-inset-bottom,0px))}
+  .lsw-help{display:none}
+  .lsw-foot-top{justify-content:space-between}
+  .lsw-seg{flex:1}.lsw-seg button{flex:1;padding:9px 6px}
+  .lsw-foot-btns{flex-wrap:wrap}
+  .lsw-foot-btns .lsw-clearweek{order:3;flex:1 1 100%}
+  .lsw-foot-btns span{display:none}
+  .lsw-foot-btns .lsw-save{flex:1}
+}
+@media(prefers-reduced-motion:reduce){.lsw *{transition:none!important}}
+
 /* v111 — ADS TASK: dikelompokkan per hari → Hari Ini · Terlewat · Mendatang (rapi, mudah dipindai) */
 .adt-chips{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
 .adt-chip{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);
@@ -5831,7 +5970,7 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
             </div>
             <div class="ps" id="ls-page-sub">Libur dan jadwal sesi live kamu bulan ini</div>
           </div>
-          <div class="ph-acts" id="ls-mod-tools" style="display:none"></div>
+          <div class="ph-acts" id="ls-mod-tools" style="display:none"><button class="btn-sm btn-gold" onclick="openLsWeekPlanner()" title="Isi jadwal live seminggu penuh, tandai libur, ganti atau hapus seluruh minggu"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:5px"><rect x="2" y="3" width="12" height="11" rx="1.6" stroke="currentColor" stroke-width="1.3"/><path d="M2 6.6h12M5.4 1.8v2.6M10.6 1.8v2.6M5 9.4h1.6M8 9.4h1.6M11 9.4h.01M5 11.8h1.6M8 11.8h1.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Atur Seminggu</button></div>
         </div>
 
         <div id="ls-pending-banner" style="display:none"></div>
@@ -13722,6 +13861,397 @@ async function clearLsDay() {
   toast(`${existing.length} sesi live ${hostName} tanggal ${label} sudah dibersihkan`);
   pushActivity(`Semua sesi live ${lsTargetId} tanggal ${lsSelectedDate} dibersihkan moderator`, 'info');
 }
+
+/* ═══════════════════════════════════════════════════════════
+   v112 — JADWAL MINGGUAN LIVE (Moderator)
+   Isi sesi live 1 minggu penuh (Senin–Minggu) sekaligus, tandai libur per hari,
+   ganti / tambah / hapus seluruh minggu. Bisa untuk 1 atau beberapa host.
+   Server: moderator_apply_live_week · moderator_clear_live_week (v108_jadwal_live_mingguan.sql)
+   ═══════════════════════════════════════════════════════════ */
+const LSW_DOW  = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
+const LSW_DOWF = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
+const LSW_PLAT = ['TikTok & Shopee','TikTok','Shopee'];
+let lsw = null;
+let _lswKey = 0;
+
+function lswParse(ymd) { return new Date(ymd + 'T00:00:00'); }
+function lswShift(ymd, n) { const d = lswParse(ymd); d.setDate(d.getDate() + n); return ymdKey(d); }
+function lswMondayOf(ymd) { const d = lswParse(ymd); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return ymdKey(d); }
+function lswMon(d) { return (currentLang === 'id' ? MONTHS_ID : MONTHS_EN)[d.getMonth()].slice(0, 3); }
+function lswRange() {
+  const a = lswParse(lsw.weekStart), b = lswParse(lswShift(lsw.weekStart, 6));
+  return a.getMonth() === b.getMonth()
+    ? `${a.getDate()} – ${b.getDate()} ${lswMon(b)} ${b.getFullYear()}`
+    : `${a.getDate()} ${lswMon(a)} – ${b.getDate()} ${lswMon(b)} ${b.getFullYear()}`;
+}
+function lswHostName(id) { return LOCAL_USERS[id]?.name || id; }
+function lswDayLabel(i) { const d = lswParse(lsw.days[i].date); return `${LSW_DOWF[i]}, ${d.getDate()} ${lswMon(d)}`; }
+function lswBlankDays() { return LSW_DOW.map((_, i) => ({ date: lswShift(lsw.weekStart, i), libur: false, att: null, rows: [] })); }
+function lswRow(o) {
+  return Object.assign({ key: ++_lswKey, start: '', end: '', platform: LSW_PLAT[0], title: '', note: '', locked: false, lockLabel: '' }, o || {});
+}
+function lswOverlap(a, b) { return a.start < b.end && b.start < a.end; }
+function lswByStart(a, b) { return (a.start || '99:99').localeCompare(b.start || '99:99'); }
+function lswRowFromDb(s, asNew) {
+  const reported = !!(s.report_filled_at || s.products_sold != null);
+  const prot = reported || ['completed', 'sakit', 'izin'].includes(s.status);
+  const label = s.status === 'sakit' ? 'Sakit' : s.status === 'izin' ? 'Izin' : reported ? 'Ada laporan' : 'Selesai';
+  return lswRow({
+    start: (s.time_start || '').slice(0, 5), end: (s.time_end || '').slice(0, 5),
+    platform: s.platform || LSW_PLAT[0], title: s.show_title || '', note: s.note || '',
+    locked: asNew ? false : prot, lockLabel: asNew ? '' : (prot ? label : '')
+  });
+}
+async function lswFetchWeek(host, weekStart) {
+  const end = lswShift(weekStart, 6);
+  const [sr, ar] = await Promise.all([
+    dbQ(d => d.from('live_schedule').select('*').eq('host_user_id', host).gte('schedule_date', weekStart).lte('schedule_date', end).order('time_start', { ascending: true })),
+    dbQ(d => d.from('attendance').select('att_date,status').eq('user_id', host).gte('att_date', weekStart).lte('att_date', end))
+  ]);
+  return { sessions: sr?.data || [], att: ar?.data || [], error: sr?.error || ar?.error || null };
+}
+// susun 7 hari dari data tersimpan (asNew=true → dipakai utk "salin minggu lalu": semua baris jadi baris baru)
+function lswDaysFromData(data, srcWeekStart, asNew) {
+  const days = lswBlankDays();
+  data.sessions.forEach(s => {
+    if (s.status === 'cancelled') return;
+    const idx = Math.round((lswParse(s.schedule_date) - lswParse(srcWeekStart)) / 86400000);
+    if (idx >= 0 && idx < 7) days[idx].rows.push(lswRowFromDb(s, asNew));
+  });
+  data.att.forEach(a => {
+    const idx = Math.round((lswParse(a.att_date) - lswParse(srcWeekStart)) / 86400000);
+    if (idx < 0 || idx > 6) return;
+    if (a.status === 'Libur') days[idx].libur = true;
+    else if (!asNew && (a.status === 'Sakit' || a.status === 'Izin')) days[idx].att = a.status;
+  });
+  days.forEach(d => d.rows.sort(lswByStart));
+  return days;
+}
+
+async function openLsWeekPlanner() {
+  if (!can.isMod(currentUser?.role)) return;
+  if (!db) { toast('Supabase tidak aktif'); return; }
+  const hosts = hostLiveIds();
+  if (!hosts.length) { toast('Belum ada akun Host Live'); return; }
+  const primary = hosts.includes(lsTargetId) ? lsTargetId : hosts[0];
+  lsw = {
+    weekStart: lswMondayOf(lsSelectedDate || ymdKey(new Date())),
+    hosts: [primary], days: [], mode: 'replace', dirty: false, busy: false, loading: true, err: '', errDay: -1,
+    tpl: { rows: [lswRow({})], pick: [0, 1, 2, 3, 4, 5, 6] }
+  };
+  lsw.days = lswBlankDays();
+  document.body.classList.add('lsw-open');
+  document.addEventListener('keydown', lswKey);
+  lswRender();
+  await lswReload();
+}
+function lswKey(e) { if (e.key === 'Escape' && lsw) lswClose(); }
+function lswConfirmDiscard() { return !lsw?.dirty || confirm('Ada perubahan yang belum disimpan. Buang perubahan?'); }
+function lswClose(force) {
+  if (!lsw) return;
+  if (!force && !lswConfirmDiscard()) return;
+  document.removeEventListener('keydown', lswKey);
+  document.body.classList.remove('lsw-open');
+  const ov = document.getElementById('lsw-ov'); if (ov) ov.remove();
+  lsw = null;
+}
+async function lswReload() {
+  if (!lsw) return;
+  lsw.loading = true; lsw.err = ''; lsw.errDay = -1; lswRender();
+  const ws = lsw.weekStart, host = lsw.hosts[0];
+  const data = await lswFetchWeek(host, ws);
+  if (!lsw || lsw.weekStart !== ws || lsw.hosts[0] !== host) return;   // user pindah saat memuat
+  if (data.error) lsw.err = 'Gagal memuat jadwal tersimpan: ' + data.error.message;
+  lsw.days = lswDaysFromData(data, ws, false);
+  lsw.loading = false; lsw.dirty = false;
+  lswRender();
+}
+
+/* ── navigasi minggu & host ── */
+async function lswWeek(delta) {
+  if (!lswConfirmDiscard()) return;
+  lsw.weekStart = delta === 0 ? lswMondayOf(ymdKey(new Date())) : lswShift(lsw.weekStart, delta * 7);
+  await lswReload();
+}
+async function lswToggleHost(id) {
+  const had = lsw.hosts.includes(id);
+  if (had && lsw.hosts.length === 1) { toast('Minimal pilih 1 host'); return; }
+  const prevHosts = lsw.hosts.slice(), before = prevHosts[0];
+  lsw.hosts = had ? lsw.hosts.filter(h => h !== id) : lsw.hosts.concat(id);
+  // tepat 1 host terpilih & berganti → tampilkan jadwal tersimpan host itu
+  if (lsw.hosts.length === 1 && lsw.hosts[0] !== before) {
+    if (!lswConfirmDiscard()) { lsw.hosts = prevHosts; lswRender(); return; }
+    await lswReload(); return;
+  }
+  lswRender();
+}
+async function lswCopyPrev() {
+  if (lsw.loading) return;
+  const prevWs = lswShift(lsw.weekStart, -7);
+  const data = await lswFetchWeek(lsw.hosts[0], prevWs);
+  if (data.error) { lsw.err = 'Gagal memuat minggu lalu: ' + data.error.message; lswRender(); return; }
+  const src = lswDaysFromData(data, prevWs, true);   // tanggalnya = minggu lalu → petakan per indeks hari
+  let n = 0, skipped = 0;
+  lsw.days.forEach((d, i) => {
+    const locked = d.rows.filter(r => r.locked);
+    const incoming = src[i].rows.filter(r => { const bad = locked.some(l => lswOverlap(l, r)); if (bad) skipped++; return !bad; });
+    if (src[i].libur && !locked.length) { d.libur = true; d.rows = []; n++; return; }
+    if (!incoming.length && !src[i].libur) return;
+    d.libur = false; d.rows = locked.concat(incoming).sort(lswByStart); n++;
+  });
+  lsw.dirty = true; lsw.err = ''; lswRender();
+  toast(n ? `Jadwal minggu lalu disalin ke ${n} hari — cek lalu Simpan` : 'Minggu lalu kosong, tidak ada yang disalin');
+}
+function lswSetMode(m) { lsw.mode = m; lswRender(); }
+
+/* ── pola cepat ── */
+function lswTplAdd() { const l = lsw.tpl.rows[lsw.tpl.rows.length - 1]; lsw.tpl.rows.push(lswRow({ start: l?.end || '' })); lswRender(); }
+function lswTplDel(k) { lsw.tpl.rows = lsw.tpl.rows.filter(r => r.key !== k); if (!lsw.tpl.rows.length) lsw.tpl.rows.push(lswRow({})); lswRender(); }
+function lswTplSet(k, f, v) { const r = lsw.tpl.rows.find(x => x.key === k); if (r) r[f] = v; }
+function lswTplPick(i) { const p = lsw.tpl.pick; lsw.tpl.pick = p.includes(i) ? p.filter(x => x !== i) : p.concat(i).sort(); lswRender(); }
+function lswTplPickSet(kind) { lsw.tpl.pick = kind === 'all' ? [0,1,2,3,4,5,6] : kind === 'weekday' ? [0,1,2,3,4] : kind === 'weekend' ? [5,6] : []; lswRender(); }
+function lswTplCheck() {
+  const rows = lsw.tpl.rows;
+  for (const r of rows) {
+    if (!r.start || !r.end) return 'Isi jam mulai & selesai pada pola sesi dulu';
+    if (r.end <= r.start) return 'Pola sesi: jam selesai harus setelah jam mulai';
+  }
+  for (let a = 0; a < rows.length; a++) for (let b = a + 1; b < rows.length; b++)
+    if (lswOverlap(rows[a], rows[b])) return `Pola sesi bentrok: ${rows[a].start}–${rows[a].end} dengan ${rows[b].start}–${rows[b].end}`;
+  return '';
+}
+function lswApplyTpl() {
+  if (!lsw.tpl.pick.length) { toast('Pilih hari dulu'); return; }
+  const bad = lswTplCheck(); if (bad) { toast(bad); return; }
+  let skipped = 0;
+  lsw.tpl.pick.forEach(i => {
+    const d = lsw.days[i], locked = d.rows.filter(r => r.locked);
+    d.libur = false; d.rows = locked.slice();
+    lsw.tpl.rows.forEach(t => {
+      const nr = lswRow({ start: t.start, end: t.end, platform: t.platform, title: t.title });
+      if (locked.some(l => lswOverlap(l, nr))) { skipped++; return; }
+      d.rows.push(nr);
+    });
+    d.rows.sort(lswByStart);
+  });
+  lsw.dirty = true; lsw.err = ''; lsw.errDay = -1; lswRender();
+  toast(`Pola sesi diterapkan ke ${lsw.tpl.pick.length} hari${skipped ? ` · ${skipped} sesi dilewati (bentrok dengan sesi terkunci)` : ''}`);
+}
+function lswMarkLiburPicked() {
+  if (!lsw.tpl.pick.length) { toast('Pilih hari dulu'); return; }
+  let n = 0, blocked = 0;
+  lsw.tpl.pick.forEach(i => { const d = lsw.days[i]; if (d.rows.some(r => r.locked)) { blocked++; return; } d.libur = true; n++; });
+  lsw.dirty = true; lswRender();
+  toast(`${n} hari ditandai Libur${blocked ? ` · ${blocked} hari dilewati (ada sesi berlaporan)` : ''}`);
+}
+function lswClearPicked() {
+  if (!lsw.tpl.pick.length) { toast('Pilih hari dulu'); return; }
+  lsw.tpl.pick.forEach(i => { const d = lsw.days[i]; d.rows = d.rows.filter(r => r.locked); d.libur = false; });
+  lsw.dirty = true; lswRender();
+  toast(`${lsw.tpl.pick.length} hari dikosongkan`);
+}
+
+/* ── edit per hari / per sesi ── */
+function lswToggleLibur(i, on) {
+  const d = lsw.days[i];
+  if (on && d.rows.some(r => r.locked)) { toast('Tidak bisa libur: hari ini punya sesi yang sudah berlaporan'); lswRender(); return; }
+  d.libur = !!on; lsw.dirty = true; lswRender();
+}
+function lswAddRow(i) { const d = lsw.days[i]; const l = d.rows[d.rows.length - 1]; d.rows.push(lswRow({ start: l?.end || '' })); lsw.dirty = true; lswRender(); }
+function lswDelRow(i, k) { const d = lsw.days[i]; d.rows = d.rows.filter(r => r.key !== k); lsw.dirty = true; lswRender(); }
+function lswSetRow(i, k, f, v) { const r = lsw.days[i].rows.find(x => x.key === k); if (r) { r[f] = v; lsw.dirty = true; } }
+function lswClearDay(i) { const d = lsw.days[i]; d.rows = d.rows.filter(r => r.locked); d.libur = false; lsw.dirty = true; lswRender(); }
+
+/* ── validasi & simpan ── */
+function lswValidate() {
+  for (let i = 0; i < 7; i++) {
+    const d = lsw.days[i]; if (d.libur) continue;
+    for (const r of d.rows) {
+      if (r.locked) continue;
+      if (!r.start || !r.end) return { i, msg: `${lswDayLabel(i)}: isi jam mulai & selesai` };
+      if (r.end <= r.start) return { i, msg: `${lswDayLabel(i)}: jam selesai harus setelah jam mulai (${r.start}–${r.end})` };
+    }
+    for (let a = 0; a < d.rows.length; a++) for (let b = a + 1; b < d.rows.length; b++)
+      if (lswOverlap(d.rows[a], d.rows[b])) return { i, msg: `${lswDayLabel(i)}: ${d.rows[a].start}–${d.rows[a].end} bentrok dengan ${d.rows[b].start}–${d.rows[b].end}` };
+  }
+  return null;
+}
+function lswPlan() {
+  return lsw.days.map(d => ({
+    date: d.date, libur: !!d.libur,
+    sessions: d.libur ? [] : d.rows.filter(r => !r.locked).map(r => ({
+      time_start: r.start, time_end: r.end, platform: r.platform, show_title: r.title || null, note: r.note || null
+    }))
+  }));
+}
+async function lswSave() {
+  if (!lsw || lsw.busy || lsw.loading) return;
+  const v = lswValidate();
+  if (v) { lsw.err = v.msg; lsw.errDay = v.i; lswRender(); return; }
+  const plan = lswPlan();
+  const nSes = plan.reduce((a, d) => a + d.sessions.length, 0), nLib = plan.filter(d => d.libur).length;
+  const replace = lsw.mode === 'replace';
+  const names = lsw.hosts.map(lswHostName).join(', ');
+  if (!replace && !nSes && !nLib) { toast('Belum ada sesi atau libur untuk disimpan'); return; }
+  const msg = replace
+    ? `Ganti jadwal live minggu ${lswRange()} untuk ${names}?\n\nSesi lama di minggu itu (yang belum ada laporan) akan dihapus lalu diganti: ${nSes} sesi baru, ${nLib} hari libur.`
+    : `Simpan ${nSes} sesi & ${nLib} hari libur ke minggu ${lswRange()} untuk ${names}?\n\nSesi lain di minggu itu tidak dihapus.`;
+  if (!confirm(msg)) return;
+  lsw.busy = true; lsw.err = ''; lsw.errDay = -1; lswRender();
+  const res = await dbQ(d => d.rpc('moderator_apply_live_week', {
+    p_moderator_id: currentUser.id, p_hosts: lsw.hosts.slice(), p_week_start: lsw.weekStart, p_days: plan, p_replace: replace
+  }));
+  if (!lsw) return;
+  lsw.busy = false;
+  if (res?.error) { lsw.err = 'Gagal menyimpan: ' + res.error.message; lswRender(); return; }
+  const r = res?.data || {};
+  const parts = [`${(r.sessions_saved || 0) + (r.sessions_updated || 0)} sesi tersimpan`];
+  if (r.sessions_deleted) parts.push(`${r.sessions_deleted} diganti`);
+  if (r.libur_set) parts.push(`${r.libur_set} libur`);
+  const warn = (r.skipped_protected || r.skipped_libur) ? ` · ${(r.skipped_protected || 0) + (r.skipped_libur || 0)} dilewati (sudah berlaporan)` : '';
+  const range = lswRange(), hosts = lsw.hosts.join(', ');
+  lswClose(true);
+  toast(`Jadwal ${names} ${range}: ${parts.join(', ')}${warn}`);
+  pushActivity(`Jadwal live mingguan ${hosts} (${range}) disimpan moderator`, 'info');
+  await loadLsMonth(); loadUpcomingLiveSchedule();
+}
+async function lswClearWeek() {
+  if (!lsw || lsw.busy || lsw.loading) return;
+  const names = lsw.hosts.map(lswHostName).join(', ');
+  if (!confirm(`Hapus SELURUH jadwal live minggu ${lswRange()} untuk ${names}?\n\nSemua sesi (yang belum ada laporan) dan tanda Libur di minggu itu akan dihapus. Tidak bisa dibatalkan.`)) return;
+  lsw.busy = true; lsw.err = ''; lswRender();
+  const res = await dbQ(d => d.rpc('moderator_clear_live_week', {
+    p_moderator_id: currentUser.id, p_hosts: lsw.hosts.slice(), p_week_start: lsw.weekStart, p_clear_libur: true
+  }));
+  if (!lsw) return;
+  lsw.busy = false;
+  if (res?.error) { lsw.err = 'Gagal menghapus: ' + res.error.message; lswRender(); return; }
+  const r = res?.data || {};
+  toast(`${r.sessions_deleted || 0} sesi & ${r.libur_cleared || 0} libur minggu ${lswRange()} dihapus${r.skipped_protected ? ` · ${r.skipped_protected} sesi dilewati (sudah berlaporan)` : ''}`);
+  pushActivity(`Jadwal live minggu ${lsw.weekStart} (${lsw.hosts.join(', ')}) dikosongkan moderator`, 'info');
+  await lswReload(); await loadLsMonth(); loadUpcomingLiveSchedule();
+}
+
+/* ── tampilan ── */
+function lswPlatSel(cur, onchange) {
+  return `<select class="lsw-in" onchange="${onchange}">${LSW_PLAT.map(p => `<option value="${p}"${p === cur ? ' selected' : ''}>${p}</option>`).join('')}</select>`;
+}
+function lswRowHtml(i, r) {
+  const timeCell = r.locked
+    ? `<span class="lsw-ro-time">${r.start} – ${r.end}</span>`
+    : `<input class="lsw-in lsw-time" type="time" value="${r.start}" onchange="lswSetRow(${i},${r.key},'start',this.value)">
+      <span class="lsw-dash">–</span>
+      <input class="lsw-in lsw-time" type="time" value="${r.end}" onchange="lswSetRow(${i},${r.key},'end',this.value)">`;
+  return `<div class="lsw-row${r.locked ? ' locked' : ''}">
+    <div class="lsw-row-t">
+      ${timeCell}
+      ${r.locked ? `<span class="lsw-lock" title="Sesi ini tidak bisa diubah/dihapus dari sini">🔒 ${r.lockLabel}</span>`
+                 : `<button type="button" class="lsw-rx" title="Hapus sesi ini" onclick="lswDelRow(${i},${r.key})">✕</button>`}
+    </div>
+    <div class="lsw-row-m">
+      ${r.locked ? `<span class="lsw-plat-ro">${escHtml(r.platform)}${r.title ? ' · ' + escHtml(r.title) : ''}</span>` : lswPlatSel(r.platform, `lswSetRow(${i},${r.key},'platform',this.value)`)}
+      ${r.locked ? '' : `<input class="lsw-in lsw-tin" type="text" value="${escHtml(r.title)}" placeholder="Judul show (opsional)" oninput="lswSetRow(${i},${r.key},'title',this.value)">`}
+    </div>
+  </div>`;
+}
+function lswDayHtml(i) {
+  const d = lsw.days[i], dObj = lswParse(d.date), today = d.date === ymdKey(new Date());
+  const hasLocked = d.rows.some(r => r.locked);
+  const body = d.libur
+    ? `<div class="lsw-libur-note"><span>☾</span> Libur — tidak ada sesi live</div>`
+    : (d.rows.map(r => lswRowHtml(i, r)).join('') || `<div class="lsw-empty">Belum ada sesi</div>`)
+      + `<div class="lsw-day-acts"><button type="button" class="lsw-add" onclick="lswAddRow(${i})">+ Sesi</button>${d.rows.some(r => !r.locked) ? `<button type="button" class="lsw-link" onclick="lswClearDay(${i})">Kosongkan</button>` : ''}</div>`;
+  return `<div class="lsw-day${d.libur ? ' is-libur' : ''}${today ? ' is-today' : ''}${lsw.errDay === i ? ' bad' : ''}">
+    <div class="lsw-day-head">
+      <div class="lsw-dow">${LSW_DOW[i]}</div>
+      <div class="lsw-dnum">${dObj.getDate()}<small>${lswMon(dObj)}</small></div>
+      ${today ? '<span class="lsw-tag today">Hari ini</span>' : ''}${d.att ? `<span class="lsw-tag att">${d.att}</span>` : ''}
+      <label class="lsw-switch${hasLocked ? ' off' : ''}" title="${hasLocked ? 'Ada sesi berlaporan — tidak bisa ditandai libur' : 'Tandai libur hari ini saja'}">
+        <input type="checkbox" ${d.libur ? 'checked' : ''}${hasLocked ? ' disabled' : ''} onchange="lswToggleLibur(${i},this.checked)"><span class="lsw-sw"></span><em>Libur</em>
+      </label>
+    </div>
+    <div class="lsw-day-body">${body}</div>
+  </div>`;
+}
+function lswRender() {
+  if (!lsw) return;
+  let ov = document.getElementById('lsw-ov');
+  if (!ov) { ov = document.createElement('div'); ov.id = 'lsw-ov'; ov.className = 'lsw-ov'; ov.onclick = e => { if (e.target === ov) lswClose(); }; document.body.appendChild(ov); }
+  const prev = ov.querySelector('.lsw-body'), st = prev ? prev.scrollTop : 0;
+  const hostIds = hostLiveIds();
+  const plan = lswPlan();
+  const nSes = plan.reduce((a, d) => a + d.sessions.length, 0) + lsw.days.reduce((a, d) => a + (d.libur ? 0 : d.rows.filter(r => r.locked).length), 0);
+  const nLib = plan.filter(d => d.libur).length;
+  const tplRows = lsw.tpl.rows.map(r => `<div class="lsw-trow">
+      <input class="lsw-in lsw-time" type="time" value="${r.start}" onchange="lswTplSet(${r.key},'start',this.value)">
+      <span class="lsw-dash">–</span>
+      <input class="lsw-in lsw-time" type="time" value="${r.end}" onchange="lswTplSet(${r.key},'end',this.value)">
+      ${lswPlatSel(r.platform, `lswTplSet(${r.key},'platform',this.value)`)}
+      <input class="lsw-in lsw-tin" type="text" value="${escHtml(r.title)}" placeholder="Judul show (opsional)" oninput="lswTplSet(${r.key},'title',this.value)">
+      <button type="button" class="lsw-rx" title="Hapus baris pola" onclick="lswTplDel(${r.key})">✕</button>
+    </div>`).join('');
+  const pills = LSW_DOW.map((n, i) => `<button type="button" class="lsw-pill${lsw.tpl.pick.includes(i) ? ' on' : ''}" onclick="lswTplPick(${i})">${n}</button>`).join('');
+  const replace = lsw.mode === 'replace';
+  ov.innerHTML = `
+  <div class="lsw" role="dialog" aria-modal="true" aria-label="Jadwal mingguan live">
+    <div class="lsw-head">
+      <div><div class="lsw-title">Jadwal Mingguan Live</div>
+        <div class="lsw-sub">Isi sesi live seminggu penuh, tandai libur per hari, atau ganti seluruh minggu sekaligus</div></div>
+      <button type="button" class="lsw-x" onclick="lswClose()" aria-label="Tutup">✕</button>
+    </div>
+    <div class="lsw-body${lsw.loading ? ' loading' : ''}">
+      <div class="lsw-bar">
+        <div class="lsw-week">
+          <button type="button" class="lsw-nav" onclick="lswWeek(-1)" aria-label="Minggu sebelumnya">‹</button>
+          <div class="lsw-range"><b>${lswRange()}</b><small>Senin – Minggu</small></div>
+          <button type="button" class="lsw-nav" onclick="lswWeek(1)" aria-label="Minggu berikutnya">›</button>
+          <button type="button" class="lsw-link" onclick="lswWeek(0)">Minggu ini</button>
+        </div>
+        <div class="lsw-hosts"><span class="lsw-lbl">Untuk host</span>${hostIds.map(id => `<button type="button" class="lsw-chip${lsw.hosts.includes(id) ? ' on' : ''}" onclick="lswToggleHost('${id}')">${escHtml(lswHostName(id))}</button>`).join('')}</div>
+      </div>
+      ${lsw.hosts.length > 1 ? `<div class="lsw-note">Jadwal di bawah akan diterapkan ke <b>${lsw.hosts.length} host</b> sekaligus (${lsw.hosts.map(lswHostName).map(escHtml).join(', ')}). Tampilan awal diambil dari ${escHtml(lswHostName(lsw.hosts[0]))}.</div>` : ''}
+
+      <div class="lsw-card">
+        <div class="lsw-card-h"><b>Isi Cepat</b><span>Buat satu pola jam, lalu terapkan ke banyak hari</span>
+          <button type="button" class="lsw-link" style="margin-left:auto" onclick="lswCopyPrev()">⎘ Salin minggu lalu</button></div>
+        <div class="lsw-trows">${tplRows}</div>
+        <button type="button" class="lsw-add" onclick="lswTplAdd()">+ Tambah jam</button>
+        <div class="lsw-pickrow">
+          <div class="lsw-pills">${pills}</div>
+          <div class="lsw-quick"><button type="button" class="lsw-link" onclick="lswTplPickSet('all')">Semua</button><button type="button" class="lsw-link" onclick="lswTplPickSet('weekday')">Sen–Jum</button><button type="button" class="lsw-link" onclick="lswTplPickSet('weekend')">Weekend</button></div>
+        </div>
+        <div class="lsw-actions">
+          <button type="button" class="btn-sm btn-gold" onclick="lswApplyTpl()">Isi hari terpilih</button>
+          <button type="button" class="btn-sm lsw-btn-libur" onclick="lswMarkLiburPicked()">☾ Tandai libur</button>
+          <button type="button" class="btn-sm btn-cancel" onclick="lswClearPicked()">Kosongkan</button>
+        </div>
+      </div>
+
+      ${lsw.err ? `<div class="lsw-err">${escHtml(lsw.err)}</div>` : ''}
+      <div class="lsw-grid">${lsw.days.map((_, i) => lswDayHtml(i)).join('')}</div>
+    </div>
+    <div class="lsw-foot">
+      <div class="lsw-foot-top">
+        <div class="lsw-seg" role="tablist">
+          <button type="button" class="${replace ? 'on' : ''}" onclick="lswSetMode('replace')">Ganti minggu ini</button>
+          <button type="button" class="${replace ? '' : 'on'}" onclick="lswSetMode('merge')">Tambah / perbarui</button>
+        </div>
+        <div class="lsw-help">${replace ? 'Sesi lama minggu ini (yang belum ada laporan) dihapus, lalu diisi sesuai tampilan ini.' : 'Hanya menambah / memperbarui sesi di atas. Sesi lain di minggu ini dibiarkan.'}</div>
+        <div class="lsw-sum"><b>${nSes}</b> sesi · <b>${nLib}</b> libur · <b>${lsw.hosts.length}</b> host</div>
+      </div>
+      <div class="lsw-foot-btns">
+        <button type="button" class="btn-sm btn-del lsw-clearweek" ${lsw.busy || lsw.loading ? 'disabled' : ''} onclick="lswClearWeek()">🗑 Hapus Seluruh Minggu</button>
+        <span style="flex:1"></span>
+        <button type="button" class="btn-sm btn-cancel" onclick="lswClose()">Batal</button>
+        <button type="button" class="btn-sm btn-gold lsw-save" ${lsw.busy || lsw.loading ? 'disabled' : ''} onclick="lswSave()">${lsw.busy ? 'Menyimpan…' : 'Simpan Jadwal'}</button>
+      </div>
+    </div>
+  </div>`;
+  const nb = ov.querySelector('.lsw-body'); if (nb) nb.scrollTop = st;
+}
+window.openLsWeekPlanner = openLsWeekPlanner;
+Object.assign(window, { lswClose, lswWeek, lswToggleHost, lswCopyPrev, lswSetMode, lswTplAdd, lswTplDel, lswTplSet, lswTplPick, lswTplPickSet,
+  lswApplyTpl, lswMarkLiburPicked, lswClearPicked, lswToggleLibur, lswAddRow, lswDelRow, lswSetRow, lswClearDay, lswSave, lswClearWeek });
 
 async function loadUpcomingLiveSchedule() {
   _lsUpcomingCache = [];
