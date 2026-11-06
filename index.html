@@ -4759,6 +4759,124 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
   .lb-row-right{grid-column:1/-1;text-align:left;padding-left:58px}
 }
 </style>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@1,6..96,500&family=Fraunces:ital,opsz,wght@1,9..144,300..700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style id="acct-off-css">
+/* ═══ v113 — NONAKTIFKAN AKUN ═══ */
+/* ── User Management: tombol & kartu nonaktif ── */
+.uc-off-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;width:100%;margin-top:10px;padding:8px 12px;
+  font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-family:'Inter',sans-serif;cursor:pointer;
+  background:rgba(232,112,112,.06);border:1px solid rgba(232,112,112,.28);color:var(--red);border-radius:6px;transition:all .2s}
+.uc-off-btn:hover{background:rgba(232,112,112,.16);border-color:rgba(232,112,112,.6);transform:translateY(-1px)}
+.uc-off-btn svg{flex-shrink:0}
+.uc-off-head{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin:18px 0 2px;padding-top:16px;border-top:1px dashed rgba(232,112,112,.25);
+  font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--red)}
+.uc-off-head small{font-weight:400;letter-spacing:.02em;text-transform:none;color:var(--muted);font-size:10.5px}
+.user-card.uc-inactive{border-style:dashed;border-color:rgba(232,112,112,.28);background:linear-gradient(160deg,rgba(232,112,112,.05),transparent 60%),var(--surface)}
+.user-card.uc-inactive .uc-avatar{filter:grayscale(1) brightness(.7)}
+.user-card.uc-inactive .uc-name{text-decoration:line-through;text-decoration-color:rgba(232,112,112,.55)}
+.uc-off-meta{margin-top:10px;font-size:10.5px;color:var(--text2);line-height:1.55}
+.uc-off-meta b{color:var(--red);font-weight:600}
+.uc-off-reason{margin-top:6px;padding:6px 9px;border-left:2px solid rgba(232,112,112,.5);background:rgba(232,112,112,.06);font-size:10.5px;color:var(--text2);border-radius:0 5px 5px 0}
+.uc-off-acts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.uc-off-acts .btn-sm{flex:1;white-space:nowrap}
+.ao-warn{margin:0 0 16px;padding:12px 14px;border:1px solid rgba(232,112,112,.28);background:rgba(232,112,112,.06);border-radius:8px;font-size:11.5px;color:var(--text2);line-height:1.6}
+.ao-warn ul{margin:6px 0 0;padding-left:18px}
+.ao-warn li{margin:3px 0}
+.btn-red-solid{background:linear-gradient(135deg,#e87070,#b94a4a)!important;color:#fff!important;border:none!important}
+.btn-red-solid:disabled{opacity:.55;cursor:wait}
+
+/* ── LAYAR "AKUN DINONAKTIFKAN" ── */
+#acct-off{position:fixed;inset:0;z-index:1000000;display:none;overflow:hidden;color:#efe9df;
+  background:radial-gradient(1200px 700px at 50% 110%,#1a0b1c 0%,transparent 60%),radial-gradient(900px 600px at 15% -10%,#1a1030 0%,transparent 55%),#040307;
+  font-family:'Fraunces','Cormorant Garamond',Georgia,serif;opacity:0;transition:opacity .6s ease}
+#acct-off.on{display:block}
+#acct-off.vis{opacity:1}
+#acct-off::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.07;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+#acct-off::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.75) 100%)}
+.ao-dust{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.ao-dust i{position:absolute;bottom:-12px;width:3px;height:3px;border-radius:50%;background:#d8b878;opacity:0;animation:ao-rise linear infinite}
+@keyframes ao-rise{0%{transform:translate(0,0);opacity:0}12%{opacity:.7}85%{opacity:.25}100%{transform:translate(var(--dx,20px),-108vh);opacity:0}}
+
+/* fase loading */
+.ao-load{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;background:#030206;transition:opacity .7s ease,visibility .7s}
+.ao-load.gone{opacity:0;visibility:hidden}
+.ao-ring{width:74px;height:74px;position:relative}
+.ao-ring svg{width:100%;height:100%;animation:ao-spin 1.25s linear infinite}
+.ao-ring svg circle.t{stroke:rgba(216,184,120,.12)}
+.ao-ring svg circle.a{stroke:url(#ao-rg);stroke-dasharray:60 160;stroke-linecap:round}
+.ao-ring::after{content:'';position:absolute;inset:30px;border-radius:50%;background:#d8b878;opacity:.9;animation:ao-pulse 1.25s ease-in-out infinite}
+@keyframes ao-spin{to{transform:rotate(360deg)}}
+@keyframes ao-pulse{50%{transform:scale(.4);opacity:.3}}
+.ao-load-tx{font-family:'Space Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:rgba(239,233,223,.55);min-height:1.4em;text-align:center;padding:0 24px}
+
+/* panggung */
+.ao-wrap{position:relative;z-index:2;height:100%;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 18px 34px;text-align:center}
+.ao-stage{width:min(400px,86vw);filter:drop-shadow(0 20px 40px rgba(120,60,160,.25))}
+.ao-stage svg{display:block;width:100%;height:auto;overflow:visible}
+.ao-chip{display:inline-flex;align-items:center;gap:9px;margin-top:6px;padding:6px 14px;border-radius:99px;border:1px solid rgba(216,184,120,.35);
+  font-family:'Space Mono',ui-monospace,monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#d8b878;background:rgba(216,184,120,.06)}
+.ao-chip b{width:6px;height:6px;border-radius:50%;background:#e87070;box-shadow:0 0 10px #e87070;animation:ao-blink 1.4s infinite}
+@keyframes ao-blink{50%{opacity:.25}}
+.ao-title{margin:16px 0 0;font-family:'Bodoni Moda','Playfair Display',Georgia,serif;font-style:italic;font-weight:500;line-height:1.08;
+  font-size:clamp(30px,6.2vw,54px);letter-spacing:.005em;
+  background:linear-gradient(100deg,#8c6b34 0%,#f3dfb0 28%,#c9a96e 50%,#fff3d2 66%,#a37c3c 100%);background-size:220% 100%;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:ao-shine 6s ease-in-out infinite}
+@keyframes ao-shine{0%,100%{background-position:100% 0}50%{background-position:0 0}}
+.ao-name{margin-top:10px;font-family:'Space Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.16em;color:rgba(239,233,223,.45);text-transform:uppercase}
+.ao-quote{position:relative;margin:22px auto 0;max-width:560px;padding:22px 44px 26px;border-radius:16px;
+  background:linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.015));border:1px solid rgba(216,184,120,.18);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.ao-quote::before,.ao-quote::after{font-family:'Bodoni Moda',serif;font-size:64px;line-height:0;color:rgba(216,184,120,.4);position:absolute}
+.ao-quote::before{content:'\201C';left:12px;top:30px}
+.ao-quote::after{content:'\201D';right:12px;bottom:6px}
+.ao-q-tx{font-size:clamp(16px,2.6vw,21px);font-style:italic;font-weight:300;line-height:1.5;color:#f1ebe0;transition:opacity .45s ease,filter .45s ease,transform .45s ease;
+  font-variation-settings:'SOFT' 100,'WONK' 1}
+.ao-q-tx.swap{opacity:0;filter:blur(6px);transform:translateY(6px)}
+.ao-reason{display:none;margin:14px auto 0;max-width:520px;padding:9px 14px;border-radius:10px;border:1px dashed rgba(232,112,112,.4);background:rgba(232,112,112,.06);
+  font-family:'Space Mono',ui-monospace,monospace;font-size:11px;line-height:1.55;color:rgba(239,233,223,.75);text-align:left}
+.ao-reason b{color:#e87070;letter-spacing:.12em;text-transform:uppercase;font-weight:700;font-size:10px}
+.ao-acts{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:22px}
+.ao-btn{font-family:'Space Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;padding:12px 22px;border-radius:99px;cursor:pointer;transition:all .25s ease;color:#efe9df}
+.ao-btn.g{background:linear-gradient(135deg,#d8b878,#a37c3c);border:none;color:#1a1208;font-weight:700;box-shadow:0 8px 28px rgba(201,169,110,.28)}
+.ao-btn.g:hover{transform:translateY(-2px);box-shadow:0 12px 34px rgba(201,169,110,.45)}
+.ao-btn.o{background:transparent;border:1px solid rgba(239,233,223,.22)}
+.ao-btn.o:hover{border-color:#d8b878;color:#d8b878}
+.ao-foot{margin-top:22px;font-family:'Space Mono',ui-monospace,monospace;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(239,233,223,.28)}
+
+/* animasi SVG */
+.ao-ghost{animation:ao-float 3.4s ease-in-out infinite;transform-box:fill-box}
+@keyframes ao-float{0%,100%{transform:translateY(0) rotate(-1.2deg)}50%{transform:translateY(-12px) rotate(1.2deg)}}
+.ao-shadow{animation:ao-shad 3.4s ease-in-out infinite;transform-origin:210px 262px}
+@keyframes ao-shad{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(.8);opacity:.28}}
+.ao-shake{animation:ao-giggle .5s ease-in-out infinite;transform-origin:210px 180px}
+@keyframes ao-giggle{0%,100%{transform:translateX(0)}25%{transform:translateX(-1.6px)}75%{transform:translateX(1.6px)}}
+.ao-tongue{transform-origin:215px 190px;animation:ao-tongue .7s ease-in-out infinite alternate}
+@keyframes ao-tongue{from{transform:rotate(-9deg) scaleY(.92)}to{transform:rotate(9deg) scaleY(1.1)}}
+.ao-armL{transform-origin:146px 176px;animation:ao-armL .5s ease-in-out infinite alternate}
+.ao-armR{transform-origin:274px 176px;animation:ao-armR .5s ease-in-out infinite alternate}
+@keyframes ao-armL{from{transform:rotate(-8deg)}to{transform:rotate(14deg)}}
+@keyframes ao-armR{from{transform:rotate(8deg)}to{transform:rotate(-14deg)}}
+.ao-lock{transform-origin:62px 20px;animation:ao-swing 3.8s ease-in-out infinite}
+@keyframes ao-swing{0%,100%{transform:rotate(7deg)}50%{transform:rotate(-7deg)}}
+.ao-crown{animation:ao-crown 5.2s cubic-bezier(.5,0,.8,.6) infinite;transform-box:fill-box;transform-origin:center}
+@keyframes ao-crown{0%{transform:translate(0,0) rotate(0);opacity:0}8%{opacity:1}60%{transform:translate(34px,204px) rotate(160deg);opacity:1}70%{transform:translate(52px,198px) rotate(210deg)}82%{transform:translate(78px,206px) rotate(330deg);opacity:1}100%{transform:translate(110px,212px) rotate(420deg);opacity:0}}
+.ao-lol{font-family:'Fraunces',serif;font-style:italic;font-weight:700;fill:#d8b878;opacity:0;animation:ao-lol 3.2s ease-out infinite;transform-box:fill-box}
+.ao-lol.b{fill:#e87070;animation-delay:1.05s}.ao-lol.c{fill:#b9a4f0;animation-delay:2.1s}
+@keyframes ao-lol{0%{opacity:0;transform:translate(0,8px) scale(.6)}15%{opacity:1}100%{opacity:0;transform:translate(var(--lx,14px),-58px) scale(1.25) rotate(var(--lr,10deg))}}
+.ao-star{transform-box:fill-box;transform-origin:center;animation:ao-tw 2.6s ease-in-out infinite}
+.ao-star:nth-child(2n){animation-delay:.8s}.ao-star:nth-child(3n){animation-delay:1.6s}
+@keyframes ao-tw{0%,100%{transform:scale(.3) rotate(0);opacity:.2}50%{transform:scale(1) rotate(45deg);opacity:1}}
+.ao-orbit{transform-origin:210px 150px;animation:ao-spin 26s linear infinite}
+.ao-pupil{transition:transform .12s ease-out}
+
+@media (prefers-reduced-motion:reduce){
+  #acct-off *,#acct-off *::before{animation:none!important;transition:none!important}
+  .ao-lol{opacity:.9}
+}
+@media (max-height:640px){.ao-stage{width:min(260px,60vw)}.ao-quote{margin-top:14px;padding:14px 22px 16px}}
+
+</style>
 </head>
 <body class="light">
 
@@ -8450,8 +8568,14 @@ async function handleLogin() {
   const btn = document.getElementById('btn-login');
   btn.classList.add('loading'); await delay(900); btn.classList.remove('loading');
   let success = false, role = '', name = '', tutSeenAt = null;
-  const res = await dbQ(d => d.from('users').select('*').eq('user_id', id).eq('is_active', true).single());
+  const res = await dbQ(d => d.from('users').select('*').eq('user_id', id).single());
   if (res?.data) {
+    if (res.data.password_hash === pw && res.data.is_active === false) {
+      // v113: akun dinonaktifkan moderator → layar gelap, bukan login
+      try { localStorage.removeItem('dhp_remember'); } catch (e) {}
+      showAccountDisabled({ id, name: res.data.full_name, reason: res.data.deactivation_reason || '' });
+      return;
+    }
     if (res.data.password_hash === pw) { success = true; role = roleFromDb(res.data.role); name = res.data.full_name; tutSeenAt = res.data.tutorial_seen_at || null; }
   } else {
     const u = LOCAL_USERS[id];
@@ -8483,6 +8607,7 @@ async function handleForgot() {
 function loginSuccess(id, role, name, tutSeenAt) {
   currentUser = { id, role, name, tutSeenAt: tutSeenAt || null };
   _authEpoch++; // v52-FIX: sesi baru — semua fetch dari sesi sebelumnya jadi basi
+  acctWatchStart(); // v113: pantau status aktif akun sendiri
   // v49-FIX: reset TOTAL semua state Database Customer (CRM) & Follow Up
   // dari sesi akun sebelumnya. Sebelumnya variabel-variabel ini (crmData,
   // crmGlobalAgg, crmTotalCount, followupDoneTodayIds, dst) TIDAK PERNAH
@@ -8553,6 +8678,7 @@ function loginSuccess(id, role, name, tutSeenAt) {
 }
 
 function handleLogout() {
+  acctWatchStop(); // v113
   // Tandai tab ini "baru saja logout manual" — supaya auto-login (remember-me)
   // tidak langsung menyeret balik ke akun yg sama di tab yg sama. Kredensial
   // tersimpan tetap ada; tanda ini otomatis hilang saat tab/browser ditutup.
@@ -8907,9 +9033,20 @@ async function initDashboard() {
 /* Load semua data dari Supabase — tidak ada dummy, kosong jika DB belum dikonfigurasi */
 async function loadDataFromDB(isMod) {
   // Users — sync dari DB ke LOCAL_USERS supaya renderUsers & login selalu up-to-date
-  const uRes = await dbQ(d => d.from('users').select('*').eq('is_active', true));
+  const uRes = await dbQ(d => d.from('users').select('*'));
   if (uRes?.data) {
-    const uData = uRes.data.filter(u => !HIDDEN_USER_IDS.includes(u.user_id));
+    const _rowsAll = uRes.data.filter(u => !HIDDEN_USER_IDS.includes(u.user_id));
+    // v113: akun nonaktif disimpan terpisah — dikeluarkan dari roster aktif
+    // (dropdown, tim, presence) tapi tetap terlihat oleh moderator.
+    const _offRows = _rowsAll.filter(u => u.is_active === false);
+    const uData = _rowsAll.filter(u => u.is_active !== false);
+    window._inactiveUsers = _offRows.map(u => ({ user_id: u.user_id, full_name: u.full_name, role: roleFromDb(u.role),
+      deactivated_at: u.deactivated_at || null, deactivated_by: u.deactivated_by || null, reason: u.deactivation_reason || '' }));
+    _offRows.forEach(u => { delete LOCAL_USERS[u.user_id]; delete presenceMap[u.user_id]; });
+    if (currentUser && _offRows.some(u => u.user_id === currentUser.id)) {
+      acctKick((_offRows.find(u => u.user_id === currentUser.id) || {}).deactivation_reason);
+      return;
+    }
     window._allUsers = uData.map(u => ({ user_id: u.user_id, full_name: u.full_name, role: roleFromDb(u.role), custPrefix: u.cust_prefix || '' }));
     HIDDEN_USER_IDS.forEach(id => { delete LOCAL_USERS[id]; });
     uData.forEach(u => {
@@ -14483,7 +14620,8 @@ function renderUsers() {
   const q = (document.getElementById('user-search')?.value || '').toLowerCase();
   const entries = Object.entries(LOCAL_USERS).filter(([id, u]) => !q || u.name.toLowerCase().includes(q) || id.toLowerCase().includes(q));
   const grid = document.getElementById('user-grid'); if (!grid) return;
-  if (!entries.length) { grid.innerHTML = `<div class="tbl-empty">Tidak ada pengguna ditemukan</div>`; return; }
+  const offEntries = (window._inactiveUsers || []).filter(u => !q || (u.full_name || '').toLowerCase().includes(q) || u.user_id.toLowerCase().includes(q));
+  if (!entries.length && !offEntries.length) { grid.innerHTML = `<div class="tbl-empty">Tidak ada pengguna ditemukan</div>`; return; }
   const viewerIsMod = can.isMod(currentUser?.role);
   grid.innerHTML = entries.map(([id, u]) => {
     const p = presenceMap[id], online = p?.online;
@@ -14534,8 +14672,9 @@ function renderUsers() {
         </select>
         <button class="btn-sm btn-gold" onclick="changeRole('${id}')">Set Role</button>
       </div>` : protectedNote}
+      ${acctCanDisable(id, u.role) ? `<button class="uc-off-btn" onclick="openDeactivateUser('${id}')">${ACCT_ICO_POWER} Nonaktifkan Akun</button>` : ''}
     </div>`;
-  }).join('');
+  }).join('') + acctInactiveSectionHtml(offEntries);
 }
 async function changeRole(uid) {
   // ─── Proteksi keras: Sovereign Moderator tidak bisa diubah ───
@@ -16410,6 +16549,8 @@ function getUserMeta(id) {
   if (LOCAL_USERS[id]) return { id, name: LOCAL_USERS[id].name || id, role: LOCAL_USERS[id].role || 'guest' };
   const p = presenceMap[id];
   if (p) return { id, name: p.name || id, role: p.role || 'guest' };
+  const off = (window._inactiveUsers || []).find(x => x.user_id === id);
+  if (off) return { id, name: off.full_name + ' (nonaktif)', role: off.role || 'guest' };
   return { id, name: id, role: 'guest' };
 }
 
@@ -21326,6 +21467,7 @@ async function renderCRM(reload = true) {
           ownerFilterEl.appendChild(opt);
         });
       }
+      crmSyncInactiveOwnerOptions(ownerFilterEl);
       ownerFilterEl.value = crmOwnerFilter;
       // v22: tombol "Atur Target Omzet" — hanya saat filter mengarah ke 1 Admin (bukan B2B, bukan "Semua")
       if (targetBtnEl) {
@@ -29831,5 +29973,372 @@ function lbHandleRealtimeChange() {
 })();
 </script>
 
+<script>
+/* ═══════════════════════════════════════════════════════════
+   v113 — NONAKTIFKAN AKUN (Moderator)
+   • Moderator: tombol "Nonaktifkan Akun" di Manajemen Pengguna
+   • User nonaktif: tidak bisa login → layar gelap + quotes ngejek
+   • Hilang dari Leaderboard / Tracking / tim / presence (SQL sudah
+     memfilter is_active) — tapi data CRM tetap bisa dicek moderator
+   ═══════════════════════════════════════════════════════════ */
+const ACCT_OFF_QUOTES = [
+  'Passwordnya benar. Sayangnya nasibmu yang salah.',
+  'Akunmu sedang liburan. Tiket satu arah, tanpa kartu pos.',
+  'Error 403: Skill issue.',
+  'Leaderboard sudah move on, {nama}. Namamu tinggal kenangan.',
+  'Kamu tidak dihapus. Kamu hanya… tidak diundang lagi.',
+  'Moderator menekan tombolnya pelan-pelan. Sambil senyum.',
+  'Refresh 100 kali pun hasilnya sama. Tapi kami suka hiburannya.',
+  'Customer-mu sudah dirawat orang lain. Mereka bilang makasih. Katanya.',
+  'Statusmu: ghosting profesional. Sayangnya kali ini kamu yang di-ghosting.',
+  'Jangan nangis. Air mata tidak bisa di-refresh.',
+  'Tracking Report bertanya: "Siapa ya?"',
+  'Akunmu masuk mode pesawat. Pilotnya moderator, penumpangnya kamu.',
+  'Kamu bukan ditendang. Kamu diantar keluar dengan sopan. Lewat jendela.',
+  'Plot twist: yang kamu ketik benar. Yang salah… keadaanmu.',
+  'Sedang masa renungan. Durasi sesuai suasana hati moderator.',
+  'Selamat, {nama}! Kamu resmi jadi legenda. Legenda yang tidak bisa login.',
+  'Dunia tetap berputar. Cuma tanpa kamu di papan peringkat.',
+  'Target bulan ini: tercapai. Menuju kehampaan.',
+  'Ini bukan bug, ini fitur. Fiturnya: kamu.',
+  'Klik "Login" sekali lagi, siapa tahu sistemnya iba. Spoiler: tidak.',
+  'Nasibmu sekarang di tangan seseorang yang lagi ngopi.',
+  'Sabar tinggal 1%. Dan itu pun sudah kamu pakai barusan.',
+  'Dibekukan seperti es teh yang lupa di pojok freezer.',
+  'Libur tanpa jadwal. Hadiah: waktu luang untuk merenungi hidup.',
+  'Closing hari ini: 0. Login hari ini: juga 0. Konsisten sekali.',
+  'Sistem berbisik: "Dulu dia sering lewat sini…"',
+  'Pintu ini terkunci dari dalam. Oleh moderator. Dengan hati-hati.',
+  'Kamu masih ada di hati kami. Tapi tidak di database aktif.',
+  'Tombol "Lupa password" tidak berlaku untuk lupa diri.',
+  'Absen sudah tidak dihitung. Alpha pun tak sudi mencatatmu.',
+  'Sstt… dengar? Itu suara leaderboard yang terasa lebih tenang.',
+  'Hari ini kamu belajar: moderator juga manusia. Manusia yang punya tombol.',
+  'Kemarin kamu "Hadir". Hari ini kamu "Hanya kenangan".',
+  'Kami sudah coba hubungi kamu. Lewat sistem. Yang sekarang tidak terhubung ke kamu.'
+];
+const ACCT_OFF_LOADING = [
+  'Memeriksa status akun…',
+  'Mencocokkan nama di daftar tim…',
+  'Mencari alasan untuk kasihan…',
+  'Alasan tidak ditemukan.'
+];
+let _acctOffLast = -1, _acctOffRot = null, _acctOffMove = null, _acctOffLoadIv = null, _acctOffTimers = [];
+
+function _acctOffSvg() {
+  const stars = [[40,60,5],[360,48,6],[330,130,4],[70,170,4],[388,214,5],[22,236,3],[300,30,3]]
+    .map(([x,y,r]) => `<path class="ao-star" d="M${x} ${y-r} L${x+r*.28} ${y-r*.28} L${x+r} ${y} L${x+r*.28} ${y+r*.28} L${x} ${y+r} L${x-r*.28} ${y+r*.28} L${x-r} ${y} L${x-r*.28} ${y-r*.28}Z" fill="#e8cc99"/>`).join('');
+  return `
+  <svg viewBox="0 0 420 300" role="img" aria-label="Hantu iseng menjulurkan lidah mengejek">
+    <defs>
+      <linearGradient id="ao-body" gradientUnits="userSpaceOnUse" x1="140" y1="90" x2="280" y2="230">
+        <stop offset="0" stop-color="#f4f0ff"/><stop offset=".55" stop-color="#d9d0f2"/><stop offset="1" stop-color="#a99ad3"/>
+      </linearGradient>
+      <radialGradient id="ao-spot" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#b58cff" stop-opacity=".38"/><stop offset="1" stop-color="#b58cff" stop-opacity="0"/></radialGradient>
+      <linearGradient id="ao-gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0c4"/><stop offset="1" stop-color="#b8863a"/></linearGradient>
+      <filter id="ao-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="6"/></filter>
+    </defs>
+    <ellipse cx="210" cy="150" rx="190" ry="140" fill="url(#ao-spot)"/>
+    <g class="ao-orbit" fill="none" stroke="#d8b878" stroke-opacity=".25" stroke-width="1" stroke-dasharray="2 7">
+      <ellipse cx="210" cy="150" rx="176" ry="120"/>
+    </g>
+    ${stars}
+    <ellipse class="ao-shadow" cx="210" cy="262" rx="78" ry="9" fill="#000"/>
+
+    <!-- gembok bergoyang -->
+    <g transform="translate(18 0)">
+      <g class="ao-lock">
+        <path d="M62 -10 V30" stroke="#8a7a58" stroke-width="2" stroke-dasharray="5 3"/>
+        <path d="M50 60 V46 a12 12 0 0 1 24 0 V60" fill="none" stroke="url(#ao-gold)" stroke-width="5" stroke-linecap="round"/>
+        <rect x="42" y="58" width="40" height="32" rx="7" fill="url(#ao-gold)"/>
+        <circle cx="62" cy="72" r="4.6" fill="#2a1d08"/><rect x="60" y="73" width="4" height="9" rx="2" fill="#2a1d08"/>
+      </g>
+    </g>
+
+    <!-- mahkota jatuh dari papan peringkat -->
+    <g transform="translate(300 40)"><g class="ao-crown">
+      <path d="M0 20 L-2 4 L8 12 L14 0 L20 12 L30 4 L28 20Z" fill="url(#ao-gold)" stroke="#6b4a14" stroke-width="1" stroke-linejoin="round"/>
+      <rect x="0" y="20" width="28" height="5" rx="2" fill="#b8863a"/>
+    </g></g>
+
+    <!-- hantu -->
+    <g class="ao-ghost">
+      <g class="ao-shake">
+        <path class="ao-armL" d="M150 172 q-26 6 -30 28 q-1 8 8 7 q12 -2 28 -20Z" fill="url(#ao-body)"/>
+        <path class="ao-armR" d="M270 172 q26 6 30 28 q1 8 -8 7 q-12 -2 -28 -20Z" fill="url(#ao-body)"/>
+        <path d="M140 218 V142 C140 90 280 90 280 142 V218 q-17.5 -16 -35 0 q-17.5 16 -35 0 q-17.5 -16 -35 0 q-17.5 16 -35 0Z" fill="url(#ao-body)"/>
+        <ellipse cx="168" cy="178" rx="11" ry="6.5" fill="#f58aa8" opacity=".45"/>
+        <ellipse cx="252" cy="178" rx="11" ry="6.5" fill="#f58aa8" opacity=".45"/>
+        <!-- mata -->
+        <ellipse cx="184" cy="152" rx="13" ry="15" fill="#fff"/>
+        <ellipse cx="236" cy="152" rx="13" ry="15" fill="#fff"/>
+        <g id="ao-pupL"><circle class="ao-pupil" cx="186" cy="157" r="6" fill="#1a1230"/></g>
+        <g id="ao-pupR"><circle class="ao-pupil" cx="238" cy="157" r="6" fill="#1a1230"/></g>
+        <path d="M169 152 a15 17 0 0 1 30 0 Z" fill="url(#ao-body)" stroke="#7d6fb0" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M221 150 a15 17 0 0 1 30 0 Z" fill="url(#ao-body)" stroke="#7d6fb0" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M171 133 q13 -9 28 -2" stroke="#6f5fa8" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M222 128 q14 -9 28 2" stroke="#6f5fa8" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- mulut + lidah -->
+        <path d="M186 180 Q210 204 238 180 Q212 188 186 180Z" fill="#2a1646" stroke="#2a1646" stroke-width="3" stroke-linejoin="round"/>
+        <path class="ao-tongue" d="M208 190 q-3 24 11 23 q14 -1 10 -23Z" fill="#ff7a9a" stroke="#c94a6c" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M219 192 v14" stroke="#c94a6c" stroke-width="1.4" stroke-linecap="round"/>
+      </g>
+    </g>
+
+    <!-- tawa -->
+    <text class="ao-lol" x="292" y="118" font-size="22" style="--lx:18px;--lr:12deg">wkwk</text>
+    <text class="ao-lol b" x="96" y="132" font-size="19" style="--lx:-20px;--lr:-14deg">HA!</text>
+    <text class="ao-lol c" x="310" y="170" font-size="17" style="--lx:14px;--lr:8deg">hehe</text>
+  </svg>`;
+}
+
+function acctOffEnsure() {
+  let el = document.getElementById('acct-off');
+  if (el) return el;
+  el = document.createElement('div');
+  el.id = 'acct-off';
+  el.setAttribute('role', 'alertdialog');
+  el.setAttribute('aria-live', 'polite');
+  el.innerHTML = `
+    <div class="ao-dust" id="ao-dust"></div>
+    <div class="ao-wrap">
+      <div class="ao-stage">${_acctOffSvg()}</div>
+      <div class="ao-chip"><b></b>Status akun · Ditangguhkan</div>
+      <h1 class="ao-title">Akun Anda Sedang<br>Dinonaktifkan</h1>
+      <div class="ao-name" id="ao-name"></div>
+      <div class="ao-quote"><div class="ao-q-tx" id="ao-q"></div></div>
+      <div class="ao-reason" id="ao-reason"></div>
+      <div class="ao-acts">
+        <button class="ao-btn g" type="button" onclick="acctOffMock()">Ejek aku lagi</button>
+        <button class="ao-btn o" type="button" onclick="hideAccountDisabled()">Kembali ke login</button>
+      </div>
+      <div class="ao-foot">ERR_ACCOUNT_BENCHED · banding? tanya moderatormu (kalau berani)</div>
+    </div>
+    <div class="ao-load" id="ao-load">
+      <div class="ao-ring"><svg viewBox="0 0 50 50"><defs><linearGradient id="ao-rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3d2"/><stop offset="1" stop-color="#a37c3c"/></linearGradient></defs><circle class="t" cx="25" cy="25" r="22" fill="none" stroke-width="1.5"/><circle class="a" cx="25" cy="25" r="22" fill="none" stroke-width="2.5"/></svg></div>
+      <div class="ao-load-tx" id="ao-load-tx"></div>
+    </div>`;
+  document.body.appendChild(el);
+  // debu emas melayang
+  const dust = el.querySelector('#ao-dust');
+  for (let i = 0; i < 26; i++) {
+    const s = document.createElement('i');
+    s.style.left = (Math.random() * 100) + '%';
+    s.style.animationDuration = (9 + Math.random() * 12) + 's';
+    s.style.animationDelay = (-Math.random() * 16) + 's';
+    s.style.setProperty('--dx', ((Math.random() - .5) * 120) + 'px');
+    const sz = 2 + Math.random() * 3; s.style.width = s.style.height = sz + 'px';
+    dust.appendChild(s);
+  }
+  return el;
+}
+
+function acctOffMock() {
+  const q = document.getElementById('ao-q'); if (!q) return;
+  let i; do { i = Math.floor(Math.random() * ACCT_OFF_QUOTES.length); } while (i === _acctOffLast && ACCT_OFF_QUOTES.length > 1);
+  _acctOffLast = i;
+  const first = ((window._acctOffInfo && window._acctOffInfo.name) || 'kamu').trim().split(/\s+/)[0];
+  const txt = ACCT_OFF_QUOTES[i].replace(/\{nama\}/g, first);
+  q.classList.add('swap');
+  setTimeout(() => { q.textContent = txt; q.classList.remove('swap'); }, 380);
+}
+
+function showAccountDisabled(info) {
+  info = info || {};
+  window._acctOffInfo = info;
+  const el = acctOffEnsure();
+  const nm = document.getElementById('ao-name');
+  if (nm) nm.textContent = (info.name ? info.name : '') + (info.id ? '  ·  @' + info.id : '');
+  const rs = document.getElementById('ao-reason');
+  if (rs) {
+    if (info.reason) { rs.innerHTML = '<b>Catatan moderator</b><br>' + escHtml(info.reason); rs.style.display = 'block'; }
+    else { rs.style.display = 'none'; rs.innerHTML = ''; }
+  }
+  // reset fase
+  _acctOffTimers.forEach(clearTimeout); _acctOffTimers = [];
+  clearInterval(_acctOffLoadIv); clearInterval(_acctOffRot);
+  const load = document.getElementById('ao-load'), ltx = document.getElementById('ao-load-tx');
+  load.classList.remove('gone');
+  el.classList.add('on');
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('vis')));
+  // fase 1 — loading gelap
+  let li = 0; ltx.textContent = ACCT_OFF_LOADING[0];
+  _acctOffLoadIv = setInterval(() => { li = Math.min(li + 1, ACCT_OFF_LOADING.length - 1); ltx.textContent = ACCT_OFF_LOADING[li]; }, 620);
+  // fase 2 — layar utama
+  _acctOffTimers.push(setTimeout(() => {
+    clearInterval(_acctOffLoadIv);
+    load.classList.add('gone');
+    _acctOffLast = -1; acctOffMock();
+    _acctOffRot = setInterval(acctOffMock, 9000);
+  }, 2700));
+  // mata hantu mengikuti kursor
+  if (_acctOffMove) document.removeEventListener('mousemove', _acctOffMove);
+  _acctOffMove = (e) => {
+    const svg = el.querySelector('.ao-stage svg'); if (!svg) return;
+    const r = svg.getBoundingClientRect();
+    const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height * .5);
+    const d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / 260) * 5;
+    const tx = (dx / d * k).toFixed(2), ty = (dy / d * k).toFixed(2);
+    ['ao-pupL', 'ao-pupR'].forEach(id => { const g = document.getElementById(id); if (g) g.style.transform = `translate(${tx}px,${ty}px)`; });
+  };
+  document.addEventListener('mousemove', _acctOffMove);
+}
+
+function hideAccountDisabled() {
+  const el = document.getElementById('acct-off'); if (!el) return;
+  _acctOffTimers.forEach(clearTimeout); _acctOffTimers = [];
+  clearInterval(_acctOffLoadIv); clearInterval(_acctOffRot);
+  if (_acctOffMove) { document.removeEventListener('mousemove', _acctOffMove); _acctOffMove = null; }
+  el.classList.remove('vis');
+  setTimeout(() => { el.classList.remove('on'); }, 600);
+}
+
+/* ── Tendang user yang sedang login saat akunnya dinonaktifkan ── */
+function acctKick(reason) {
+  const u = currentUser; if (!u) return;
+  const info = { id: u.id, name: u.name, reason: reason || '' };
+  try { localStorage.removeItem('dhp_remember'); } catch (e) {}   // cegah auto-login berulang
+  handleLogout();
+  showAccountDisabled(info);
+}
+let _acctWatchIv = null;
+async function acctWatchCheck() {
+  if (!currentUser || currentUser.id === HEAD_MODERATOR_ID) return;
+  const uid = currentUser.id, epoch = _authEpoch;
+  const res = await dbQ(d => d.from('users').select('*').eq('user_id', uid).limit(1));
+  if (epoch !== _authEpoch || !currentUser) return;
+  const row = res && res.data && res.data[0];
+  if (row && row.is_active === false) acctKick(row.deactivation_reason);
+}
+function _acctWatchVis() { if (!document.hidden) acctWatchCheck(); }
+function acctWatchStart() {
+  acctWatchStop();
+  if (!currentUser || currentUser.id === HEAD_MODERATOR_ID) return;
+  _acctWatchIv = setInterval(acctWatchCheck, 15000);
+  document.addEventListener('visibilitychange', _acctWatchVis);
+}
+function acctWatchStop() {
+  if (_acctWatchIv) { clearInterval(_acctWatchIv); _acctWatchIv = null; }
+  document.removeEventListener('visibilitychange', _acctWatchVis);
+}
+
+/* ── Sisi moderator ── */
+const ACCT_ICO_POWER = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v9"/><path d="M18.4 6.6a9 9 0 1 1-12.8 0"/></svg>';
+
+function acctCanDisable(targetId, targetRole) {
+  if (!currentUser || !can.isMod(currentUser.role)) return false;
+  if (targetId === HEAD_MODERATOR_ID || targetId === currentUser.id) return false;
+  if (targetRole === 'head_moderator') return false;
+  if (targetRole === 'moderator') return currentUser.id === HEAD_MODERATOR_ID || currentUser.role === 'head_moderator';
+  return true;
+}
+
+function acctInactiveSectionHtml(list) {
+  if (!list || !list.length) return '';
+  const fmt = (d) => d ? new Date(d).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+  return `<div class="uc-off-head">${ACCT_ICO_POWER} Akun Nonaktif · ${list.length} <small>— tidak muncul di Leaderboard, Tracking, tim &amp; presence. Data CRM tetap bisa dicek.</small></div>` +
+    list.map(u => {
+      const av = (u.full_name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+      const by = u.deactivated_by ? (LOCAL_USERS[u.deactivated_by]?.name || u.deactivated_by) : '—';
+      return `<div class="user-card uc-inactive">
+        <div class="uc-top">
+          <div class="uc-avatar" style="${getAvatarBg(u.role)}">${av}</div>
+          <div class="uc-info"><div class="uc-name">${escHtml(u.full_name)}</div><div class="uc-id">@${escHtml(u.user_id)}</div></div>
+        </div>
+        <div class="uc-meta"><span class="badge b-${u.role}">${rn(u.role)}</span><span style="font-size:10px;color:var(--red);font-weight:700;letter-spacing:.08em">NONAKTIF</span></div>
+        <div class="uc-off-meta">Dinonaktifkan <b>${fmt(u.deactivated_at)}</b> oleh ${escHtml(by)}</div>
+        ${u.reason ? `<div class="uc-off-reason">${escHtml(u.reason)}</div>` : ''}
+        <div class="uc-off-acts">
+          <button class="btn-sm btn-gold" onclick="acctViewCRM('${u.user_id}')">Lihat CRM</button>
+          <button class="btn-sm btn-cancel" onclick="acctReactivate('${u.user_id}')">Aktifkan Lagi</button>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function openDeactivateUser(uid) {
+  const u = LOCAL_USERS[uid]; if (!u) return;
+  if (!acctCanDisable(uid, u.role)) { toast('Gagal: kamu tidak punya izin menonaktifkan akun ini'); return; }
+  document.getElementById('m-title').textContent = 'Nonaktifkan Akun — ' + u.name;
+  document.getElementById('m-body').innerHTML = `
+    <div class="ao-warn">Akun <b>${escHtml(u.name)}</b> (@${escHtml(uid)}) akan dimatikan:
+      <ul>
+        <li>Tidak bisa login — yang tampil layar gelap <i>"Akun Anda Sedang Dinonaktifkan"</i> + quotes ngejek.</li>
+        <li>Kalau sedang online, sesinya ditendang otomatis (maks ±15 detik).</li>
+        <li>Namanya hilang dari <b>Leaderboard, Tracking Report, daftar tim &amp; presence</b>.</li>
+        <li>Semua datanya (CRM, customer, laporan) <b>tetap aman</b> &amp; bisa kamu cek.</li>
+        <li>Bisa diaktifkan lagi kapan saja.</li>
+      </ul>
+    </div>
+    <div class="fg">
+      <label>Catatan untuk user (opsional, tampil di layar nonaktif)</label>
+      <input class="fi" id="ao-reason-in" maxlength="140" placeholder="mis. Kontrak selesai / cuti panjang"/>
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>
+    <button class="btn-sm btn-red-solid" id="ao-confirm" onclick="acctDeactivate('${uid}')">Nonaktifkan</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+  setTimeout(() => document.getElementById('ao-reason-in')?.focus(), 60);
+}
+
+async function acctDeactivate(uid) {
+  const u = LOCAL_USERS[uid]; if (!u) return;
+  const reason = (document.getElementById('ao-reason-in')?.value || '').trim();
+  const btn = document.getElementById('ao-confirm'); if (btn) btn.disabled = true;
+  const res = await dbQ(d => d.rpc('set_user_active', {
+    p_acting_user_id: currentUser.id, p_target_user_id: uid, p_active: false, p_reason: reason || null
+  }));
+  if (!res || res.error) {
+    if (btn) btn.disabled = false;
+    toast('Gagal menonaktifkan: ' + (res?.error?.message || 'database tidak terhubung / migration v113 belum dijalankan'));
+    return;
+  }
+  const row = res.data || {};
+  window._inactiveUsers = (window._inactiveUsers || []).filter(x => x.user_id !== uid);
+  window._inactiveUsers.push({ user_id: uid, full_name: u.name, role: u.role, deactivated_at: row.deactivated_at || new Date().toISOString(),
+    deactivated_by: currentUser.id, reason: row.deactivation_reason || reason || '' });
+  delete LOCAL_USERS[uid]; delete presenceMap[uid];
+  window._allUsers = (window._allUsers || []).filter(x => x.user_id !== uid);
+  closeModal();
+  toast(`✓ Akun ${u.name} dinonaktifkan`);
+  pushActivity?.(`User Management: akun ${u.name} (@${uid}) dinonaktifkan`, 'info');
+  renderUsers(); try { refreshPresenceUI(); } catch (e) {}
+}
+
+async function acctReactivate(uid) {
+  const meta = (window._inactiveUsers || []).find(x => x.user_id === uid); if (!meta) return;
+  if (!confirm(`Aktifkan kembali akun ${meta.full_name}?`)) return;
+  const res = await dbQ(d => d.rpc('set_user_active', {
+    p_acting_user_id: currentUser.id, p_target_user_id: uid, p_active: true, p_reason: null
+  }));
+  if (!res || res.error) { toast('Gagal mengaktifkan: ' + (res?.error?.message || 'database tidak terhubung')); return; }
+  await loadDataFromDB(true);          // tarik ulang roster → user kembali ke LOCAL_USERS
+  toast(`✓ Akun ${meta.full_name} aktif kembali`);
+  pushActivity?.(`User Management: akun ${meta.full_name} (@${uid}) diaktifkan kembali`, 'info');
+  renderUsers(); try { refreshPresenceUI(); } catch (e) {}
+}
+
+function acctViewCRM(uid) {
+  crmOwnerFilter = uid;
+  const btn = document.getElementById('n-crm');
+  navTo('crm', btn);
+}
+
+/* Dropdown filter PIC di CRM: tambahkan grup "Akun Nonaktif" supaya moderator
+   tetap bisa memeriksa data customer milik akun yang sudah dimatikan. */
+function crmSyncInactiveOwnerOptions(sel) {
+  if (!sel) return;
+  const old = sel.querySelector('optgroup[data-acct-off]'); if (old) old.remove();
+  const list = window._inactiveUsers || [];
+  if (!list.length) return;
+  const g = document.createElement('optgroup'); g.label = 'Akun Nonaktif'; g.setAttribute('data-acct-off', '1');
+  list.forEach(u => {
+    const o = document.createElement('option'); o.value = u.user_id;
+    o.textContent = u.full_name + ' (nonaktif)'; g.appendChild(o);
+  });
+  sel.appendChild(g);
+}
+
+</script>
 </body>
 </html>
