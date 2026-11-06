@@ -4760,56 +4760,87 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
 }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@1,6..96,500&family=Fraunces:ital,opsz,wght@1,9..144,300..700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
-<style id="mt-target-css">
-/* ═══ v114 — HALAMAN TARGET (rapi per role) ═══ */
-.mt-nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 22px;position:sticky;top:0;z-index:5;padding:10px 0;background:var(--bg)}
-.mt-nav a{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:99px;border:1px solid var(--border);color:var(--text2);
-  font-size:11px;font-weight:600;letter-spacing:.03em;cursor:pointer;text-decoration:none;transition:all .2s;background:var(--surface)}
-.mt-nav a:hover{border-color:var(--mt-c);color:var(--text)}
-.mt-nav a i{width:7px;height:7px;border-radius:50%;background:var(--mt-c)}
-.mt-nav a b{font-size:10px;color:var(--muted);font-weight:700}
-.mt-sec{margin-bottom:30px;scroll-margin-top:70px}
-.mt-sec-h{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);flex-wrap:wrap}
-.mt-sec-h .mt-dot{width:10px;height:10px;border-radius:3px;background:var(--mt-c);box-shadow:0 0 12px var(--mt-c)}
-.mt-sec-h h3{margin:0;font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text)}
-.mt-sec-h .mt-count{font-size:10px;font-weight:700;padding:2px 9px;border-radius:99px;border:1px solid var(--border);color:var(--text2)}
-.mt-sec-h .mt-sub{margin-left:auto;font-size:11px;color:var(--muted)}
-.mt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
-.mt-card{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;transition:border-color .2s,transform .2s;overflow:hidden}
-.mt-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--mt-c);opacity:.85}
-.mt-card:hover{border-color:var(--border-hi);transform:translateY(-1px)}
-.mt-card-top{display:flex;align-items:center;gap:12px}
-.mt-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;
-  background:color-mix(in srgb,var(--mt-c) 18%,transparent);color:var(--mt-c);border:1px solid color-mix(in srgb,var(--mt-c) 40%,transparent)}
-.mt-who{flex:1;min-width:0}
-.mt-name{font-size:14px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mt-role{font-size:10.5px;color:var(--text2);margin-top:1px}
-.mt-pct{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--mt-c)}
-.mt-prog{height:6px;border-radius:4px;background:color-mix(in srgb,var(--mt-c) 14%,transparent);overflow:hidden;margin:14px 0 12px}
-.mt-prog div{height:100%;border-radius:4px;background:var(--mt-c);transition:width .7s cubic-bezier(.16,1,.3,1)}
-.mt-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
-.mt-stats>div{padding:8px 10px;border-radius:8px;background:var(--surface2,rgba(255,255,255,.03));border:1px solid var(--border)}
-.mt-stats span{display:block;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
-.mt-stats b{display:block;margin-top:3px;font-size:11.5px;color:var(--text);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mt-edit{display:flex;gap:8px;align-items:stretch}
-.mt-inwrap{flex:1;min-width:0;display:flex;align-items:center;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,.03);transition:border-color .2s}
-.mt-inwrap:focus-within{border-color:var(--mt-c)}
-.mt-inwrap em{font-style:normal;font-size:11px;font-weight:700;color:var(--muted);padding:0 0 0 12px}
-.mt-inwrap input{flex:1;min-width:0;border:none;background:transparent;outline:none;color:var(--text);font-size:14px;font-weight:600;padding:10px 12px 10px 8px;font-family:inherit;font-variant-numeric:tabular-nums}
-.mt-save{padding:0 18px;border-radius:8px;border:none;cursor:pointer;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;background:var(--mt-c);color:#0a0906;transition:filter .2s}
-.mt-save:hover{filter:brightness(1.12)}
-.mt-empty{font-size:12px;color:var(--muted);padding:18px;border:1px dashed var(--border);border-radius:12px;text-align:center;grid-column:1/-1}
-/* follow-up */
-.mt-fu-card .mt-fu-big{display:flex;align-items:center;gap:10px;margin:14px 0 4px}
-.mt-fu-step{width:36px;height:40px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:18px;font-weight:700;cursor:pointer;transition:all .2s}
-.mt-fu-step:hover{border-color:var(--mt-c);color:var(--mt-c)}
-.mt-fu-big input{flex:1;min-width:0;text-align:center;font-size:26px;font-weight:800;color:var(--mt-c);background:transparent;border:1px solid var(--border);border-radius:8px;padding:6px;font-variant-numeric:tabular-nums;outline:none;font-family:inherit}
-.mt-fu-big input:focus{border-color:var(--mt-c)}
-.mt-fu-unit{text-align:center;font-size:10.5px;color:var(--muted);margin-bottom:14px}
-.mt-fu-mem{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;min-height:22px}
-.mt-fu-mem span{font-size:10.5px;padding:3px 10px;border-radius:99px;background:color-mix(in srgb,var(--mt-c) 12%,transparent);color:var(--text);border:1px solid color-mix(in srgb,var(--mt-c) 28%,transparent)}
-.mt-fu-card .mt-save{width:100%;padding:11px 0}
-@media (max-width:640px){.mt-grid{grid-template-columns:1fr}.mt-sec-h .mt-sub{margin-left:0;width:100%}}
+<style id="tgp-css">
+/* ═══ v115 — HALAMAN TARGET (tabel korporat, prefix tgp-) ═══ */
+.tgp-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:space-between;margin:0 0 20px;padding:14px 18px;
+  background:var(--surface);border:1px solid var(--border);border-radius:12px}
+.tgp-bar-l{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.tgp-period{display:inline-flex;align-items:center;gap:8px;font-size:11px;color:var(--text2)}
+.tgp-period b{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--text);letter-spacing:.02em}
+.tgp-pend{font-size:11px;color:var(--muted);transition:color .2s}
+.tgp-pend.on{color:var(--amber);font-weight:600}
+.tgp-bar-r{display:flex;gap:10px;align-items:center}
+.tgp-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:34px;padding:0 16px;border-radius:8px;cursor:pointer;white-space:nowrap;
+  font-family:'Inter',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;transition:all .2s;
+  background:transparent;border:1px solid var(--border-hi);color:var(--text2)}
+.tgp-btn:hover{border-color:var(--gold);color:var(--text)}
+.tgp-btn.pri{background:var(--text);color:var(--bg);border-color:var(--text)}
+.tgp-btn.pri:hover{filter:opacity(.88);color:var(--bg)}
+.tgp-btn:disabled{opacity:.38;cursor:not-allowed;filter:none}
+.tgp-btn svg{flex-shrink:0}
+.tgp-tabs{display:flex;gap:2px;margin:0 0 20px;border-bottom:1px solid var(--border);overflow-x:auto}
+.tgp-tab{position:relative;padding:11px 16px;font-size:11.5px;font-weight:600;letter-spacing:.03em;color:var(--muted);background:none;border:none;cursor:pointer;white-space:nowrap;transition:color .2s;font-family:inherit}
+.tgp-tab:hover{color:var(--text)}
+.tgp-tab.on{color:var(--text)}
+.tgp-tab.on::after{content:'';position:absolute;left:12px;right:12px;bottom:-1px;height:2px;background:var(--gold);border-radius:2px}
+.tgp-tab i{font-style:normal;margin-left:6px;font-size:10px;padding:1px 7px;border-radius:99px;background:var(--surface2,rgba(255,255,255,.05));color:var(--text2)}
+.tgp-panel{container:tgp / inline-size;background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:22px;overflow:hidden}
+.tgp-panel.hide{display:none}
+.tgp-ph{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:18px 22px;border-bottom:1px solid var(--border)}
+.tgp-pt{display:flex;align-items:center;gap:12px}
+.tgp-dot{width:9px;height:9px;border-radius:50%;background:var(--tc);box-shadow:0 0 0 4px color-mix(in srgb,var(--tc) 18%,transparent)}
+.tgp-pt h3{margin:0;font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600;letter-spacing:.02em;color:var(--text)}
+.tgp-pt small{font-size:11px;color:var(--muted)}
+.tgp-sum{display:flex;gap:18px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
+.tgp-sum b{color:var(--text);font-weight:700;font-variant-numeric:tabular-nums;margin-left:4px}
+.tgp-head,.tgp-row{display:grid;grid-template-columns:minmax(170px,1.5fr) minmax(104px,1fr) minmax(116px,1fr) minmax(128px,1.1fr) minmax(176px,1.3fr) 92px;gap:14px;align-items:center;padding:0 22px}
+.tgp-fu .tgp-head,.tgp-fu .tgp-row{grid-template-columns:minmax(170px,1.2fr) minmax(180px,2fr) minmax(190px,1fr) 92px}
+.tgp-head{height:38px;background:var(--surface2,rgba(255,255,255,.03));border-bottom:1px solid var(--border);
+  font-size:9.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+.tgp-row{min-height:68px;padding-top:12px;padding-bottom:12px;border-bottom:1px solid var(--border);transition:background .2s;position:relative}
+.tgp-row:last-child{border-bottom:none}
+.tgp-row:hover{background:color-mix(in srgb,var(--gold) 4%,transparent)}
+.tgp-row.dirty{background:color-mix(in srgb,var(--amber) 7%,transparent)}
+.tgp-row.dirty::before{content:'';position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;background:var(--amber)}
+.tgp-row.saved{animation:tgp-ok 1.8s ease}
+@keyframes tgp-ok{0%,60%{background:color-mix(in srgb,var(--green) 14%,transparent)}100%{background:transparent}}
+.tgp-c{min-width:0}
+.tgp-staff{display:flex;align-items:center;gap:12px}
+.tgp-av{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;letter-spacing:.03em;
+  color:var(--tc);background:color-mix(in srgb,var(--tc) 14%,transparent);border:1px solid color-mix(in srgb,var(--tc) 35%,transparent)}
+.tgp-nm{font-size:13.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tgp-id{font-size:10.5px;color:var(--muted);margin-top:1px}
+.tgp-num{font-size:12.5px;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tgp-num.mut{color:var(--muted);font-weight:500}
+.tgp-prog{display:flex;align-items:center;gap:10px}
+.tgp-track{flex:1;height:5px;border-radius:3px;background:color-mix(in srgb,var(--tc) 15%,transparent);overflow:hidden}
+.tgp-track i{display:block;height:100%;border-radius:3px;background:var(--tc);transition:width .7s cubic-bezier(.16,1,.3,1)}
+.tgp-pct{font-size:11.5px;font-weight:700;color:var(--text2);min-width:34px;text-align:right;font-variant-numeric:tabular-nums}
+.tgp-in{display:flex;align-items:center;height:38px;border:1px solid var(--border-hi);border-radius:8px;background:var(--bg);transition:border-color .2s,box-shadow .2s}
+.tgp-in:focus-within{border-color:var(--gold);box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 16%,transparent)}
+.tgp-in em{font-style:normal;font-size:11px;font-weight:700;color:var(--muted);padding-left:12px}
+.tgp-in input{flex:1;min-width:0;height:100%;border:none;background:transparent;outline:none;padding:0 12px 0 8px;font-size:13px;font-weight:600;color:var(--text);font-family:inherit;font-variant-numeric:tabular-nums}
+.tgp-in input::placeholder{color:var(--muted);font-weight:400}
+.tgp-step{display:flex;align-items:center;height:38px;border:1px solid var(--border-hi);border-radius:8px;background:var(--bg);overflow:hidden;max-width:210px}
+.tgp-step:focus-within{border-color:var(--gold);box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 16%,transparent)}
+.tgp-step button{width:38px;height:100%;border:none;background:var(--surface2,rgba(255,255,255,.04));color:var(--text2);font-size:16px;cursor:pointer;transition:all .15s;font-family:inherit}
+.tgp-step button:hover{background:var(--gold);color:var(--bg)}
+.tgp-step input{flex:1;min-width:0;width:100%;height:100%;border:none;background:transparent;outline:none;text-align:center;font-size:14px;font-weight:700;color:var(--text);font-family:inherit;font-variant-numeric:tabular-nums}
+.tgp-step span{font-size:10px;color:var(--muted);padding-right:10px;white-space:nowrap}
+.tgp-chips{display:flex;flex-wrap:wrap;gap:6px}
+.tgp-chips span{font-size:11px;padding:3px 11px;border-radius:99px;border:1px solid var(--border-hi);color:var(--text2)}
+.tgp-act .tgp-btn{width:100%;padding:0 10px}
+.tgp-row.dirty .tgp-act .tgp-btn{background:var(--text);color:var(--bg);border-color:var(--text)}
+.tgp-empty{padding:28px;text-align:center;font-size:12px;color:var(--muted)}
+.tgp-note{margin:4px 2px 26px;font-size:11px;color:var(--muted);line-height:1.6}
+@container tgp (max-width:900px){
+  .tgp-head{display:none}
+  .tgp-row,.tgp-fu .tgp-row{grid-template-columns:1fr 1fr;gap:12px 16px;padding:16px 18px}
+  .tgp-staff,.tgp-prog-c,.tgp-new,.tgp-act,.tgp-fu .tgp-mem{grid-column:1/-1}
+  .tgp-c[data-l]::before{content:attr(data-l);display:block;margin-bottom:4px;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .tgp-step{max-width:none}
+}
+@media (prefers-reduced-motion:reduce){.tgp-row.saved{animation:none}}
 
 </style>
 <style id="acct-off-css">
@@ -5536,34 +5567,27 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
           </div>
         </div>
 
-        <nav class="mt-nav" id="mt-nav">
-          <a style="--mt-c:#d98ec0" onclick="mtGo('host')"><i></i>Host Live <b id="mtn-host">0</b></a>
-          <a style="--mt-c:#7abf8e" onclick="mtGo('cs')"><i></i>CS Hunter <b id="mtn-cs">0</b></a>
-          <a style="--mt-c:#7ea8c9" onclick="mtGo('admin')"><i></i>Admin <b id="mtn-admin">0</b></a>
-          <a style="--mt-c:#e8b86e" onclick="mtGo('b2b')"><i></i>B2B Marketing <b id="mtn-b2b">0</b></a>
-          <a style="--mt-c:#c9a96e" onclick="mtGo('fu')"><i></i>Follow-up Harian</a>
-        </nav>
+        <div class="tgp-bar">
+          <div class="tgp-bar-l">
+            <div class="tgp-period">Periode <b id="tgp-period"></b></div>
+            <div class="tgp-pend" id="tgp-pend">Tidak ada perubahan</div>
+          </div>
+          <div class="tgp-bar-r">
+            <button class="tgp-btn" type="button" onclick="tgpReload()" title="Muat ulang data target">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Muat Ulang</button>
+            <button class="tgp-btn pri" type="button" id="tgp-save-all" onclick="tgpSaveAll()" disabled>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Update Semua Target <b id="tgp-save-n"></b></button>
+          </div>
+        </div>
 
-        <section class="mt-sec" id="mt-sec-host" style="--mt-c:#d98ec0">
-          <div class="mt-sec-h"><span class="mt-dot"></span><h3>Host Live</h3><span class="mt-count" id="mtc-host"></span><span class="mt-sub">Target omzet live per bulan</span></div>
-          <div class="mt-grid" id="mtg-host-grid"></div>
-        </section>
-        <section class="mt-sec" id="mt-sec-cs" style="--mt-c:#7abf8e">
-          <div class="mt-sec-h"><span class="mt-dot"></span><h3>CS Hunter</h3><span class="mt-count" id="mtc-cs"></span><span class="mt-sub">Target omzet closing per bulan</span></div>
-          <div class="mt-grid" id="mtg-cs-grid"></div>
-        </section>
-        <section class="mt-sec" id="mt-sec-admin" style="--mt-c:#7ea8c9">
-          <div class="mt-sec-h"><span class="mt-dot"></span><h3>Admin</h3><span class="mt-count" id="mtc-admin"></span><span class="mt-sub">Target omzet per bulan</span></div>
-          <div class="mt-grid" id="mtg-admin-grid"></div>
-        </section>
-        <section class="mt-sec" id="mt-sec-b2b" style="--mt-c:#e8b86e">
-          <div class="mt-sec-h"><span class="mt-dot"></span><h3>B2B Marketing</h3><span class="mt-count" id="mtc-b2b"></span><span class="mt-sub">Target omzet per bulan</span></div>
-          <div class="mt-grid" id="mtg-b2b-grid"></div>
-        </section>
-        <section class="mt-sec" id="mt-sec-fu" style="--mt-c:#c9a96e">
-          <div class="mt-sec-h"><span class="mt-dot"></span><h3>Target Follow-up Harian</h3><span class="mt-sub">Berlaku sama untuk semua anggota di role tersebut</span></div>
-          <div class="mt-grid" id="mtg-followup-grid"></div>
-        </section>
+        <div class="tgp-tabs" id="tgp-tabs"></div>
+
+        <section class="tgp-panel" id="tgp-p-host" style="--tc:#d98ec0"></section>
+        <section class="tgp-panel" id="tgp-p-cs" style="--tc:#7abf8e"></section>
+        <section class="tgp-panel" id="tgp-p-admin" style="--tc:#7ea8c9"></section>
+        <section class="tgp-panel" id="tgp-p-b2b" style="--tc:#e8b86e"></section>
+        <section class="tgp-panel tgp-fu" id="tgp-p-fu" style="--tc:#c9a96e"></section>
+        <div class="tgp-note">Ubah angka di kolom <b>Target Baru</b>, lalu klik <b>Update</b> pada barisnya, atau <b>Update Semua Target</b> untuk menyimpan semua perubahan sekaligus. Target omzet berlaku untuk periode berjalan. Target follow-up berlaku harian untuk seluruh anggota role.</div>
       </div>
 
       <!-- ④b BUDGET MARKETING (Moderator only) -->
@@ -19113,13 +19137,7 @@ window.saveAdminTarget = saveAdminTarget;
    ═══════════════════════════════════════════════════════════ */
 async function renderModTargetPage() {
   if (!can.isMod(currentUser?.role)) return;
-  await Promise.all([
-    _renderRoleTargetGrid('host'),
-    _renderRoleTargetGrid('cs'),
-    _renderRoleTargetGrid('admin'),
-    _renderRoleTargetGrid('b2b'),
-    _renderFollowupTargetGrid(),
-  ]);
+  await tgpRenderAll();
 }
 window.renderModTargetPage = renderModTargetPage;
 
@@ -20644,122 +20662,169 @@ async function _setPortalConfigVal(key, val) {
   localStorage.setItem(`dhp_cfg_${key}`, String(val));
 }
 
-/* v114 — Halaman Target: dipisah per role (Host Live, CS Hunter, Admin, B2B) + Follow-up harian */
-const MT_ROLES = {
-  host:  { jsRole:'host_live',     grid:'mtg-host-grid',  owner:'host_user_id',       view:'v_host_target_progress',       rpc:'moderator_set_host_target',       param:'p_host_user',      color:'#d98ec0' },
-  cs:    { jsRole:'cs_hunter',     grid:'mtg-cs-grid',    owner:'cs_hunter_user_id',  view:'v_cs_hunter_target_progress',  rpc:'moderator_set_cs_hunter_target',  param:'p_cs_hunter_user', color:'#7abf8e' },
-  admin: { jsRole:'admin',         grid:'mtg-admin-grid', owner:'admin_user_id',      view:'v_admin_target_progress',      rpc:'moderator_set_admin_target',      param:'p_admin_user',     color:'#7ea8c9' },
-  b2b:   { jsRole:'b2b_marketing', grid:'mtg-b2b-grid',   owner:'b2b_user_id',        view:'v_b2b_target_progress',        rpc:'moderator_set_b2b_target',        param:'p_b2b_user',       color:'#e8b86e' },
+/* v115 — Halaman Target: tabel korporat per role + tombol Update (per baris & massal) */
+const TGP_ROLES = {
+  host:  { label:'Host Live',     sub:'Target omzet live bulanan',      jsRole:'host_live',     owner:'host_user_id',      view:'v_host_target_progress',      rpc:'moderator_set_host_target',      param:'p_host_user',      color:'#d98ec0' },
+  cs:    { label:'CS Hunter',     sub:'Target omzet closing bulanan',   jsRole:'cs_hunter',     owner:'cs_hunter_user_id', view:'v_cs_hunter_target_progress', rpc:'moderator_set_cs_hunter_target', param:'p_cs_hunter_user', color:'#7abf8e' },
+  admin: { label:'Admin',         sub:'Target omzet bulanan',           jsRole:'admin',         owner:'admin_user_id',     view:'v_admin_target_progress',     rpc:'moderator_set_admin_target',     param:'p_admin_user',     color:'#7ea8c9' },
+  b2b:   { label:'B2B Marketing', sub:'Target omzet bulanan',           jsRole:'b2b_marketing', owner:'b2b_user_id',       view:'v_b2b_target_progress',       rpc:'moderator_set_b2b_target',       param:'p_b2b_user',       color:'#e8b86e' },
 };
-const MT_FU = [
-  { key:'admin',     label:'Admin',         jsRole:'admin',         color:'#7ea8c9' },
-  { key:'b2b',       label:'B2B Marketing', jsRole:'b2b_marketing', color:'#e8b86e' },
-  { key:'cs_hunter', label:'CS Hunter',     jsRole:'cs_hunter',     color:'#7abf8e' },
+const TGP_FU = [
+  { key:'admin',     label:'Admin',         jsRole:'admin' },
+  { key:'b2b',       label:'B2B Marketing', jsRole:'b2b_marketing' },
+  { key:'cs_hunter', label:'CS Hunter',     jsRole:'cs_hunter' },
 ];
-function mtGo(k) { document.getElementById('mt-sec-' + k)?.scrollIntoView({ behavior:'smooth', block:'start' }); }
-window.mtGo = mtGo;
-function _mtInitials(n) { return (n || '?').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase(); }
+let tgpTab = 'all';
+const tgpDirty = new Map();   // key → { kind, role, id, value }
+let tgpFlash = new Set();
+const _tgpIni = (n) => (n || '?').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+const _tgpYm = () => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}`; };
 
-async function _renderFollowupTargetGrid() {
-  const grid = document.getElementById('mtg-followup-grid');
-  if (!grid) return;
-  const vals = await Promise.all(MT_FU.map(r => _getPortalConfigVal('followup_target_' + r.key, '50')));
-  grid.innerHTML = MT_FU.map((r, i) => {
-    const members = Object.values(LOCAL_USERS).filter(u => u.role === r.jsRole).map(u => u.name);
-    return `<div class="mt-card mt-fu-card" style="--mt-c:${r.color}">
-      <div class="mt-card-top">
-        <div class="mt-av">${_mtInitials(r.label)}</div>
-        <div class="mt-who"><div class="mt-name">${r.label}</div><div class="mt-role">${members.length} anggota</div></div>
-      </div>
-      <div class="mt-fu-big">
-        <button class="mt-fu-step" type="button" onclick="_mtFuStep('${r.key}',-5)">−</button>
-        <input id="mtg-fu-${r.key}" type="number" min="1" value="${escHtml(vals[i])}"/>
-        <button class="mt-fu-step" type="button" onclick="_mtFuStep('${r.key}',5)">+</button>
-      </div>
-      <div class="mt-fu-unit">customer di-follow up / hari</div>
-      <div class="mt-fu-mem">${members.length ? members.map(n => `<span>${escHtml(n)}</span>`).join('') : '<span style="opacity:.6">Belum ada user</span>'}</div>
-      <button class="mt-save" type="button" onclick="_saveFollowupTarget('${r.key}')">Simpan</button>
-    </div>`;
-  }).join('');
+function tgpUpdateBar() {
+  const n = tgpDirty.size;
+  const b = document.getElementById('tgp-save-all'); if (b) b.disabled = !n;
+  const c = document.getElementById('tgp-save-n'); if (c) c.textContent = n ? `(${n})` : '';
+  const p = document.getElementById('tgp-pend');
+  if (p) { p.textContent = n ? `${n} perubahan belum disimpan` : 'Tidak ada perubahan'; p.classList.toggle('on', !!n); }
 }
-function _mtFuStep(key, d) {
-  const el = document.getElementById('mtg-fu-' + key); if (!el) return;
+function tgpInput(el) {
+  if (el.dataset.kind === 'role') crmFormatRpInput(el);
+  const val = String(crmParseInt(el.value));
+  const dirty = val !== el.dataset.orig;
+  const key = el.dataset.key;
+  el.closest('.tgp-row')?.classList.toggle('dirty', dirty);
+  if (dirty) tgpDirty.set(key, { kind: el.dataset.kind, role: el.dataset.role, id: el.dataset.id, value: el.value });
+  else tgpDirty.delete(key);
+  tgpUpdateBar();
+}
+function tgpStep(key, d) {
+  const el = document.getElementById('tgp-in-' + key); if (!el) return;
   el.value = Math.max(1, (crmParseInt(el.value) || 0) + d);
+  tgpInput(el);
 }
-window._mtFuStep = _mtFuStep;
-
-async function _saveFollowupTarget(roleKey) {
-  const input = document.getElementById(`mtg-fu-${roleKey}`);
-  const val = Math.max(1, crmParseInt(input?.value) || 1);
-  await _setPortalConfigVal(`followup_target_${roleKey}`, val);
-  FOLLOWUP_DAILY_TARGETS[roleKey] = val;
-  const roleLbl = roleKey === 'admin' ? 'Admin' : roleKey === 'b2b' ? 'B2B Marketing' : 'CS Hunter';
-  toast(`Target follow-up ${roleLbl} diatur: ${val}/hari`);
-  pushActivity(`Target follow-up harian ${roleKey} diatur ${val}/hari`, 'info');
-  if (currentUser && followupTargetForRole(currentUser.role) !== undefined) syncFollowupTargetForCurrentUser();
+function tgpSetTab(k) { tgpTab = k; tgpApplyTab(); }
+function tgpApplyTab() {
+  ['host', 'cs', 'admin', 'b2b', 'fu'].forEach(k => document.getElementById('tgp-p-' + k)?.classList.toggle('hide', tgpTab !== 'all' && tgpTab !== k));
+  document.querySelectorAll('#tgp-tabs .tgp-tab').forEach(b => b.classList.toggle('on', b.dataset.k === tgpTab));
 }
-window._saveFollowupTarget = _saveFollowupTarget;
+function _tgpRenderTabs(counts) {
+  const el = document.getElementById('tgp-tabs'); if (!el) return;
+  const tabs = [['all', 'Semua'], ['host', 'Host Live'], ['cs', 'CS Hunter'], ['admin', 'Admin'], ['b2b', 'B2B Marketing'], ['fu', 'Follow-up Harian']];
+  el.innerHTML = tabs.map(([k, l]) => `<button type="button" class="tgp-tab" data-k="${k}" onclick="tgpSetTab('${k}')">${l}${counts[k] != null ? `<i>${counts[k]}</i>` : ''}</button>`).join('');
+  tgpApplyTab();
+}
 
-async function _renderRoleTargetGrid(roleKey) {
-  const cfg = MT_ROLES[roleKey]; if (!cfg) return;
-  const grid = document.getElementById(cfg.grid); if (!grid) return;
+async function _tgpRenderRole(rk) {
+  const cfg = TGP_ROLES[rk], panel = document.getElementById('tgp-p-' + rk); if (!cfg || !panel) return 0;
   const users = Object.entries(LOCAL_USERS).filter(([id, u]) => u.role === cfg.jsRole);
-  const cnt = users.length;
-  const c1 = document.getElementById('mtc-' + roleKey); if (c1) c1.textContent = cnt + ' orang';
-  const c2 = document.getElementById('mtn-' + roleKey); if (c2) c2.textContent = cnt;
-  if (!users.length) { grid.innerHTML = `<div class="mt-empty">Belum ada user dengan role ini.</div>`; return; }
-  const progressMap = {};
-  if (db) {
+  const progress = {};
+  if (db && users.length) {
     const res = await dbQ(d => d.from(cfg.view).select('*'));
-    if (res?.data) res.data.forEach(row => { progressMap[row[cfg.owner]] = row; });
-    else if (roleKey === 'cs') {   // view belum ada → baca tabel target langsung (tanpa angka tercapai)
-      const now = new Date(), ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-      const r2 = await dbQ(d => d.from('cs_hunter_sales_target').select('*').eq('period_ym', ym));
-      (r2?.data || []).forEach(row => { progressMap[row.cs_hunter_user_id] = { target_amount: row.target_amount, achieved_amount: 0 }; });
+    if (res?.data) res.data.forEach(r => { progress[r[cfg.owner]] = r; });
+    else if (rk === 'cs') {   // view belum dibuat → baca tabel target langsung
+      const r2 = await dbQ(d => d.from('cs_hunter_sales_target').select('*').eq('period_ym', _tgpYm()));
+      (r2?.data || []).forEach(r => { progress[r.cs_hunter_user_id] = { target_amount: r.target_amount, achieved_amount: 0 }; });
     }
   }
-  grid.style.setProperty('--mt-c', cfg.color);
-  grid.innerHTML = users.map(([id, u]) => {
-    const p = progressMap[id] || {};
-    const target = Number(p.target_amount) || 0, achieved = Number(p.achieved_amount) || 0;
-    const pctRaw = target > 0 ? achieved / target * 100 : 0, pct = Math.min(100, Math.round(pctRaw));
-    const sisa = target > 0 ? Math.max(0, target - achieved) : 0;
-    return `<div class="mt-card" style="--mt-c:${cfg.color}">
-      <div class="mt-card-top">
-        <div class="mt-av">${_mtInitials(u.name)}</div>
-        <div class="mt-who"><div class="mt-name">${escHtml(u.name)}</div><div class="mt-role">${rn(cfg.jsRole)} · @${escHtml(id)}</div></div>
-        <div class="mt-pct">${target > 0 ? Math.round(pctRaw) + '%' : '—'}</div>
-      </div>
-      <div class="mt-prog"><div style="width:${pct}%"></div></div>
-      <div class="mt-stats">
-        <div><span>Tercapai</span><b>${crmFmtRupiah(achieved)}</b></div>
-        <div><span>Target</span><b>${target > 0 ? crmFmtRupiah(target) : '—'}</b></div>
-        <div><span>Sisa</span><b>${target > 0 ? crmFmtRupiah(sisa) : '—'}</b></div>
-      </div>
-      <div class="mt-edit">
-        <div class="mt-inwrap"><em>Rp</em><input id="mtg-${roleKey}-${id}" type="text" inputmode="numeric" oninput="crmFormatRpInput(this)" value="${target ? target.toLocaleString('id-ID') : ''}" placeholder="mis. 20.000.000"/></div>
-        <button class="mt-save" type="button" onclick="_saveRoleTarget('${roleKey}','${id}')">Simpan</button>
-      </div>
+  let totT = 0, totA = 0;
+  const rows = users.map(([id, u]) => {
+    const p = progress[id] || {}, t = Number(p.target_amount) || 0, a = Number(p.achieved_amount) || 0;
+    totT += t; totA += a;
+    const key = `${rk}:${id}`, dr = tgpDirty.get(key);
+    const pctRaw = t > 0 ? a / t * 100 : 0;
+    return `<div class="tgp-row${dr ? ' dirty' : ''}${tgpFlash.has(key) ? ' saved' : ''}">
+      <div class="tgp-c tgp-staff"><div class="tgp-av">${escHtml(_tgpIni(u.name))}</div><div><div class="tgp-nm">${escHtml(u.name)}</div><div class="tgp-id">@${escHtml(id)}</div></div></div>
+      <div class="tgp-c" data-l="Tercapai"><span class="tgp-num">${crmFmtRupiah(a)}</span></div>
+      <div class="tgp-c" data-l="Target Saat Ini"><span class="tgp-num${t ? '' : ' mut'}">${t ? crmFmtRupiah(t) : 'Belum diatur'}</span></div>
+      <div class="tgp-c tgp-prog-c" data-l="Progres"><div class="tgp-prog"><div class="tgp-track"><i style="width:${Math.min(100, Math.round(pctRaw))}%"></i></div><span class="tgp-pct">${t ? Math.round(pctRaw) + '%' : '—'}</span></div></div>
+      <div class="tgp-c tgp-new" data-l="Target Baru"><div class="tgp-in"><em>Rp</em>
+        <input id="tgp-in-${rk}-${id}" type="text" inputmode="numeric" placeholder="mis. 20.000.000" value="${escHtml(dr ? dr.value : (t ? t.toLocaleString('id-ID') : ''))}"
+          data-kind="role" data-role="${rk}" data-id="${escHtml(id)}" data-key="${key}" data-orig="${t}" oninput="tgpInput(this)" onkeydown="if(event.key==='Enter')tgpSaveRow('${key}')"/></div></div>
+      <div class="tgp-c tgp-act"><button class="tgp-btn" type="button" onclick="tgpSaveRow('${key}')">Update</button></div>
     </div>`;
   }).join('');
+  panel.innerHTML = `
+    <div class="tgp-ph"><div class="tgp-pt"><span class="tgp-dot"></span><h3>${cfg.label}</h3><small>${users.length} orang · ${cfg.sub}</small></div>
+      <div class="tgp-sum"><span>Total Target<b>${crmFmtRupiah(totT)}</b></span><span>Tercapai<b>${crmFmtRupiah(totA)}</b></span><span>Capaian<b>${totT > 0 ? Math.round(totA / totT * 100) + '%' : '—'}</b></span></div></div>
+    ${users.length ? `<div class="tgp-head"><div>Staf</div><div>Tercapai</div><div>Target Saat Ini</div><div>Progres</div><div>Target Baru</div><div></div></div>${rows}`
+                   : `<div class="tgp-empty">Belum ada user aktif dengan role ini.</div>`}`;
+  return users.length;
 }
 
-async function _saveRoleTarget(roleKey, uid) {
-  const cfg = MT_ROLES[roleKey]; if (!cfg) return;
-  if (!db) { toast('Supabase tidak aktif'); return; }
-  const input = document.getElementById(`mtg-${roleKey}-${uid}`);
-  const amount = Math.max(0, crmParseInt(input?.value) || 0);
-  const now = new Date();
-  const periodYm = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  const res = await dbQ(d => d.rpc(cfg.rpc, {
-    p_moderator_id: currentUser.id, [cfg.param]: uid, p_period_ym: periodYm, p_target_amount: amount
-  }));
-  if (!res || res.error) { toast('Gagal menyimpan: ' + (res?.error?.message || 'database tidak terhubung')); return; }
-  toast(`Target omzet ${getUserMeta(uid).name} diatur: ${crmFmtRupiah(amount)}`);
-  pushActivity(`Target omzet ${uid} (${periodYm}) diatur ${crmFmtRupiah(amount)}`, 'info');
-  _renderRoleTargetGrid(roleKey);
+async function _tgpRenderFu() {
+  const panel = document.getElementById('tgp-p-fu'); if (!panel) return;
+  const vals = await Promise.all(TGP_FU.map(r => _getPortalConfigVal('followup_target_' + r.key, '50')));
+  const rows = TGP_FU.map((r, i) => {
+    const mem = Object.values(LOCAL_USERS).filter(u => u.role === r.jsRole).map(u => u.name);
+    const key = `fu:${r.key}`, dr = tgpDirty.get(key), cur = Math.max(1, crmParseInt(vals[i]) || 50);
+    return `<div class="tgp-row${dr ? ' dirty' : ''}${tgpFlash.has(key) ? ' saved' : ''}">
+      <div class="tgp-c tgp-staff"><div class="tgp-av" style="--tc:#c9a96e">${escHtml(_tgpIni(r.label))}</div><div><div class="tgp-nm">${r.label}</div><div class="tgp-id">${mem.length} anggota</div></div></div>
+      <div class="tgp-c tgp-mem" data-l="Anggota"><div class="tgp-chips">${mem.length ? mem.map(n => `<span>${escHtml(n)}</span>`).join('') : '<span>Belum ada user</span>'}</div></div>
+      <div class="tgp-c tgp-new" data-l="Target per Hari"><div class="tgp-step"><button type="button" onclick="tgpStep('fu-${r.key}',-5)">−</button>
+        <input id="tgp-in-fu-${r.key}" type="number" min="1" value="${escHtml(dr ? dr.value : cur)}" data-kind="fu" data-role="fu" data-id="${r.key}" data-key="${key}" data-orig="${cur}" oninput="tgpInput(this)" onkeydown="if(event.key==='Enter')tgpSaveRow('${key}')"/>
+        <button type="button" onclick="tgpStep('fu-${r.key}',5)">+</button></div></div>
+      <div class="tgp-c tgp-act"><button class="tgp-btn" type="button" onclick="tgpSaveRow('${key}')">Update</button></div>
+    </div>`;
+  }).join('');
+  panel.innerHTML = `
+    <div class="tgp-ph"><div class="tgp-pt"><span class="tgp-dot"></span><h3>Target Follow-up Harian</h3><small>Jumlah customer di-follow up per hari · sama untuk semua anggota role</small></div></div>
+    <div class="tgp-head"><div>Role</div><div>Anggota</div><div>Target per Hari</div><div></div></div>${rows}`;
 }
-window._saveRoleTarget = _saveRoleTarget;
+
+async function tgpRenderAll() {
+  const pe = document.getElementById('tgp-period');
+  if (pe) { const m = currentLang === 'id' ? MONTHS_ID : MONTHS_EN, d = new Date(); pe.textContent = `${m[d.getMonth()]} ${d.getFullYear()}`; }
+  const [h, c, a, b] = await Promise.all([_tgpRenderRole('host'), _tgpRenderRole('cs'), _tgpRenderRole('admin'), _tgpRenderRole('b2b'), _tgpRenderFu()]);
+  _tgpRenderTabs({ all: h + c + a + b, host: h, cs: c, admin: a, b2b: b });
+  tgpUpdateBar();
+}
+function tgpReload() {
+  if (tgpDirty.size && !confirm('Ada perubahan yang belum disimpan. Muat ulang dan buang perubahan?')) return;
+  tgpDirty.clear(); tgpRenderAll();
+}
+
+async function _tgpSaveOne(d) {
+  if (d.kind === 'fu') {
+    const val = Math.max(1, crmParseInt(d.value) || 1);
+    await _setPortalConfigVal(`followup_target_${d.id}`, val);
+    FOLLOWUP_DAILY_TARGETS[d.id] = val;
+    try { syncFollowupTargetForCurrentUser(); } catch (e) {}
+    pushActivity(`Target follow-up harian ${d.id} diatur ${val}/hari`, 'info');
+    return { ok: true, label: `Follow-up ${d.id}`, text: `${val}/hari` };
+  }
+  const cfg = TGP_ROLES[d.role], amount = Math.max(0, crmParseInt(d.value) || 0);
+  if (!db) return { ok: false, err: 'Supabase tidak aktif' };
+  const res = await dbQ(x => x.rpc(cfg.rpc, { p_moderator_id: currentUser.id, [cfg.param]: d.id, p_period_ym: _tgpYm(), p_target_amount: amount }));
+  if (!res || res.error) return { ok: false, err: res?.error?.message || 'database tidak terhubung' };
+  pushActivity(`Target omzet ${d.id} (${_tgpYm()}) diatur ${crmFmtRupiah(amount)}`, 'info');
+  return { ok: true, label: getUserMeta(d.id).name, text: crmFmtRupiah(amount) };
+}
+function _tgpEntry(key) {
+  if (tgpDirty.has(key)) return tgpDirty.get(key);
+  const el = document.getElementById('tgp-in-' + key.replace(':', '-')); if (!el) return null;
+  return { kind: el.dataset.kind, role: el.dataset.role, id: el.dataset.id, value: el.value };
+}
+async function tgpSaveRow(key) {
+  const d = _tgpEntry(key); if (!d) return;
+  const r = await _tgpSaveOne(d);
+  if (!r.ok) { toast('Gagal menyimpan: ' + r.err); return; }
+  tgpDirty.delete(key); tgpFlash = new Set([key]);
+  toast(`✓ Target ${r.label} diperbarui: ${r.text}`);
+  await tgpRenderAll(); setTimeout(() => { tgpFlash.clear(); }, 2000);
+}
+async function tgpSaveAll() {
+  if (!tgpDirty.size) return;
+  const btn = document.getElementById('tgp-save-all'); if (btn) btn.disabled = true;
+  let ok = 0, fail = [];
+  tgpFlash = new Set();
+  for (const [key, d] of [...tgpDirty.entries()]) {
+    const r = await _tgpSaveOne(d);
+    if (r.ok) { ok++; tgpDirty.delete(key); tgpFlash.add(key); } else fail.push(r.err);
+  }
+  toast(fail.length ? `Gagal: ${fail.length} target tidak tersimpan (${fail[0]})` : `✓ ${ok} target berhasil diperbarui`);
+  await tgpRenderAll(); setTimeout(() => { tgpFlash.clear(); }, 2000);
+}
+Object.assign(window, { tgpInput, tgpStep, tgpSetTab, tgpReload, tgpSaveRow, tgpSaveAll, tgpRenderAll });
 
 
 // ── Helper format & parsing ──
