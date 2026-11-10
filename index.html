@@ -4760,6 +4760,28 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
 }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@1,6..96,500&family=Fraunces:ital,opsz,wght@1,9..144,300..700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style id="lsr-net-css">
+/* v116 — kotak "diterima setelah potongan 25%" di form laporan sesi */
+.lsr-net{display:none;align-items:center;gap:14px;margin:-2px 0 14px;padding:12px 14px;border-radius:12px;position:relative;overflow:hidden;
+  border:1px solid rgba(201,169,110,.38);background:linear-gradient(135deg,rgba(201,169,110,.12),rgba(122,191,142,.06))}
+.lsr-net.on{display:flex;animation:lsr-net-in .45s cubic-bezier(.16,1,.3,1)}
+.lsr-net::after{content:'';position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.14),transparent);animation:lsr-net-shine 2.4s .3s ease-out 1}
+@keyframes lsr-net-in{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes lsr-net-shine{to{left:130%}}
+.lsr-net-ico{flex:none;width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.25)}
+.lsr-net-sh{animation:lsr-dash 1.6s linear infinite}
+@keyframes lsr-dash{to{stroke-dashoffset:-12}}
+.lsr-net-main{min-width:0;flex:1}
+.lsr-net-lbl{font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.lsr-net-val{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;line-height:1.15;color:var(--green);font-variant-numeric:tabular-nums}
+.lsr-net-calc{display:flex;gap:7px;align-items:center;flex-wrap:wrap;font-size:10.5px;color:var(--text2);font-variant-numeric:tabular-nums}
+.lsr-net-calc i{font-style:normal;color:var(--muted)}
+.lsr-net-calc .neg{color:var(--red)}
+.lsr-total-net{display:none;justify-content:space-between;align-items:center;gap:10px;margin:-4px 0 14px;padding:9px 12px;border-radius:9px;border:1px dashed rgba(122,191,142,.45);background:rgba(122,191,142,.07);font-size:11px;color:var(--text2)}
+.lsr-total-net.on{display:flex}
+.lsr-total-net b{color:var(--green);font-size:13px;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){.lsr-net.on,.lsr-net::after,.lsr-net-sh{animation:none}}
+</style>
 <style id="tgp-css">
 /* ═══ v115 — HALAMAN TARGET (tabel korporat, prefix tgp-) ═══ */
 .tgp-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:space-between;margin:0 0 20px;padding:14px 18px;
@@ -13645,9 +13667,10 @@ function renderReportModal(s) {
       </div>
       <div class="fg"><label>GMV Shopee (Rp)</label>
         <input class="fi lsr-num" id="lsr-shopee-gmv" type="text" inputmode="numeric"
-          value="${s.shopee_gmv_amount ? Number(s.shopee_gmv_amount).toLocaleString('id-ID') : ''}"
+          value="${lsrGrossOf(s,'shopee') ? lsrGrossOf(s,'shopee').toLocaleString('id-ID') : ''}"
           oninput="formatNominalPlain(this);updateLsrTotal()" placeholder="mis. 1.500.000"/>
       </div>
+      ${lsrNetBox('shopee')}
       <div class="fg"><label>Penonton Shopee</label>
         <input class="fi lsr-num" id="lsr-shopee-viewers" type="number" min="0" step="1" value="${s.shopee_viewers_count ?? ''}" placeholder="mis. 400" oninput="updateLsrTotal()"/>
       </div>
@@ -13661,9 +13684,10 @@ function renderReportModal(s) {
       </div>
       <div class="fg"><label>GMV TikTok (Rp)</label>
         <input class="fi lsr-num" id="lsr-tiktok-gmv" type="text" inputmode="numeric"
-          value="${s.tiktok_gmv_amount ? Number(s.tiktok_gmv_amount).toLocaleString('id-ID') : ''}"
+          value="${lsrGrossOf(s,'tiktok') ? lsrGrossOf(s,'tiktok').toLocaleString('id-ID') : ''}"
           oninput="formatNominalPlain(this);updateLsrTotal()" placeholder="mis. 2.000.000"/>
       </div>
+      ${lsrNetBox('tiktok')}
       <div class="fg"><label>Penonton TikTok</label>
         <input class="fi lsr-num" id="lsr-tiktok-viewers" type="number" min="0" step="1" value="${s.tiktok_viewers_count ?? ''}" placeholder="mis. 450" oninput="updateLsrTotal()"/>
       </div>
@@ -13674,7 +13698,8 @@ function renderReportModal(s) {
     ${platNote}
     ${shopeeBlock}
     ${tiktokBlock}
-    <div class="lsr-total-row" id="lsr-total-row">Total gabungan: <b id="lsr-total-summary">0 produk · Rp 0 · 0 penonton</b></div>
+    <div class="lsr-total-row" id="lsr-total-row">Total gabungan (input): <b id="lsr-total-summary">0 produk · Rp 0 · 0 penonton</b></div>
+    <div class="lsr-total-net" id="lsr-total-net"><span>Total tercatat di laporan (setelah potongan ${Math.round(LSR_DEDUCT_RATE*100)}%)</span><b id="lsr-total-net-val">Rp 0</b></div>
     <div class="fg"><label>Catatan (opsional)</label>
       <input class="fi" id="lsr-note" value="${escHtml(s.note||'')}" placeholder="mis. banyak repeat order"/>
     </div>`;
@@ -13698,6 +13723,63 @@ function updateLsrTotal() {
   const tv = parseInt(document.getElementById('lsr-tiktok-viewers')?.value, 10) || 0;
   document.getElementById('lsr-total-summary').textContent =
     `${sp + tp} produk · Rp ${(sg + tg).toLocaleString('id-ID')} · ${sv + tv} penonton`;
+  // v116: kotak "setelah potongan 25%" per platform + total bersih
+  lsrUpdateNet('shopee', sg); lsrUpdateNet('tiktok', tg);
+  const tn = document.getElementById('lsr-total-net');
+  if (tn) {
+    const both = document.getElementById('lsr-shopee-gmv') && document.getElementById('lsr-tiktok-gmv');
+    tn.classList.toggle('on', !!both && (sg + tg) > 0);
+    const v = document.getElementById('lsr-total-net-val');
+    if (v) v.textContent = 'Rp ' + lsrNetOf(sg + tg).toLocaleString('id-ID');
+  }
+}
+
+/* ── v116: potongan 25% (PPN) atas GMV — hanya TAMPILAN di form. Angka yang
+   disimpan ke database tetap GMV asli yang diinput host. Ubah angka di bawah
+   kalau ratenya berubah. ── */
+const LSR_DEDUCT_RATE = 0.25;
+const lsrNetOf = (g) => Math.round(g * (1 - LSR_DEDUCT_RATE));
+// GMV kotor yang diketik host: pakai kolom *_gmv_gross kalau laporan sudah versi potongan,
+// kalau laporan lama (belum dipotong) angka tersimpan = GMV kotor itu sendiri.
+function lsrGrossOf(s, p) {
+  const g = s[p + '_gmv_gross'];
+  if (Number(s.gmv_deduct_pct) > 0 && g != null) return Number(g) || 0;
+  return Number(s[p + '_gmv_amount']) || 0;
+}
+const _lsrNetShown = {};
+function lsrNetBox(p) {
+  const pct = Math.round(LSR_DEDUCT_RATE * 100);
+  return `<div class="lsr-net" id="lsr-net-${p}" aria-live="polite">
+    <div class="lsr-net-ico"><svg viewBox="0 0 48 48" width="40" height="40" fill="none" aria-hidden="true">
+      <defs><linearGradient id="lsrg-${p}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3dfb0"/><stop offset="1" stop-color="#b8863a"/></linearGradient></defs>
+      <path d="M12 5h24a2 2 0 0 1 2 2v34l-4.7-3.2L29.6 41l-4.8-3.2L20 41l-4.7-3.2L10 41V7a2 2 0 0 1 2-2Z" stroke="url(#lsrg-${p})" stroke-width="2" stroke-linejoin="round" fill="rgba(201,169,110,.08)"/>
+      <path d="M17 29 31 15" stroke="url(#lsrg-${p})" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="18" cy="17" r="2.6" stroke="url(#lsrg-${p})" stroke-width="2"/><circle cx="30" cy="27" r="2.6" stroke="url(#lsrg-${p})" stroke-width="2"/>
+      <path class="lsr-net-sh" d="M17 34h14" stroke="url(#lsrg-${p})" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 3"/>
+    </svg></div>
+    <div class="lsr-net-main">
+      <div class="lsr-net-lbl">Tercatat di laporan · setelah potongan PPN ${pct}%</div>
+      <div class="lsr-net-val" id="lsr-net-${p}-val">Rp 0</div>
+      <div class="lsr-net-calc"><span id="lsr-net-${p}-gmv">GMV Rp 0</span><i>→</i><span class="neg" id="lsr-net-${p}-cut">− Rp 0</span></div>
+    </div></div>`;
+}
+function lsrUpdateNet(p, gmv) {
+  const box = document.getElementById('lsr-net-' + p); if (!box) return;
+  const on = gmv > 0;
+  box.classList.toggle('on', on);
+  if (!on) { _lsrNetShown[p] = 0; return; }
+  const net = lsrNetOf(gmv), cut = gmv - net;
+  document.getElementById(`lsr-net-${p}-gmv`).textContent = 'GMV Rp ' + gmv.toLocaleString('id-ID');
+  document.getElementById(`lsr-net-${p}-cut`).textContent = '− Rp ' + cut.toLocaleString('id-ID');
+  const el = document.getElementById(`lsr-net-${p}-val`);
+  const from = _lsrNetShown[p] || 0, t0 = performance.now(), dur = 380;
+  _lsrNetShown[p] = net;
+  const step = (t) => {
+    const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+    el.textContent = 'Rp ' + Math.round(from + (net - from) * e).toLocaleString('id-ID');
+    if (k < 1 && _lsrNetShown[p] === net) requestAnimationFrame(step); else if (_lsrNetShown[p] === net) el.textContent = 'Rp ' + net.toLocaleString('id-ID');
+  };
+  requestAnimationFrame(step);
 }
 
 /* Format input angka polos (tanpa mengubah field hidden lain) — dipakai khusus input GMV laporan sesi */
@@ -13732,15 +13814,19 @@ async function saveLsReport(sessionId) {
   }
 
   const products = shopeeP + tiktokP;
-  const gmv      = shopeeG + tiktokG;
+  // v117: yang dilaporkan = GMV SETELAH potongan 25%. Server menghitung & menyimpan:
+  //  - kolom gmv/shopee_gmv/tiktok_gmv  → angka bersih (dipakai semua report, leaderboard, target)
+  //  - kolom *_gmv_gross                → GMV asli ketikan host (untuk edit ulang)
+  const shopeeNet = lsrNetOf(shopeeG), tiktokNet = lsrNetOf(tiktokG);
+  const gmv      = shopeeNet + tiktokNet;
   const viewers  = shopeeV + tiktokV;
 
-  const res = await dbQ(d => d.rpc('host_submit_live_report', {
+  const res = await dbQ(d => d.rpc('host_submit_live_report_net', {
     p_actor_id: currentUser.id, p_session_id: sessionId,
-    p_products_sold: products, p_gmv_amount: gmv, p_viewers_count: viewers,
-    p_note: note || null,
-    p_shopee_products: shopeeP, p_shopee_gmv: shopeeG, p_shopee_viewers: shopeeV,
-    p_tiktok_products: tiktokP, p_tiktok_gmv: tiktokG, p_tiktok_viewers: tiktokV
+    p_products_sold: products, p_viewers_count: viewers, p_note: note || null,
+    p_shopee_products: shopeeP, p_shopee_gross: shopeeG, p_shopee_viewers: shopeeV,
+    p_tiktok_products: tiktokP, p_tiktok_gross: tiktokG, p_tiktok_viewers: tiktokV,
+    p_deduct_pct: Math.round(LSR_DEDUCT_RATE * 100)
   }));
   if (res?.error) {
     if (String(res.error.message||'').includes('LATE_LOCKED')) {
@@ -13748,7 +13834,7 @@ async function saveLsReport(sessionId) {
       openLateRequestModal(sessionId);
       return;
     }
-    toast('Gagal menyimpan laporan: ' + res.error.message);
+    toast('Gagal menyimpan laporan: ' + res.error.message + (/host_submit_live_report_net/.test(res.error.message || '') ? ' — jalankan migration SQL v117 dulu' : ''));
     return;
   }
   closeModal();
