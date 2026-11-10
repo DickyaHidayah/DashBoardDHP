@@ -4884,21 +4884,32 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
 .btn-red-solid{background:linear-gradient(135deg,#e87070,#b94a4a)!important;color:#fff!important;border:none!important}
 .btn-red-solid:disabled{opacity:.55;cursor:wait}
 
-/* ── LAYAR "AKUN DINONAKTIFKAN" ── */
-#acct-off{position:fixed;inset:0;z-index:1000000;display:none;overflow:hidden;color:#efe9df;
-  background:radial-gradient(1200px 700px at 50% 110%,#1a0b1c 0%,transparent 60%),radial-gradient(900px 600px at 15% -10%,#1a1030 0%,transparent 55%),#040307;
-  font-family:'Fraunces','Cormorant Garamond',Georgia,serif;opacity:0;transition:opacity .6s ease}
+/* ── LAYAR "AKUN DINONAKTIFKAN" (v118: jumpscare + redesign) ── */
+#acct-off{position:fixed;inset:0;z-index:1000000;display:none;overflow:hidden;color:#efe9df;background:#05040a;
+  font-family:'Fraunces','Cormorant Garamond',Georgia,serif;opacity:0;transition:opacity .5s ease}
 #acct-off.on{display:block}
 #acct-off.vis{opacity:1}
-#acct-off::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.07;mix-blend-mode:overlay;
+/* latar berlapis: aurora + grid perspektif + noise + vignette */
+.ao-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.ao-aur{position:absolute;width:70vmax;height:70vmax;border-radius:50%;filter:blur(90px);opacity:.5;will-change:transform}
+.ao-aur.a{background:radial-gradient(circle,#4a2a8a 0%,transparent 65%);left:-20vmax;top:-30vmax;animation:ao-dr1 22s ease-in-out infinite alternate}
+.ao-aur.b{background:radial-gradient(circle,#7a1f3d 0%,transparent 65%);right:-25vmax;bottom:-35vmax;animation:ao-dr2 26s ease-in-out infinite alternate;opacity:.42}
+.ao-aur.c{background:radial-gradient(circle,#8c6b34 0%,transparent 60%);left:30vw;top:55vh;width:40vmax;height:40vmax;opacity:.18;animation:ao-dr1 30s ease-in-out infinite alternate-reverse}
+@keyframes ao-dr1{to{transform:translate(12vmax,8vmax) scale(1.15)}}
+@keyframes ao-dr2{to{transform:translate(-10vmax,-9vmax) scale(1.1)}}
+.ao-grid{position:absolute;left:-20%;right:-20%;bottom:-10%;height:55%;opacity:.28;transform:perspective(500px) rotateX(62deg);transform-origin:50% 100%;
+  background-image:linear-gradient(rgba(216,184,120,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(216,184,120,.35) 1px,transparent 1px);background-size:56px 56px;
+  -webkit-mask-image:linear-gradient(to top,#000 10%,transparent 85%);mask-image:linear-gradient(to top,#000 10%,transparent 85%);animation:ao-gridmv 6s linear infinite}
+@keyframes ao-gridmv{to{background-position:0 56px,0 0}}
+.ao-grain{position:absolute;inset:0;opacity:.07;mix-blend-mode:overlay;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
-#acct-off::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.75) 100%)}
+.ao-vig{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,.82) 100%)}
 .ao-dust{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-.ao-dust i{position:absolute;bottom:-12px;width:3px;height:3px;border-radius:50%;background:#d8b878;opacity:0;animation:ao-rise linear infinite}
-@keyframes ao-rise{0%{transform:translate(0,0);opacity:0}12%{opacity:.7}85%{opacity:.25}100%{transform:translate(var(--dx,20px),-108vh);opacity:0}}
+.ao-dust i{position:absolute;bottom:-12px;width:3px;height:3px;border-radius:50%;background:#e2c488;box-shadow:0 0 8px #e2c488;opacity:0;animation:ao-rise linear infinite}
+@keyframes ao-rise{0%{transform:translate(0,0);opacity:0}12%{opacity:.8}85%{opacity:.25}100%{transform:translate(var(--dx,20px),-108vh);opacity:0}}
 
-/* fase loading */
-.ao-load{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;background:#030206;transition:opacity .7s ease,visibility .7s}
+/* fase 1 — loading gelap */
+.ao-load{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;background:#030206;transition:opacity .25s ease,visibility .25s}
 .ao-load.gone{opacity:0;visibility:hidden}
 .ao-ring{width:74px;height:74px;position:relative}
 .ao-ring svg{width:100%;height:100%;animation:ao-spin 1.25s linear infinite}
@@ -4909,48 +4920,77 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
 @keyframes ao-pulse{50%{transform:scale(.4);opacity:.3}}
 .ao-load-tx{font-family:'Space Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:rgba(239,233,223,.55);min-height:1.4em;text-align:center;padding:0 24px}
 
-/* panggung */
-.ao-wrap{position:relative;z-index:2;height:100%;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 18px 34px;text-align:center}
-.ao-stage{width:min(400px,86vw);filter:drop-shadow(0 20px 40px rgba(120,60,160,.25))}
-.ao-stage svg{display:block;width:100%;height:auto;overflow:visible}
-.ao-chip{display:inline-flex;align-items:center;gap:9px;margin-top:6px;padding:6px 14px;border-radius:99px;border:1px solid rgba(216,184,120,.35);
-  font-family:'Space Mono',ui-monospace,monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#d8b878;background:rgba(216,184,120,.06)}
-.ao-chip b{width:6px;height:6px;border-radius:50%;background:#e87070;box-shadow:0 0 10px #e87070;animation:ao-blink 1.4s infinite}
-@keyframes ao-blink{50%{opacity:.25}}
-.ao-title{margin:16px 0 0;font-family:'Bodoni Moda','Playfair Display',Georgia,serif;font-style:italic;font-weight:500;line-height:1.08;
-  font-size:clamp(30px,6.2vw,54px);letter-spacing:.005em;
-  background:linear-gradient(100deg,#8c6b34 0%,#f3dfb0 28%,#c9a96e 50%,#fff3d2 66%,#a37c3c 100%);background-size:220% 100%;
-  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:ao-shine 6s ease-in-out infinite}
-@keyframes ao-shine{0%,100%{background-position:100% 0}50%{background-position:0 0}}
-.ao-name{margin-top:10px;font-family:'Space Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.16em;color:rgba(239,233,223,.45);text-transform:uppercase}
-.ao-quote{position:relative;margin:22px auto 0;max-width:560px;padding:22px 44px 26px;border-radius:16px;
-  background:linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.015));border:1px solid rgba(216,184,120,.18);
-  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
-.ao-quote::before,.ao-quote::after{font-family:'Bodoni Moda',serif;font-size:64px;line-height:0;color:rgba(216,184,120,.4);position:absolute}
-.ao-quote::before{content:'\201C';left:12px;top:30px}
-.ao-quote::after{content:'\201D';right:12px;bottom:6px}
-.ao-q-tx{font-size:clamp(16px,2.6vw,21px);font-style:italic;font-weight:300;line-height:1.5;color:#f1ebe0;transition:opacity .45s ease,filter .45s ease,transform .45s ease;
-  font-variation-settings:'SOFT' 100,'WONK' 1}
-.ao-q-tx.swap{opacity:0;filter:blur(6px);transform:translateY(6px)}
-.ao-reason{display:none;margin:14px auto 0;max-width:520px;padding:9px 14px;border-radius:10px;border:1px dashed rgba(232,112,112,.4);background:rgba(232,112,112,.06);
-  font-family:'Space Mono',ui-monospace,monospace;font-size:11px;line-height:1.55;color:rgba(239,233,223,.75);text-align:left}
-.ao-reason b{color:#e87070;letter-spacing:.12em;text-transform:uppercase;font-weight:700;font-size:10px}
-.ao-acts{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:22px}
-.ao-btn{font-family:'Space Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;padding:12px 22px;border-radius:99px;cursor:pointer;transition:all .25s ease;color:#efe9df}
-.ao-btn.g{background:linear-gradient(135deg,#d8b878,#a37c3c);border:none;color:#1a1208;font-weight:700;box-shadow:0 8px 28px rgba(201,169,110,.28)}
-.ao-btn.g:hover{transform:translateY(-2px);box-shadow:0 12px 34px rgba(201,169,110,.45)}
-.ao-btn.o{background:transparent;border:1px solid rgba(239,233,223,.22)}
-.ao-btn.o:hover{border-color:#d8b878;color:#d8b878}
-.ao-foot{margin-top:22px;font-family:'Space Mono',ui-monospace,monospace;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(239,233,223,.28)}
+/* fase 2 — JUMPSCARE */
+.ao-scare{position:absolute;inset:0;z-index:6;display:none;align-items:center;justify-content:center;overflow:hidden;background:#000}
+.ao-scare.go{display:flex;animation:ao-sc-shake .09s linear 11}
+.ao-scare::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 45%,rgba(255,40,40,.55),rgba(80,0,0,.9) 65%,#000 100%);opacity:0}
+.ao-scare.go::before{animation:ao-sc-red 1.15s ease-out forwards}
+.ao-scare::after{content:'';position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;opacity:.0;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.16) 0 1px,transparent 1px 4px)}
+.ao-scare.go::after{animation:ao-sc-scan 1.15s linear forwards}
+.ao-sc-face{position:relative;width:min(118vmin,980px);height:auto;transform:scale(.12);opacity:0;filter:drop-shadow(0 0 60px rgba(255,40,40,.55))}
+.ao-scare.go .ao-sc-face{animation:ao-sc-zoom 1.15s cubic-bezier(.12,.9,.2,1) forwards}
+.ao-sc-ha{position:absolute;left:0;right:0;bottom:7vh;text-align:center;font-family:'Fraunces',serif;font-style:italic;font-weight:800;font-size:clamp(34px,9vmin,84px);
+  letter-spacing:.06em;color:#ff4a4a;text-shadow:0 0 28px rgba(255,40,40,.8);opacity:0}
+.ao-scare.go .ao-sc-ha{animation:ao-sc-ha 1.15s ease-out forwards}
+@keyframes ao-sc-zoom{0%{transform:scale(.12);opacity:0}9%{opacity:1}22%{transform:scale(1.0)}100%{transform:scale(1.32);opacity:1}}
+@keyframes ao-sc-red{0%{opacity:0}10%{opacity:1}70%{opacity:.85}100%{opacity:1}}
+@keyframes ao-sc-scan{0%{opacity:0}15%{opacity:.5}100%{opacity:.25}}
+@keyframes ao-sc-shake{0%{transform:translate(0,0)}25%{transform:translate(-9px,5px)}50%{transform:translate(7px,-6px)}75%{transform:translate(-5px,-7px)}100%{transform:translate(8px,6px)}}
+@keyframes ao-sc-ha{0%,28%{opacity:0;transform:scale(.6)}40%{opacity:1;transform:scale(1.1)}100%{opacity:1;transform:scale(1)}}
+.ao-flash{position:absolute;inset:0;z-index:7;background:#fff;opacity:0;pointer-events:none}
+.ao-flash.go{animation:ao-flash .7s ease-out}
+@keyframes ao-flash{0%{opacity:.95}100%{opacity:0}}
 
-/* animasi SVG */
-.ao-ghost{animation:ao-float 3.4s ease-in-out infinite;transform-box:fill-box}
+/* fase 3 — layar utama */
+.ao-wrap{position:relative;z-index:3;height:100%;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px 18px 30px;text-align:center}
+.ao-wrap.pre{visibility:hidden}
+.ao-wrap.reveal>*{animation:ao-up .9s cubic-bezier(.16,1,.3,1) both}
+.ao-wrap.reveal>*:nth-child(1){animation-delay:.00s}.ao-wrap.reveal>*:nth-child(2){animation-delay:.08s}.ao-wrap.reveal>*:nth-child(3){animation-delay:.18s}
+.ao-wrap.reveal>*:nth-child(4){animation-delay:.28s}.ao-wrap.reveal>*:nth-child(5){animation-delay:.38s}.ao-wrap.reveal>*:nth-child(6){animation-delay:.48s}
+.ao-wrap.reveal>*:nth-child(7){animation-delay:.58s}.ao-wrap.reveal>*:nth-child(8){animation-delay:.68s}
+@keyframes ao-up{from{opacity:0;transform:translateY(22px) scale(.98)}to{opacity:1;transform:none}}
+.ao-orn{display:flex;align-items:center;gap:14px;font-family:'Space Mono',ui-monospace,monospace;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:#d8b878}
+.ao-orn::before,.ao-orn::after{content:'';width:clamp(28px,8vw,70px);height:1px;background:linear-gradient(90deg,transparent,rgba(216,184,120,.7))}
+.ao-orn::after{transform:scaleX(-1)}
+.ao-orn b{width:6px;height:6px;border-radius:50%;background:#ff5a5a;box-shadow:0 0 12px #ff5a5a;animation:ao-blink 1.4s infinite}
+@keyframes ao-blink{50%{opacity:.25}}
+.ao-stage{width:min(380px,80vw);margin-top:6px;filter:drop-shadow(0 24px 44px rgba(130,70,200,.28))}
+.ao-stage svg{display:block;width:100%;height:auto;overflow:visible}
+.ao-title{margin:6px 0 0;font-family:'Bodoni Moda','Playfair Display',Georgia,serif;font-optical-sizing:auto;font-style:italic;font-weight:500;line-height:1.06;
+  font-size:clamp(34px,6.6vw,62px);letter-spacing:.004em;padding:.08em .12em;
+  background:linear-gradient(100deg,#8c6b34 0%,#f6e4b8 26%,#c9a96e 48%,#fff3d2 66%,#a37c3c 100%);background-size:220% 100%;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:ao-shine 7s ease-in-out infinite}
+@keyframes ao-shine{0%,100%{background-position:100% 0}50%{background-position:0 0}}
+.ao-name{margin-top:12px;font-family:'Space Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.2em;color:rgba(239,233,223,.55);text-transform:uppercase}
+.ao-since{margin-top:5px;font-family:'Space Mono',ui-monospace,monospace;font-size:10px;letter-spacing:.14em;color:rgba(239,233,223,.32);text-transform:uppercase}
+/* kartu quote: border gradien emas */
+.ao-quote{position:relative;box-sizing:border-box;margin:24px auto 0;max-width:580px;width:100%;padding:26px 40px 28px;border-radius:18px;background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.015));
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);isolation:isolate}
+.ao-quote::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;z-index:-1;
+  background:linear-gradient(140deg,rgba(246,228,184,.7),rgba(216,184,120,.08) 40%,rgba(216,184,120,.08) 60%,rgba(246,228,184,.5));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.ao-qm{position:absolute;width:26px;height:26px;color:rgba(216,184,120,.5)}
+.ao-qm.l{left:14px;top:14px}.ao-qm.r{right:14px;bottom:14px;transform:rotate(180deg)}
+.ao-q-tx{font-size:clamp(16px,2.6vw,21px);font-style:italic;font-weight:300;line-height:1.55;color:#f4eee3;transition:opacity .5s ease,filter .5s ease,transform .5s ease}
+.ao-q-tx.swap{opacity:0;filter:blur(6px);transform:translateY(6px)}
+.ao-reason{display:none;margin:14px auto 0;max-width:540px;padding:10px 16px;border-radius:10px;border:1px dashed rgba(255,110,110,.4);background:rgba(255,90,90,.06);
+  font-family:'Space Mono',ui-monospace,monospace;font-size:11px;line-height:1.55;color:rgba(239,233,223,.78);text-align:left}
+.ao-reason b{color:#ff7070;letter-spacing:.14em;text-transform:uppercase;font-weight:700;font-size:10px}
+.ao-acts{margin-top:26px}
+.ao-btn{position:relative;font-family:'Space Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;padding:14px 32px;border-radius:99px;cursor:pointer;
+  color:#f3e2b6;background:rgba(216,184,120,.06);border:1px solid rgba(216,184,120,.45);transition:all .3s ease;overflow:hidden}
+.ao-btn:hover{background:linear-gradient(135deg,#e2c488,#a37c3c);color:#1a1208;border-color:transparent;box-shadow:0 10px 34px rgba(201,169,110,.35);transform:translateY(-2px)}
+.ao-foot{margin-top:24px;font-family:'Space Mono',ui-monospace,monospace;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(239,233,223,.28)}
+
+/* animasi SVG hantu */
+.ao-ghost{animation:ao-float 3.6s ease-in-out infinite}
 @keyframes ao-float{0%,100%{transform:translateY(0) rotate(-1.2deg)}50%{transform:translateY(-12px) rotate(1.2deg)}}
-.ao-shadow{animation:ao-shad 3.4s ease-in-out infinite;transform-origin:210px 262px}
-@keyframes ao-shad{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(.8);opacity:.28}}
+.ao-shadow{animation:ao-shad 3.6s ease-in-out infinite;transform-origin:210px 266px}
+@keyframes ao-shad{0%,100%{transform:scale(1);opacity:.55}50%{transform:scale(.78);opacity:.28}}
 .ao-shake{animation:ao-giggle .5s ease-in-out infinite;transform-origin:210px 180px}
 @keyframes ao-giggle{0%,100%{transform:translateX(0)}25%{transform:translateX(-1.6px)}75%{transform:translateX(1.6px)}}
-.ao-tongue{transform-origin:215px 190px;animation:ao-tongue .7s ease-in-out infinite alternate}
+.ao-tongue{transform-origin:213px 192px;animation:ao-tongue .7s ease-in-out infinite alternate}
 @keyframes ao-tongue{from{transform:rotate(-9deg) scaleY(.92)}to{transform:rotate(9deg) scaleY(1.1)}}
 .ao-armL{transform-origin:146px 176px;animation:ao-armL .5s ease-in-out infinite alternate}
 .ao-armR{transform-origin:274px 176px;animation:ao-armR .5s ease-in-out infinite alternate}
@@ -4961,20 +5001,21 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
 .ao-crown{animation:ao-crown 5.2s cubic-bezier(.5,0,.8,.6) infinite;transform-box:fill-box;transform-origin:center}
 @keyframes ao-crown{0%{transform:translate(0,0) rotate(0);opacity:0}8%{opacity:1}60%{transform:translate(34px,204px) rotate(160deg);opacity:1}70%{transform:translate(52px,198px) rotate(210deg)}82%{transform:translate(78px,206px) rotate(330deg);opacity:1}100%{transform:translate(110px,212px) rotate(420deg);opacity:0}}
 .ao-lol{font-family:'Fraunces',serif;font-style:italic;font-weight:700;fill:#d8b878;opacity:0;animation:ao-lol 3.2s ease-out infinite;transform-box:fill-box}
-.ao-lol.b{fill:#e87070;animation-delay:1.05s}.ao-lol.c{fill:#b9a4f0;animation-delay:2.1s}
+.ao-lol.b{fill:#ff7a7a;animation-delay:1.05s}.ao-lol.c{fill:#b9a4f0;animation-delay:2.1s}
 @keyframes ao-lol{0%{opacity:0;transform:translate(0,8px) scale(.6)}15%{opacity:1}100%{opacity:0;transform:translate(var(--lx,14px),-58px) scale(1.25) rotate(var(--lr,10deg))}}
 .ao-star{transform-box:fill-box;transform-origin:center;animation:ao-tw 2.6s ease-in-out infinite}
 .ao-star:nth-child(2n){animation-delay:.8s}.ao-star:nth-child(3n){animation-delay:1.6s}
 @keyframes ao-tw{0%,100%{transform:scale(.3) rotate(0);opacity:.2}50%{transform:scale(1) rotate(45deg);opacity:1}}
-.ao-orbit{transform-origin:210px 150px;animation:ao-spin 26s linear infinite}
+.ao-orbit{transform-origin:210px 150px;animation:ao-spin 30s linear infinite}
 .ao-pupil{transition:transform .12s ease-out}
 
 @media (prefers-reduced-motion:reduce){
-  #acct-off *,#acct-off *::before{animation:none!important;transition:none!important}
+  #acct-off *,#acct-off *::before,#acct-off *::after{animation:none!important;transition:none!important}
   .ao-lol{opacity:.9}
+  .ao-scare{display:none!important}
 }
-@media (max-height:640px){.ao-stage{width:min(260px,60vw)}.ao-quote{margin-top:14px;padding:14px 22px 16px}}
-
+@media (max-height:880px){.ao-stage{width:min(300px,64vw)}.ao-title{font-size:clamp(30px,5.4vw,50px)}.ao-quote{margin-top:18px}.ao-acts{margin-top:20px}}
+@media (max-height:700px){.ao-stage{width:min(250px,56vw)}.ao-quote{margin-top:16px;padding:18px 34px 20px}.ao-acts{margin-top:18px}.ao-foot{margin-top:16px}}
 </style>
 </head>
 <body class="light">
@@ -8674,7 +8715,7 @@ async function handleLogin() {
     if (res.data.password_hash === pw && res.data.is_active === false) {
       // v113: akun dinonaktifkan moderator → layar gelap, bukan login
       try { localStorage.removeItem('dhp_remember'); } catch (e) {}
-      showAccountDisabled({ id, name: res.data.full_name, reason: res.data.deactivation_reason || '' });
+      showAccountDisabled({ id, name: res.data.full_name, reason: res.data.deactivation_reason || '', at: res.data.deactivated_at || '' });
       return;
     }
     if (res.data.password_hash === pw) { success = true; role = roleFromDb(res.data.role); name = res.data.full_name; tutSeenAt = res.data.tutorial_seen_at || null; }
@@ -9145,7 +9186,7 @@ async function loadDataFromDB(isMod) {
       deactivated_at: u.deactivated_at || null, deactivated_by: u.deactivated_by || null, reason: u.deactivation_reason || '' }));
     _offRows.forEach(u => { delete LOCAL_USERS[u.user_id]; delete presenceMap[u.user_id]; });
     if (currentUser && _offRows.some(u => u.user_id === currentUser.id)) {
-      acctKick((_offRows.find(u => u.user_id === currentUser.id) || {}).deactivation_reason);
+      { const me = _offRows.find(u => u.user_id === currentUser.id) || {}; acctKick(me.deactivation_reason, me.deactivated_at); }
       return;
     }
     window._allUsers = uData.map(u => ({ user_id: u.user_id, full_name: u.full_name, role: roleFromDb(u.role), custPrefix: u.cust_prefix || '' }));
@@ -30251,68 +30292,104 @@ let _acctOffLast = -1, _acctOffRot = null, _acctOffMove = null, _acctOffLoadIv =
 function _acctOffSvg() {
   const stars = [[40,60,5],[360,48,6],[330,130,4],[70,170,4],[388,214,5],[22,236,3],[300,30,3]]
     .map(([x,y,r]) => `<path class="ao-star" d="M${x} ${y-r} L${x+r*.28} ${y-r*.28} L${x+r} ${y} L${x+r*.28} ${y+r*.28} L${x} ${y+r} L${x-r*.28} ${y+r*.28} L${x-r} ${y} L${x-r*.28} ${y-r*.28}Z" fill="#e8cc99"/>`).join('');
+  const body = 'M135 230 V152 C135 96 172 68 210 68 C248 68 285 96 285 152 V230 q-18.75 -17 -37.5 0 q-18.75 17 -37.5 0 q-18.75 -17 -37.5 0 q-18.75 17 -37.5 0Z';
   return `
   <svg viewBox="0 0 420 300" role="img" aria-label="Hantu iseng menjulurkan lidah mengejek">
     <defs>
-      <linearGradient id="ao-body" gradientUnits="userSpaceOnUse" x1="140" y1="90" x2="280" y2="230">
-        <stop offset="0" stop-color="#f4f0ff"/><stop offset=".55" stop-color="#d9d0f2"/><stop offset="1" stop-color="#a99ad3"/>
+      <linearGradient id="ao-body" gradientUnits="userSpaceOnUse" x1="150" y1="68" x2="270" y2="240">
+        <stop offset="0" stop-color="#fbf9ff"/><stop offset=".5" stop-color="#ddd4f5"/><stop offset="1" stop-color="#9a8bd0"/>
       </linearGradient>
-      <radialGradient id="ao-spot" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#b58cff" stop-opacity=".38"/><stop offset="1" stop-color="#b58cff" stop-opacity="0"/></radialGradient>
+      <radialGradient id="ao-gloss" cx="34%" cy="22%" r="48%"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <radialGradient id="ao-spot" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#b58cff" stop-opacity=".42"/><stop offset="1" stop-color="#b58cff" stop-opacity="0"/></radialGradient>
       <linearGradient id="ao-gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0c4"/><stop offset="1" stop-color="#b8863a"/></linearGradient>
-      <filter id="ao-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="6"/></filter>
+      <clipPath id="ao-clip"><path d="${body}"/></clipPath>
     </defs>
-    <ellipse cx="210" cy="150" rx="190" ry="140" fill="url(#ao-spot)"/>
-    <g class="ao-orbit" fill="none" stroke="#d8b878" stroke-opacity=".25" stroke-width="1" stroke-dasharray="2 7">
-      <ellipse cx="210" cy="150" rx="176" ry="120"/>
-    </g>
+    <ellipse cx="210" cy="150" rx="195" ry="145" fill="url(#ao-spot)"/>
+    <g class="ao-orbit" fill="none" stroke="#d8b878" stroke-opacity=".28" stroke-width="1" stroke-dasharray="2 7"><ellipse cx="210" cy="150" rx="178" ry="122"/></g>
     ${stars}
-    <ellipse class="ao-shadow" cx="210" cy="262" rx="78" ry="9" fill="#000"/>
+    <ellipse class="ao-shadow" cx="210" cy="266" rx="80" ry="9" fill="#000"/>
 
-    <!-- gembok bergoyang -->
-    <g transform="translate(18 0)">
-      <g class="ao-lock">
-        <path d="M62 -10 V30" stroke="#8a7a58" stroke-width="2" stroke-dasharray="5 3"/>
-        <path d="M50 60 V46 a12 12 0 0 1 24 0 V60" fill="none" stroke="url(#ao-gold)" stroke-width="5" stroke-linecap="round"/>
-        <rect x="42" y="58" width="40" height="32" rx="7" fill="url(#ao-gold)"/>
-        <circle cx="62" cy="72" r="4.6" fill="#2a1d08"/><rect x="60" y="73" width="4" height="9" rx="2" fill="#2a1d08"/>
-      </g>
-    </g>
+    <g transform="translate(18 0)"><g class="ao-lock">
+      <path d="M62 -10 V30" stroke="#8a7a58" stroke-width="2" stroke-dasharray="5 3"/>
+      <path d="M50 60 V46 a12 12 0 0 1 24 0 V60" fill="none" stroke="url(#ao-gold)" stroke-width="5" stroke-linecap="round"/>
+      <rect x="42" y="58" width="40" height="32" rx="7" fill="url(#ao-gold)"/>
+      <circle cx="62" cy="72" r="4.6" fill="#2a1d08"/><rect x="60" y="73" width="4" height="9" rx="2" fill="#2a1d08"/>
+    </g></g>
 
-    <!-- mahkota jatuh dari papan peringkat -->
     <g transform="translate(300 40)"><g class="ao-crown">
       <path d="M0 20 L-2 4 L8 12 L14 0 L20 12 L30 4 L28 20Z" fill="url(#ao-gold)" stroke="#6b4a14" stroke-width="1" stroke-linejoin="round"/>
       <rect x="0" y="20" width="28" height="5" rx="2" fill="#b8863a"/>
     </g></g>
 
-    <!-- hantu -->
-    <g class="ao-ghost">
-      <g class="ao-shake">
-        <path class="ao-armL" d="M150 172 q-26 6 -30 28 q-1 8 8 7 q12 -2 28 -20Z" fill="url(#ao-body)"/>
-        <path class="ao-armR" d="M270 172 q26 6 30 28 q1 8 -8 7 q-12 -2 -28 -20Z" fill="url(#ao-body)"/>
-        <path d="M140 218 V142 C140 90 280 90 280 142 V218 q-17.5 -16 -35 0 q-17.5 16 -35 0 q-17.5 -16 -35 0 q-17.5 16 -35 0Z" fill="url(#ao-body)"/>
-        <ellipse cx="168" cy="178" rx="11" ry="6.5" fill="#f58aa8" opacity=".45"/>
-        <ellipse cx="252" cy="178" rx="11" ry="6.5" fill="#f58aa8" opacity=".45"/>
-        <!-- mata -->
-        <ellipse cx="184" cy="152" rx="13" ry="15" fill="#fff"/>
-        <ellipse cx="236" cy="152" rx="13" ry="15" fill="#fff"/>
-        <g id="ao-pupL"><circle class="ao-pupil" cx="186" cy="157" r="6" fill="#1a1230"/></g>
-        <g id="ao-pupR"><circle class="ao-pupil" cx="238" cy="157" r="6" fill="#1a1230"/></g>
-        <path d="M169 152 a15 17 0 0 1 30 0 Z" fill="url(#ao-body)" stroke="#7d6fb0" stroke-width="1.5" stroke-linejoin="round"/>
-        <path d="M221 150 a15 17 0 0 1 30 0 Z" fill="url(#ao-body)" stroke="#7d6fb0" stroke-width="1.5" stroke-linejoin="round"/>
-        <path d="M171 133 q13 -9 28 -2" stroke="#6f5fa8" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <path d="M222 128 q14 -9 28 2" stroke="#6f5fa8" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <!-- mulut + lidah -->
-        <path d="M186 180 Q210 204 238 180 Q212 188 186 180Z" fill="#2a1646" stroke="#2a1646" stroke-width="3" stroke-linejoin="round"/>
-        <path class="ao-tongue" d="M208 190 q-3 24 11 23 q14 -1 10 -23Z" fill="#ff7a9a" stroke="#c94a6c" stroke-width="1.5" stroke-linejoin="round"/>
-        <path d="M219 192 v14" stroke="#c94a6c" stroke-width="1.4" stroke-linecap="round"/>
+    <g class="ao-ghost"><g class="ao-shake">
+      <path class="ao-armL" d="M150 176 q-28 6 -32 30 q-1 9 9 8 q13 -2 30 -22Z" fill="url(#ao-body)"/>
+      <path class="ao-armR" d="M270 176 q28 6 32 30 q1 9 -9 8 q-13 -2 -30 -22Z" fill="url(#ao-body)"/>
+      <path d="${body}" fill="url(#ao-body)"/>
+      <g clip-path="url(#ao-clip)">
+        <rect x="130" y="60" width="160" height="180" fill="url(#ao-gloss)"/>
+        <path d="M282 110 C292 170 290 215 280 240" stroke="#7d6fb0" stroke-opacity=".35" stroke-width="14" fill="none"/>
       </g>
-    </g>
+      <ellipse cx="168" cy="180" rx="11" ry="6.5" fill="#f58aa8" opacity=".5"/>
+      <ellipse cx="252" cy="180" rx="11" ry="6.5" fill="#f58aa8" opacity=".5"/>
+      <ellipse cx="184" cy="152" rx="13" ry="15" fill="#fff"/>
+      <ellipse cx="236" cy="152" rx="13" ry="15" fill="#fff"/>
+      <g id="ao-pupL"><circle class="ao-pupil" cx="186" cy="157" r="6" fill="#1a1230"/><circle class="ao-pupil" cx="188" cy="154.5" r="1.8" fill="#fff"/></g>
+      <g id="ao-pupR"><circle class="ao-pupil" cx="238" cy="157" r="6" fill="#1a1230"/><circle class="ao-pupil" cx="240" cy="154.5" r="1.8" fill="#fff"/></g>
+      <path d="M169 152 a15 17 0 0 1 30 0 Z" fill="url(#ao-body)" stroke="#7d6fb0" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M221 150 a15 17 0 0 1 30 0 Z" fill="url(#ao-body)" stroke="#7d6fb0" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M171 133 q13 -9 28 -2" stroke="#6f5fa8" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M222 128 q14 -9 28 2" stroke="#6f5fa8" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M186 181 Q210 205 238 181 Q212 189 186 181Z" fill="#2a1646" stroke="#2a1646" stroke-width="3" stroke-linejoin="round"/>
+      <path class="ao-tongue" d="M208 191 q-3 24 11 23 q14 -1 10 -23Z" fill="#ff7a9a" stroke="#c94a6c" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M219 193 v14" stroke="#c94a6c" stroke-width="1.4" stroke-linecap="round"/>
+    </g></g>
 
-    <!-- tawa -->
     <text class="ao-lol" x="292" y="118" font-size="22" style="--lx:18px;--lr:12deg">wkwk</text>
     <text class="ao-lol b" x="96" y="132" font-size="19" style="--lx:-20px;--lr:-14deg">HA!</text>
     <text class="ao-lol c" x="310" y="170" font-size="17" style="--lx:14px;--lr:8deg">hehe</text>
   </svg>`;
+}
+
+/* wajah jumpscare — hantu yang tiba-tiba memenuhi layar */
+function _acctOffScareSvg() {
+  const top = [0,1,2,3,4,5,6].map(i => `<path d="M${112 + i*29} 292 l13 34 l13 -34Z" fill="#f6f1ff"/>`).join('');
+  const bot = [0,1,2,3,4,5].map(i => `<path d="M${126 + i*29} 380 l13 -32 l13 32Z" fill="#f6f1ff"/>`).join('');
+  return `<svg class="ao-sc-face" viewBox="0 0 400 420" aria-hidden="true">
+    <defs>
+      <linearGradient id="sc-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4efff"/><stop offset="1" stop-color="#8d7cc8"/></linearGradient>
+      <radialGradient id="sc-eye" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ff5050"/><stop offset="1" stop-color="#ff5050" stop-opacity="0"/></radialGradient>
+    </defs>
+    <path d="M24 420 V190 C24 70 120 4 200 4 C280 4 376 70 376 190 V420Z" fill="url(#sc-body)"/>
+    <ellipse cx="134" cy="170" rx="46" ry="64" fill="#05030a"/><ellipse cx="266" cy="170" rx="46" ry="64" fill="#05030a"/>
+    <circle cx="134" cy="178" r="30" fill="url(#sc-eye)"/><circle cx="266" cy="178" r="30" fill="url(#sc-eye)"/>
+    <circle cx="134" cy="178" r="7" fill="#ff2a2a"/><circle cx="266" cy="178" r="7" fill="#ff2a2a"/>
+    <path d="M78 96 L176 132" stroke="#1a1030" stroke-width="16" stroke-linecap="round"/><path d="M322 96 L224 132" stroke="#1a1030" stroke-width="16" stroke-linecap="round"/>
+    <path d="M92 286 Q200 440 308 286 Q200 326 92 286Z" fill="#07040d"/>
+    ${top}${bot}
+    <path d="M165 352 q-6 52 36 50 q40 -2 32 -50Z" fill="#ff6d8d" stroke="#b83a5c" stroke-width="3" stroke-linejoin="round"/>
+  </svg>`;
+}
+
+/* suara kejut singkat (WebAudio, tanpa file) — gagal diam-diam kalau browser memblokir */
+function acctOffSting() {
+  try {
+    const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+    const ac = new C(), t = ac.currentTime, master = ac.createGain();
+    master.gain.setValueAtTime(0.0001, t);
+    master.gain.exponentialRampToValueAtTime(0.28, t + 0.02);
+    master.gain.exponentialRampToValueAtTime(0.0001, t + 1.0);
+    master.connect(ac.destination);
+    [220, 233.1, 311.1, 466.2].forEach(f => {
+      const o = ac.createOscillator(); o.type = 'sawtooth';
+      o.frequency.setValueAtTime(f * 2, t); o.frequency.exponentialRampToValueAtTime(f * 0.6, t + 0.95);
+      o.connect(master); o.start(t); o.stop(t + 1.0);
+    });
+    const len = Math.floor(ac.sampleRate * 0.5), buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+    const n = ac.createBufferSource(); n.buffer = buf; const ng = ac.createGain(); ng.gain.value = 0.5;
+    n.connect(ng); ng.connect(master); n.start(t);
+    setTimeout(() => { try { ac.close(); } catch (e) {} }, 1300);
+  } catch (e) {}
 }
 
 function acctOffEnsure() {
@@ -30322,27 +30399,27 @@ function acctOffEnsure() {
   el.id = 'acct-off';
   el.setAttribute('role', 'alertdialog');
   el.setAttribute('aria-live', 'polite');
+  const qm = '<svg class="ao-qm %C" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.6 4C5.7 5.6 3 9.2 3 13.6V20h7.4v-7H6.8c.1-2.2 1.3-3.9 3.4-4.9L9.6 4Zm10.2 0c-3.9 1.6-6.6 5.2-6.6 9.6V20h7.4v-7h-3.6c.1-2.2 1.3-3.9 3.4-4.9L19.8 4Z"/></svg>';
   el.innerHTML = `
+    <div class="ao-bg"><div class="ao-aur a"></div><div class="ao-aur b"></div><div class="ao-aur c"></div><div class="ao-grid"></div><div class="ao-grain"></div><div class="ao-vig"></div></div>
     <div class="ao-dust" id="ao-dust"></div>
-    <div class="ao-wrap">
+    <div class="ao-wrap pre" id="ao-wrap">
+      <div class="ao-orn"><b></b>Akses Ditangguhkan</div>
       <div class="ao-stage">${_acctOffSvg()}</div>
-      <div class="ao-chip"><b></b>Status akun · Ditangguhkan</div>
       <h1 class="ao-title">Akun Anda Sedang<br>Dinonaktifkan</h1>
-      <div class="ao-name" id="ao-name"></div>
-      <div class="ao-quote"><div class="ao-q-tx" id="ao-q"></div></div>
+      <div><div class="ao-name" id="ao-name"></div><div class="ao-since" id="ao-since"></div></div>
+      <div class="ao-quote">${qm.replace('%C', 'l')}<div class="ao-q-tx" id="ao-q"></div>${qm.replace('%C', 'r')}</div>
       <div class="ao-reason" id="ao-reason"></div>
-      <div class="ao-acts">
-        <button class="ao-btn g" type="button" onclick="acctOffMock()">Ejek aku lagi</button>
-        <button class="ao-btn o" type="button" onclick="hideAccountDisabled()">Kembali ke login</button>
-      </div>
+      <div class="ao-acts"><button class="ao-btn" type="button" onclick="hideAccountDisabled()">Kembali ke login</button></div>
       <div class="ao-foot">ERR_ACCOUNT_BENCHED · banding? tanya moderatormu (kalau berani)</div>
     </div>
+    <div class="ao-scare" id="ao-scare">${_acctOffScareSvg()}<div class="ao-sc-ha">WKWKWKWK</div></div>
+    <div class="ao-flash" id="ao-flash"></div>
     <div class="ao-load" id="ao-load">
       <div class="ao-ring"><svg viewBox="0 0 50 50"><defs><linearGradient id="ao-rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3d2"/><stop offset="1" stop-color="#a37c3c"/></linearGradient></defs><circle class="t" cx="25" cy="25" r="22" fill="none" stroke-width="1.5"/><circle class="a" cx="25" cy="25" r="22" fill="none" stroke-width="2.5"/></svg></div>
       <div class="ao-load-tx" id="ao-load-tx"></div>
     </div>`;
   document.body.appendChild(el);
-  // debu emas melayang
   const dust = el.querySelector('#ao-dust');
   for (let i = 0; i < 26; i++) {
     const s = document.createElement('i');
@@ -30356,44 +30433,64 @@ function acctOffEnsure() {
   return el;
 }
 
-function acctOffMock() {
+function acctOffMock() {   // ganti quote (otomatis tiap beberapa detik)
   const q = document.getElementById('ao-q'); if (!q) return;
   let i; do { i = Math.floor(Math.random() * ACCT_OFF_QUOTES.length); } while (i === _acctOffLast && ACCT_OFF_QUOTES.length > 1);
   _acctOffLast = i;
   const first = ((window._acctOffInfo && window._acctOffInfo.name) || 'kamu').trim().split(/\s+/)[0];
   const txt = ACCT_OFF_QUOTES[i].replace(/\{nama\}/g, first);
+  if (!q.textContent) { q.textContent = txt; return; }
   q.classList.add('swap');
-  setTimeout(() => { q.textContent = txt; q.classList.remove('swap'); }, 380);
+  setTimeout(() => { q.textContent = txt; q.classList.remove('swap'); }, 450);
 }
 
 function showAccountDisabled(info) {
   info = info || {};
   window._acctOffInfo = info;
   const el = acctOffEnsure();
-  const nm = document.getElementById('ao-name');
-  if (nm) nm.textContent = (info.name ? info.name : '') + (info.id ? '  ·  @' + info.id : '');
+  document.getElementById('ao-name').textContent = (info.name ? info.name : '') + (info.id ? '  ·  @' + info.id : '');
+  const since = document.getElementById('ao-since');
+  since.textContent = info.at ? 'Ditangguhkan sejak ' + new Date(info.at).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
   const rs = document.getElementById('ao-reason');
-  if (rs) {
-    if (info.reason) { rs.innerHTML = '<b>Catatan moderator</b><br>' + escHtml(info.reason); rs.style.display = 'block'; }
-    else { rs.style.display = 'none'; rs.innerHTML = ''; }
-  }
-  // reset fase
+  if (info.reason) { rs.innerHTML = '<b>Catatan moderator</b><br>' + escHtml(info.reason); rs.style.display = 'block'; }
+  else { rs.style.display = 'none'; rs.innerHTML = ''; }
+
+  // reset semua fase
   _acctOffTimers.forEach(clearTimeout); _acctOffTimers = [];
   clearInterval(_acctOffLoadIv); clearInterval(_acctOffRot);
-  const load = document.getElementById('ao-load'), ltx = document.getElementById('ao-load-tx');
+  const load = document.getElementById('ao-load'), ltx = document.getElementById('ao-load-tx'),
+        scare = document.getElementById('ao-scare'), flash = document.getElementById('ao-flash'), wrap = document.getElementById('ao-wrap');
+  scare.classList.remove('go'); flash.classList.remove('go');
+  wrap.classList.add('pre'); wrap.classList.remove('reveal');
+  document.getElementById('ao-q').textContent = '';
   load.classList.remove('gone');
   el.classList.add('on');
   requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('vis')));
+
   // fase 1 — loading gelap
   let li = 0; ltx.textContent = ACCT_OFF_LOADING[0];
   _acctOffLoadIv = setInterval(() => { li = Math.min(li + 1, ACCT_OFF_LOADING.length - 1); ltx.textContent = ACCT_OFF_LOADING[li]; }, 620);
-  // fase 2 — layar utama
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // fase 2 — hening sejenak → JUMPSCARE
+  const reveal = () => {
+    wrap.classList.remove('pre'); wrap.classList.add('reveal');
+    flash.classList.remove('go'); void flash.offsetWidth; if (!reduce) flash.classList.add('go');
+    _acctOffLast = -1; acctOffMock();
+    _acctOffRot = setInterval(acctOffMock, 8500);
+  };
   _acctOffTimers.push(setTimeout(() => {
     clearInterval(_acctOffLoadIv);
     load.classList.add('gone');
-    _acctOffLast = -1; acctOffMock();
-    _acctOffRot = setInterval(acctOffMock, 9000);
-  }, 2700));
+    if (reduce) { _acctOffTimers.push(setTimeout(reveal, 400)); return; }
+    _acctOffTimers.push(setTimeout(() => {          // jeda sunyi 0,6 dtk sebelum kejutan
+      scare.classList.add('go');
+      acctOffSting();
+      try { navigator.vibrate && navigator.vibrate([120, 40, 160]); } catch (e) {}
+      _acctOffTimers.push(setTimeout(() => { scare.classList.remove('go'); reveal(); }, 1200));
+    }, 600));
+  }, 2500));
+
   // mata hantu mengikuti kursor
   if (_acctOffMove) document.removeEventListener('mousemove', _acctOffMove);
   _acctOffMove = (e) => {
@@ -30413,13 +30510,13 @@ function hideAccountDisabled() {
   clearInterval(_acctOffLoadIv); clearInterval(_acctOffRot);
   if (_acctOffMove) { document.removeEventListener('mousemove', _acctOffMove); _acctOffMove = null; }
   el.classList.remove('vis');
-  setTimeout(() => { el.classList.remove('on'); }, 600);
+  setTimeout(() => { el.classList.remove('on'); }, 550);
 }
 
 /* ── Tendang user yang sedang login saat akunnya dinonaktifkan ── */
-function acctKick(reason) {
+function acctKick(reason, at) {
   const u = currentUser; if (!u) return;
-  const info = { id: u.id, name: u.name, reason: reason || '' };
+  const info = { id: u.id, name: u.name, reason: reason || '', at: at || '' };
   try { localStorage.removeItem('dhp_remember'); } catch (e) {}   // cegah auto-login berulang
   handleLogout();
   showAccountDisabled(info);
@@ -30431,7 +30528,7 @@ async function acctWatchCheck() {
   const res = await dbQ(d => d.from('users').select('*').eq('user_id', uid).limit(1));
   if (epoch !== _authEpoch || !currentUser) return;
   const row = res && res.data && res.data[0];
-  if (row && row.is_active === false) acctKick(row.deactivation_reason);
+  if (row && row.is_active === false) acctKick(row.deactivation_reason, row.deactivated_at);
 }
 function _acctWatchVis() { if (!document.hidden) acctWatchCheck(); }
 function acctWatchStart() {
