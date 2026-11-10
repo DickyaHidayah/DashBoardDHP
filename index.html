@@ -4761,26 +4761,20 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@1,6..96,500&family=Fraunces:ital,opsz,wght@1,9..144,300..700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 <style id="lsr-net-css">
-/* v116 — kotak "diterima setelah potongan 25%" di form laporan sesi */
-.lsr-net{display:none;align-items:center;gap:14px;margin:-2px 0 14px;padding:12px 14px;border-radius:12px;position:relative;overflow:hidden;
-  border:1px solid rgba(201,169,110,.38);background:linear-gradient(135deg,rgba(201,169,110,.12),rgba(122,191,142,.06))}
-.lsr-net.on{display:flex;animation:lsr-net-in .45s cubic-bezier(.16,1,.3,1)}
-.lsr-net::after{content:'';position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.14),transparent);animation:lsr-net-shine 2.4s .3s ease-out 1}
-@keyframes lsr-net-in{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}
-@keyframes lsr-net-shine{to{left:130%}}
-.lsr-net-ico{flex:none;width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.25)}
-.lsr-net-sh{animation:lsr-dash 1.6s linear infinite}
-@keyframes lsr-dash{to{stroke-dashoffset:-12}}
-.lsr-net-main{min-width:0;flex:1}
-.lsr-net-lbl{font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.lsr-net-val{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;line-height:1.15;color:var(--green);font-variant-numeric:tabular-nums}
-.lsr-net-calc{display:flex;gap:7px;align-items:center;flex-wrap:wrap;font-size:10.5px;color:var(--text2);font-variant-numeric:tabular-nums}
-.lsr-net-calc i{font-style:normal;color:var(--muted)}
+/* v116 — potongan 25% (minimalis) */
+.lsr-net{display:none;margin:2px 0 14px;padding:12px 2px 2px;border-top:1px solid var(--border)}
+.lsr-net.on{display:block;animation:lsr-net-in .35s ease}
+@keyframes lsr-net-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.lsr-net-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.lsr-net-lbl{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.lsr-net-lbl svg{color:var(--gold);flex:none;align-self:center}
+.lsr-net-val{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:700;color:var(--green);font-variant-numeric:tabular-nums;white-space:nowrap}
+.lsr-net-calc{display:flex;justify-content:space-between;gap:10px;margin-top:2px;font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
 .lsr-net-calc .neg{color:var(--red)}
 .lsr-total-net{display:none;justify-content:space-between;align-items:center;gap:10px;margin:-4px 0 14px;padding:9px 12px;border-radius:9px;border:1px dashed rgba(122,191,142,.45);background:rgba(122,191,142,.07);font-size:11px;color:var(--text2)}
 .lsr-total-net.on{display:flex}
 .lsr-total-net b{color:var(--green);font-size:13px;font-variant-numeric:tabular-nums}
-@media (prefers-reduced-motion:reduce){.lsr-net.on,.lsr-net::after,.lsr-net-sh{animation:none}}
+@media (prefers-reduced-motion:reduce){.lsr-net.on{animation:none}}
 </style>
 <style id="tgp-css">
 /* ═══ v115 — HALAMAN TARGET (tabel korporat, prefix tgp-) ═══ */
@@ -13670,10 +13664,10 @@ function renderReportModal(s) {
           value="${lsrGrossOf(s,'shopee') ? lsrGrossOf(s,'shopee').toLocaleString('id-ID') : ''}"
           oninput="formatNominalPlain(this);updateLsrTotal()" placeholder="mis. 1.500.000"/>
       </div>
-      ${lsrNetBox('shopee')}
       <div class="fg"><label>Penonton Shopee</label>
         <input class="fi lsr-num" id="lsr-shopee-viewers" type="number" min="0" step="1" value="${s.shopee_viewers_count ?? ''}" placeholder="mis. 400" oninput="updateLsrTotal()"/>
       </div>
+      ${lsrNetBox('shopee')}
     </div>` : '';
 
   const tiktokBlock = flags.tiktok ? `
@@ -13687,10 +13681,10 @@ function renderReportModal(s) {
           value="${lsrGrossOf(s,'tiktok') ? lsrGrossOf(s,'tiktok').toLocaleString('id-ID') : ''}"
           oninput="formatNominalPlain(this);updateLsrTotal()" placeholder="mis. 2.000.000"/>
       </div>
-      ${lsrNetBox('tiktok')}
       <div class="fg"><label>Penonton TikTok</label>
         <input class="fi lsr-num" id="lsr-tiktok-viewers" type="number" min="0" step="1" value="${s.tiktok_viewers_count ?? ''}" placeholder="mis. 450" oninput="updateLsrTotal()"/>
       </div>
+      ${lsrNetBox('tiktok')}
     </div>` : '';
 
   document.getElementById('m-body').innerHTML = `
@@ -13698,7 +13692,7 @@ function renderReportModal(s) {
     ${platNote}
     ${shopeeBlock}
     ${tiktokBlock}
-    <div class="lsr-total-row" id="lsr-total-row">Total gabungan (input): <b id="lsr-total-summary">0 produk · Rp 0 · 0 penonton</b></div>
+    <div class="lsr-total-row" id="lsr-total-row">Total input: <b id="lsr-total-summary">0 produk · Rp 0 · 0 penonton</b></div>
     <div class="lsr-total-net" id="lsr-total-net"><span>Total tercatat di laporan (setelah potongan ${Math.round(LSR_DEDUCT_RATE*100)}%)</span><b id="lsr-total-net-val">Rp 0</b></div>
     <div class="fg"><label>Catatan (opsional)</label>
       <input class="fi" id="lsr-note" value="${escHtml(s.note||'')}" placeholder="mis. banyak repeat order"/>
@@ -13750,18 +13744,12 @@ const _lsrNetShown = {};
 function lsrNetBox(p) {
   const pct = Math.round(LSR_DEDUCT_RATE * 100);
   return `<div class="lsr-net" id="lsr-net-${p}" aria-live="polite">
-    <div class="lsr-net-ico"><svg viewBox="0 0 48 48" width="40" height="40" fill="none" aria-hidden="true">
-      <defs><linearGradient id="lsrg-${p}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3dfb0"/><stop offset="1" stop-color="#b8863a"/></linearGradient></defs>
-      <path d="M12 5h24a2 2 0 0 1 2 2v34l-4.7-3.2L29.6 41l-4.8-3.2L20 41l-4.7-3.2L10 41V7a2 2 0 0 1 2-2Z" stroke="url(#lsrg-${p})" stroke-width="2" stroke-linejoin="round" fill="rgba(201,169,110,.08)"/>
-      <path d="M17 29 31 15" stroke="url(#lsrg-${p})" stroke-width="2.2" stroke-linecap="round"/>
-      <circle cx="18" cy="17" r="2.6" stroke="url(#lsrg-${p})" stroke-width="2"/><circle cx="30" cy="27" r="2.6" stroke="url(#lsrg-${p})" stroke-width="2"/>
-      <path class="lsr-net-sh" d="M17 34h14" stroke="url(#lsrg-${p})" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 3"/>
-    </svg></div>
-    <div class="lsr-net-main">
-      <div class="lsr-net-lbl">Tercatat di laporan · setelah potongan PPN ${pct}%</div>
-      <div class="lsr-net-val" id="lsr-net-${p}-val">Rp 0</div>
-      <div class="lsr-net-calc"><span id="lsr-net-${p}-gmv">GMV Rp 0</span><i>→</i><span class="neg" id="lsr-net-${p}-cut">− Rp 0</span></div>
-    </div></div>`;
+    <div class="lsr-net-row">
+      <span class="lsr-net-lbl"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.4"/><circle cx="17" cy="17" r="2.4"/></svg>Tercatat setelah potongan ${pct}%</span>
+      <span class="lsr-net-val" id="lsr-net-${p}-val">Rp 0</span>
+    </div>
+    <div class="lsr-net-calc"><span id="lsr-net-${p}-gmv">GMV Rp 0</span><span class="neg" id="lsr-net-${p}-cut">− Rp 0</span></div>
+  </div>`;
 }
 function lsrUpdateNet(p, gmv) {
   const box = document.getElementById('lsr-net-' + p); if (!box) return;
