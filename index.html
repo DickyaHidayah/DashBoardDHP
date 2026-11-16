@@ -7425,6 +7425,7 @@ function initRealtimePresence(userId, role, name) {
         const u = payload.new;
         if (!u || !u.user_id) return;
         if (HIDDEN_USER_IDS.includes(u.user_id)) { delete LOCAL_USERS[u.user_id]; return; }
+        if (!LOCAL_USERS[u.user_id]) setTimeout(() => { try { idResyncRoster(); } catch (e) {} }, 400);   // v114: ID baru muncul = ada user yang diganti ID-nya
         const jsRole = roleFromDb(u.role);
         // Update LOCAL_USERS (nama + password)
         if (!LOCAL_USERS[u.user_id]) {
@@ -8755,7 +8756,10 @@ async function handleLogin() {
     if (res.data.password_hash === pw) { success = true; role = roleFromDb(res.data.role); name = res.data.full_name; tutSeenAt = res.data.tutorial_seen_at || null; }
   } else {
     const u = LOCAL_USERS[id];
-    if (u && u.pass === pw) { success = true; role = u.role; name = u.name; }
+    // v114: kalau database terjangkau tapi ID tidak ada (mis. ID sudah diganti moderator),
+    // daftar akun bawaan TIDAK boleh dipakai lagi — kecuali akun Owner (memang lokal).
+    const _notFound = !!(res && res.error && (res.error.code === 'PGRST116' || /0 rows|no rows|multiple \(or no\) rows/i.test(res.error.message || '')));
+    if (u && u.pass === pw && (!_notFound || u.role === 'owner')) { success = true; role = u.role; name = u.name; }
   }
   if (success) {
     // "Ingat saya" — simpan/kosongkan kredensial lokal sesuai centang.
@@ -9225,6 +9229,7 @@ async function loadDataFromDB(isMod) {
     }
     window._allUsers = uData.map(u => ({ user_id: u.user_id, full_name: u.full_name, role: roleFromDb(u.role), custPrefix: u.cust_prefix || '' }));
     HIDDEN_USER_IDS.forEach(id => { delete LOCAL_USERS[id]; });
+    idPruneRoster(_rowsAll);   // v114: buang ID lama yang sudah diganti moderator
     uData.forEach(u => {
       const jsRole = roleFromDb(u.role);
       if (!LOCAL_USERS[u.user_id]) {
@@ -13227,7 +13232,7 @@ function lsReportCell(s, isMod, canFillHost) {
       <div class="lsr-report">
         <span class="lsr-stat" title="Produk terjual">${LSR_ICON_PRODUCT}<b>${s.products_sold.toLocaleString('id-ID')}</b></span>
         <span class="lsr-divider"></span>
-        <span class="lsr-stat" title="${(() => { const x = gmvOf(s); return x.pct > 0 ? `GMV bersih setelah potongan ${Math.round(x.pct)}% · GMV total ${crmFmtRupiah(x.gross)}` : 'Total GMV'; })()}">${LSR_ICON_GMV}<b>${crmFmtRupiah(s.gmv_amount||0)}</b>${(() => { const x = gmvOf(s); return x.pct > 0 ? `<span class="lsr-gross">dari ${crmFmtRupiah(x.gross)}</span>` : ''; })()}</span>
+        <span class="lsr-stat" title="${(() => { const x = gmvOf(s); return x.pct > 0 ? `GMV bersih setelah potongan (Shopee ${lsrPct('shopee')}% · TikTok ${lsrPct('tiktok')}%) · GMV total ${crmFmtRupiah(x.gross)}` : 'Total GMV'; })()}">${LSR_ICON_GMV}<b>${crmFmtRupiah(s.gmv_amount||0)}</b>${(() => { const x = gmvOf(s); return x.pct > 0 ? `<span class="lsr-gross">dari ${crmFmtRupiah(x.gross)}</span>` : ''; })()}</span>
         <span class="lsr-divider"></span>
         <span class="lsr-stat" title="Total penonton">${LSR_ICON_VIEWERS}<b>${(s.viewers_count||0).toLocaleString('id-ID')}</b></span>
         ${statusPill}
@@ -13771,7 +13776,7 @@ function renderReportModal(s) {
     ${shopeeBlock}
     ${tiktokBlock}
     <div class="lsr-total-row" id="lsr-total-row">Total input: <b id="lsr-total-summary">0 produk · Rp 0 · 0 penonton</b></div>
-    <div class="lsr-total-net" id="lsr-total-net"><span>Total tercatat di laporan (setelah potongan ${Math.round(LSR_DEDUCT_RATE*100)}%)</span><b id="lsr-total-net-val">Rp 0</b></div>
+    <div class="lsr-total-net" id="lsr-total-net"><span>Total tercatat di laporan (setelah potongan)</span><b id="lsr-total-net-val">Rp 0</b></div>
     <div class="fg"><label>Catatan (opsional)</label>
       <input class="fi" id="lsr-note" value="${escHtml(s.note||'')}" placeholder="mis. banyak repeat order"/>
     </div>`;
@@ -13802,15 +13807,18 @@ function updateLsrTotal() {
     const both = document.getElementById('lsr-shopee-gmv') && document.getElementById('lsr-tiktok-gmv');
     tn.classList.toggle('on', !!both && (sg + tg) > 0);
     const v = document.getElementById('lsr-total-net-val');
-    if (v) v.textContent = 'Rp ' + lsrNetOf(sg + tg).toLocaleString('id-ID');
+    if (v) v.textContent = 'Rp ' + lsrNetTotal(sg, tg).toLocaleString('id-ID');
   }
 }
 
 /* ── v116: potongan 25% (PPN) atas GMV — hanya TAMPILAN di form. Angka yang
    disimpan ke database tetap GMV asli yang diinput host. Ubah angka di bawah
    kalau ratenya berubah. ── */
-const LSR_DEDUCT_RATE = 0.25;
-const lsrNetOf = (g) => Math.round(g * (1 - LSR_DEDUCT_RATE));
+// Tarif potongan per platform (harus sama dengan default di fungsi SQL host_submit_live_report_net)
+const LSR_RATES = { shopee: 0.25, tiktok: 0.11 };
+const lsrPct = (p) => Math.round((LSR_RATES[p] || 0) * 100);
+const lsrNetOf = (g, p) => Math.round(g * (1 - (LSR_RATES[p] || 0)));
+const lsrNetTotal = (sg, tg) => lsrNetOf(sg, 'shopee') + lsrNetOf(tg, 'tiktok');
 // GMV kotor yang diketik host: pakai kolom *_gmv_gross kalau laporan sudah versi potongan,
 // kalau laporan lama (belum dipotong) angka tersimpan = GMV kotor itu sendiri.
 function lsrGrossOf(s, p) {
@@ -13820,10 +13828,10 @@ function lsrGrossOf(s, p) {
 }
 const _lsrNetShown = {};
 function lsrNetBox(p) {
-  const pct = Math.round(LSR_DEDUCT_RATE * 100);
+  const pct = lsrPct(p);
   return `<div class="lsr-net" id="lsr-net-${p}" aria-live="polite">
     <div class="lsr-net-row">
-      <span class="lsr-net-lbl"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.4"/><circle cx="17" cy="17" r="2.4"/></svg>Tercatat setelah potongan ${pct}%</span>
+      <span class="lsr-net-lbl"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.4"/><circle cx="17" cy="17" r="2.4"/></svg>${p === 'shopee' ? 'Shopee' : 'TikTok'} · tercatat setelah potongan ${pct}%</span>
       <span class="lsr-net-val" id="lsr-net-${p}-val">Rp 0</span>
     </div>
     <div class="lsr-net-calc"><span id="lsr-net-${p}-gmv">GMV Rp 0</span><span class="neg" id="lsr-net-${p}-cut">− Rp 0</span></div>
@@ -13834,7 +13842,7 @@ function lsrUpdateNet(p, gmv) {
   const on = gmv > 0;
   box.classList.toggle('on', on);
   if (!on) { _lsrNetShown[p] = 0; return; }
-  const net = lsrNetOf(gmv), cut = gmv - net;
+  const net = lsrNetOf(gmv, p), cut = gmv - net;
   document.getElementById(`lsr-net-${p}-gmv`).textContent = 'GMV Rp ' + gmv.toLocaleString('id-ID');
   document.getElementById(`lsr-net-${p}-cut`).textContent = '− Rp ' + cut.toLocaleString('id-ID');
   const el = document.getElementById(`lsr-net-${p}-val`);
@@ -13883,7 +13891,7 @@ async function saveLsReport(sessionId) {
   // v117: yang dilaporkan = GMV SETELAH potongan 25%. Server menghitung & menyimpan:
   //  - kolom gmv/shopee_gmv/tiktok_gmv  → angka bersih (dipakai semua report, leaderboard, target)
   //  - kolom *_gmv_gross                → GMV asli ketikan host (untuk edit ulang)
-  const shopeeNet = lsrNetOf(shopeeG), tiktokNet = lsrNetOf(tiktokG);
+  const shopeeNet = lsrNetOf(shopeeG, 'shopee'), tiktokNet = lsrNetOf(tiktokG, 'tiktok');
   const gmv      = shopeeNet + tiktokNet;
   const viewers  = shopeeV + tiktokV;
 
@@ -13892,7 +13900,7 @@ async function saveLsReport(sessionId) {
     p_products_sold: products, p_viewers_count: viewers, p_note: note || null,
     p_shopee_products: shopeeP, p_shopee_gross: shopeeG, p_shopee_viewers: shopeeV,
     p_tiktok_products: tiktokP, p_tiktok_gross: tiktokG, p_tiktok_viewers: tiktokV,
-    p_deduct_pct: Math.round(LSR_DEDUCT_RATE * 100)
+    p_shopee_pct: lsrPct('shopee'), p_tiktok_pct: lsrPct('tiktok')
   }));
   if (res?.error) {
     if (String(res.error.message||'').includes('LATE_LOCKED')) {
@@ -14025,11 +14033,11 @@ function closeTodayReminder() {
    Laporan baru (gmv_deduct_pct>0): kolom *_gmv_amount = bersih, *_gmv_gross = total.
    Laporan lama (pct=0): belum ada potongan → total = bersih. */
 function gmvOf(s) {
-  const pct = Number(s.gmv_deduct_pct) || 0;
+  const flag = Number(s.gmv_deduct_pct) || 0;
   const nS = Number(s.shopee_gmv_amount) || 0, nT = Number(s.tiktok_gmv_amount) || 0, net = Number(s.gmv_amount) || 0;
-  if (pct > 0) {
+  if (flag > 0) {
     const gS = Number(s.shopee_gmv_gross) || 0, gT = Number(s.tiktok_gmv_gross) || 0;
-    return { gross: gS + gT, net, cut: Math.max(0, gS + gT - net), pct, gS, gT, nS, nT };
+    return { gross: gS + gT, net, cut: Math.max(0, gS + gT - net), pct: flag, gS, gT, nS, nT };
   }
   return { gross: net, net, cut: 0, pct: 0, gS: nS, gT: nT, nS, nT };
 }
@@ -14038,17 +14046,17 @@ function renderHdGmvPanel(stats) {
   const grid = document.getElementById('dash-stat-grid'); if (!grid) return;
   let el = document.getElementById('dash-gmv-panel');
   if (!el) { el = document.createElement('section'); el.id = 'dash-gmv-panel'; el.className = 'hdg'; grid.parentNode.insertBefore(el, grid); }
-  const g = _hdGm || { gross: 0, net: 0, cut: 0, pendNet: 0, pendN: 0, pct: Math.round(LSR_DEDUCT_RATE * 100) };
+  const g = _hdGm || { gross: 0, net: 0, cut: 0, pendNet: 0, pendN: 0 };
   const target = Number(stats?.target_amount) || 0, sales = Number(stats?.total_sales) || 0;
   const pctRaw = target > 0 ? sales / target * 100 : 0, pct = Math.min(100, Math.round(pctRaw));
   const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN, d = new Date();
   el.innerHTML = `
     <div class="hdg-head"><div><h3>Penjualan Bulan Ini</h3><small>${months[d.getMonth()]} ${d.getFullYear()} · dihitung dari laporan sesi yang sudah disetujui</small></div>
-      <span class="hdg-chip">Potongan PPN ${g.pct}%</span></div>
+      <span class="hdg-chip">Potongan · Shopee ${lsrPct('shopee')}% · TikTok ${lsrPct('tiktok')}%</span></div>
     <div class="hdg-eq">
       <div class="hdg-box"><span>GMV Total</span><b>${crmFmtRupiah(g.gross)}</b><i>sebelum potongan</i></div>
       <div class="hdg-op">−</div>
-      <div class="hdg-box cut"><span>Potongan ${g.pct}%</span><b>${crmFmtRupiah(g.cut)}</b><i>PPN</i></div>
+      <div class="hdg-box cut"><span>Potongan</span><b>${crmFmtRupiah(g.cut)}</b><i>Shopee ${lsrPct('shopee')}% · TikTok ${lsrPct('tiktok')}%</i></div>
       <div class="hdg-op">=</div>
       <div class="hdg-box net"><span>GMV Bersih</span><b>${crmFmtRupiah(g.net)}</b><i>dicatat di laporan &amp; target</i></div>
     </div>
@@ -14087,10 +14095,9 @@ async function loadHostDashboard() {
     const first = ym + '-01', last = ymdKey(new Date(Number(ym.slice(0, 4)), Number(ym.slice(5, 7)), 0));
     const lr = await dbQ(d => d.from('live_schedule').select('*').eq('host_user_id', hostId).gte('schedule_date', first).lte('schedule_date', last));
     if (lr?.data) {
-      const g = { gross: 0, net: 0, cut: 0, pendNet: 0, pendN: 0, pct: Math.round(LSR_DEDUCT_RATE * 100) };
+      const g = { gross: 0, net: 0, cut: 0, pendNet: 0, pendN: 0 };
       lr.data.forEach(r => {
         const x = gmvOf(r);
-        if (x.pct > 0) g.pct = Math.round(x.pct);
         if (r.report_status === 'approved') { g.gross += x.gross; g.net += x.net; g.cut += x.cut; }
         else if (r.report_status === 'pending_approval') { g.pendNet += x.net; g.pendN++; }
       });
@@ -14957,6 +14964,12 @@ function renderUsers() {
         <span class="uc-pw-label">ID Customer</span>
         <span class="uc-pw-val" style="font-family:monospace">${crmUserPrefix(id)}-xxxx</span>
         <button class="uc-pw-toggle" onclick="openSetCustPrefix('${id}')">Ubah</button>
+      </div>` : ''}
+      ${(viewerIsMod && acctCanDisable(id, u.role)) ? `
+      <div class="uc-pw-row">
+        <span class="uc-pw-label">Login</span>
+        <span class="uc-pw-val" style="font-family:monospace">@${id}</span>
+        <button class="uc-pw-toggle" onclick="openEditCred('${id}')">Ubah ID &amp; Pass</button>
       </div>` : ''}
       ${canEdit ? `
       <div class="uc-role-change">
@@ -30615,19 +30628,39 @@ function acctKick(reason, at) {
   showAccountDisabled(info);
 }
 let _acctWatchIv = null;
+let _credStamp;   // v114: penanda waktu kredensial saat sesi dimulai
 async function acctWatchCheck() {
-  if (!currentUser || currentUser.id === HEAD_MODERATOR_ID) return;
+  if (!currentUser || currentUser.id === HEAD_MODERATOR_ID || currentUser.role === 'owner') return;
   const uid = currentUser.id, epoch = _authEpoch;
   const res = await dbQ(d => d.from('users').select('*').eq('user_id', uid).limit(1));
   if (epoch !== _authEpoch || !currentUser) return;
-  const row = res && res.data && res.data[0];
-  if (row && row.is_active === false) acctKick(row.deactivation_reason, row.deactivated_at);
+  if (!res || res.error || !Array.isArray(res.data)) return;     // jaringan bermasalah: jangan keluarkan siapa pun
+  const row = res.data[0];
+  if (!row) { idKickCredChanged(); return; }                      // ID sudah diganti moderator
+  if (row.is_active === false) { acctKick(row.deactivation_reason, row.deactivated_at); return; }
+  const stamp = row.cred_changed_at || '';
+  if (_credStamp === undefined) _credStamp = stamp;
+  else if (stamp !== _credStamp) idKickCredChanged();             // password/ID diubah moderator
+}
+function idKickCredChanged() {
+  if (!currentUser) return;
+  try { localStorage.removeItem('dhp_remember'); } catch (e) {}
+  handleLogout();
+  setTimeout(() => {
+    try {
+      const idEl = document.getElementById('li-id'), pwEl = document.getElementById('li-pw');
+      if (idEl) idEl.value = ''; if (pwEl) pwEl.value = '';
+      showAlert('login-al', 'error', 'ID atau password akunmu diubah oleh moderator. Silakan login dengan ID & password baru.');
+    } catch (e) {}
+  }, 400);
 }
 function _acctWatchVis() { if (!document.hidden) acctWatchCheck(); }
 function acctWatchStart() {
   acctWatchStop();
+  _credStamp = undefined;
   if (!currentUser || currentUser.id === HEAD_MODERATOR_ID) return;
   _acctWatchIv = setInterval(acctWatchCheck, 15000);
+  setTimeout(acctWatchCheck, 800);   // v114: ambil baseline kredensial segera
   document.addEventListener('visibilitychange', _acctWatchVis);
 }
 function acctWatchStop() {
@@ -30752,6 +30785,93 @@ function crmSyncInactiveOwnerOptions(sel) {
   sel.appendChild(g);
 }
 
+</script>
+
+<script>
+/* ═══ v114 — MODERATOR UBAH ID & PASSWORD USER ═══ */
+function idPruneRoster(dbRows) {
+  const keep = new Set((dbRows || []).map(u => u.user_id));
+  if (!keep.size) return;
+  Object.keys(LOCAL_USERS).forEach(k => {
+    if (!keep.has(k) && LOCAL_USERS[k].role !== 'owner' && !(currentUser && currentUser.id === k)) {
+      delete LOCAL_USERS[k]; delete presenceMap[k];
+    }
+  });
+}
+async function idResyncRoster() {
+  const r = await dbQ(d => d.from('users').select('*'));
+  if (!r || r.error || !Array.isArray(r.data) || !r.data.length) return;
+  const rows = r.data.filter(u => !HIDDEN_USER_IDS.includes(u.user_id));
+  idPruneRoster(rows);
+  rows.filter(u => u.is_active !== false).forEach(u => {
+    const jsRole = roleFromDb(u.role);
+    LOCAL_USERS[u.user_id] = Object.assign(LOCAL_USERS[u.user_id] || {}, { pass: u.password_hash, role: jsRole, name: u.full_name, email: u.email, custPrefix: u.cust_prefix || '' });
+    if (!presenceMap[u.user_id]) presenceMap[u.user_id] = { id: u.user_id, role: jsRole, name: u.full_name, online: false, loginAt: 0, lastSeen: 0 };
+  });
+  window._allUsers = rows.filter(u => u.is_active !== false).map(u => ({ user_id: u.user_id, full_name: u.full_name, role: roleFromDb(u.role), custPrefix: u.cust_prefix || '' }));
+  try { refreshPresenceUI(); } catch (e) {}
+  if (document.getElementById('pg-users')?.classList.contains('active')) renderUsers();
+}
+
+function openEditCred(uid) {
+  const u = LOCAL_USERS[uid]; if (!u) return;
+  if (!acctCanDisable(uid, u.role)) { toast('Kamu tidak punya izin mengubah akun ini'); return; }
+  document.getElementById('m-title').textContent = 'Ubah ID & Password — ' + u.name;
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg">
+      <label>ID Login</label>
+      <input class="fi" id="cred-f-id" value="${escHtml(uid)}" maxlength="30" autocomplete="off" spellcheck="false" style="font-family:monospace;font-weight:600"/>
+      <span style="font-size:9.5px;color:var(--muted);margin-top:4px;display:block">3-30 karakter: huruf kecil, angka, titik, strip, underscore. Tanpa spasi.</span>
+    </div>
+    <div class="fg">
+      <label>Password</label>
+      <input class="fi" id="cred-f-pw" value="${escHtml(u.pass || '')}" maxlength="60" autocomplete="off" spellcheck="false" style="font-family:monospace;font-weight:600"/>
+      <span style="font-size:9.5px;color:var(--muted);margin-top:4px;display:block">Minimal 4 karakter. Biarkan apa adanya kalau password tidak ingin diganti.</span>
+    </div>
+    <div style="font-size:11px;line-height:1.55;color:var(--muted);padding:10px 12px;border:1px solid var(--border-hi);border-radius:8px;background:rgba(201,169,110,.06)">
+      Semua data <b style="color:var(--text)">${escHtml(u.name)}</b> (CRM, laporan, target, tracking) ikut pindah ke ID baru. Kalau sedang online, ia akan otomatis keluar dan harus login dengan ID &amp; password baru.
+    </div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-cancel" onclick="closeModal()">${t('cancel')}</button>
+    <button class="btn-sm btn-gold" id="cred-save-btn" onclick="saveEditCred('${uid}')">Simpan</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+  setTimeout(() => document.getElementById('cred-f-id')?.focus(), 60);
+}
+
+async function saveEditCred(uid) {
+  const u = LOCAL_USERS[uid]; if (!u) return;
+  const newId = (document.getElementById('cred-f-id')?.value || '').trim().toLowerCase();
+  const newPw = (document.getElementById('cred-f-pw')?.value || '').trim();
+  const idChanged = newId !== uid;
+  const pwChanged = newPw !== '' && newPw !== (u.pass || '');
+  if (!idChanged && !pwChanged) { toast('Tidak ada perubahan'); return; }
+  if (idChanged && !/^[a-z0-9._-]{3,30}$/.test(newId)) { toast('ID harus 3-30 karakter: huruf kecil, angka, titik, strip, underscore'); return; }
+  if (pwChanged && newPw.length < 4) { toast('Password minimal 4 karakter'); return; }
+  const btn = document.getElementById('cred-save-btn'); if (btn) { btn.disabled = true; btn.textContent = 'Menyimpan…'; }
+  const res = await dbQ(d => d.rpc('admin_update_credentials', {
+    p_acting_user_id: currentUser.id, p_target_user_id: uid,
+    p_new_user_id: idChanged ? newId : null, p_new_password: pwChanged ? newPw : null
+  }));
+  if (btn) { btn.disabled = false; btn.textContent = 'Simpan'; }
+  if (!res || res.error) {
+    const m = res?.error?.message || 'coba lagi';
+    toast('Gagal menyimpan: ' + m + (/admin_update_credentials/.test(m) ? ' — jalankan migration SQL v123 dulu' : ''));
+    return;
+  }
+  const row = res.data || {};
+  const finalId = row.user_id || (idChanged ? newId : uid);
+  if (idChanged) {
+    LOCAL_USERS[finalId] = Object.assign({}, LOCAL_USERS[uid]); delete LOCAL_USERS[uid];
+    if (presenceMap[uid]) { presenceMap[finalId] = Object.assign({}, presenceMap[uid], { id: finalId }); delete presenceMap[uid]; }
+    if (Array.isArray(window._allUsers)) window._allUsers.forEach(x => { if (x.user_id === uid) x.user_id = finalId; });
+  }
+  if (pwChanged) LOCAL_USERS[finalId].pass = newPw;
+  closeModal();
+  toast('✓ ' + u.name + ': ' + (idChanged && pwChanged ? 'ID & password' : idChanged ? 'ID' : 'password') + ' berhasil diubah');
+  try { pushActivity?.('User Management: ubah ' + (idChanged ? 'ID ' + uid + ' → ' + finalId : 'password ' + uid), 'info'); } catch (e) {}
+  renderUsers();
+}
+window.openEditCred = openEditCred; window.saveEditCred = saveEditCred;
 </script>
 </body>
 </html>
