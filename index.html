@@ -5259,7 +5259,7 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
         <span data-i18n="myPerformance">Performa Saya</span>
       </button>
       <!-- ══ CS HUNTER — level & progress mingguan, khusus role cs_hunter (+ Mod/Admin lihat semua) ══ -->
-      <button class="nav-item" onclick="navTo('cs_hunter',this)" id="n-cs-hunter" style="display:none">
+      <button class="nav-item" onclick="navTo('cs_hunter',this)" id="n-cs-hunter" style="display:none !important">
         <span class="nav-icon">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M8 1.5l1.8 3.7 4.1.6-3 2.9.7 4.1L8 11l-3.6 1.8.7-4.1-3-2.9 4.1-.6L8 1.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
@@ -8975,7 +8975,8 @@ async function initDashboard() {
   const isAdminNonMod = can.isAdminRole(r) && !isMod;
   const hideMyToolsRole = isCsHunterOnlyRole || isAdminNonMod;
   navShow('n-my-performance', true && !isOwner && !hideMyToolsRole);    // Performa Saya
-  navShow('n-cs-hunter',      can.isCsHunter(r) || isMod || isOwner);   // CS Hunter — level & progress (sendiri utk CS Hunter, semua tim utk Mod/Owner)
+  navShow('n-cs-hunter',      false);   // v115: halaman CS Hunter (level Bronze→Diamond) disembunyikan untuk semua role
+  //  (dulu: can.isCsHunter(r) || isMod || isOwner)   // CS Hunter — level & progress (sendiri utk CS Hunter, semua tim utk Mod/Owner)
   navShow('ns-cs-tools',      can.canFollowup(r) || isMod || isOwner);   // v53: Section label "Tools" — kini juga muncul utk B2B Marketing (tetap ada utk Mod/Owner krn masih ada Tracking Report & Leaderboard)
   navShow('n-followup',       can.canFollowup(r));   // v63: Follow Up dihapus dari Owner & Moderator — khusus cs_hunter + b2b_marketing + admin (dulu ada || isMod || isOwner)
   navShow('n-tracking-report', can.canTrackingReport(r) || isMod || isOwner); // v47: Tracking Report — laporan jam 12:00 & 17:00 (cs_hunter + b2b_marketing + admin, + rekap tim utk Mod/Owner)
@@ -23944,6 +23945,7 @@ function navTo(page, btn) {
   if (page === 'live_studio'    && !can.isHostLive(r) && !can.isMod(r) && !isOwnerNav) { toast('Host Live access required'); return; }
   if (page === 'live_dashboard' && !can.isMod(r) && !isOwnerNav) { toast('Moderator access required'); return; }
   if (page === 'all_dashboard') { toast('Laporan Performa Tim sudah tidak tersedia — gunakan Leaderboard'); return; } // v63: fitur dihapus total (dulu khusus Moderator/Owner)
+  if (page === 'cs_hunter') { return; } // v115: halaman disembunyikan
   if (page === 'cs_hunter'      && !can.isCsHunter(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Moderator access required'); return; }
   if (page === 'followup'       && !can.canFollowup(r)) { toast('CS Hunter / B2B Marketing / Admin access required'); return; } // v63: Moderator & Owner tidak lagi punya akses Follow Up
   if (page === 'tracking_report' && !can.canTrackingReport(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Admin / B2B Marketing / Moderator access required'); return; }
@@ -29064,7 +29066,6 @@ function fireStAchieveConfetti(ov) {
 /* ══════ ONBOARDING TUTORIAL ENGINE — game-style step-by-step guide ══════ */
 const TUT_STEPS_DEFS = [
   { id:'n-my-performance', title:'Performa Saya',          desc:'Dashboard performa bulananmu — grafik tren 6 bulan & capaian bulan ini, tersedia untuk semua role.' },
-  { id:'n-cs-hunter',      title:'CS Hunter',               desc:'Level Bronze → Diamond & progress closing mingguan kamu ada di sini.' },
   { id:'n-followup',       title:'Follow Up',               desc:'Daftar customer yang harus kamu hubungi hari ini, lengkap dengan chat WhatsApp siap kirim & target 50 follow-up per hari.' },
   { id:'n-content-studio', title:'Studio Konten',          desc:'4 kartu ringkasan progress kontenmu bulan ini, plus Kalender Konten tempat semua tema, script & jadwal konten kamu berada.' },
   { id:'n-live-studio',    title:'Studio Live',            desc:'Lihat jadwal live kamu, isi laporan sesi, dan pantau dashboard performa milikmu sendiri di sini.' },
@@ -29220,10 +29221,6 @@ const TUT_ROLE_EXTRA = [
   // ══════════════════════════════════════════════════════════════
   // ── CS HUNTER ──
   // ══════════════════════════════════════════════════════════════
-  { afterId:'n-cs-hunter', roles:['cs_hunter'],
-    title:'1. Level Bronze → Diamond', desc:'Halaman ini nunjukin level kamu saat ini beserta target closing minggu ini. Tiap minggu ada jatah leads & target closing sendiri — makin tinggi levelnya, jatah leads makin sedikit tapi target closing makin tinggi.' },
-  { afterId:'n-cs-hunter', roles:['cs_hunter'],
-    title:'2. Cara Naik Level', desc:'Capai target closing mingguan → otomatis naik level minggu depan. Kalau sekali gagal, kamu masih dikasih kesempatan coba lagi minggu berikutnya di level yang sama. Gagal 2 minggu berturut-turut baru levelnya turun.' },
 ];
 
 let tutSteps = [];
