@@ -14969,7 +14969,7 @@ function renderUsers() {
       <div class="uc-pw-row">
         <span class="uc-pw-label">Login</span>
         <span class="uc-pw-val" style="font-family:monospace">@${id}</span>
-        <button class="uc-pw-toggle" onclick="openEditCred('${id}')">Ubah ID &amp; Pass</button>
+        <button class="uc-pw-toggle" onclick="openEditCred('${id}')">Ubah Nama, ID &amp; Pass</button>
       </div>` : ''}
       ${canEdit ? `
       <div class="uc-role-change">
@@ -30816,8 +30816,12 @@ async function idResyncRoster() {
 function openEditCred(uid) {
   const u = LOCAL_USERS[uid]; if (!u) return;
   if (!acctCanDisable(uid, u.role)) { toast('Kamu tidak punya izin mengubah akun ini'); return; }
-  document.getElementById('m-title').textContent = 'Ubah ID & Password — ' + u.name;
+  document.getElementById('m-title').textContent = 'Ubah Nama, ID & Password — ' + u.name;
   document.getElementById('m-body').innerHTML = `
+    <div class="fg">
+      <label>Nama Tampilan</label>
+      <input class="fi" id="cred-f-name" value="${escHtml(u.name || '')}" maxlength="60" autocomplete="off"/>
+    </div>
     <div class="fg">
       <label>ID Login</label>
       <input class="fi" id="cred-f-id" value="${escHtml(uid)}" maxlength="30" autocomplete="off" spellcheck="false" style="font-family:monospace;font-weight:600"/>
@@ -30826,7 +30830,7 @@ function openEditCred(uid) {
     <div class="fg">
       <label>Password</label>
       <input class="fi" id="cred-f-pw" value="${escHtml(u.pass || '')}" maxlength="60" autocomplete="off" spellcheck="false" style="font-family:monospace;font-weight:600"/>
-      <span style="font-size:9.5px;color:var(--muted);margin-top:4px;display:block">Minimal 4 karakter. Biarkan apa adanya kalau password tidak ingin diganti.</span>
+      <span style="font-size:9.5px;color:var(--muted);margin-top:4px;display:block">Minimal 4 karakter. Biarkan apa adanya kalau tidak ingin diganti.</span>
     </div>
     <div style="font-size:11px;line-height:1.55;color:var(--muted);padding:10px 12px;border:1px solid var(--border-hi);border-radius:8px;background:rgba(201,169,110,.06)">
       Semua data <b style="color:var(--text)">${escHtml(u.name)}</b> (CRM, laporan, target, tracking) ikut pindah ke ID baru. Kalau sedang online, ia akan otomatis keluar dan harus login dengan ID &amp; password baru.
@@ -30842,15 +30846,18 @@ async function saveEditCred(uid) {
   const u = LOCAL_USERS[uid]; if (!u) return;
   const newId = (document.getElementById('cred-f-id')?.value || '').trim().toLowerCase();
   const newPw = (document.getElementById('cred-f-pw')?.value || '').trim();
+  const newName = (document.getElementById('cred-f-name')?.value || '').trim();
+  const nameChanged = newName !== '' && newName !== (u.name || '');
   const idChanged = newId !== uid;
   const pwChanged = newPw !== '' && newPw !== (u.pass || '');
-  if (!idChanged && !pwChanged) { toast('Tidak ada perubahan'); return; }
+  if (!idChanged && !pwChanged && !nameChanged) { toast('Tidak ada perubahan'); return; }
   if (idChanged && !/^[a-z0-9._-]{3,30}$/.test(newId)) { toast('ID harus 3-30 karakter: huruf kecil, angka, titik, strip, underscore'); return; }
   if (pwChanged && newPw.length < 4) { toast('Password minimal 4 karakter'); return; }
   const btn = document.getElementById('cred-save-btn'); if (btn) { btn.disabled = true; btn.textContent = 'Menyimpan…'; }
   const res = await dbQ(d => d.rpc('admin_update_credentials', {
     p_acting_user_id: currentUser.id, p_target_user_id: uid,
-    p_new_user_id: idChanged ? newId : null, p_new_password: pwChanged ? newPw : null
+    p_new_user_id: idChanged ? newId : null, p_new_password: pwChanged ? newPw : null,
+    p_new_name: nameChanged ? newName : null
   }));
   if (btn) { btn.disabled = false; btn.textContent = 'Simpan'; }
   if (!res || res.error) {
@@ -30866,8 +30873,13 @@ async function saveEditCred(uid) {
     if (Array.isArray(window._allUsers)) window._allUsers.forEach(x => { if (x.user_id === uid) x.user_id = finalId; });
   }
   if (pwChanged) LOCAL_USERS[finalId].pass = newPw;
+  if (nameChanged) {
+    LOCAL_USERS[finalId].name = newName;
+    if (presenceMap[finalId]) presenceMap[finalId].name = newName;
+    if (Array.isArray(window._allUsers)) window._allUsers.forEach(x => { if (x.user_id === finalId) x.full_name = newName; });
+  }
   closeModal();
-  toast('✓ ' + u.name + ': ' + (idChanged && pwChanged ? 'ID & password' : idChanged ? 'ID' : 'password') + ' berhasil diubah');
+  toast('✓ ' + u.name + ': ' + ([nameChanged && 'nama', idChanged && 'ID', pwChanged && 'password'].filter(Boolean).join(', ')) + ' berhasil diubah');
   try { pushActivity?.('User Management: ubah ' + (idChanged ? 'ID ' + uid + ' → ' + finalId : 'password ' + uid), 'info'); } catch (e) {}
   renderUsers();
 }
