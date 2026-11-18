@@ -18433,7 +18433,20 @@ const CRM_COLUMNS = [
 // oleh sistem (per-owner, prefix nama akun) supaya tidak pernah tabrakan
 // antar admin (Yuna, Puji, Erni, Galih, dst). Dipakai khusus untuk
 // template download & parsing file import.
-const CRM_IMPORT_COLUMNS = CRM_COLUMNS.filter(c => c.key !== 'id_customer');
+const CRM_IMPORT_COLUMNS = CRM_COLUMNS.filter(c => c.key !== 'id_customer').concat([
+  { key:'heat',  header:'Panas/Dingin' },     // v116: Hot/Warm/Cold/Closing (atau Panas/Hangat/Dingin)
+  { key:'label', header:'Label' },            // v116: nama label milik pemilik customer
+  { key:'owner', header:'Dinput Oleh' },      // v116: khusus moderator — nama/ID staf pemilik customer
+]);
+// v116: ubah isi sel "Panas/Dingin" (termasuk hasil Export seperti "🔥 Hot") jadi Hot/Warm/Cold/Closing
+function crmImpHeat(v) {
+  const x = String(v || '').toLowerCase().replace(/[^a-z]/g, '');
+  if (x === 'hot' || x === 'panas') return 'Hot';
+  if (x === 'warm' || x === 'hangat') return 'Warm';
+  if (x === 'cold' || x === 'dingin') return 'Cold';
+  if (x === 'closing') return 'Closing';
+  return '';
+}
 // v37: disederhanakan — kategori Repeat/Agen/Reseller dihapus dari status.
 // Kategorisasi customer sekarang sepenuhnya lewat sistem Label warna (lihat
 // bagian ⑪-c di bawah). Status tinggal menandai ASAL customer saja:
@@ -18481,7 +18494,11 @@ const CRM_HEADER_ALIASES = {
   'total belanja':'total_belanja','total spend':'total_belanja','nilai belanja':'total_belanja','omzet':'total_belanja','total spending':'total_belanja',
   'status customer':'status','status':'status','tipe':'status','kategori':'status',
   'produk favorit':'produk_fav','produk fav':'produk_fav','favorite product':'produk_fav','produk':'produk_fav','best product':'produk_fav',
-  'catatan admin':'catatan','catatan':'catatan','note':'catatan','notes':'catatan','keterangan':'catatan','admin note':'catatan',
+  'total belanja (rp)':'total_belanja','total belanja (rupiah)':'total_belanja',
+  'heat':'heat','panas/dingin':'heat','panas / dingin':'heat','panas dingin':'heat','tingkat keaktifan':'heat','kategori heat':'heat',
+  'label':'label','nama label':'label',
+  'dinput oleh':'owner','input by':'owner','diinput oleh':'owner','owner':'owner','pemilik':'owner',
+  'catatan / note':'catatan','catatan admin':'catatan','catatan':'catatan','note':'catatan','notes':'catatan','keterangan':'catatan','admin note':'catatan',
 };
 
 const CRM_LS_KEY = 'dhp_crm_customers';
@@ -22845,8 +22862,8 @@ function downloadCRMTemplate() {
   // 2 baris contoh agar user paham format — ID Customer tidak ada di
   // sini lagi, dibuat otomatis oleh sistem saat import.
   const example = [
-    ['Budi Santoso','08123456789','Jakarta','Shopee','2024-01-15','12','3500000','New','Hijab Premium','Pelanggan loyal, suka COD'],
-    ['Siti Aminah','08987654321','Bandung','TikTok','2024-03-02','1','150000','New','Gamis Polos','Dari iklan TikTok'],
+    ['Budi Santoso','08123456789','Jakarta','Shopee','2024-01-15','12','3500000','New','Hijab Premium','Pelanggan loyal, suka COD','Hot','VIP',''],
+    ['Siti Aminah','08987654321','Bandung','TikTok','2024-03-02','1','150000','New','Gamis Polos','Dari iklan TikTok','Warm','',''],
   ];
   const ws = XLSX.utils.aoa_to_sheet([headers, ...example]);
   ws['!cols'] = headers.map(h => ({ wch: Math.max(14, h.length + 2) }));
@@ -22892,7 +22909,7 @@ function parseCRMImport(aoa) {
   const rows = [];
   for (let i=headerRow+1;i<aoa.length;i++){
     const r = aoa[i]||[];
-    const rec = { nama:'',wa:'',kota:'',channel:'',first_order:'',total_order:0,total_belanja:0,status:'New',produk_fav:'',catatan:'' };
+    const rec = { nama:'',wa:'',kota:'',channel:'',first_order:'',total_order:0,total_belanja:0,status:'New',produk_fav:'',catatan:'',heat:'',label:'',owner:'' };
     let hasData = false;
     Object.keys(map).forEach(ci => {
       const key = map[ci];
@@ -22903,6 +22920,7 @@ function parseCRMImport(aoa) {
       if (key === 'total_order') rec[key] = crmParseInt(val);
       else if (key === 'total_belanja') rec[key] = crmParseMoney(val);
       else if (key === 'status') rec[key] = val ? crmNormStatus(val) : 'New';
+      else if (key === 'heat') rec[key] = crmImpHeat(val);
       // v25: nomor WA yang formatnya tidak valid (bukan format Indonesia yang wajar)
       // dibuang saat import, bukan tetap dimasukkan — supaya tidak ada link wa.me
       // rusak di Database Customer setelah import massal.
@@ -22916,8 +22934,8 @@ function parseCRMImport(aoa) {
   _crmImportRows = rows;
 
   // Preview
-  const previewCols = ['nama','wa','kota','channel','status','total_order','total_belanja'];
-  const head = previewCols.map(k => `<th>${escHtml(CRM_COLUMNS.find(c=>c.key===k).header)}</th>`).join('');
+  const previewCols = ['nama','wa','kota','channel','status','total_order','total_belanja','heat','label'];
+  const head = previewCols.map(k => `<th>${escHtml((CRM_IMPORT_COLUMNS.find(c=>c.key===k) || CRM_COLUMNS.find(c=>c.key===k)).header)}</th>`).join('');
   const trs = rows.slice(0,30).map(r => `<tr>${previewCols.map(k=>{
     let v = r[k]; if (k==='total_belanja') v = crmFmtRupiah(v); 
     return `<td>${escHtml(v===''||v==null?'—':v)}</td>`;
@@ -22929,8 +22947,9 @@ function parseCRMImport(aoa) {
       ${blank?`<br>${blank} baris ada sel kosong — bisa diisi langsung di tabel setelah import.`:''}
       ${waDropped?`<br><span style="color:var(--amber)">${waDropped} nomor WhatsApp formatnya tidak valid — nomor tersebut dikosongkan (bukan dibuang barisnya).</span>`:''}</div>
     <div class="crm-imp-mode">
-      <label><input type="radio" name="crm-imp-mode" value="append" checked><span class="crm-imp-mode-txt"><strong>${t('crmModeAppend')}</strong>${t('crmModeAppendSub')}</span></label>
-      <label><input type="radio" name="crm-imp-mode" value="replace"><span class="crm-imp-mode-txt"><strong>${t('crmModeReplace')}</strong>${t('crmModeReplaceSub')}</span></label>
+      <label><input type="radio" name="crm-imp-mode" value="merge" checked><span class="crm-imp-mode-txt"><strong>Perbarui &amp; tambah</strong>Customer yang nomor WA-nya sudah ada diperbarui dengan data file terbaru, yang belum ada ditambahkan</span></label>
+      <label><input type="radio" name="crm-imp-mode" value="append"><span class="crm-imp-mode-txt"><strong>${t('crmModeAppend')}</strong>${t('crmModeAppendSub')} (selalu baris baru)</span></label>
+      <label><input type="radio" name="crm-imp-mode" value="replace"><span class="crm-imp-mode-txt"><strong>${t('crmModeReplace')}</strong>Hapus data milikmu saja, lalu import (data user lain aman)</span></label>
     </div>
     <div class="crm-imp-preview"><table><thead><tr>${head}</tr></thead><tbody>${trs}</tbody></table></div>`;
   document.getElementById('crm-imp-confirm').style.display = '';
@@ -22938,7 +22957,7 @@ function parseCRMImport(aoa) {
 
 async function confirmCRMImport() {
   if (!_crmImportRows || !_crmImportRows.length) return;
-  const mode = (document.querySelector('input[name="crm-imp-mode"]:checked')?.value) || 'append';
+  const mode = (document.querySelector('input[name="crm-imp-mode"]:checked')?.value) || 'merge';
   const n = _crmImportRows.length;
 
   // ── Mode DB: kirim seluruh baris ke RPC import (transaksi server) ──
@@ -22952,6 +22971,7 @@ async function confirmCRMImport() {
       first_order: r.first_order || '', total_order: r.total_order || 0,
       total_belanja: r.total_belanja || 0, status: r.status || 'New',
       produk_fav: r.produk_fav || '', catatan: r.catatan || '',
+      heat: r.heat || '', label: r.label || '', owner: r.owner || '',
     }));
     const res = await dbQ(d => d.rpc('import_crm_customers', {
       p_rows: payload, p_user_id: currentUser.id, p_mode: mode, p_gen_code: true
@@ -23362,7 +23382,7 @@ async function exportCRMDatabaseOnly() {
   const headers = [
     'No.', 'ID Customer', 'Nama', 'Nomor WhatsApp', 'Kota', 'Channel',
     'Tgl First Order', 'Total Order', 'Total Belanja (Rp)',
-    'Status', 'Heat', 'Produk Favorit', 'Catatan / Note', 'Input By'
+    'Status', 'Heat', 'Produk Favorit', 'Catatan / Note', 'Input By', 'Label'
   ];
 
   const HEAT_LABEL = { Hot:'🔥 Hot', Warm:'☀️ Warm', Cold:'❄️ Cold', None:'—' };
@@ -23389,10 +23409,11 @@ async function exportCRMDatabaseOnly() {
         c.produk_fav  || c.fav_product || '',
         c.catatan     || c.admin_note  || '',
         getUserMeta(c.owner_id || c.created_by).name || c.owner_id || '',
+        ((typeof crmLabels !== 'undefined' && c.label_id && crmLabels.find(l => l.id === c.label_id)) || {}).name || '',
       ];
     }),
     [],
-    ['', '', '', '', '', '', 'TOTAL', totalOrders, totalSpend, '', '', '', '', ''],
+    ['', '', '', '', '', '', 'TOTAL', totalOrders, totalSpend, '', '', '', '', '', ''],
   ];
 
   const ws = XLSX.utils.aoa_to_sheet(dataAoa);
@@ -23400,15 +23421,15 @@ async function exportCRMDatabaseOnly() {
   // Lebar kolom rapi
   ws['!cols'] = [
     {wch:5},  {wch:13}, {wch:26}, {wch:17}, {wch:18}, {wch:24},
-    {wch:16}, {wch:13}, {wch:20}, {wch:12}, {wch:10}, {wch:24}, {wch:34}, {wch:18}
+    {wch:16}, {wch:13}, {wch:20}, {wch:12}, {wch:10}, {wch:24}, {wch:34}, {wch:18}, {wch:16}
   ];
   // Merge judul & sub-judul
   ws['!merges'] = [
-    {s:{r:0,c:0}, e:{r:0,c:13}},
-    {s:{r:1,c:0}, e:{r:1,c:13}},
+    {s:{r:0,c:0}, e:{r:0,c:14}},
+    {s:{r:1,c:0}, e:{r:1,c:14}},
   ];
   // AutoFilter & Freeze header
-  ws['!autofilter'] = { ref: XLSX.utils.encode_range({s:{r:3,c:0}, e:{r:3,c:13}}) };
+  ws['!autofilter'] = { ref: XLSX.utils.encode_range({s:{r:3,c:0}, e:{r:3,c:14}}) };
   ws['!freeze']     = { xSplit:0, ySplit:4 };
 
   // Format angka
