@@ -6377,6 +6377,9 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
           </div>
           <div class="ph-acts">
             <button class="btn-sm btn-gold" onclick="loadLiveDashboard()" title="Muat ulang">⟲ Muat Ulang</button>
+            <button class="btn-sm btn-gold" id="ldash-weekly-btn" onclick="openWeeklyReport()" title="Laporan mingguan Senin–Minggu: total per host, persentase, grafik, analisis jam tayang (Excel &amp; PDF)">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px"><rect x="2" y="3" width="12" height="11" rx="1.6" stroke="currentColor" stroke-width="1.4"/><path d="M2 6.6h12M5.4 1.8v2.6M10.6 1.8v2.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Laporan Mingguan
+            </button>
             <button class="btn-g btn-sm" id="ldash-export-xlsx-btn" onclick="exportLiveDashboardExcel()" title="Export ke Excel — ringkasan, perbandingan host &amp; performa per platform">
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px"><rect x="1.6" y="2" width="12.8" height="10.6" rx="1.4" stroke="currentColor" stroke-width="1.2"/><path d="M1.6 5.4h12.8M5.6 2v10.6M9.7 2v10.6" stroke="currentColor" stroke-width="1"/></svg>Export Excel
             </button>
@@ -30902,6 +30905,273 @@ async function saveEditCred(uid) {
   renderUsers();
 }
 window.openEditCred = openEditCred; window.saveEditCred = saveEditCred;
+</script>
+<script>
+/* ═══ v117 — LAPORAN MINGGUAN LIVE DASHBOARD (Senin–Minggu) ═══
+   Excel multi-sheet + PDF bergrafik: total per host, persentase kontribusi,
+   rincian per hari, analisis per jam tayang (ada penjualan vs tanpa penjualan),
+   dan detail sesi per host. Angka = NET (setelah potongan platform), GMV asli ikut ditampilkan. */
+const WK_DAYS = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
+const WK_MON  = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+let _wkMonday = null, _wkData = null, _wkBusy = false;
+
+function wkMondayOf(d) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; }
+function wkAddDays(d, n) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() + n); return x; }
+function wkFmtD(d, withYear) { return d.getDate() + ' ' + WK_MON[d.getMonth()] + (withYear ? ' ' + d.getFullYear() : ''); }
+function wkLabel(mon) { const sun = wkAddDays(mon, 6); return 'Senin ' + wkFmtD(mon) + ' – Minggu ' + wkFmtD(sun, true); }
+function wkRp(n) { return typeof crmFmtRupiah === 'function' ? crmFmtRupiah(Math.round(n || 0)) : 'Rp ' + Math.round(n || 0).toLocaleString('id-ID'); }
+function wkTime(t) { return String(t || '').slice(0, 5); }
+function wkHM(t) { const p = String(t || '0:0').split(':'); return (+p[0] || 0) + (+p[1] || 0) / 60; }
+function wkBar(pct, n) { n = n || 20; const k = Math.max(0, Math.min(n, Math.round(pct / 100 * n))); return '█'.repeat(k) + '░'.repeat(n - k); }
+
+function wkHostName(id) { return (LOCAL_USERS[id] && LOCAL_USERS[id].name) || id; }
+
+async function wkBuild(mon) {
+  const ids = hostLiveIds();
+  const from = ymdKey(mon), to = ymdKey(wkAddDays(mon, 6));
+  const res = db ? await dbQ(d => d.from('live_schedule').select('*').in('host_user_id', ids).gte('schedule_date', from).lte('schedule_date', to).order('schedule_date').order('time_start')) : null;
+  const rows = (res && res.data) || [];
+  const hosts = {};
+  ids.forEach(id => { hosts[id] = { id, name: wkHostName(id), sessions: 0, reported: 0, ada: 0, nol: 0, belum: 0, off: 0, gross: 0, net: 0, shopee: 0, tiktok: 0, products: 0, viewers: 0, hours: 0, perDay: [0,0,0,0,0,0,0], perDaySess: [0,0,0,0,0,0,0], list: [] }; });
+  const slots = {};
+  rows.forEach(s => {
+    const h = hosts[s.host_user_id]; if (!h) return;
+    const di = Math.round((new Date(s.schedule_date + 'T00:00:00') - mon) / 86400000);
+    if (di < 0 || di > 6) return;
+    const isOff = ['cancelled', 'sakit', 'izin', 'libur'].includes(s.status);
+    const reported = !!s.report_filled_at && s.report_status !== 'rejected';
+    const g = gmvOf(s);
+    let cat = 'off';
+    if (!isOff) cat = !reported ? 'belum' : (g.net > 0 ? 'ada' : 'nol');
+    const st = wkHM(s.time_start); let en = wkHM(s.time_end); if (en <= st) en += 24;
+    const rec = { date: s.schedule_date, di, start: wkTime(s.time_start), end: wkTime(s.time_end), st, en, platform: s.platform || '', title: s.show_title || '',
+      status: s.status, cat, gross: g.gross, net: g.net, nS: g.nS, nT: g.nT, products: Number(s.products_sold) || 0, viewers: Number(s.viewers_count) || 0, hours: isOff ? 0 : (en - st) };
+    h.list.push(rec);
+    if (cat === 'off') { h.off++; return; }
+    h.sessions++; h.hours += rec.hours; h.perDaySess[di]++;
+    if (cat === 'belum') { h.belum++; }
+    else { h.reported++; h.gross += g.gross; h.net += g.net; h.shopee += g.nS; h.tiktok += g.nT; h.products += rec.products; h.viewers += rec.viewers; h.perDay[di] += g.net; cat === 'ada' ? h.ada++ : h.nol++; }
+    const key = rec.start + '–' + rec.end;
+    const sl = slots[key] || (slots[key] = { key, st, start: rec.start, end: rec.end, sessions: 0, ada: 0, nol: 0, belum: 0, net: 0, byHost: {} });
+    sl.sessions++; sl[cat]++; sl.net += cat === 'belum' ? 0 : g.net;
+    const bh = sl.byHost[h.id] || (sl.byHost[h.id] = { net: 0, ada: 0, nol: 0, belum: 0 }); bh[cat]++; bh.net += cat === 'belum' ? 0 : g.net;
+  });
+  const list = Object.values(hosts).sort((a, b) => b.net - a.net);
+  const T = list.reduce((t, h) => { ['sessions','reported','ada','nol','belum','gross','net','shopee','tiktok','products','viewers','hours'].forEach(k => t[k] += h[k]); h.perDay.forEach((v, i) => t.perDay[i] += v); return t; },
+    { sessions: 0, reported: 0, ada: 0, nol: 0, belum: 0, gross: 0, net: 0, shopee: 0, tiktok: 0, products: 0, viewers: 0, hours: 0, perDay: [0,0,0,0,0,0,0] });
+  list.forEach(h => { h.share = T.net > 0 ? h.net / T.net * 100 : 0; h.perHour = h.hours > 0 ? h.net / h.hours : 0; h.conv = h.reported > 0 ? h.ada / h.reported * 100 : 0; });
+  const slotList = Object.values(slots).sort((a, b) => a.st - b.st || a.end.localeCompare(b.end));
+  slotList.forEach(sl => { const r = sl.ada + sl.nol; sl.label = sl.sessions === sl.belum ? 'Belum lapor' : (sl.ada === 0 ? 'Tanpa penjualan' : (sl.nol === 0 ? 'Ada penjualan' : 'Campuran')); sl.conv = r > 0 ? sl.ada / r * 100 : 0; });
+  return { mon, from, to, label: wkLabel(mon), hosts: list, T, slots: slotList };
+}
+
+/* ── Modal pemilih minggu + pratinjau ── */
+function openWeeklyReport() {
+  if (!can.isMod(currentUser && currentUser.role)) { toast('Khusus moderator'); return; }
+  _wkMonday = wkMondayOf(new Date());
+  document.getElementById('m-title').textContent = 'Laporan Mingguan Live';
+  document.getElementById('m-body').innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px">
+      <button class="btn-sm btn-cancel" onclick="wkShift(-1)" title="Minggu sebelumnya">‹</button>
+      <div style="text-align:center"><div id="wk-label" style="font-weight:700;font-size:13px"></div><div style="font-size:10.5px;color:var(--muted)">Satu minggu penuh: Senin – Minggu</div></div>
+      <button class="btn-sm btn-cancel" onclick="wkShift(1)" title="Minggu berikutnya">›</button>
+    </div>
+    <div id="wk-prev"></div>`;
+  document.getElementById('m-foot').innerHTML = `
+    <button class="btn-sm btn-cancel" onclick="closeModal()">Tutup</button>
+    <button class="btn-sm btn-gold" onclick="wkExportExcel()">Unduh Excel</button>
+    <button class="btn-sm btn-gold" onclick="wkExportPdf()">Unduh PDF</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+  wkRefresh();
+}
+function wkShift(n) { _wkMonday = wkAddDays(_wkMonday, n * 7); wkRefresh(); }
+async function wkRefresh() {
+  const lab = document.getElementById('wk-label'), box = document.getElementById('wk-prev');
+  if (lab) lab.textContent = wkLabel(_wkMonday);
+  if (box) box.innerHTML = '<div style="padding:22px;text-align:center;color:var(--muted);font-size:12px">Memuat data minggu ini…</div>';
+  const mon = _wkMonday;
+  const d = await wkBuild(mon);
+  if (mon !== _wkMonday) return;            // user sudah pindah minggu
+  _wkData = d;
+  if (!box) return;
+  if (!d.T.sessions) { box.innerHTML = '<div style="padding:22px;text-align:center;color:var(--muted);font-size:12px">Tidak ada sesi live pada minggu ini.</div>'; return; }
+  box.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+      ${[[wkRp(d.T.net), 'Total Bersih (Net)'], [wkRp(d.T.gross), 'Total GMV'], [d.T.sessions + ' sesi · ' + d.T.hours.toFixed(1) + ' jam', 'Sesi & Jam Tayang']].map(k => `<div style="border:1px solid var(--border);border-radius:8px;padding:9px 10px"><div style="font-weight:700;font-size:12.5px;color:var(--gold-hi)">${k[0]}</div><div style="font-size:10px;color:var(--muted);margin-top:2px">${k[1]}</div></div>`).join('')}
+    </div>
+    ${d.hosts.map(h => `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><b>${escHtml(h.name)}</b><span>${wkRp(h.net)} · <b>${h.share.toFixed(1)}%</b></span></div>
+      <div style="height:8px;border-radius:5px;background:rgba(128,128,128,.18);overflow:hidden"><div style="height:100%;width:${h.share.toFixed(1)}%;background:var(--gold)"></div></div>
+      <div style="font-size:10.5px;color:var(--muted);margin-top:3px">${h.sessions} sesi · ${h.ada} ada penjualan · ${h.nol} tanpa penjualan · ${h.belum} belum lapor</div></div>`).join('')}
+    <div style="font-size:10.5px;color:var(--muted);margin-top:6px">Unduh Excel/PDF untuk rincian per hari, analisis jam tayang, dan detail sesi tiap host.</div>`;
+}
+
+/* ── EXCEL ── */
+function wkSetFmt(ws, colLetters, fmt, r0, r1) { colLetters.forEach(c => { for (let r = r0; r <= r1; r++) { const k = c + r; if (ws[k] && typeof ws[k].v === 'number') ws[k].z = fmt; } }); }
+async function wkExportExcel() {
+  if (_wkBusy) return;
+  if (!window.XLSX) { toast('Komponen Excel belum siap'); return; }
+  _wkBusy = true;
+  try {
+    const d = await wkBuild(_wkMonday || wkMondayOf(new Date()));
+    if (!d.T.sessions) { toast('Tidak ada sesi live pada minggu ini'); return; }
+    const wb = XLSX.utils.book_new(), stamp = new Date().toLocaleString('id-ID'), by = (currentUser && (currentUser.name || currentUser.id)) || 'Moderator';
+    const RP = '"Rp "#,##0';
+    // 1) Ringkasan
+    const a1 = [['DHP CREATIVE — LAPORAN MINGGUAN LIVE'], ['Periode: ' + d.label], ['Dibuat: ' + stamp + '  |  Oleh: ' + by], ['Angka penjualan = NET (setelah potongan platform). GMV asli ditampilkan terpisah.'], [],
+      ['RINGKASAN KESELURUHAN'], ['Total GMV', d.T.gross], ['Total Bersih (Net)', d.T.net], ['Potongan Platform', d.T.gross - d.T.net], ['Total Sesi', d.T.sessions], ['Total Jam Tayang', +d.T.hours.toFixed(1)], ['Produk Terjual', d.T.products], ['Penonton', d.T.viewers], ['Sesi Ada Penjualan', d.T.ada], ['Sesi Tanpa Penjualan', d.T.nol], ['Sesi Belum Lapor', d.T.belum], [],
+      ['PERBANDINGAN HOST'], ['Peringkat', 'Host', 'Sesi', 'Jam Tayang', 'GMV', 'Net', 'Kontribusi (%)', 'Grafik', 'Shopee (Net)', 'TikTok (Net)', 'Produk', 'Penonton', 'Ada Penjualan', 'Tanpa Penjualan', 'Belum Lapor', 'Net / Jam']];
+    const hStart = a1.length + 1;
+    d.hosts.forEach((h, i) => a1.push([i + 1, h.name, h.sessions, +h.hours.toFixed(1), h.gross, h.net, +h.share.toFixed(1), wkBar(h.share), h.shopee, h.tiktok, h.products, h.viewers, h.ada, h.nol, h.belum, Math.round(h.perHour)]));
+    a1.push(['', 'TOTAL', d.T.sessions, +d.T.hours.toFixed(1), d.T.gross, d.T.net, 100, '', d.T.shopee, d.T.tiktok, d.T.products, d.T.viewers, d.T.ada, d.T.nol, d.T.belum, d.T.hours > 0 ? Math.round(d.T.net / d.T.hours) : 0]);
+    const w1 = XLSX.utils.aoa_to_sheet(a1);
+    w1['!cols'] = [{wch:26},{wch:18},{wch:8},{wch:11},{wch:17},{wch:17},{wch:14},{wch:24},{wch:17},{wch:17},{wch:9},{wch:10},{wch:13},{wch:15},{wch:12},{wch:15}];
+    w1['!merges'] = [{s:{r:0,c:0},e:{r:0,c:9}},{s:{r:1,c:0},e:{r:1,c:9}},{s:{r:3,c:0},e:{r:3,c:9}}];
+    wkSetFmt(w1, ['B'], RP, 7, 9); wkSetFmt(w1, ['E','F','I','J','P'], RP, hStart, hStart + d.hosts.length);
+    XLSX.utils.book_append_sheet(wb, w1, 'Ringkasan');
+    // 2) Per Hari
+    const a2 = [['DHP CREATIVE — PENJUALAN BERSIH PER HARI'], ['Periode: ' + d.label], [], ['Host', ...WK_DAYS.map((n, i) => n + ' ' + wkFmtD(wkAddDays(d.mon, i))), 'Total', 'Hari Terbaik']];
+    d.hosts.forEach(h => { const best = h.perDay.indexOf(Math.max.apply(null, h.perDay)); a2.push([h.name, ...h.perDay, h.net, h.net > 0 ? WK_DAYS[best] : '-']); });
+    const bestAll = d.T.perDay.indexOf(Math.max.apply(null, d.T.perDay));
+    a2.push(['TOTAL', ...d.T.perDay, d.T.net, d.T.net > 0 ? WK_DAYS[bestAll] : '-'], [], ['Grafik harian (gabungan semua host)']);
+    const mx = Math.max.apply(null, d.T.perDay.concat([1]));
+    d.T.perDay.forEach((v, i) => a2.push([WK_DAYS[i], v, wkBar(v / mx * 100, 30), d.T.net > 0 ? +(v / d.T.net * 100).toFixed(1) + '%' : '0%']));
+    const w2 = XLSX.utils.aoa_to_sheet(a2); w2['!cols'] = [{wch:16}, ...WK_DAYS.map(() => ({wch:16})), {wch:17}, {wch:14}];
+    wkSetFmt(w2, ['B','C','D','E','F','G','H','I'], RP, 5, 5 + d.hosts.length + 1);
+    wkSetFmt(w2, ['B'], RP, 5 + d.hosts.length + 4, 5 + d.hosts.length + 11);
+    XLSX.utils.book_append_sheet(wb, w2, 'Per Hari');
+    // 3) Per Jam
+    const a3 = [['DHP CREATIVE — ANALISIS JAM TAYANG'], ['Periode: ' + d.label], ['Per jam tayang: sesi yang ada penjualan vs tanpa penjualan (dari laporan host).'], [],
+      ['Jam Tayang', 'Total Sesi', 'Ada Penjualan', 'Tanpa Penjualan', 'Belum Lapor', 'Tingkat Penjualan (%)', 'Grafik', 'Total Net', 'Keterangan', ...d.hosts.map(h => h.name + ' (Net)')]];
+    d.slots.forEach(sl => a3.push([sl.key, sl.sessions, sl.ada, sl.nol, sl.belum, +sl.conv.toFixed(0), wkBar(sl.conv), sl.net, sl.label, ...d.hosts.map(h => { const b = sl.byHost[h.id]; return b ? b.net : 0; })]));
+    const w3 = XLSX.utils.aoa_to_sheet(a3); w3['!cols'] = [{wch:16},{wch:10},{wch:13},{wch:15},{wch:12},{wch:20},{wch:24},{wch:16},{wch:18}, ...d.hosts.map(() => ({wch:16}))];
+    wkSetFmt(w3, ['H', ...d.hosts.map((_, i) => String.fromCharCode(74 + i))], RP, 6, 5 + d.slots.length);
+    XLSX.utils.book_append_sheet(wb, w3, 'Per Jam');
+    // 4) Detail sesi per host
+    const a4 = [['DHP CREATIVE — DETAIL SESI PER HOST'], ['Periode: ' + d.label], []];
+    d.hosts.forEach(h => {
+      a4.push([h.name.toUpperCase(), '', '', '', '', '', '', '', '', '', 'Net: ' + wkRp(h.net) + '  |  ' + h.share.toFixed(1) + '% dari total']);
+      a4.push(['Tanggal', 'Hari', 'Jam', 'Platform', 'Status Penjualan', 'GMV', 'Net', 'Shopee (Net)', 'TikTok (Net)', 'Produk', 'Penonton']);
+      const L = h.list.filter(x => x.cat !== 'off');
+      if (!L.length) a4.push(['— tidak ada sesi —']);
+      L.forEach(x => a4.push([x.date, WK_DAYS[x.di], x.start + '–' + x.end, x.platform || '-', x.cat === 'ada' ? 'Ada penjualan' : x.cat === 'nol' ? 'Tanpa penjualan' : 'Belum lapor', x.gross, x.net, x.nS, x.nT, x.products, x.viewers]));
+      if (L.length) a4.push(['TOTAL', '', '', '', '', h.gross, h.net, h.shopee, h.tiktok, h.products, h.viewers]);
+      a4.push([]);
+    });
+    const w4 = XLSX.utils.aoa_to_sheet(a4); w4['!cols'] = [{wch:14},{wch:10},{wch:14},{wch:12},{wch:18},{wch:15},{wch:15},{wch:15},{wch:15},{wch:9},{wch:11}];
+    wkSetFmt(w4, ['F','G','H','I'], RP, 4, a4.length);
+    XLSX.utils.book_append_sheet(wb, w4, 'Detail Sesi');
+    XLSX.writeFile(wb, 'DHP_Laporan_Mingguan_Live_' + d.from + '_sd_' + d.to + '.xlsx');
+    toast('✓ Laporan mingguan (Excel) diunduh');
+    try { pushActivity('Live Dashboard: export laporan mingguan ' + d.from, 'info'); } catch (e) {}
+  } catch (e) { console.error('[DHP] wkExportExcel', e); toast('Gagal export: ' + (e.message || e)); }
+  finally { _wkBusy = false; }
+}
+
+/* ── PDF ── */
+async function wkExportPdf() {
+  if (_wkBusy) return;
+  if (!(window.jspdf && window.jspdf.jsPDF)) { toast('Komponen PDF belum siap'); return; }
+  _wkBusy = true;
+  try {
+    const d = await wkBuild(_wkMonday || wkMondayOf(new Date()));
+    if (!d.T.sessions) { toast('Tidak ada sesi live pada minggu ini'); return; }
+    const doc = new window.jspdf.jsPDF({ unit: 'pt', format: 'a4' });
+    const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight(), mx = 40, cw = W - mx * 2;
+    const GOLD = [178,138,68], GREEN = [46,139,87], RED = [200,72,72], GREY = [225,225,225], DARK = [30,30,34];
+    const PAL = [[178,138,68],[70,120,170],[190,90,130],[90,150,110],[140,110,180]];
+    const by = (currentUser && (currentUser.name || currentUser.id)) || 'Moderator';
+    let y = 0;
+    const head = (sub) => { doc.setFillColor(20,20,24); doc.rect(0,0,W,84,'F'); doc.setTextColor(201,169,110); doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.text('DHP CREATIVE', mx, 36);
+      doc.setTextColor(235,235,235); doc.setFontSize(11); doc.setFont('helvetica','normal'); doc.text(sub, mx, 54); doc.setFontSize(9); doc.setTextColor(190,190,190);
+      doc.text(d.label + '  ·  dibuat ' + new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) + '  ·  ' + by, mx, 70); doc.setTextColor(0,0,0); };
+    const h2 = (t) => { doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor.apply(doc, DARK); doc.text(t, mx, y); y += 6; doc.setDrawColor.apply(doc, GOLD); doc.setLineWidth(1.2); doc.line(mx, y, mx + 36, y); y += 14; };
+    const need = (n) => { if (y + n > H - 40) { doc.addPage(); y = 50; } };
+    // ── Hal 1: ringkasan ──
+    head('Laporan Mingguan Live — Ringkasan & Performa Host'); y = 108;
+    h2('Ringkasan Keseluruhan');
+    const kpis = [[wkRp(d.T.net), 'Total Bersih (Net)'], [wkRp(d.T.gross), 'Total GMV'], [wkRp(d.T.gross - d.T.net), 'Potongan Platform'], [d.T.sessions + ' sesi', 'Total Sesi'],
+                  [d.T.hours.toFixed(1) + ' jam', 'Total Jam Tayang'], [String(d.T.products), 'Produk Terjual'], [String(d.T.viewers), 'Penonton'], [d.T.ada + ' / ' + (d.T.ada + d.T.nol), 'Sesi Ada Penjualan']];
+    const kw = (cw - 8 * 3) / 4;
+    kpis.forEach((k, i) => { const x = mx + (i % 4) * (kw + 8), yy = y + Math.floor(i / 4) * 54; doc.setDrawColor(222,222,222); doc.setLineWidth(.8); doc.roundedRect(x, yy, kw, 46, 4, 4);
+      doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor.apply(doc, GOLD); doc.text(doc.splitTextToSize(k[0], kw - 14)[0], x + 8, yy + 20); doc.setFont('helvetica','normal'); doc.setFontSize(7.6); doc.setTextColor(95,95,95); doc.text(k[1], x + 8, yy + 34); });
+    y += 118;
+    // kontribusi per host: stacked bar 100% + legenda
+    h2('Kontribusi Penjualan Bersih per Host');
+    let bx = mx; const bh = 22;
+    d.hosts.forEach((h, i) => { const w = d.T.net > 0 ? cw * h.share / 100 : 0; if (w > 0) { doc.setFillColor.apply(doc, PAL[i % PAL.length]); doc.rect(bx, y, w, bh, 'F'); if (w > 34) { doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.text(h.share.toFixed(1) + '%', bx + 6, y + 14); } bx += w; } });
+    doc.setDrawColor(200,200,200); doc.rect(mx, y, cw, bh); y += bh + 14;
+    d.hosts.forEach((h, i) => { doc.setFillColor.apply(doc, PAL[i % PAL.length]); doc.rect(mx, y - 8, 9, 9, 'F'); doc.setTextColor.apply(doc, DARK); doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.text(h.name, mx + 15, y);
+      doc.setFont('helvetica','normal'); doc.text(wkRp(h.net) + '   ·   ' + h.share.toFixed(1) + '%   ·   ' + h.sessions + ' sesi   ·   ' + h.hours.toFixed(1) + ' jam   ·   ' + wkRp(h.perHour) + ' / jam', mx + 80, y); y += 15; });
+    y += 8;
+    doc.autoTable({ startY: y, margin: { left: mx, right: mx }, theme: 'grid', styles: { fontSize: 8, cellPadding: 4 }, headStyles: { fillColor: DARK, textColor: [230,230,230] },
+      head: [['#','Host','Sesi','Jam','GMV','Net','%','Shopee','TikTok','Ada','Tanpa','Belum']],
+      body: d.hosts.map((h, i) => [i + 1, h.name, h.sessions, h.hours.toFixed(1), wkRp(h.gross), wkRp(h.net), h.share.toFixed(1) + '%', wkRp(h.shopee), wkRp(h.tiktok), h.ada, h.nol, h.belum])
+        .concat([['', 'TOTAL', d.T.sessions, d.T.hours.toFixed(1), wkRp(d.T.gross), wkRp(d.T.net), '100%', wkRp(d.T.shopee), wkRp(d.T.tiktok), d.T.ada, d.T.nol, d.T.belum]]),
+      didParseCell: (c) => { if (c.row.index === d.hosts.length && c.section === 'body') { c.cell.styles.fontStyle = 'bold'; c.cell.styles.fillColor = [245,238,225]; } } });
+    y = doc.lastAutoTable.finalY + 22;
+    // ── per hari: grafik batang berkelompok ──
+    need(250); h2('Penjualan Bersih per Hari');
+    const ch = 150, cx0 = mx + 52, cwid = cw - 52, gw = cwid / 7;
+    const maxV = Math.max.apply(null, d.hosts.flatMap(h => h.perDay).concat([1]));
+    doc.setDrawColor(230,230,230); doc.setLineWidth(.5);
+    for (let g = 0; g <= 4; g++) { const gy = y + ch - ch * g / 4; doc.line(cx0, gy, cx0 + cwid, gy); doc.setFont('helvetica','normal'); doc.setFontSize(6.8); doc.setTextColor(120,120,120);
+      const v = maxV * g / 4; doc.text(v >= 1e6 ? (v / 1e6).toFixed(1) + ' jt' : v >= 1e3 ? Math.round(v / 1e3) + ' rb' : '0', cx0 - 6, gy + 2, { align: 'right' }); }
+    const bw = Math.min(16, (gw - 10) / Math.max(1, d.hosts.length));
+    WK_DAYS.forEach((dn, di) => { const gx = cx0 + di * gw + (gw - bw * d.hosts.length) / 2;
+      d.hosts.forEach((h, hi) => { const v = h.perDay[di], bhh = maxV > 0 ? ch * v / maxV : 0; doc.setFillColor.apply(doc, PAL[hi % PAL.length]); if (bhh > 0) doc.rect(gx + hi * bw, y + ch - bhh, bw - 1.5, bhh, 'F'); });
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.6); doc.setTextColor(80,80,80); doc.text(dn.slice(0, 3) + ' ' + wkAddDays(d.mon, di).getDate(), cx0 + di * gw + gw / 2, y + ch + 12, { align: 'center' }); });
+    y += ch + 26; let lx = mx;
+    d.hosts.forEach((h, i) => { doc.setFillColor.apply(doc, PAL[i % PAL.length]); doc.rect(lx, y - 7, 8, 8, 'F'); doc.setTextColor(60,60,60); doc.setFontSize(8); doc.text(h.name, lx + 12, y); lx += 24 + doc.getTextWidth(h.name) + 14; });
+    y += 18;
+    doc.autoTable({ startY: y, margin: { left: mx, right: mx }, theme: 'grid', styles: { fontSize: 7.6, cellPadding: 3.5, halign: 'right' }, headStyles: { fillColor: DARK, textColor: [230,230,230], halign: 'center' }, columnStyles: { 0: { halign: 'left' } },
+      head: [['Host', ...WK_DAYS.map(n => n.slice(0, 3)), 'Total']],
+      body: d.hosts.map(h => [h.name, ...h.perDay.map(v => v > 0 ? wkRp(v) : '-'), wkRp(h.net)]).concat([['TOTAL', ...d.T.perDay.map(v => v > 0 ? wkRp(v) : '-'), wkRp(d.T.net)]]),
+      didParseCell: (c) => { if (c.row.index === d.hosts.length && c.section === 'body') { c.cell.styles.fontStyle = 'bold'; c.cell.styles.fillColor = [245,238,225]; } } });
+    y = doc.lastAutoTable.finalY + 24;
+    // ── per jam: strip 24 jam per host ──
+    doc.addPage(); y = 50; h2('Peta Jam Tayang — Ada Penjualan vs Tanpa Penjualan');
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(90,90,90);
+    doc.text(doc.splitTextToSize('Setiap kotak = satu jam dalam sehari. Hijau: jam itu ada sesi live yang menghasilkan penjualan. Merah: ada sesi live tetapi tanpa penjualan. Abu: tidak ada sesi. Kuning: sesi belum dilaporkan.', cw), mx, y); y += 26;
+    const lw = 62, cell = (cw - lw) / 24;
+    const strip = (h) => { const st = Array(24).fill(null); // prioritas: ada > nol > belum
+      h.list.filter(x => x.cat !== 'off').forEach(x => { for (let t = Math.floor(x.st); t < Math.ceil(x.en); t++) { const k = t % 24, cur = st[k], n = x.cat; const rank = { ada: 3, nol: 2, belum: 1 }; if (!cur || rank[n] > rank[cur]) st[k] = n; } }); return st; };
+    doc.setFontSize(6.5); doc.setTextColor(110,110,110); for (let t = 0; t < 24; t++) doc.text(String(t).padStart(2, '0'), mx + lw + t * cell + cell / 2, y, { align: 'center' }); y += 6;
+    const COL = { ada: GREEN, nol: RED, belum: [235,190,70] };
+    d.hosts.forEach(h => { const st = strip(h); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor.apply(doc, DARK); doc.text(h.name, mx, y + 14);
+      st.forEach((v, t) => { doc.setFillColor.apply(doc, v ? COL[v] : GREY); doc.rect(mx + lw + t * cell + .6, y, cell - 1.2, 20, 'F'); }); y += 28; });
+    y += 4; [['Ada penjualan', GREEN], ['Tanpa penjualan', RED], ['Belum lapor', COL.belum], ['Tidak ada sesi', GREY]].forEach((l, i) => { const x = mx + i * 110; doc.setFillColor.apply(doc, l[1]); doc.rect(x, y - 7, 9, 9, 'F'); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(60,60,60); doc.text(l[0], x + 13, y); });
+    y += 22;
+    h2('Analisis per Jam Tayang');
+    doc.autoTable({ startY: y, margin: { left: mx, right: mx }, theme: 'grid', styles: { fontSize: 8, cellPadding: 4 }, headStyles: { fillColor: DARK, textColor: [230,230,230] },
+      head: [['Jam Tayang','Sesi','Ada','Tanpa','Belum','Tingkat','Total Net','Keterangan']],
+      body: d.slots.map(sl => [sl.key, sl.sessions, sl.ada, sl.nol, sl.belum, sl.conv.toFixed(0) + '%', wkRp(sl.net), sl.label]),
+      didParseCell: (c) => { if (c.section === 'body' && c.column.index === 7) { const v = c.cell.raw; c.cell.styles.fontStyle = 'bold'; c.cell.styles.textColor = v === 'Ada penjualan' ? GREEN : v === 'Tanpa penjualan' ? RED : v === 'Campuran' ? [190,120,30] : [120,120,120]; } } });
+    y = doc.lastAutoTable.finalY + 12;
+    const best = d.slots.filter(s => s.net > 0).sort((a, b) => b.net - a.net)[0], worst = d.slots.filter(s => s.ada === 0 && s.nol > 0)[0];
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor.apply(doc, DARK);
+    const notes = [best ? 'Jam paling menghasilkan: ' + best.key + ' (' + wkRp(best.net) + ' dari ' + best.sessions + ' sesi).' : '', worst ? 'Jam tanpa penjualan: ' + d.slots.filter(s => s.ada === 0 && s.nol > 0).map(s => s.key).join(', ') + '.' : ''].filter(Boolean);
+    need(40); notes.forEach(n => { doc.text(doc.splitTextToSize('•  ' + n, cw), mx, y); y += 14; });
+    // ── detail per host ──
+    d.hosts.forEach(h => { doc.addPage(); head('Detail Sesi — ' + h.name); y = 108;
+      h2(h.name + '  ·  ' + wkRp(h.net) + '  ·  ' + h.share.toFixed(1) + '% dari total');
+      const L = h.list.filter(x => x.cat !== 'off');
+      doc.autoTable({ startY: y, margin: { left: mx, right: mx }, theme: 'grid', styles: { fontSize: 7.8, cellPadding: 3.5 }, headStyles: { fillColor: DARK, textColor: [230,230,230] },
+        head: [['Hari / Tanggal','Jam','Platform','Status','GMV','Net','Produk','Penonton']],
+        body: L.length ? L.map(x => [WK_DAYS[x.di] + ' ' + wkFmtD(new Date(x.date + 'T00:00:00')), x.start + '–' + x.end, x.platform || '-', x.cat === 'ada' ? 'Ada penjualan' : x.cat === 'nol' ? 'Tanpa penjualan' : 'Belum lapor', wkRp(x.gross), wkRp(x.net), x.products, x.viewers])
+          .concat([['TOTAL', '', '', '', wkRp(h.gross), wkRp(h.net), h.products, h.viewers]]) : [['Tidak ada sesi pada minggu ini', '', '', '', '', '', '', '']],
+        didParseCell: (c) => { if (c.section !== 'body') return; if (L.length && c.row.index === L.length) { c.cell.styles.fontStyle = 'bold'; c.cell.styles.fillColor = [245,238,225]; }
+          if (c.column.index === 3) { const v = c.cell.raw; c.cell.styles.fontStyle = 'bold'; c.cell.styles.textColor = v === 'Ada penjualan' ? GREEN : v === 'Tanpa penjualan' ? RED : [190,120,30]; } } });
+    });
+    const n = doc.internal.getNumberOfPages();
+    for (let p = 1; p <= n; p++) { doc.setPage(p); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(140,140,140); doc.text('DHP Creative · Laporan Mingguan Live · Halaman ' + p + ' / ' + n, W / 2, H - 20, { align: 'center' }); }
+    doc.save('DHP_Laporan_Mingguan_Live_' + d.from + '_sd_' + d.to + '.pdf');
+    toast('✓ Laporan mingguan (PDF) diunduh');
+    try { pushActivity('Live Dashboard: PDF laporan mingguan ' + d.from, 'info'); } catch (e) {}
+  } catch (e) { console.error('[DHP] wkExportPdf', e); toast('Gagal export PDF: ' + (e.message || e)); }
+  finally { _wkBusy = false; }
+}
+window.openWeeklyReport = openWeeklyReport; window.wkShift = wkShift; window.wkExportExcel = wkExportExcel; window.wkExportPdf = wkExportPdf;
+
 </script>
 </body>
 </html>
