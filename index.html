@@ -30932,7 +30932,7 @@ async function wkBuild(mon) {
   const res = db ? await dbQ(d => d.from('live_schedule').select('*').in('host_user_id', ids).gte('schedule_date', from).lte('schedule_date', to).order('schedule_date').order('time_start')) : null;
   const rows = (res && res.data) || [];
   const hosts = {};
-  ids.forEach(id => { hosts[id] = { id, name: wkHostName(id), sessions: 0, reported: 0, ada: 0, nol: 0, belum: 0, off: 0, gross: 0, net: 0, shopee: 0, tiktok: 0, products: 0, viewers: 0, hours: 0, perDay: [0,0,0,0,0,0,0], perDaySess: [0,0,0,0,0,0,0], list: [] }; });
+  ids.forEach(id => { hosts[id] = { id, name: wkHostName(id), gS: 0, gT: 0, cutS: 0, cutT: 0, target: 0, monthSales: 0, sessions: 0, reported: 0, ada: 0, nol: 0, belum: 0, off: 0, gross: 0, net: 0, shopee: 0, tiktok: 0, products: 0, viewers: 0, hours: 0, perDay: [0,0,0,0,0,0,0], perDaySess: [0,0,0,0,0,0,0], list: [] }; });
   const slots = {};
   rows.forEach(s => {
     const h = hosts[s.host_user_id]; if (!h) return;
@@ -30950,19 +30950,28 @@ async function wkBuild(mon) {
     if (cat === 'off') { h.off++; return; }
     h.sessions++; h.hours += rec.hours; h.perDaySess[di]++;
     if (cat === 'belum') { h.belum++; }
-    else { h.reported++; h.gross += g.gross; h.net += g.net; h.shopee += g.nS; h.tiktok += g.nT; h.products += rec.products; h.viewers += rec.viewers; h.perDay[di] += g.net; cat === 'ada' ? h.ada++ : h.nol++; }
+    else { h.reported++; h.gross += g.gross; h.net += g.net; h.gS += g.gS; h.gT += g.gT; h.cutS += Math.max(0, g.gS - g.nS); h.cutT += Math.max(0, g.gT - g.nT); h.shopee += g.nS; h.tiktok += g.nT; h.products += rec.products; h.viewers += rec.viewers; h.perDay[di] += g.net; cat === 'ada' ? h.ada++ : h.nol++; }
     const key = rec.start + '–' + rec.end;
     const sl = slots[key] || (slots[key] = { key, st, start: rec.start, end: rec.end, sessions: 0, ada: 0, nol: 0, belum: 0, net: 0, byHost: {} });
     sl.sessions++; sl[cat]++; sl.net += cat === 'belum' ? 0 : g.net;
     const bh = sl.byHost[h.id] || (sl.byHost[h.id] = { net: 0, ada: 0, nol: 0, belum: 0 }); bh[cat]++; bh.net += cat === 'belum' ? 0 : g.net;
   });
+  // target bulanan host (bulan yang memuat pertengahan minggu) → target mingguan prorata
+  const mid = wkAddDays(mon, 3), dim = new Date(mid.getFullYear(), mid.getMonth() + 1, 0).getDate();
+  if (db) await Promise.all(ids.map(async id => {
+    const r = await dbQ(d => d.rpc('host_dashboard_stats', { p_host_id: id, p_period_ym: ymPeriodKey(mid) }));
+    const st = r && r.data && r.data[0];
+    hosts[id].target = Number(st && st.target_amount) || 0; hosts[id].monthSales = Number(st && st.total_sales) || 0;
+  }));
+  Object.values(hosts).forEach(h => { h.cut = Math.max(0, h.gross - h.net); h.monthTarget = h.target; h.weekTarget = h.target > 0 ? h.target * 7 / dim : 0; });
   const list = Object.values(hosts).sort((a, b) => b.net - a.net);
-  const T = list.reduce((t, h) => { ['sessions','reported','ada','nol','belum','gross','net','shopee','tiktok','products','viewers','hours'].forEach(k => t[k] += h[k]); h.perDay.forEach((v, i) => t.perDay[i] += v); return t; },
-    { sessions: 0, reported: 0, ada: 0, nol: 0, belum: 0, gross: 0, net: 0, shopee: 0, tiktok: 0, products: 0, viewers: 0, hours: 0, perDay: [0,0,0,0,0,0,0] });
-  list.forEach(h => { h.share = T.net > 0 ? h.net / T.net * 100 : 0; h.perHour = h.hours > 0 ? h.net / h.hours : 0; h.conv = h.reported > 0 ? h.ada / h.reported * 100 : 0; });
+  const T = list.reduce((t, h) => { ['sessions','reported','ada','nol','belum','gross','net','shopee','tiktok','products','viewers','hours','gS','gT','cutS','cutT','cut','weekTarget','monthTarget','monthSales'].forEach(k => t[k] += h[k]); h.perDay.forEach((v, i) => t.perDay[i] += v); return t; },
+    { sessions: 0, reported: 0, ada: 0, nol: 0, belum: 0, gross: 0, net: 0, shopee: 0, tiktok: 0, products: 0, viewers: 0, hours: 0, gS: 0, gT: 0, cutS: 0, cutT: 0, cut: 0, weekTarget: 0, monthTarget: 0, monthSales: 0, perDay: [0,0,0,0,0,0,0] });
+  list.forEach(h => { h.share = T.net > 0 ? h.net / T.net * 100 : 0; h.perHour = h.hours > 0 ? h.net / h.hours : 0; h.achWeek = h.weekTarget > 0 ? h.net / h.weekTarget * 100 : 0; h.achMonth = h.monthTarget > 0 ? h.monthSales / h.monthTarget * 100 : 0; h.conv = h.reported > 0 ? h.ada / h.reported * 100 : 0; });
+  T.achWeek = T.weekTarget > 0 ? T.net / T.weekTarget * 100 : 0; T.achMonth = T.monthTarget > 0 ? T.monthSales / T.monthTarget * 100 : 0;
   const slotList = Object.values(slots).sort((a, b) => a.st - b.st || a.end.localeCompare(b.end));
   slotList.forEach(sl => { const r = sl.ada + sl.nol; sl.label = sl.sessions === sl.belum ? 'Belum lapor' : (sl.ada === 0 ? 'Tanpa penjualan' : (sl.nol === 0 ? 'Ada penjualan' : 'Campuran')); sl.conv = r > 0 ? sl.ada / r * 100 : 0; });
-  return { mon, from, to, label: wkLabel(mon), hosts: list, T, slots: slotList };
+  return { mon, from, to, label: wkLabel(mon), hosts: list, T, slots: slotList, monthName: WK_MON[mid.getMonth()] + ' ' + mid.getFullYear() };
 }
 
 /* ── Modal pemilih minggu + pratinjau ── */
@@ -30995,13 +31004,26 @@ async function wkRefresh() {
   _wkData = d;
   if (!box) return;
   if (!d.T.sessions) { box.innerHTML = '<div style="padding:22px;text-align:center;color:var(--muted);font-size:12px">Tidak ada sesi live pada minggu ini.</div>'; return; }
+  const flow = [['GMV Kotor', wkRp(d.T.gross), 'var(--text)'], ['Potongan PPN/Platform', '− ' + wkRp(d.T.cut), '#c84848'], ['Hasil Akhir (Net)', wkRp(d.T.net), '#2e8b57']];
+  const pctClr = p => p >= 100 ? '#2e8b57' : p >= 60 ? 'var(--gold)' : '#c84848';
   box.innerHTML = `
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
-      ${[[wkRp(d.T.net), 'Total Bersih (Net)'], [wkRp(d.T.gross), 'Total GMV'], [d.T.sessions + ' sesi · ' + d.T.hours.toFixed(1) + ' jam', 'Sesi & Jam Tayang']].map(k => `<div style="border:1px solid var(--border);border-radius:8px;padding:9px 10px"><div style="font-weight:700;font-size:12.5px;color:var(--gold-hi)">${k[0]}</div><div style="font-size:10px;color:var(--muted);margin-top:2px">${k[1]}</div></div>`).join('')}
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px">
+      ${flow.map(k => `<div style="border:1px solid var(--border);border-radius:8px;padding:9px 10px"><div style="font-size:10px;color:var(--muted)">${k[0]}</div><div style="font-weight:700;font-size:13px;color:${k[2]};margin-top:3px">${k[1]}</div></div>`).join('')}
     </div>
-    ${d.hosts.map(h => `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><b>${escHtml(h.name)}</b><span>${wkRp(h.net)} · <b>${h.share.toFixed(1)}%</b></span></div>
-      <div style="height:8px;border-radius:5px;background:rgba(128,128,128,.18);overflow:hidden"><div style="height:100%;width:${h.share.toFixed(1)}%;background:var(--gold)"></div></div>
-      <div style="font-size:10.5px;color:var(--muted);margin-top:3px">${h.sessions} sesi · ${h.ada} ada penjualan · ${h.nol} tanpa penjualan · ${h.belum} belum lapor</div></div>`).join('')}
+    <div style="border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:5px"><span>Achieve target minggu ini <span style="color:var(--muted)">(${wkRp(d.T.net)} / ${wkRp(d.T.weekTarget)})</span></span><b style="color:${pctClr(d.T.achWeek)}">${d.T.weekTarget > 0 ? d.T.achWeek.toFixed(1) + '%' : 'target belum diatur'}</b></div>
+      <div style="height:8px;border-radius:5px;background:rgba(128,128,128,.18);overflow:hidden"><div style="height:100%;width:${Math.min(100, d.T.achWeek).toFixed(1)}%;background:${pctClr(d.T.achWeek)}"></div></div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">Target mingguan = target bulanan (${d.monthName}) dibagi hari dalam bulan × 7 · ${d.T.sessions} sesi · ${d.T.hours.toFixed(1)} jam tayang</div>
+    </div>
+    ${d.hosts.map(h => `<div style="border:1px solid var(--border);border-radius:10px;padding:11px 12px;margin-bottom:9px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px"><b style="font-size:13px">${escHtml(h.name)}</b><span style="font-size:11px;color:var(--muted)">Kontribusi <b style="color:var(--text)">${h.share.toFixed(1)}%</b></span></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:11px">
+        <div><div style="color:var(--muted);font-size:9.5px">GMV Kotor</div>${wkRp(h.gross)}</div>
+        <div><div style="color:var(--muted);font-size:9.5px">Potongan</div><span style="color:#c84848">− ${wkRp(h.cut)}</span></div>
+        <div><div style="color:var(--muted);font-size:9.5px">Hasil Akhir</div><b style="color:#2e8b57">${wkRp(h.net)}</b></div></div>
+      <div style="height:7px;border-radius:5px;background:rgba(128,128,128,.18);overflow:hidden;margin:9px 0 3px"><div style="height:100%;width:${Math.min(100, h.achWeek).toFixed(1)}%;background:${pctClr(h.achWeek)}"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted)"><span>Target minggu ${h.weekTarget > 0 ? wkRp(h.weekTarget) : '—'}</span><b style="color:${pctClr(h.achWeek)}">${h.weekTarget > 0 ? h.achWeek.toFixed(1) + '%' : '—'}</b></div>
+      <div style="font-size:10.5px;color:var(--muted);margin-top:4px">${h.sessions} sesi · ${h.ada} ada penjualan · ${h.nol} tanpa penjualan · ${h.belum} belum lapor</div></div>`).join('')}
     <div style="font-size:10.5px;color:var(--muted);margin-top:6px">Unduh Excel/PDF untuk rincian per hari, analisis jam tayang, dan detail sesi tiap host.</div>`;
 }
 
@@ -31017,16 +31039,29 @@ async function wkExportExcel() {
     const wb = XLSX.utils.book_new(), stamp = new Date().toLocaleString('id-ID'), by = (currentUser && (currentUser.name || currentUser.id)) || 'Moderator';
     const RP = '"Rp "#,##0';
     // 1) Ringkasan
-    const a1 = [['DHP CREATIVE — LAPORAN MINGGUAN LIVE'], ['Periode: ' + d.label], ['Dibuat: ' + stamp + '  |  Oleh: ' + by], ['Angka penjualan = NET (setelah potongan platform). GMV asli ditampilkan terpisah.'], [],
-      ['RINGKASAN KESELURUHAN'], ['Total GMV', d.T.gross], ['Total Bersih (Net)', d.T.net], ['Potongan Platform', d.T.gross - d.T.net], ['Total Sesi', d.T.sessions], ['Total Jam Tayang', +d.T.hours.toFixed(1)], ['Produk Terjual', d.T.products], ['Penonton', d.T.viewers], ['Sesi Ada Penjualan', d.T.ada], ['Sesi Tanpa Penjualan', d.T.nol], ['Sesi Belum Lapor', d.T.belum], [],
-      ['PERBANDINGAN HOST'], ['Peringkat', 'Host', 'Sesi', 'Jam Tayang', 'GMV', 'Net', 'Kontribusi (%)', 'Grafik', 'Shopee (Net)', 'TikTok (Net)', 'Produk', 'Penonton', 'Ada Penjualan', 'Tanpa Penjualan', 'Belum Lapor', 'Net / Jam']];
+    const a1 = [['DHP CREATIVE — LAPORAN MINGGUAN LIVE'], ['Periode: ' + d.label], ['Dibuat: ' + stamp + '  |  Oleh: ' + by], ['Penjualan "Net" = hasil akhir setelah potongan PPN/platform (Shopee 25%, TikTok 11%).'], [],
+      ['RINCIAN PERHITUNGAN (KESELURUHAN)', 'Nominal'],
+      ['GMV Kotor (sebelum potongan)', d.T.gross],
+      ['(−) Potongan Shopee', -d.T.cutS],
+      ['(−) Potongan TikTok', -d.T.cutT],
+      ['Total Potongan PPN/Platform', -d.T.cut],
+      ['HASIL AKHIR BERSIH (NET)', d.T.net],
+      ['Target Mingguan (prorata dari target ' + d.monthName + ')', d.T.weekTarget],
+      ['Achieve Target Mingguan', d.T.weekTarget > 0 ? +d.T.achWeek.toFixed(1) : 'target belum diatur'],
+      ['Target Bulanan ' + d.monthName, d.T.monthTarget],
+      ['Capaian Bulan Berjalan', d.T.monthSales],
+      ['Achieve Target Bulanan', d.T.monthTarget > 0 ? +d.T.achMonth.toFixed(1) : 'target belum diatur'],
+      [],
+      ['AKTIVITAS'], ['Total Sesi', d.T.sessions], ['Total Jam Tayang', +d.T.hours.toFixed(1)], ['Produk Terjual', d.T.products], ['Penonton', d.T.viewers], ['Sesi Ada Penjualan', d.T.ada], ['Sesi Tanpa Penjualan', d.T.nol], ['Sesi Belum Lapor', d.T.belum], [],
+      ['PERBANDINGAN HOST'],
+      ['Peringkat', 'Host', 'Sesi', 'Jam Tayang', 'GMV Kotor', 'Potongan', 'HASIL AKHIR (NET)', 'Kontribusi (%)', 'Grafik', 'Target Mingguan', 'Achieve Mingguan (%)', 'Shopee (Net)', 'TikTok (Net)', 'Produk', 'Penonton', 'Ada Penjualan', 'Tanpa Penjualan', 'Belum Lapor', 'Net / Jam', 'Target Bulanan', 'Capaian Bulan Ini', 'Achieve Bulanan (%)']];
     const hStart = a1.length + 1;
-    d.hosts.forEach((h, i) => a1.push([i + 1, h.name, h.sessions, +h.hours.toFixed(1), h.gross, h.net, +h.share.toFixed(1), wkBar(h.share), h.shopee, h.tiktok, h.products, h.viewers, h.ada, h.nol, h.belum, Math.round(h.perHour)]));
-    a1.push(['', 'TOTAL', d.T.sessions, +d.T.hours.toFixed(1), d.T.gross, d.T.net, 100, '', d.T.shopee, d.T.tiktok, d.T.products, d.T.viewers, d.T.ada, d.T.nol, d.T.belum, d.T.hours > 0 ? Math.round(d.T.net / d.T.hours) : 0]);
+    d.hosts.forEach((h, i) => a1.push([i + 1, h.name, h.sessions, +h.hours.toFixed(1), h.gross, -h.cut, h.net, +h.share.toFixed(1), wkBar(h.share), h.weekTarget, h.weekTarget > 0 ? +h.achWeek.toFixed(1) : '-', h.shopee, h.tiktok, h.products, h.viewers, h.ada, h.nol, h.belum, Math.round(h.perHour), h.monthTarget, h.monthSales, h.monthTarget > 0 ? +h.achMonth.toFixed(1) : '-']));
+    a1.push(['', 'TOTAL', d.T.sessions, +d.T.hours.toFixed(1), d.T.gross, -d.T.cut, d.T.net, 100, '', d.T.weekTarget, d.T.weekTarget > 0 ? +d.T.achWeek.toFixed(1) : '-', d.T.shopee, d.T.tiktok, d.T.products, d.T.viewers, d.T.ada, d.T.nol, d.T.belum, d.T.hours > 0 ? Math.round(d.T.net / d.T.hours) : 0, d.T.monthTarget, d.T.monthSales, d.T.monthTarget > 0 ? +d.T.achMonth.toFixed(1) : '-']);
     const w1 = XLSX.utils.aoa_to_sheet(a1);
-    w1['!cols'] = [{wch:26},{wch:18},{wch:8},{wch:11},{wch:17},{wch:17},{wch:14},{wch:24},{wch:17},{wch:17},{wch:9},{wch:10},{wch:13},{wch:15},{wch:12},{wch:15}];
+    w1['!cols'] = [{wch:46},{wch:20},{wch:8},{wch:11},{wch:17},{wch:17},{wch:19},{wch:13},{wch:24},{wch:17},{wch:13},{wch:17},{wch:17},{wch:9},{wch:10},{wch:13},{wch:15},{wch:12},{wch:14},{wch:17},{wch:17},{wch:13}];
     w1['!merges'] = [{s:{r:0,c:0},e:{r:0,c:9}},{s:{r:1,c:0},e:{r:1,c:9}},{s:{r:3,c:0},e:{r:3,c:9}}];
-    wkSetFmt(w1, ['B'], RP, 7, 9); wkSetFmt(w1, ['E','F','I','J','P'], RP, hStart, hStart + d.hosts.length);
+    wkSetFmt(w1, ['B'], RP, 7, 12); wkSetFmt(w1, ['B'], RP, 14, 15); wkSetFmt(w1, ['E','F','G','J','L','M','S','T','U'], RP, hStart, hStart + d.hosts.length);
     XLSX.utils.book_append_sheet(wb, w1, 'Ringkasan');
     // 2) Per Hari
     const a2 = [['DHP CREATIVE — PENJUALAN BERSIH PER HARI'], ['Periode: ' + d.label], [], ['Host', ...WK_DAYS.map((n, i) => n + ' ' + wkFmtD(wkAddDays(d.mon, i))), 'Total', 'Hari Terbaik']];
@@ -31088,13 +31123,26 @@ async function wkExportPdf() {
     const need = (n) => { if (y + n > H - 40) { doc.addPage(); y = 50; } };
     // ── Hal 1: ringkasan ──
     head('Laporan Mingguan Live — Ringkasan & Performa Host'); y = 108;
-    h2('Ringkasan Keseluruhan');
-    const kpis = [[wkRp(d.T.net), 'Total Bersih (Net)'], [wkRp(d.T.gross), 'Total GMV'], [wkRp(d.T.gross - d.T.net), 'Potongan Platform'], [d.T.sessions + ' sesi', 'Total Sesi'],
-                  [d.T.hours.toFixed(1) + ' jam', 'Total Jam Tayang'], [String(d.T.products), 'Produk Terjual'], [String(d.T.viewers), 'Penonton'], [d.T.ada + ' / ' + (d.T.ada + d.T.nol), 'Sesi Ada Penjualan']];
-    const kw = (cw - 8 * 3) / 4;
-    kpis.forEach((k, i) => { const x = mx + (i % 4) * (kw + 8), yy = y + Math.floor(i / 4) * 54; doc.setDrawColor(222,222,222); doc.setLineWidth(.8); doc.roundedRect(x, yy, kw, 46, 4, 4);
-      doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor.apply(doc, GOLD); doc.text(doc.splitTextToSize(k[0], kw - 14)[0], x + 8, yy + 20); doc.setFont('helvetica','normal'); doc.setFontSize(7.6); doc.setTextColor(95,95,95); doc.text(k[1], x + 8, yy + 34); });
-    y += 118;
+    h2('Alur Perhitungan — dari GMV Kotor sampai Hasil Akhir');
+    const pc = p => p >= 100 ? GREEN : p >= 60 ? GOLD : RED;
+    const flow = [['GMV KOTOR', wkRp(d.T.gross), DARK, 'sebelum potongan'], ['POTONGAN PPN / PLATFORM', '- ' + wkRp(d.T.cut), RED, 'Shopee ' + wkRp(d.T.cutS) + '  ·  TikTok ' + wkRp(d.T.cutT)],
+                  ['HASIL AKHIR (NET)', wkRp(d.T.net), GREEN, 'dasar target & leaderboard'], ['ACHIEVE TARGET', d.T.weekTarget > 0 ? d.T.achWeek.toFixed(1) + '%' : '-', d.T.weekTarget > 0 ? pc(d.T.achWeek) : [120,120,120], d.T.weekTarget > 0 ? 'target minggu ' + wkRp(d.T.weekTarget) : 'target belum diatur']];
+    const fw = (cw - 3 * 22) / 4;
+    flow.forEach((k, i) => { const x = mx + i * (fw + 22), r = k[2];
+      doc.setFillColor(248,246,241); doc.setDrawColor(222,222,222); doc.setLineWidth(.8); doc.roundedRect(x, y, fw, 62, 5, 5, 'FD');
+      doc.setFillColor.apply(doc, r); doc.rect(x, y + 8, 3, 46, 'F');
+      doc.setFont('helvetica','normal'); doc.setFontSize(6.8); doc.setTextColor(110,110,110); doc.text(k[0], x + 10, y + 16);
+      doc.setFont('helvetica','bold'); doc.setFontSize(11.5); doc.setTextColor.apply(doc, r); doc.text(doc.splitTextToSize(k[1], fw - 14)[0], x + 10, y + 35);
+      doc.setFont('helvetica','normal'); doc.setFontSize(6.6); doc.setTextColor(120,120,120); doc.text(doc.splitTextToSize(k[3], fw - 14)[0], x + 10, y + 50);
+      if (i < 3) { doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(150,150,150); doc.text(i === 0 ? '-' : i === 1 ? '=' : '>', x + fw + 11, y + 36, { align: 'center' }); } });
+    y += 76;
+    // progress achieve (mingguan & bulanan)
+    [['Achieve minggu ini', d.T.achWeek, d.T.weekTarget, d.T.net], ['Achieve bulan ' + d.monthName, d.T.achMonth, d.T.monthTarget, d.T.monthSales]].forEach(p => {
+      doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor.apply(doc, DARK); doc.text(p[0] + '  (' + wkRp(p[3]) + ' / ' + (p[2] > 0 ? wkRp(p[2]) : 'target belum diatur') + ')', mx, y);
+      doc.setFont('helvetica','bold'); doc.setTextColor.apply(doc, p[2] > 0 ? pc(p[1]) : [120,120,120]); doc.text(p[2] > 0 ? p[1].toFixed(1) + '%' : '-', mx + cw, y, { align: 'right' }); y += 5;
+      doc.setFillColor(232,232,232); doc.roundedRect(mx, y, cw, 7, 3, 3, 'F'); if (p[2] > 0 && p[1] > 0) { doc.setFillColor.apply(doc, pc(p[1])); doc.roundedRect(mx, y, Math.max(6, cw * Math.min(100, p[1]) / 100), 7, 3, 3, 'F'); } y += 20; });
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.2); doc.setTextColor(130,130,130);
+    doc.text('Target mingguan = target bulanan (' + d.monthName + ') dibagi jumlah hari dalam bulan x 7.   Aktivitas minggu ini: ' + d.T.sessions + ' sesi  ·  ' + d.T.hours.toFixed(1) + ' jam tayang  ·  ' + d.T.products + ' produk  ·  ' + d.T.viewers + ' penonton.', mx, y); y += 18;
     // kontribusi per host: stacked bar 100% + legenda
     h2('Kontribusi Penjualan Bersih per Host');
     let bx = mx; const bh = 22;
@@ -31103,11 +31151,20 @@ async function wkExportPdf() {
     d.hosts.forEach((h, i) => { doc.setFillColor.apply(doc, PAL[i % PAL.length]); doc.rect(mx, y - 8, 9, 9, 'F'); doc.setTextColor.apply(doc, DARK); doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.text(h.name, mx + 15, y);
       doc.setFont('helvetica','normal'); doc.text(wkRp(h.net) + '   ·   ' + h.share.toFixed(1) + '%   ·   ' + h.sessions + ' sesi   ·   ' + h.hours.toFixed(1) + ' jam   ·   ' + wkRp(h.perHour) + ' / jam', mx + 80, y); y += 15; });
     y += 8;
-    doc.autoTable({ startY: y, margin: { left: mx, right: mx }, theme: 'grid', styles: { fontSize: 8, cellPadding: 4 }, headStyles: { fillColor: DARK, textColor: [230,230,230] },
-      head: [['#','Host','Sesi','Jam','GMV','Net','%','Shopee','TikTok','Ada','Tanpa','Belum']],
-      body: d.hosts.map((h, i) => [i + 1, h.name, h.sessions, h.hours.toFixed(1), wkRp(h.gross), wkRp(h.net), h.share.toFixed(1) + '%', wkRp(h.shopee), wkRp(h.tiktok), h.ada, h.nol, h.belum])
-        .concat([['', 'TOTAL', d.T.sessions, d.T.hours.toFixed(1), wkRp(d.T.gross), wkRp(d.T.net), '100%', wkRp(d.T.shopee), wkRp(d.T.tiktok), d.T.ada, d.T.nol, d.T.belum]]),
-      didParseCell: (c) => { if (c.row.index === d.hosts.length && c.section === 'body') { c.cell.styles.fontStyle = 'bold'; c.cell.styles.fillColor = [245,238,225]; } } });
+    need(230); h2('Rincian per Host — Kotor, Potongan, Hasil Akhir & Target');
+    const totRow = (c, n) => { if (c.row.index === n && c.section === 'body') { c.cell.styles.fontStyle = 'bold'; c.cell.styles.fillColor = [245,238,225]; } };
+    doc.autoTable({ startY: y, margin: { left: mx, right: mx }, theme: 'grid', styles: { fontSize: 8, cellPadding: 4.5, halign: 'right' }, headStyles: { fillColor: DARK, textColor: [230,230,230], halign: 'center' }, columnStyles: { 0: { halign: 'left', fontStyle: 'bold' } },
+      head: [['Host','GMV Kotor','Potongan','Hasil Akhir (Net)','Kontribusi','Target Minggu','Achieve']],
+      body: d.hosts.map(h => [h.name, wkRp(h.gross), '- ' + wkRp(h.cut), wkRp(h.net), h.share.toFixed(1) + '%', h.weekTarget > 0 ? wkRp(h.weekTarget) : '-', h.weekTarget > 0 ? h.achWeek.toFixed(1) + '%' : '-'])
+        .concat([['TOTAL', wkRp(d.T.gross), '- ' + wkRp(d.T.cut), wkRp(d.T.net), '100%', d.T.weekTarget > 0 ? wkRp(d.T.weekTarget) : '-', d.T.weekTarget > 0 ? d.T.achWeek.toFixed(1) + '%' : '-']]),
+      didParseCell: (c) => { totRow(c, d.hosts.length); if (c.section === 'body' && c.column.index === 2) c.cell.styles.textColor = RED; if (c.section === 'body' && c.column.index === 3) { c.cell.styles.textColor = GREEN; c.cell.styles.fontStyle = 'bold'; }
+        if (c.section === 'body' && c.column.index === 6) { const v = parseFloat(c.cell.raw); if (!isNaN(v)) { c.cell.styles.fontStyle = 'bold'; c.cell.styles.textColor = pc(v); } } } });
+    y = doc.lastAutoTable.finalY + 16;
+    doc.autoTable({ startY: y, margin: { left: mx, right: mx }, theme: 'grid', styles: { fontSize: 8, cellPadding: 4, halign: 'right' }, headStyles: { fillColor: DARK, textColor: [230,230,230], halign: 'center' }, columnStyles: { 0: { halign: 'left', fontStyle: 'bold' } },
+      head: [['Host','Sesi','Jam','Shopee (Net)','TikTok (Net)','Ada Penjualan','Tanpa','Belum Lapor']],
+      body: d.hosts.map(h => [h.name, h.sessions, h.hours.toFixed(1), wkRp(h.shopee), wkRp(h.tiktok), h.ada, h.nol, h.belum])
+        .concat([['TOTAL', d.T.sessions, d.T.hours.toFixed(1), wkRp(d.T.shopee), wkRp(d.T.tiktok), d.T.ada, d.T.nol, d.T.belum]]),
+      didParseCell: (c) => totRow(c, d.hosts.length) });
     y = doc.lastAutoTable.finalY + 22;
     // ── per hari: grafik batang berkelompok ──
     need(250); h2('Penjualan Bersih per Hari');
