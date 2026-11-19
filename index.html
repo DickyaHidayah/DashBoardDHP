@@ -31719,9 +31719,26 @@ async function waiRenderAi() {
       <div style="font-size:10px;color:var(--muted);margin:10px 0 3px">Gaya bicara & aturan umum</div>
       <textarea class="fi" id="wai-s-persona" rows="4">${escHtml(st.persona)}</textarea>
       <div style="font-size:10px;color:var(--muted);margin:10px 0 3px">Kapan AI harus menyerahkan ke manusia</div>
-      <textarea class="fi" id="wai-s-hand" rows="3">${escHtml(st.handover_rules)}</textarea>
+      <textarea class="fi" id="wai-s-hand" rows="5">${escHtml(st.handover_rules)}</textarea>
+      <div style="font-size:10px;color:var(--muted);margin:10px 0 3px">Aturan label minat pelanggan (Cold / Warm / Hot)</div>
+      <textarea class="fi" id="wai-s-heat" rows="4">${escHtml(st.heat_rules || 'Cold: pelanggan baru menyapa / bertanya 1x saja.\nWarm: pelanggan sudah menanyakan produk atau harga.\nHot: pelanggan sudah memesan / minta cara bayar.')}</textarea>
+      <div class="wai-row" style="margin-top:10px">
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Jeda balasan AI otomatis (detik)</div><input class="fi" type="number" min="0" max="90" id="wai-s-delay" value="${st.reply_delay_sec ?? 30}" style="max-width:120px"/></div>
+        <div style="flex:1;min-width:260px"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Link Google Sheet produk (AI membacanya langsung)</div><input class="fi" id="wai-s-sheet" value="${escHtml(st.product_sheet_url || '')}" placeholder="https://docs.google.com/spreadsheets/d/…"/></div>
+      </div>
+      <p class="s" style="margin:6px 0 0;font-size:10.5px">Sheet harus dibagikan "Siapa saja yang memiliki link → Pelihat". Baris pertama = judul kolom (mis. Produk, Ukuran, Harga, Stok). Perubahan di Sheet terbaca AI maksimal 1 menit kemudian.
+        <a href="#" onclick="waiSheetTest();return false">Tes baca Sheet</a></p><div id="wai-sheet-out" style="font-size:11px;margin-top:6px"></div>
       <div style="margin-top:10px"><button class="btn-sm btn-gold" onclick="waiSaveSettings()">Simpan Pengaturan</button></div>
     </div>
+        <div class="wai-card">
+      <h3>Impor pengetahuan dari data yang sudah ada</h3>
+      <p class="s">Tidak perlu mengetik ulang. Pilih satu per satu, atau impor sekaligus.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-sm btn-gold" onclick="waiImpPortal()">Ambil dari FAQ & Quick Reply portal</button>
+        <button class="btn-sm btn-cancel" onclick="waiImpText('product')">Impor produk (Excel / CSV / tempel)</button>
+        <button class="btn-sm btn-cancel" onclick="waiImpText('faq')">Impor FAQ (Excel / CSV / tempel)</button>
+        <button class="btn-sm btn-cancel" onclick="waiImpText('template')">Impor template (Excel / CSV / tempel)</button>
+      </div></div>
     ${Object.keys(WAI_KINDS).map(kind => `
       <div class="wai-card">
         <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap"><div><h3>${WAI_KINDS[kind]}</h3><p class="s" style="margin-bottom:10px">${WAI_KIND_HELP[kind]}</p></div>
@@ -31732,8 +31749,8 @@ async function waiRenderAi() {
 }
 async function waiSaveSettings() {
   const v = id => document.getElementById(id);
-  const r = await dbQ(d => d.from('wa_settings').update({ ai_enabled: v('wai-s-en').checked, default_ai_mode: v('wai-s-mode').value, business_name: v('wai-s-name').value.trim() || 'Toko', persona: v('wai-s-persona').value.trim(), handover_rules: v('wai-s-hand').value.trim(), updated_at: new Date().toISOString() }).eq('id', 1));
-  toast(!r || r.error ? waiErr(r && r.error) : '✓ Pengaturan AI disimpan');
+  const r = await dbQ(d => d.from('wa_settings').update({ ai_enabled: v('wai-s-en').checked, default_ai_mode: v('wai-s-mode').value, business_name: v('wai-s-name').value.trim() || 'Toko', persona: v('wai-s-persona').value.trim(), handover_rules: v('wai-s-hand').value.trim(), heat_rules: v('wai-s-heat').value.trim(), reply_delay_sec: Math.max(0, Math.min(90, parseInt(v('wai-s-delay').value, 10) || 0)), product_sheet_url: v('wai-s-sheet').value.trim() || null, updated_at: new Date().toISOString() }).eq('id', 1));
+  toast(!r || r.error ? (/heat_rules|reply_delay|product_sheet/.test((r && r.error && r.error.message) || '') ? 'Gagal: jalankan migration SQL v126 dulu.' : waiErr(r && r.error)) : '✓ Pengaturan AI disimpan');
 }
 function waiKEdit(kind, id) {
   const r = id ? (window._waiK || []).find(x => x.id === id) : null;
@@ -31755,6 +31772,120 @@ async function waiKSave(kind, id) {
   closeModal(); toast('✓ Tersimpan'); waiRenderAi();
 }
 async function waiKDel(id) { if (!confirm('Hapus entri ini?')) return; const r = await dbQ(d => d.from('wa_knowledge').delete().eq('id', id)); if (!r || r.error) toast(waiErr(r && r.error)); else waiRenderAi(); }
+
+
+/* ───────── IMPOR PENGETAHUAN ───────── */
+function waiCsv(text) {
+  text = String(text || '').replace(/\r/g, '');
+  const first = text.split('\n')[0] || '';
+  const d = first.includes('\t') ? '\t' : (first.split(';').length > first.split(',').length ? ';' : ',');
+  const rows = []; let row = [], cur = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += c; }
+    else if (c === '"') q = true;
+    else if (c === d) { row.push(cur); cur = ''; }
+    else if (c === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
+    else cur += c;
+  }
+  row.push(cur); rows.push(row);
+  return rows.map(r => r.map(x => x.trim())).filter(r => r.some(x => x));
+}
+function waiRowsToKnowledge(rows, kind) {
+  if (rows.length < 2) return [];
+  const head = rows[0].map(h => h.toLowerCase()), body = rows.slice(1);
+  const find = re => head.findIndex(h => re.test(h));
+  const out = [];
+  if (kind === 'product') {
+    let ti = find(/nama|produk|product|item|judul/); if (ti < 0) ti = 0;
+    body.forEach(r => {
+      const title = r[ti]; if (!title) return;
+      const det = r.map((v, i) => (i !== ti && v ? `${rows[0][i]}: ${v}` : '')).filter(Boolean).join(' · ');
+      out.push({ kind, title, question: null, answer: det || title });
+    });
+  } else {
+    let qi = find(/pertanyaan|question|judul|title|topik/), ai = find(/jawaban|answer|isi|balasan|template|body/);
+    if (qi < 0) qi = 0; if (ai < 0 || ai === qi) ai = qi === 0 ? 1 : 0;
+    body.forEach(r => {
+      const q = r[qi], a = r[ai]; if (!q || !a) return;
+      out.push({ kind, title: q.slice(0, 80), question: kind === 'faq' ? q : null, answer: a });
+    });
+  }
+  return out;
+}
+function waiImpText(kind) {
+  window._waiImpKind = kind; window._waiImpRows = [];
+  document.getElementById('m-title').textContent = 'Impor ' + WAI_KINDS[kind];
+  document.getElementById('m-body').innerHTML = `
+    <p style="font-size:12px;color:var(--text2);line-height:1.6;margin:0 0 10px">${kind === 'product'
+      ? 'Baris pertama = judul kolom (mis. <b>Produk, Ukuran, Harga, Stok</b>). Tiap baris menjadi satu produk. Semua kolom lain ikut dibaca AI.'
+      : kind === 'faq' ? 'Dua kolom: <b>Pertanyaan</b> dan <b>Jawaban</b> (baris pertama = judul kolom).'
+      : 'Dua kolom: <b>Judul</b> dan <b>Isi balasan</b> (baris pertama = judul kolom).'}
+      Buka Excel / Google Sheet → blok semua sel → Copy → Paste di bawah. Atau pilih file .csv.</p>
+    <input type="file" id="wi-file" accept=".csv,.txt,.tsv" style="font-size:12px;margin-bottom:8px"/>
+    <textarea class="fi" id="wi-txt" rows="8" placeholder="Tempel data di sini…"></textarea>
+    <div id="wi-prev" style="font-size:11.5px;margin-top:8px;color:var(--text2)"></div>`;
+  document.getElementById('m-foot').innerHTML = `<button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button><button class="btn-sm btn-gold" id="wi-go" onclick="waiImpTextGo()" disabled>Impor</button>`;
+  const upd = () => {
+    const rows = waiRowsToKnowledge(waiCsv(document.getElementById('wi-txt').value), kind);
+    window._waiImpRows = rows;
+    document.getElementById('wi-prev').innerHTML = rows.length ? `✓ Terbaca <b>${rows.length}</b> data. Contoh: <i>${escHtml(rows[0].title)}</i> — ${escHtml(rows[0].answer.slice(0, 90))}` : 'Belum ada data yang terbaca (butuh baris judul + minimal 1 baris isi).';
+    document.getElementById('wi-go').disabled = !rows.length;
+  };
+  document.getElementById('wi-txt').oninput = upd;
+  document.getElementById('wi-file').onchange = e => { const f = e.target.files[0]; if (!f) return; const rd = new FileReader(); rd.onload = () => { document.getElementById('wi-txt').value = rd.result; upd(); }; rd.readAsText(f); };
+  document.getElementById('modal-ov').classList.add('open');
+}
+async function waiImpInsert(rows) {
+  for (let i = 0; i < rows.length; i += 100) {
+    const r = await dbQ(d => d.from('wa_knowledge').insert(rows.slice(i, i + 100).map(x => Object.assign({ is_active: true, created_by: waiMe() }, x))));
+    if (!r || r.error) throw new Error((r && r.error && r.error.message) || 'gagal menyimpan');
+  }
+}
+async function waiImpTextGo() {
+  const rows = window._waiImpRows || []; if (!rows.length) return;
+  try { await waiImpInsert(rows); closeModal(); toast(`✓ ${rows.length} data diimpor`); waiRenderAi(); } catch (e) { toast(waiErr(e)); }
+}
+async function waiImpPortal() {
+  const [f, q, k] = await Promise.all([
+    dbQ(d => d.from('faq_items').select('id,category,question,answer').order('category').order('sort_order')),
+    dbQ(d => d.from('quick_replies').select('id,category,title,body').order('category').order('sort_order')),
+    dbQ(d => d.from('wa_knowledge').select('source_ref').not('source_ref', 'is', null))]);
+  const have = new Set(((k && k.data) || []).map(x => x.source_ref));
+  const items = [].concat(
+    ((f && f.data) || []).map(x => ({ ref: 'faq:' + x.id, kind: 'faq', cat: x.category, title: x.question, q: x.question, a: x.answer })),
+    ((q && q.data) || []).map(x => ({ ref: 'qr:' + x.id, kind: 'template', cat: x.category, title: x.title, q: null, a: x.body })));
+  window._waiPortal = items;
+  document.getElementById('m-title').textContent = 'Ambil dari FAQ & Quick Reply portal';
+  document.getElementById('m-body').innerHTML = `
+    <label class="wai-sw" style="margin-bottom:8px"><input type="checkbox" id="wp-all" onchange="document.querySelectorAll('.wp-i:not(:disabled)').forEach(c=>c.checked=this.checked)"/> Pilih semua yang belum diimpor</label>
+    <div style="max-height:46vh;overflow:auto;border:1px solid var(--border);border-radius:8px;padding:6px 10px">
+    ${items.length ? items.map((x, i) => `<label class="wai-sw" style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);${have.has(x.ref) ? 'opacity:.5' : ''}">
+      <input type="checkbox" class="wp-i" data-i="${i}" ${have.has(x.ref) ? 'disabled' : ''}/>
+      <span style="font-size:12px;line-height:1.45"><b>${x.kind === 'faq' ? 'FAQ' : 'Template'}</b> · ${escHtml(x.cat || '')}${have.has(x.ref) ? ' · <i>sudah diimpor</i>' : ''}<br>${escHtml(x.title)}<br><span style="color:var(--muted)">${escHtml((x.a || '').slice(0, 110))}</span></span></label>`).join('') : '<div class="wai-empty">FAQ & Quick Reply portal masih kosong.</div>'}</div>`;
+  document.getElementById('m-foot').innerHTML = `<button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button><button class="btn-sm btn-gold" onclick="waiImpPortalGo()">Impor yang dipilih</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+async function waiImpPortalGo() {
+  const sel = [...document.querySelectorAll('.wp-i:checked')].map(c => window._waiPortal[+c.dataset.i]);
+  if (!sel.length) { toast('Pilih minimal satu'); return; }
+  try {
+    await waiImpInsert(sel.map(x => ({ kind: x.kind, title: String(x.title).slice(0, 80), question: x.q, answer: x.a, source_ref: x.ref })));
+    closeModal(); toast(`✓ ${sel.length} data diimpor`); waiRenderAi();
+  } catch (e) { toast(/source_ref/.test(e.message) ? 'Gagal: jalankan migration SQL v126 dulu.' : waiErr(e)); }
+}
+async function waiSheetTest() {
+  const out = document.getElementById('wai-sheet-out'), u = document.getElementById('wai-s-sheet').value.trim();
+  const m = u.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/); if (!m) { out.textContent = 'Link Google Sheet tidak valid.'; return; }
+  const gid = (u.match(/[#&?]gid=(\d+)/) || [])[1];
+  out.textContent = 'Membaca…';
+  try {
+    const r = await fetch(`https://docs.google.com/spreadsheets/d/${m[1]}/gviz/tq?tqx=out:csv${gid ? '&gid=' + gid : ''}`);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const rows = waiCsv(await r.text());
+    out.innerHTML = rows.length > 1 ? `✓ Terbaca <b>${rows.length - 1}</b> baris. Kolom: <b>${escHtml(rows[0].join(', '))}</b>` : '⚠ Sheet terbaca tapi kosong.';
+  } catch (e) { out.innerHTML = '⚠ Tidak bisa dibaca. Pastikan Sheet dibagikan <b>"Siapa saja yang memiliki link → Pelihat"</b>.'; }
+}
 
 /* ───────── TAB NOMOR & WEBHOOK (moderator) ───────── */
 async function waiRenderNumbers() {
