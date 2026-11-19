@@ -4758,6 +4758,76 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
   .lb-row{grid-template-columns:26px 32px 1fr;grid-template-areas:"a b c" ". . d";row-gap:6px}
   .lb-row-right{grid-column:1/-1;text-align:left;padding-left:58px}
 }
+
+/* v125 WA Inbox */
+/* ═══ v125 — WA INBOX (prefix wai-) ═══ */
+.wai-tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:14px;flex-wrap:wrap}
+.wai-tab{background:none;border:0;border-bottom:2px solid transparent;padding:9px 14px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);cursor:pointer;font-family:inherit}
+.wai-tab:hover{color:var(--text)}
+.wai-tab.on{color:var(--gold);border-bottom-color:var(--gold)}
+.wai-app{display:grid;grid-template-columns:320px minmax(0,1fr) 290px;height:calc(100vh - 215px);min-height:460px;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface)}
+.wai-list{border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0;background:var(--surface)}
+.wai-lhead{padding:10px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+.wai-seg{display:flex;gap:4px}
+.wai-seg button{flex:1;padding:6px 4px;font-size:10px;font-weight:700;letter-spacing:.05em;border:1px solid var(--border);background:transparent;color:var(--muted);border-radius:6px;cursor:pointer;font-family:inherit}
+.wai-seg button.on{background:var(--gold);border-color:var(--gold);color:#fff}
+.wai-items{overflow-y:auto;flex:1;min-height:0}
+.wai-it{display:flex;gap:10px;padding:11px 12px;border-bottom:1px solid var(--border);cursor:pointer;align-items:flex-start}
+.wai-it:hover{background:var(--surface2)}
+.wai-it.on{background:var(--surface3);box-shadow:inset 3px 0 0 var(--gold)}
+.wai-av{flex:0 0 36px;height:36px;border-radius:50%;background:var(--surface3);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;font-family:Georgia,serif}
+.wai-it-main{flex:1;min-width:0}
+.wai-it-top{display:flex;justify-content:space-between;gap:6px;align-items:baseline}
+.wai-it-name{font-size:12.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wai-it-time{font-size:9.5px;color:var(--muted);flex:0 0 auto}
+.wai-it-txt{font-size:11.5px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.wai-it-meta{display:flex;gap:5px;margin-top:5px;align-items:center;flex-wrap:wrap}
+.wai-chip{font-size:9px;font-weight:700;letter-spacing:.04em;padding:2px 6px;border-radius:20px;border:1px solid var(--border);color:var(--muted);white-space:nowrap}
+.wai-chip.hot{color:#c84848;border-color:rgba(200,72,72,.4)}.wai-chip.warm{color:#b9791f;border-color:rgba(185,121,31,.4)}.wai-chip.cold{color:#4a7ba8;border-color:rgba(74,123,168,.4)}
+.wai-chip.hum{color:#fff;background:#c84848;border-color:#c84848}
+.wai-unread{background:var(--gold);color:#fff;border-radius:10px;font-size:9.5px;font-weight:700;padding:1px 6px;min-width:18px;text-align:center}
+.wai-empty{padding:34px 18px;text-align:center;color:var(--muted);font-size:12px;line-height:1.6}
+.wai-chat{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--bg2)}
+.wai-chead{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface);flex-wrap:wrap}
+.wai-chead .t{flex:1;min-width:140px}.wai-chead .n{font-weight:700;font-size:13.5px}.wai-chead .s{font-size:10.5px;color:var(--muted)}
+.wai-chead select{font-size:11px;padding:6px 26px 6px 8px;max-width:150px}
+.wai-back{display:none}
+.wai-msgs{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:6px;min-height:0}
+.wai-day{align-self:center;font-size:9.5px;color:var(--muted);background:var(--surface3);padding:3px 10px;border-radius:20px;margin:6px 0}
+.wai-b{max-width:74%;padding:8px 11px;border-radius:12px;font-size:12.5px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word;position:relative}
+.wai-b.in{align-self:flex-start;background:var(--surface);border:1px solid var(--border);border-top-left-radius:3px}
+.wai-b.out{align-self:flex-end;background:rgba(176,125,46,.14);border:1px solid rgba(176,125,46,.28);border-top-right-radius:3px}
+.wai-b.out.ai{background:rgba(74,123,168,.12);border-color:rgba(74,123,168,.3)}
+.wai-b .by{font-size:9.5px;font-weight:700;color:var(--gold);margin-bottom:2px}.wai-b.ai .by{color:#4a7ba8}
+.wai-b .ft{font-size:9px;color:var(--muted);text-align:right;margin-top:3px}
+.wai-b .ft .rd{color:#3a86d1}.wai-b .ft .er{color:#c84848}
+.wai-draft{margin:0 14px 8px;border:1px dashed rgba(74,123,168,.55);background:rgba(74,123,168,.07);border-radius:10px;padding:10px 12px}
+.wai-draft .h{font-size:10px;font-weight:700;letter-spacing:.06em;color:#4a7ba8;margin-bottom:5px}
+.wai-draft .b{font-size:12.5px;white-space:pre-wrap;line-height:1.5}
+.wai-draft .a{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.wai-notice{margin:0 14px 8px;padding:9px 12px;border-radius:8px;font-size:11.5px;background:rgba(200,72,72,.08);border:1px solid rgba(200,72,72,.3);color:#c84848}
+.wai-comp{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);background:var(--surface);align-items:flex-end}
+.wai-comp textarea{flex:1;resize:none;min-height:40px;max-height:120px;border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-family:inherit;font-size:12.5px;background:var(--bg);color:var(--text)}
+.wai-info{border-left:1px solid var(--border);overflow-y:auto;padding:14px;background:var(--surface);min-height:0}
+.wai-info h4{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.wai-kv{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--border)}.wai-kv span:first-child{color:var(--muted)}.wai-kv span:last-child{text-align:right;font-weight:600}
+.wai-card{border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;background:var(--surface)}
+.wai-card h3{font-size:13px;margin:0 0 4px}.wai-card p.s{font-size:11px;color:var(--muted);margin:0 0 12px;line-height:1.55}
+.wai-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.wai-tbl{width:100%;border-collapse:collapse;font-size:12px}.wai-tbl th{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px;border-bottom:1px solid var(--border-hi)}.wai-tbl td{padding:9px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+.wai-bar{height:6px;border-radius:4px;background:var(--surface3);overflow:hidden;min-width:70px}.wai-bar i{display:block;height:100%;background:var(--gold)}
+.wai-k{border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start;background:var(--surface2)}
+.wai-k .tx{flex:1;min-width:0;font-size:12px;line-height:1.5}.wai-k .tx b{display:block;font-size:12.5px}.wai-k .tx span{color:var(--text2);white-space:pre-wrap}
+.wai-code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:var(--surface3);padding:8px 10px;border-radius:6px;word-break:break-all;display:block;margin:4px 0 8px}
+.wai-sw{display:inline-flex;align-items:center;gap:6px;font-size:11px;cursor:pointer}
+.wai-pill{font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:20px;letter-spacing:.05em}.wai-pill.demo{background:rgba(185,121,31,.14);color:#b9791f}.wai-pill.live{background:rgba(26,122,62,.14);color:#1a7a3e}.wai-pill.off{background:var(--surface3);color:var(--muted)}
+@media (max-width:1180px){.wai-app{grid-template-columns:300px minmax(0,1fr)}.wai-info{display:none}}
+@media (max-width:760px){
+  .wai-app{grid-template-columns:1fr;height:calc(100vh - 190px)}
+  .wai-app .wai-chat{display:none}.wai-app.show-chat .wai-list{display:none}.wai-app.show-chat .wai-chat{display:flex}
+  .wai-back{display:inline-flex}.wai-b{max-width:88%}
+}
+
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@1,6..96,500&family=Fraunces:ital,opsz,wght@1,9..144,300..700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 <style id="lsr-net-css">
@@ -5307,6 +5377,18 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
           </svg>
         </span>
         <span>Leaderboard</span>
+      </button>
+      <!-- ══ v125: WA INBOX ══ -->
+      <div class="nav-sec-lbl" id="ns-wa" style="display:none">
+        <span class="sec-name">WhatsApp</span>
+        <span class="sec-scope">Agen · Moderator</span>
+      </div>
+      <button class="nav-item" onclick="navTo('wa_inbox',this)" id="n-wa-inbox" style="display:none">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2.5 13.5l.9-3A5.6 5.6 0 1 1 6 12.7l-3.5.8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M6 6.5c.2 1.4 1.6 2.8 3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </span>
+        <span>WA Inbox</span>
+        <span class="nav-badge" id="wai-nav-badge" style="display:none">0</span>
       </button>
       <!-- ══ v56: BANTUAN — FAQ & Quick Reply, khusus role cs_hunter/admin/b2b_marketing
            (+ Mod/Owner lihat semua). Isi hanya bisa ditambah/diubah oleh Moderator. ══ -->
@@ -6380,6 +6462,9 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
             <button class="btn-sm btn-gold" id="ldash-weekly-btn" onclick="openWeeklyReport()" title="Laporan mingguan Senin–Minggu: total per host, persentase, grafik, analisis jam tayang (Excel &amp; PDF)">
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px"><rect x="2" y="3" width="12" height="11" rx="1.6" stroke="currentColor" stroke-width="1.4"/><path d="M2 6.6h12M5.4 1.8v2.6M10.6 1.8v2.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Laporan Mingguan
             </button>
+            <button class="btn-sm btn-gold" id="ldash-monthly-btn" onclick="openMonthlyReport()" title="Laporan bulanan: total per host, persentase, grafik per minggu, analisis jam tayang (Excel &amp; PDF)">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px"><rect x="2" y="3" width="12" height="11" rx="1.6" stroke="currentColor" stroke-width="1.4"/><path d="M2 6.6h12M5.4 1.8v2.6M10.6 1.8v2.6M5 9h2M9 9h2M5 11.6h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Laporan Bulanan
+            </button>
             <button class="btn-g btn-sm" id="ldash-export-xlsx-btn" onclick="exportLiveDashboardExcel()" title="Export ke Excel — ringkasan, perbandingan host &amp; performa per platform">
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-2px;margin-right:4px"><rect x="1.6" y="2" width="12.8" height="10.6" rx="1.4" stroke="currentColor" stroke-width="1.2"/><path d="M1.6 5.4h12.8M5.6 2v10.6M9.7 2v10.6" stroke="currentColor" stroke-width="1"/></svg>Export Excel
             </button>
@@ -6842,6 +6927,17 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
       <!-- ⑨-e v56: FAQ — pusat bantuan info yang sering ditanyakan/lupa, khusus
            CS Hunter/Admin/B2B (+ Mod/Owner lihat semua). Tambah/ubah/hapus
            hanya boleh Moderator. -->
+      <div class="sp" id="pg-wa_inbox">
+        <div class="ph">
+          <div class="ph-left">
+            <div class="pt">WA Inbox</div>
+            <div class="ps">Chat WhatsApp pelanggan — lead baru dibagi rata ke agen, customer lama kembali ke pemiliknya, AI membantu menyusun balasan</div>
+          </div>
+          <div class="ph-acts" id="wai-acts"></div>
+        </div>
+        <div id="wai-root"></div>
+      </div>
+
       <div class="sp" id="pg-faq">
         <div class="ph">
           <div class="ph-left">
@@ -8985,6 +9081,8 @@ async function initDashboard() {
   navShow('n-tracking-report', can.canTrackingReport(r) || isMod || isOwner); // v47: Tracking Report — laporan jam 12:00 & 17:00 (cs_hunter + b2b_marketing + admin, + rekap tim utk Mod/Owner)
   navShow('n-leaderboard',    true); // v87: Leaderboard sekarang bisa dilihat SEMUA role (termasuk Host Live, Content Creator, dll) — bukan cuma cs_hunter/admin/b2b/Mod/Owner
   // v56: Bantuan — FAQ & Quick Reply (cs_hunter + b2b_marketing + admin lihat, Mod/Owner lihat semua; isi hanya editable Moderator)
+  navShow('ns-wa',            isMod || can.isNdbStaff(r)); // v125
+  navShow('n-wa-inbox',       isMod || can.isNdbStaff(r));
   navShow('ns-help',          can.canFaqQuickReply(r) || isMod || isOwner);
   navShow('n-faq',            can.canFaqQuickReply(r) || isMod || isOwner);
   navShow('n-quick-reply',    can.canFaqQuickReply(r) || isMod || isOwner);
@@ -23973,6 +24071,7 @@ function navTo(page, btn) {
   if (page === 'cs_hunter'      && !can.isCsHunter(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Moderator access required'); return; }
   if (page === 'followup'       && !can.canFollowup(r)) { toast('CS Hunter / B2B Marketing / Admin access required'); return; } // v63: Moderator & Owner tidak lagi punya akses Follow Up
   if (page === 'tracking_report' && !can.canTrackingReport(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Admin / B2B Marketing / Moderator access required'); return; }
+  if (page === 'wa_inbox'       && !can.isMod(r) && !can.isNdbStaff(r)) { toast('Khusus agen WA / Moderator'); return; }
   if (page === 'faq'            && !can.canFaqQuickReply(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Admin / B2B Marketing / Moderator access required'); return; }
   if (page === 'quick_reply'    && !can.canFaqQuickReply(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Admin / B2B Marketing / Moderator access required'); return; }
   // v87: Leaderboard sekarang terbuka untuk SEMUA role yang login (termasuk Host Live) — gerbang role lama dihapus.
@@ -24009,6 +24108,7 @@ function loadPageData(page) {
   if (page === 'cs_hunter')       loadCsHunterPage();
   if (page === 'followup')        renderFollowupPage();
   if (page === 'tracking_report') renderTrackingReportPage();
+  if (page === 'wa_inbox')        waiOpen();
   if (page === 'faq')             renderFaqPage();
   if (page === 'quick_reply')     renderQuickReplyPage();
   if (page === 'leaderboard')     renderLeaderboardPage();
@@ -30907,13 +31007,16 @@ async function saveEditCred(uid) {
 window.openEditCred = openEditCred; window.saveEditCred = saveEditCred;
 </script>
 <script>
-/* ═══ v117 — LAPORAN MINGGUAN LIVE DASHBOARD (Senin–Minggu) ═══
+/* ═══ v117/v118 — LAPORAN MINGGUAN & BULANAN LIVE DASHBOARD ═══
    Excel multi-sheet + PDF bergrafik: total per host, persentase kontribusi,
    rincian per hari, analisis per jam tayang (ada penjualan vs tanpa penjualan),
    dan detail sesi per host. Angka = NET (setelah potongan platform), GMV asli ikut ditampilkan. */
 const WK_DAYS = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
 const WK_MON  = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-let _wkMonday = null, _wkData = null, _wkBusy = false;
+const WK_MONF = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+let _wkAnchor = null, _wkMode = 'week', _wkData = null, _wkBusy = false;
+function wkDayName(ymd) { return WK_DAYS[(new Date(ymd + 'T00:00:00').getDay() + 6) % 7]; }
+function wkDefaultAnchor(mode) { const n = new Date(); return mode === 'month' ? new Date(n.getFullYear(), n.getMonth(), 1) : wkMondayOf(n); }
 
 function wkMondayOf(d) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; }
 function wkAddDays(d, n) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() + n); return x; }
@@ -30926,18 +31029,21 @@ function wkBar(pct, n) { n = n || 20; const k = Math.max(0, Math.min(n, Math.rou
 
 function wkHostName(id) { return (LOCAL_USERS[id] && LOCAL_USERS[id].name) || id; }
 
-async function wkBuild(mon) {
+async function wkBuild(anchor, mode) {
+  mode = mode || 'week';
+  const mon = mode === 'month' ? new Date(anchor.getFullYear(), anchor.getMonth(), 1) : anchor;   // awal periode
+  const N = mode === 'month' ? new Date(mon.getFullYear(), mon.getMonth() + 1, 0).getDate() : 7;
   const ids = hostLiveIds();
-  const from = ymdKey(mon), to = ymdKey(wkAddDays(mon, 6));
+  const from = ymdKey(mon), to = ymdKey(wkAddDays(mon, N - 1));
   const res = db ? await dbQ(d => d.from('live_schedule').select('*').in('host_user_id', ids).gte('schedule_date', from).lte('schedule_date', to).order('schedule_date').order('time_start')) : null;
   const rows = (res && res.data) || [];
   const hosts = {};
-  ids.forEach(id => { hosts[id] = { id, name: wkHostName(id), gS: 0, gT: 0, cutS: 0, cutT: 0, target: 0, monthSales: 0, sessions: 0, reported: 0, ada: 0, nol: 0, belum: 0, off: 0, gross: 0, net: 0, shopee: 0, tiktok: 0, products: 0, viewers: 0, hours: 0, perDay: [0,0,0,0,0,0,0], perDaySess: [0,0,0,0,0,0,0], list: [] }; });
+  ids.forEach(id => { hosts[id] = { id, name: wkHostName(id), gS: 0, gT: 0, cutS: 0, cutT: 0, target: 0, monthSales: 0, sessions: 0, reported: 0, ada: 0, nol: 0, belum: 0, off: 0, gross: 0, net: 0, shopee: 0, tiktok: 0, products: 0, viewers: 0, hours: 0, perDay: Array(N).fill(0), perDaySess: Array(N).fill(0), list: [] }; });
   const slots = {};
   rows.forEach(s => {
     const h = hosts[s.host_user_id]; if (!h) return;
     const di = Math.round((new Date(s.schedule_date + 'T00:00:00') - mon) / 86400000);
-    if (di < 0 || di > 6) return;
+    if (di < 0 || di >= N) return;
     const isOff = ['cancelled', 'sakit', 'izin', 'libur'].includes(s.status);
     const reported = !!s.report_filled_at && s.report_status !== 'rejected';
     const g = gmvOf(s);
@@ -30957,33 +31063,44 @@ async function wkBuild(mon) {
     const bh = sl.byHost[h.id] || (sl.byHost[h.id] = { net: 0, ada: 0, nol: 0, belum: 0 }); bh[cat]++; bh.net += cat === 'belum' ? 0 : g.net;
   });
   // target bulanan host (bulan yang memuat pertengahan minggu) → target mingguan prorata
-  const mid = wkAddDays(mon, 3), dim = new Date(mid.getFullYear(), mid.getMonth() + 1, 0).getDate();
+  const mid = mode === 'month' ? mon : wkAddDays(mon, 3), dim = new Date(mid.getFullYear(), mid.getMonth() + 1, 0).getDate();
   if (db) await Promise.all(ids.map(async id => {
     const r = await dbQ(d => d.rpc('host_dashboard_stats', { p_host_id: id, p_period_ym: ymPeriodKey(mid) }));
     const st = r && r.data && r.data[0];
     hosts[id].target = Number(st && st.target_amount) || 0; hosts[id].monthSales = Number(st && st.total_sales) || 0;
   }));
-  Object.values(hosts).forEach(h => { h.cut = Math.max(0, h.gross - h.net); h.monthTarget = h.target; h.weekTarget = h.target > 0 ? h.target * 7 / dim : 0; });
+  Object.values(hosts).forEach(h => { h.cut = Math.max(0, h.gross - h.net); h.monthTarget = h.target; h.weekTarget = h.target > 0 ? (mode === 'month' ? h.target : h.target * 7 / dim) : 0; });
   const list = Object.values(hosts).sort((a, b) => b.net - a.net);
   const T = list.reduce((t, h) => { ['sessions','reported','ada','nol','belum','gross','net','shopee','tiktok','products','viewers','hours','gS','gT','cutS','cutT','cut','weekTarget','monthTarget','monthSales'].forEach(k => t[k] += h[k]); h.perDay.forEach((v, i) => t.perDay[i] += v); return t; },
-    { sessions: 0, reported: 0, ada: 0, nol: 0, belum: 0, gross: 0, net: 0, shopee: 0, tiktok: 0, products: 0, viewers: 0, hours: 0, gS: 0, gT: 0, cutS: 0, cutT: 0, cut: 0, weekTarget: 0, monthTarget: 0, monthSales: 0, perDay: [0,0,0,0,0,0,0] });
+    { sessions: 0, reported: 0, ada: 0, nol: 0, belum: 0, gross: 0, net: 0, shopee: 0, tiktok: 0, products: 0, viewers: 0, hours: 0, gS: 0, gT: 0, cutS: 0, cutT: 0, cut: 0, weekTarget: 0, monthTarget: 0, monthSales: 0, perDay: Array(N).fill(0) });
   list.forEach(h => { h.share = T.net > 0 ? h.net / T.net * 100 : 0; h.perHour = h.hours > 0 ? h.net / h.hours : 0; h.achWeek = h.weekTarget > 0 ? h.net / h.weekTarget * 100 : 0; h.achMonth = h.monthTarget > 0 ? h.monthSales / h.monthTarget * 100 : 0; h.conv = h.reported > 0 ? h.ada / h.reported * 100 : 0; });
   T.achWeek = T.weekTarget > 0 ? T.net / T.weekTarget * 100 : 0; T.achMonth = T.monthTarget > 0 ? T.monthSales / T.monthTarget * 100 : 0;
   const slotList = Object.values(slots).sort((a, b) => a.st - b.st || a.end.localeCompare(b.end));
   slotList.forEach(sl => { const r = sl.ada + sl.nol; sl.label = sl.sessions === sl.belum ? 'Belum lapor' : (sl.ada === 0 ? 'Tanpa penjualan' : (sl.nol === 0 ? 'Ada penjualan' : 'Campuran')); sl.conv = r > 0 ? sl.ada / r * 100 : 0; });
-  return { mon, from, to, label: wkLabel(mon), hosts: list, T, slots: slotList, monthName: WK_MON[mid.getMonth()] + ' ' + mid.getFullYear() };
+  const buckets = [];
+  if (mode === 'week') { for (let i = 0; i < 7; i++) buckets.push({ label: WK_DAYS[i] + ' ' + wkAddDays(mon, i).getDate(), short: WK_DAYS[i].slice(0, 3) + ' ' + wkAddDays(mon, i).getDate(), i0: i, i1: i }); }
+  else { let i = 0, n = 1; while (i < N) { const dow = (wkAddDays(mon, i).getDay() + 6) % 7, i1 = Math.min(N - 1, i + (6 - dow));
+    buckets.push({ label: 'Minggu ' + n + ' (' + wkFmtD(wkAddDays(mon, i)) + ' – ' + wkFmtD(wkAddDays(mon, i1)) + ')', short: 'Mgg ' + n + ' (' + wkAddDays(mon, i).getDate() + '-' + wkAddDays(mon, i1).getDate() + ')', i0: i, i1 }); i = i1 + 1; n++; } }
+  const sumB = arr => buckets.map(b => arr.slice(b.i0, b.i1 + 1).reduce((a, v) => a + v, 0));
+  list.forEach(h => { h.perBucket = sumB(h.perDay); }); T.perBucket = sumB(T.perDay);
+  const monthName = WK_MON[mid.getMonth()] + ' ' + mid.getFullYear();
+  return { mode, mon, N, from, to, label: mode === 'month' ? WK_MONF[mon.getMonth()] + ' ' + mon.getFullYear() : wkLabel(mon), hosts: list, T, slots: slotList, monthName, buckets,
+    unit: mode === 'month' ? 'bulan' : 'minggu', Unit: mode === 'month' ? 'Bulanan' : 'Mingguan', bucketName: mode === 'month' ? 'Minggu' : 'Hari' };
 }
 
-/* ── Modal pemilih minggu + pratinjau ── */
-function openWeeklyReport() {
+/* ── Modal pemilih periode + pratinjau ── */
+function openWeeklyReport() { wkOpen('week'); }
+function openMonthlyReport() { wkOpen('month'); }
+function wkOpen(mode) {
   if (!can.isMod(currentUser && currentUser.role)) { toast('Khusus moderator'); return; }
-  _wkMonday = wkMondayOf(new Date());
-  document.getElementById('m-title').textContent = 'Laporan Mingguan Live';
+  _wkMode = mode; _wkAnchor = wkDefaultAnchor(mode);
+  const m = mode === 'month';
+  document.getElementById('m-title').textContent = m ? 'Laporan Bulanan Live' : 'Laporan Mingguan Live';
   document.getElementById('m-body').innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px">
-      <button class="btn-sm btn-cancel" onclick="wkShift(-1)" title="Minggu sebelumnya">‹</button>
-      <div style="text-align:center"><div id="wk-label" style="font-weight:700;font-size:13px"></div><div style="font-size:10.5px;color:var(--muted)">Satu minggu penuh: Senin – Minggu</div></div>
-      <button class="btn-sm btn-cancel" onclick="wkShift(1)" title="Minggu berikutnya">›</button>
+      <button class="btn-sm btn-cancel" onclick="wkShift(-1)" title="${m ? 'Bulan' : 'Minggu'} sebelumnya">‹</button>
+      <div style="text-align:center"><div id="wk-label" style="font-weight:700;font-size:13px"></div><div style="font-size:10.5px;color:var(--muted)">${m ? 'Satu bulan penuh: tanggal 1 sampai akhir bulan' : 'Satu minggu penuh: Senin – Minggu'}</div></div>
+      <button class="btn-sm btn-cancel" onclick="wkShift(1)" title="${m ? 'Bulan' : 'Minggu'} berikutnya">›</button>
     </div>
     <div id="wk-prev"></div>`;
   document.getElementById('m-foot').innerHTML = `
@@ -30993,17 +31110,18 @@ function openWeeklyReport() {
   document.getElementById('modal-ov').classList.add('open');
   wkRefresh();
 }
-function wkShift(n) { _wkMonday = wkAddDays(_wkMonday, n * 7); wkRefresh(); }
+function wkShift(n) { _wkAnchor = _wkMode === 'month' ? new Date(_wkAnchor.getFullYear(), _wkAnchor.getMonth() + n, 1) : wkAddDays(_wkAnchor, n * 7); wkRefresh(); }
+function wkAnchorLabel() { return _wkMode === 'month' ? WK_MONF[_wkAnchor.getMonth()] + ' ' + _wkAnchor.getFullYear() : wkLabel(_wkAnchor); }
 async function wkRefresh() {
   const lab = document.getElementById('wk-label'), box = document.getElementById('wk-prev');
-  if (lab) lab.textContent = wkLabel(_wkMonday);
-  if (box) box.innerHTML = '<div style="padding:22px;text-align:center;color:var(--muted);font-size:12px">Memuat data minggu ini…</div>';
-  const mon = _wkMonday;
-  const d = await wkBuild(mon);
-  if (mon !== _wkMonday) return;            // user sudah pindah minggu
+  if (lab) lab.textContent = wkAnchorLabel();
+  if (box) box.innerHTML = '<div style="padding:22px;text-align:center;color:var(--muted);font-size:12px">Memuat data ' + (_wkMode === 'month' ? 'bulan' : 'minggu') + ' ini…</div>';
+  const mon = _wkAnchor, mdz = _wkMode;
+  const d = await wkBuild(mon, mdz);
+  if (mon !== _wkAnchor || mdz !== _wkMode) return;            // user sudah pindah periode
   _wkData = d;
   if (!box) return;
-  if (!d.T.sessions) { box.innerHTML = '<div style="padding:22px;text-align:center;color:var(--muted);font-size:12px">Tidak ada sesi live pada minggu ini.</div>'; return; }
+  if (!d.T.sessions) { box.innerHTML = '<div style="padding:22px;text-align:center;color:var(--muted);font-size:12px">Tidak ada sesi live pada ' + d.unit + ' ini.</div>'; return; }
   const flow = [['GMV Kotor', wkRp(d.T.gross), 'var(--text)'], ['Potongan PPN/Platform', '− ' + wkRp(d.T.cut), '#c84848'], ['Hasil Akhir (Net)', wkRp(d.T.net), '#2e8b57']];
   const pctClr = p => p >= 100 ? '#2e8b57' : p >= 60 ? 'var(--gold)' : '#c84848';
   box.innerHTML = `
@@ -31011,9 +31129,9 @@ async function wkRefresh() {
       ${flow.map(k => `<div style="border:1px solid var(--border);border-radius:8px;padding:9px 10px"><div style="font-size:10px;color:var(--muted)">${k[0]}</div><div style="font-weight:700;font-size:13px;color:${k[2]};margin-top:3px">${k[1]}</div></div>`).join('')}
     </div>
     <div style="border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:14px">
-      <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:5px"><span>Achieve target minggu ini <span style="color:var(--muted)">(${wkRp(d.T.net)} / ${wkRp(d.T.weekTarget)})</span></span><b style="color:${pctClr(d.T.achWeek)}">${d.T.weekTarget > 0 ? d.T.achWeek.toFixed(1) + '%' : 'target belum diatur'}</b></div>
+      <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:5px"><span>Achieve target ${d.unit} ini <span style="color:var(--muted)">(${wkRp(d.T.net)} / ${wkRp(d.T.weekTarget)})</span></span><b style="color:${pctClr(d.T.achWeek)}">${d.T.weekTarget > 0 ? d.T.achWeek.toFixed(1) + '%' : 'target belum diatur'}</b></div>
       <div style="height:8px;border-radius:5px;background:rgba(128,128,128,.18);overflow:hidden"><div style="height:100%;width:${Math.min(100, d.T.achWeek).toFixed(1)}%;background:${pctClr(d.T.achWeek)}"></div></div>
-      <div style="font-size:10px;color:var(--muted);margin-top:4px">Target mingguan = target bulanan (${d.monthName}) dibagi hari dalam bulan × 7 · ${d.T.sessions} sesi · ${d.T.hours.toFixed(1)} jam tayang</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">${d.mode === 'month' ? 'Target bulanan ' + d.monthName : 'Target mingguan = target bulanan (' + d.monthName + ') dibagi hari dalam bulan × 7'} · ${d.T.sessions} sesi · ${d.T.hours.toFixed(1)} jam tayang</div>
     </div>
     ${d.hosts.map(h => `<div style="border:1px solid var(--border);border-radius:10px;padding:11px 12px;margin-bottom:9px">
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px"><b style="font-size:13px">${escHtml(h.name)}</b><span style="font-size:11px;color:var(--muted)">Kontribusi <b style="color:var(--text)">${h.share.toFixed(1)}%</b></span></div>
@@ -31022,9 +31140,9 @@ async function wkRefresh() {
         <div><div style="color:var(--muted);font-size:9.5px">Potongan</div><span style="color:#c84848">− ${wkRp(h.cut)}</span></div>
         <div><div style="color:var(--muted);font-size:9.5px">Hasil Akhir</div><b style="color:#2e8b57">${wkRp(h.net)}</b></div></div>
       <div style="height:7px;border-radius:5px;background:rgba(128,128,128,.18);overflow:hidden;margin:9px 0 3px"><div style="height:100%;width:${Math.min(100, h.achWeek).toFixed(1)}%;background:${pctClr(h.achWeek)}"></div></div>
-      <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted)"><span>Target minggu ${h.weekTarget > 0 ? wkRp(h.weekTarget) : '—'}</span><b style="color:${pctClr(h.achWeek)}">${h.weekTarget > 0 ? h.achWeek.toFixed(1) + '%' : '—'}</b></div>
+      <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted)"><span>Target ${d.unit} ${h.weekTarget > 0 ? wkRp(h.weekTarget) : '—'}</span><b style="color:${pctClr(h.achWeek)}">${h.weekTarget > 0 ? h.achWeek.toFixed(1) + '%' : '—'}</b></div>
       <div style="font-size:10.5px;color:var(--muted);margin-top:4px">${h.sessions} sesi · ${h.ada} ada penjualan · ${h.nol} tanpa penjualan · ${h.belum} belum lapor</div></div>`).join('')}
-    <div style="font-size:10.5px;color:var(--muted);margin-top:6px">Unduh Excel/PDF untuk rincian per hari, analisis jam tayang, dan detail sesi tiap host.</div>`;
+    <div style="font-size:10.5px;color:var(--muted);margin-top:6px">Unduh Excel/PDF untuk rincian per ${d.mode === 'month' ? 'minggu dan per hari' : 'hari'}, analisis jam tayang, dan detail sesi tiap host.</div>`;
 }
 
 /* ── EXCEL ── */
@@ -31034,27 +31152,27 @@ async function wkExportExcel() {
   if (!window.XLSX) { toast('Komponen Excel belum siap'); return; }
   _wkBusy = true;
   try {
-    const d = await wkBuild(_wkMonday || wkMondayOf(new Date()));
-    if (!d.T.sessions) { toast('Tidak ada sesi live pada minggu ini'); return; }
+    const d = await wkBuild(_wkAnchor || wkDefaultAnchor(_wkMode), _wkMode);
+    if (!d.T.sessions) { toast('Tidak ada sesi live pada ' + d.unit + ' ini'); return; }
     const wb = XLSX.utils.book_new(), stamp = new Date().toLocaleString('id-ID'), by = (currentUser && (currentUser.name || currentUser.id)) || 'Moderator';
     const RP = '"Rp "#,##0';
     // 1) Ringkasan
-    const a1 = [['DHP CREATIVE — LAPORAN MINGGUAN LIVE'], ['Periode: ' + d.label], ['Dibuat: ' + stamp + '  |  Oleh: ' + by], ['Penjualan "Net" = hasil akhir setelah potongan PPN/platform (Shopee 25%, TikTok 11%).'], [],
+    const a1 = [['DHP CREATIVE — LAPORAN ' + d.Unit.toUpperCase() + ' LIVE'], ['Periode: ' + d.label], ['Dibuat: ' + stamp + '  |  Oleh: ' + by], ['Penjualan "Net" = hasil akhir setelah potongan PPN/platform (Shopee 25%, TikTok 11%).'], [],
       ['RINCIAN PERHITUNGAN (KESELURUHAN)', 'Nominal'],
       ['GMV Kotor (sebelum potongan)', d.T.gross],
       ['(−) Potongan Shopee', -d.T.cutS],
       ['(−) Potongan TikTok', -d.T.cutT],
       ['Total Potongan PPN/Platform', -d.T.cut],
       ['HASIL AKHIR BERSIH (NET)', d.T.net],
-      ['Target Mingguan (prorata dari target ' + d.monthName + ')', d.T.weekTarget],
-      ['Achieve Target Mingguan', d.T.weekTarget > 0 ? +d.T.achWeek.toFixed(1) : 'target belum diatur'],
+      [d.mode === 'month' ? 'Target Bulanan (' + d.monthName + ')' : 'Target Mingguan (prorata dari target ' + d.monthName + ')', d.T.weekTarget],
+      ['Achieve Target ' + d.Unit, d.T.weekTarget > 0 ? +d.T.achWeek.toFixed(1) : 'target belum diatur'],
       ['Target Bulanan ' + d.monthName, d.T.monthTarget],
       ['Capaian Bulan Berjalan', d.T.monthSales],
       ['Achieve Target Bulanan', d.T.monthTarget > 0 ? +d.T.achMonth.toFixed(1) : 'target belum diatur'],
       [],
       ['AKTIVITAS'], ['Total Sesi', d.T.sessions], ['Total Jam Tayang', +d.T.hours.toFixed(1)], ['Produk Terjual', d.T.products], ['Penonton', d.T.viewers], ['Sesi Ada Penjualan', d.T.ada], ['Sesi Tanpa Penjualan', d.T.nol], ['Sesi Belum Lapor', d.T.belum], [],
       ['PERBANDINGAN HOST'],
-      ['Peringkat', 'Host', 'Sesi', 'Jam Tayang', 'GMV Kotor', 'Potongan', 'HASIL AKHIR (NET)', 'Kontribusi (%)', 'Grafik', 'Target Mingguan', 'Achieve Mingguan (%)', 'Shopee (Net)', 'TikTok (Net)', 'Produk', 'Penonton', 'Ada Penjualan', 'Tanpa Penjualan', 'Belum Lapor', 'Net / Jam', 'Target Bulanan', 'Capaian Bulan Ini', 'Achieve Bulanan (%)']];
+      ['Peringkat', 'Host', 'Sesi', 'Jam Tayang', 'GMV Kotor', 'Potongan', 'HASIL AKHIR (NET)', 'Kontribusi (%)', 'Grafik', 'Target ' + d.Unit, 'Achieve ' + d.Unit + ' (%)', 'Shopee (Net)', 'TikTok (Net)', 'Produk', 'Penonton', 'Ada Penjualan', 'Tanpa Penjualan', 'Belum Lapor', 'Net / Jam', 'Target Bulanan', 'Capaian Bulan Ini', 'Achieve Bulanan (%)']];
     const hStart = a1.length + 1;
     d.hosts.forEach((h, i) => a1.push([i + 1, h.name, h.sessions, +h.hours.toFixed(1), h.gross, -h.cut, h.net, +h.share.toFixed(1), wkBar(h.share), h.weekTarget, h.weekTarget > 0 ? +h.achWeek.toFixed(1) : '-', h.shopee, h.tiktok, h.products, h.viewers, h.ada, h.nol, h.belum, Math.round(h.perHour), h.monthTarget, h.monthSales, h.monthTarget > 0 ? +h.achMonth.toFixed(1) : '-']));
     a1.push(['', 'TOTAL', d.T.sessions, +d.T.hours.toFixed(1), d.T.gross, -d.T.cut, d.T.net, 100, '', d.T.weekTarget, d.T.weekTarget > 0 ? +d.T.achWeek.toFixed(1) : '-', d.T.shopee, d.T.tiktok, d.T.products, d.T.viewers, d.T.ada, d.T.nol, d.T.belum, d.T.hours > 0 ? Math.round(d.T.net / d.T.hours) : 0, d.T.monthTarget, d.T.monthSales, d.T.monthTarget > 0 ? +d.T.achMonth.toFixed(1) : '-']);
@@ -31063,17 +31181,27 @@ async function wkExportExcel() {
     w1['!merges'] = [{s:{r:0,c:0},e:{r:0,c:9}},{s:{r:1,c:0},e:{r:1,c:9}},{s:{r:3,c:0},e:{r:3,c:9}}];
     wkSetFmt(w1, ['B'], RP, 7, 12); wkSetFmt(w1, ['B'], RP, 14, 15); wkSetFmt(w1, ['E','F','G','J','L','M','S','T','U'], RP, hStart, hStart + d.hosts.length);
     XLSX.utils.book_append_sheet(wb, w1, 'Ringkasan');
-    // 2) Per Hari
-    const a2 = [['DHP CREATIVE — PENJUALAN BERSIH PER HARI'], ['Periode: ' + d.label], [], ['Host', ...WK_DAYS.map((n, i) => n + ' ' + wkFmtD(wkAddDays(d.mon, i))), 'Total', 'Hari Terbaik']];
-    d.hosts.forEach(h => { const best = h.perDay.indexOf(Math.max.apply(null, h.perDay)); a2.push([h.name, ...h.perDay, h.net, h.net > 0 ? WK_DAYS[best] : '-']); });
-    const bestAll = d.T.perDay.indexOf(Math.max.apply(null, d.T.perDay));
-    a2.push(['TOTAL', ...d.T.perDay, d.T.net, d.T.net > 0 ? WK_DAYS[bestAll] : '-'], [], ['Grafik harian (gabungan semua host)']);
-    const mx = Math.max.apply(null, d.T.perDay.concat([1]));
-    d.T.perDay.forEach((v, i) => a2.push([WK_DAYS[i], v, wkBar(v / mx * 100, 30), d.T.net > 0 ? +(v / d.T.net * 100).toFixed(1) + '%' : '0%']));
-    const w2 = XLSX.utils.aoa_to_sheet(a2); w2['!cols'] = [{wch:16}, ...WK_DAYS.map(() => ({wch:16})), {wch:17}, {wch:14}];
-    wkSetFmt(w2, ['B','C','D','E','F','G','H','I'], RP, 5, 5 + d.hosts.length + 1);
-    wkSetFmt(w2, ['B'], RP, 5 + d.hosts.length + 4, 5 + d.hosts.length + 11);
-    XLSX.utils.book_append_sheet(wb, w2, 'Per Hari');
+    // 2) Per Hari / Per Minggu
+    const nb = d.buckets.length, bl = Array.from({ length: nb + 1 }, (_, i) => String.fromCharCode(66 + i));
+    const a2 = [['DHP CREATIVE — PENJUALAN BERSIH PER ' + d.bucketName.toUpperCase()], ['Periode: ' + d.label], [], ['Host', ...d.buckets.map(b => b.label), 'Total', d.bucketName + ' Terbaik']];
+    const bestOf = arr => arr.indexOf(Math.max.apply(null, arr));
+    d.hosts.forEach(h => a2.push([h.name, ...h.perBucket, h.net, h.net > 0 ? d.buckets[bestOf(h.perBucket)].label : '-']));
+    a2.push(['TOTAL', ...d.T.perBucket, d.T.net, d.T.net > 0 ? d.buckets[bestOf(d.T.perBucket)].label : '-'], [], ['Grafik per ' + d.bucketName.toLowerCase() + ' (gabungan semua host)']);
+    const mxb = Math.max.apply(null, d.T.perBucket.concat([1]));
+    d.T.perBucket.forEach((v, i) => a2.push([d.buckets[i].label, v, wkBar(v / mxb * 100, 30), d.T.net > 0 ? +(v / d.T.net * 100).toFixed(1) + '%' : '0%']));
+    const w2 = XLSX.utils.aoa_to_sheet(a2); w2['!cols'] = [{wch: 30}, ...d.buckets.map(() => ({wch: 24})), {wch: 17}, {wch: 30}];
+    wkSetFmt(w2, bl, RP, 5, 5 + d.hosts.length);
+    wkSetFmt(w2, ['B'], RP, 8 + d.hosts.length, 7 + d.hosts.length + nb);
+    XLSX.utils.book_append_sheet(wb, w2, 'Per ' + d.bucketName);
+    if (d.mode === 'month') {   // rincian harian (vertikal) khusus laporan bulanan
+      const a2b = [['DHP CREATIVE — PENJUALAN BERSIH HARIAN'], ['Periode: ' + d.label], [], ['Tanggal', 'Hari', ...d.hosts.map(h => h.name + ' (Net)'), 'Total Net', 'Sesi', 'Grafik']];
+      const mxd = Math.max.apply(null, d.T.perDay.concat([1]));
+      for (let i = 0; i < d.N; i++) { const dt = wkAddDays(d.mon, i), key = ymdKey(dt); a2b.push([key, wkDayName(key), ...d.hosts.map(h => h.perDay[i]), d.T.perDay[i], d.hosts.reduce((t, h) => t + h.perDaySess[i], 0), wkBar(d.T.perDay[i] / mxd * 100, 24)]); }
+      a2b.push(['TOTAL', '', ...d.hosts.map(h => h.net), d.T.net, d.T.sessions, '']);
+      const w2b = XLSX.utils.aoa_to_sheet(a2b); w2b['!cols'] = [{wch:13},{wch:10}, ...d.hosts.map(() => ({wch:17})), {wch:17},{wch:8},{wch:28}];
+      wkSetFmt(w2b, Array.from({ length: d.hosts.length + 1 }, (_, i) => String.fromCharCode(67 + i)), RP, 5, 5 + d.N);
+      XLSX.utils.book_append_sheet(wb, w2b, 'Harian');
+    }
     // 3) Per Jam
     const a3 = [['DHP CREATIVE — ANALISIS JAM TAYANG'], ['Periode: ' + d.label], ['Per jam tayang: sesi yang ada penjualan vs tanpa penjualan (dari laporan host).'], [],
       ['Jam Tayang', 'Total Sesi', 'Ada Penjualan', 'Tanpa Penjualan', 'Belum Lapor', 'Tingkat Penjualan (%)', 'Grafik', 'Total Net', 'Keterangan', ...d.hosts.map(h => h.name + ' (Net)')]];
@@ -31088,16 +31216,16 @@ async function wkExportExcel() {
       a4.push(['Tanggal', 'Hari', 'Jam', 'Platform', 'Status Penjualan', 'GMV', 'Net', 'Shopee (Net)', 'TikTok (Net)', 'Produk', 'Penonton']);
       const L = h.list.filter(x => x.cat !== 'off');
       if (!L.length) a4.push(['— tidak ada sesi —']);
-      L.forEach(x => a4.push([x.date, WK_DAYS[x.di], x.start + '–' + x.end, x.platform || '-', x.cat === 'ada' ? 'Ada penjualan' : x.cat === 'nol' ? 'Tanpa penjualan' : 'Belum lapor', x.gross, x.net, x.nS, x.nT, x.products, x.viewers]));
+      L.forEach(x => a4.push([x.date, wkDayName(x.date), x.start + '–' + x.end, x.platform || '-', x.cat === 'ada' ? 'Ada penjualan' : x.cat === 'nol' ? 'Tanpa penjualan' : 'Belum lapor', x.gross, x.net, x.nS, x.nT, x.products, x.viewers]));
       if (L.length) a4.push(['TOTAL', '', '', '', '', h.gross, h.net, h.shopee, h.tiktok, h.products, h.viewers]);
       a4.push([]);
     });
     const w4 = XLSX.utils.aoa_to_sheet(a4); w4['!cols'] = [{wch:14},{wch:10},{wch:14},{wch:12},{wch:18},{wch:15},{wch:15},{wch:15},{wch:15},{wch:9},{wch:11}];
     wkSetFmt(w4, ['F','G','H','I'], RP, 4, a4.length);
     XLSX.utils.book_append_sheet(wb, w4, 'Detail Sesi');
-    XLSX.writeFile(wb, 'DHP_Laporan_Mingguan_Live_' + d.from + '_sd_' + d.to + '.xlsx');
-    toast('✓ Laporan mingguan (Excel) diunduh');
-    try { pushActivity('Live Dashboard: export laporan mingguan ' + d.from, 'info'); } catch (e) {}
+    XLSX.writeFile(wb, 'DHP_Laporan_' + d.Unit + '_Live_' + d.from + '_sd_' + d.to + '.xlsx');
+    toast('✓ Laporan ' + d.unit + 'an (Excel) diunduh');
+    try { pushActivity('Live Dashboard: export laporan ' + d.unit + 'an ' + d.from, 'info'); } catch (e) {}
   } catch (e) { console.error('[DHP] wkExportExcel', e); toast('Gagal export: ' + (e.message || e)); }
   finally { _wkBusy = false; }
 }
@@ -31108,8 +31236,8 @@ async function wkExportPdf() {
   if (!(window.jspdf && window.jspdf.jsPDF)) { toast('Komponen PDF belum siap'); return; }
   _wkBusy = true;
   try {
-    const d = await wkBuild(_wkMonday || wkMondayOf(new Date()));
-    if (!d.T.sessions) { toast('Tidak ada sesi live pada minggu ini'); return; }
+    const d = await wkBuild(_wkAnchor || wkDefaultAnchor(_wkMode), _wkMode);
+    if (!d.T.sessions) { toast('Tidak ada sesi live pada ' + d.unit + ' ini'); return; }
     const doc = new window.jspdf.jsPDF({ unit: 'pt', format: 'a4' });
     const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight(), mx = 40, cw = W - mx * 2;
     const GOLD = [178,138,68], GREEN = [46,139,87], RED = [200,72,72], GREY = [225,225,225], DARK = [30,30,34];
@@ -31122,7 +31250,7 @@ async function wkExportPdf() {
     const h2 = (t) => { doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor.apply(doc, DARK); doc.text(t, mx, y); y += 6; doc.setDrawColor.apply(doc, GOLD); doc.setLineWidth(1.2); doc.line(mx, y, mx + 36, y); y += 14; };
     const need = (n) => { if (y + n > H - 40) { doc.addPage(); y = 50; } };
     // ── Hal 1: ringkasan ──
-    head('Laporan Mingguan Live — Ringkasan & Performa Host'); y = 108;
+    head('Laporan ' + d.Unit + ' Live — Ringkasan & Performa Host'); y = 108;
     h2('Alur Perhitungan — dari GMV Kotor sampai Hasil Akhir');
     const pc = p => p >= 100 ? GREEN : p >= 60 ? GOLD : RED;
     const flow = [['GMV KOTOR', wkRp(d.T.gross), DARK, 'sebelum potongan'], ['POTONGAN PPN / PLATFORM', '- ' + wkRp(d.T.cut), RED, 'Shopee ' + wkRp(d.T.cutS) + '  ·  TikTok ' + wkRp(d.T.cutT)],
@@ -31137,12 +31265,12 @@ async function wkExportPdf() {
       if (i < 3) { doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(150,150,150); doc.text(i === 0 ? '-' : i === 1 ? '=' : '>', x + fw + 11, y + 36, { align: 'center' }); } });
     y += 76;
     // progress achieve (mingguan & bulanan)
-    [['Achieve minggu ini', d.T.achWeek, d.T.weekTarget, d.T.net], ['Achieve bulan ' + d.monthName, d.T.achMonth, d.T.monthTarget, d.T.monthSales]].forEach(p => {
+    [['Achieve ' + d.unit + ' ini', d.T.achWeek, d.T.weekTarget, d.T.net]].concat(d.mode === 'month' ? [] : [['Achieve bulan ' + d.monthName, d.T.achMonth, d.T.monthTarget, d.T.monthSales]]).forEach(p => {
       doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor.apply(doc, DARK); doc.text(p[0] + '  (' + wkRp(p[3]) + ' / ' + (p[2] > 0 ? wkRp(p[2]) : 'target belum diatur') + ')', mx, y);
       doc.setFont('helvetica','bold'); doc.setTextColor.apply(doc, p[2] > 0 ? pc(p[1]) : [120,120,120]); doc.text(p[2] > 0 ? p[1].toFixed(1) + '%' : '-', mx + cw, y, { align: 'right' }); y += 5;
       doc.setFillColor(232,232,232); doc.roundedRect(mx, y, cw, 7, 3, 3, 'F'); if (p[2] > 0 && p[1] > 0) { doc.setFillColor.apply(doc, pc(p[1])); doc.roundedRect(mx, y, Math.max(6, cw * Math.min(100, p[1]) / 100), 7, 3, 3, 'F'); } y += 20; });
     doc.setFont('helvetica','normal'); doc.setFontSize(7.2); doc.setTextColor(130,130,130);
-    doc.text('Target mingguan = target bulanan (' + d.monthName + ') dibagi jumlah hari dalam bulan x 7.   Aktivitas minggu ini: ' + d.T.sessions + ' sesi  ·  ' + d.T.hours.toFixed(1) + ' jam tayang  ·  ' + d.T.products + ' produk  ·  ' + d.T.viewers + ' penonton.', mx, y); y += 18;
+    doc.text((d.mode === 'month' ? 'Target bulanan ' + d.monthName : 'Target mingguan = target bulanan (' + d.monthName + ') dibagi jumlah hari dalam bulan x 7') + '.   Aktivitas ' + d.unit + ' ini: ' + d.T.sessions + ' sesi  ·  ' + d.T.hours.toFixed(1) + ' jam tayang  ·  ' + d.T.products + ' produk  ·  ' + d.T.viewers + ' penonton.', mx, y); y += 18;
     // kontribusi per host: stacked bar 100% + legenda
     h2('Kontribusi Penjualan Bersih per Host');
     let bx = mx; const bh = 22;
@@ -31154,7 +31282,7 @@ async function wkExportPdf() {
     need(230); h2('Rincian per Host — Kotor, Potongan, Hasil Akhir & Target');
     const totRow = (c, n) => { if (c.row.index === n && c.section === 'body') { c.cell.styles.fontStyle = 'bold'; c.cell.styles.fillColor = [245,238,225]; } };
     doc.autoTable({ startY: y, margin: { left: mx, right: mx }, theme: 'grid', styles: { fontSize: 8, cellPadding: 4.5, halign: 'right' }, headStyles: { fillColor: DARK, textColor: [230,230,230], halign: 'center' }, columnStyles: { 0: { halign: 'left', fontStyle: 'bold' } },
-      head: [['Host','GMV Kotor','Potongan','Hasil Akhir (Net)','Kontribusi','Target Minggu','Achieve']],
+      head: [['Host','GMV Kotor','Potongan','Hasil Akhir (Net)','Kontribusi','Target ' + (d.mode === 'month' ? 'Bulan' : 'Minggu'),'Achieve']],
       body: d.hosts.map(h => [h.name, wkRp(h.gross), '- ' + wkRp(h.cut), wkRp(h.net), h.share.toFixed(1) + '%', h.weekTarget > 0 ? wkRp(h.weekTarget) : '-', h.weekTarget > 0 ? h.achWeek.toFixed(1) + '%' : '-'])
         .concat([['TOTAL', wkRp(d.T.gross), '- ' + wkRp(d.T.cut), wkRp(d.T.net), '100%', d.T.weekTarget > 0 ? wkRp(d.T.weekTarget) : '-', d.T.weekTarget > 0 ? d.T.achWeek.toFixed(1) + '%' : '-']]),
       didParseCell: (c) => { totRow(c, d.hosts.length); if (c.section === 'body' && c.column.index === 2) c.cell.styles.textColor = RED; if (c.section === 'body' && c.column.index === 3) { c.cell.styles.textColor = GREEN; c.cell.styles.fontStyle = 'bold'; }
@@ -31167,36 +31295,37 @@ async function wkExportPdf() {
       didParseCell: (c) => totRow(c, d.hosts.length) });
     y = doc.lastAutoTable.finalY + 22;
     // ── per hari: grafik batang berkelompok ──
-    need(250); h2('Penjualan Bersih per Hari');
-    const ch = 150, cx0 = mx + 52, cwid = cw - 52, gw = cwid / 7;
-    const maxV = Math.max.apply(null, d.hosts.flatMap(h => h.perDay).concat([1]));
+    need(250); h2('Penjualan Bersih per ' + d.bucketName);
+    const ch = 150, cx0 = mx + 52, cwid = cw - 52, gw = cwid / d.buckets.length;
+    const maxV = Math.max.apply(null, d.hosts.flatMap(h => h.perBucket).concat([1]));
     doc.setDrawColor(230,230,230); doc.setLineWidth(.5);
     for (let g = 0; g <= 4; g++) { const gy = y + ch - ch * g / 4; doc.line(cx0, gy, cx0 + cwid, gy); doc.setFont('helvetica','normal'); doc.setFontSize(6.8); doc.setTextColor(120,120,120);
       const v = maxV * g / 4; doc.text(v >= 1e6 ? (v / 1e6).toFixed(1) + ' jt' : v >= 1e3 ? Math.round(v / 1e3) + ' rb' : '0', cx0 - 6, gy + 2, { align: 'right' }); }
     const bw = Math.min(16, (gw - 10) / Math.max(1, d.hosts.length));
-    WK_DAYS.forEach((dn, di) => { const gx = cx0 + di * gw + (gw - bw * d.hosts.length) / 2;
-      d.hosts.forEach((h, hi) => { const v = h.perDay[di], bhh = maxV > 0 ? ch * v / maxV : 0; doc.setFillColor.apply(doc, PAL[hi % PAL.length]); if (bhh > 0) doc.rect(gx + hi * bw, y + ch - bhh, bw - 1.5, bhh, 'F'); });
-      doc.setFont('helvetica','normal'); doc.setFontSize(7.6); doc.setTextColor(80,80,80); doc.text(dn.slice(0, 3) + ' ' + wkAddDays(d.mon, di).getDate(), cx0 + di * gw + gw / 2, y + ch + 12, { align: 'center' }); });
+    d.buckets.forEach((bk, di) => { const gx = cx0 + di * gw + (gw - bw * d.hosts.length) / 2;
+      d.hosts.forEach((h, hi) => { const v = h.perBucket[di], bhh = maxV > 0 ? ch * v / maxV : 0; doc.setFillColor.apply(doc, PAL[hi % PAL.length]); if (bhh > 0) doc.rect(gx + hi * bw, y + ch - bhh, bw - 1.5, bhh, 'F'); });
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.6); doc.setTextColor(80,80,80); doc.text(d.mode === 'month' ? 'Mgg ' + (di + 1) : bk.short, cx0 + di * gw + gw / 2, y + ch + 12, { align: 'center' }); });
     y += ch + 26; let lx = mx;
     d.hosts.forEach((h, i) => { doc.setFillColor.apply(doc, PAL[i % PAL.length]); doc.rect(lx, y - 7, 8, 8, 'F'); doc.setTextColor(60,60,60); doc.setFontSize(8); doc.text(h.name, lx + 12, y); lx += 24 + doc.getTextWidth(h.name) + 14; });
     y += 18;
     doc.autoTable({ startY: y, margin: { left: mx, right: mx }, theme: 'grid', styles: { fontSize: 7.6, cellPadding: 3.5, halign: 'right' }, headStyles: { fillColor: DARK, textColor: [230,230,230], halign: 'center' }, columnStyles: { 0: { halign: 'left' } },
-      head: [['Host', ...WK_DAYS.map(n => n.slice(0, 3)), 'Total']],
-      body: d.hosts.map(h => [h.name, ...h.perDay.map(v => v > 0 ? wkRp(v) : '-'), wkRp(h.net)]).concat([['TOTAL', ...d.T.perDay.map(v => v > 0 ? wkRp(v) : '-'), wkRp(d.T.net)]]),
+      head: [['Host', ...d.buckets.map(b => b.short), 'Total']],
+      body: d.hosts.map(h => [h.name, ...h.perBucket.map(v => v > 0 ? wkRp(v) : '-'), wkRp(h.net)]).concat([['TOTAL', ...d.T.perBucket.map(v => v > 0 ? wkRp(v) : '-'), wkRp(d.T.net)]]),
       didParseCell: (c) => { if (c.row.index === d.hosts.length && c.section === 'body') { c.cell.styles.fontStyle = 'bold'; c.cell.styles.fillColor = [245,238,225]; } } });
     y = doc.lastAutoTable.finalY + 24;
     // ── per jam: strip 24 jam per host ──
     doc.addPage(); y = 50; h2('Peta Jam Tayang — Ada Penjualan vs Tanpa Penjualan');
     doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(90,90,90);
-    doc.text(doc.splitTextToSize('Setiap kotak = satu jam dalam sehari. Hijau: jam itu ada sesi live yang menghasilkan penjualan. Merah: ada sesi live tetapi tanpa penjualan. Abu: tidak ada sesi. Kuning: sesi belum dilaporkan.', cw), mx, y); y += 26;
+    doc.text(doc.splitTextToSize('Setiap kotak = satu jam dalam sehari. Hijau: jam itu ada sesi live yang menghasilkan penjualan. Merah: ada sesi live tetapi tanpa penjualan. Oranye: campuran (sebagian sesi ada penjualan, sebagian tidak' + (d.mode === 'month' ? ' pada hari-hari berbeda' : '') + '). Kuning: sesi belum dilaporkan. Abu: tidak ada sesi.', cw), mx, y); y += 26;
     const lw = 62, cell = (cw - lw) / 24;
-    const strip = (h) => { const st = Array(24).fill(null); // prioritas: ada > nol > belum
-      h.list.filter(x => x.cat !== 'off').forEach(x => { for (let t = Math.floor(x.st); t < Math.ceil(x.en); t++) { const k = t % 24, cur = st[k], n = x.cat; const rank = { ada: 3, nol: 2, belum: 1 }; if (!cur || rank[n] > rank[cur]) st[k] = n; } }); return st; };
+    const strip = (h) => { const st = Array.from({ length: 24 }, () => ({ ada: 0, nol: 0, belum: 0 }));
+      h.list.filter(x => x.cat !== 'off').forEach(x => { for (let t = Math.floor(x.st); t < Math.ceil(x.en); t++) st[t % 24][x.cat]++; });
+      return st.map(c => c.ada && c.nol ? 'mix' : c.ada ? 'ada' : c.nol ? 'nol' : c.belum ? 'belum' : null); };
     doc.setFontSize(6.5); doc.setTextColor(110,110,110); for (let t = 0; t < 24; t++) doc.text(String(t).padStart(2, '0'), mx + lw + t * cell + cell / 2, y, { align: 'center' }); y += 6;
-    const COL = { ada: GREEN, nol: RED, belum: [235,190,70] };
+    const COL = { ada: GREEN, nol: RED, mix: [230,140,40], belum: [235,190,70] };
     d.hosts.forEach(h => { const st = strip(h); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor.apply(doc, DARK); doc.text(h.name, mx, y + 14);
       st.forEach((v, t) => { doc.setFillColor.apply(doc, v ? COL[v] : GREY); doc.rect(mx + lw + t * cell + .6, y, cell - 1.2, 20, 'F'); }); y += 28; });
-    y += 4; [['Ada penjualan', GREEN], ['Tanpa penjualan', RED], ['Belum lapor', COL.belum], ['Tidak ada sesi', GREY]].forEach((l, i) => { const x = mx + i * 110; doc.setFillColor.apply(doc, l[1]); doc.rect(x, y - 7, 9, 9, 'F'); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(60,60,60); doc.text(l[0], x + 13, y); });
+    y += 4; [['Ada penjualan', GREEN], ['Tanpa penjualan', RED], ['Campuran', COL.mix], ['Belum lapor', COL.belum], ['Tidak ada sesi', GREY]].forEach((l, i) => { const x = mx + i * 96; doc.setFillColor.apply(doc, l[1]); doc.rect(x, y - 7, 9, 9, 'F'); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(60,60,60); doc.text(l[0], x + 13, y); });
     y += 22;
     h2('Analisis per Jam Tayang');
     doc.autoTable({ startY: y, margin: { left: mx, right: mx }, theme: 'grid', styles: { fontSize: 8, cellPadding: 4 }, headStyles: { fillColor: DARK, textColor: [230,230,230] },
@@ -31214,20 +31343,524 @@ async function wkExportPdf() {
       const L = h.list.filter(x => x.cat !== 'off');
       doc.autoTable({ startY: y, margin: { left: mx, right: mx }, theme: 'grid', styles: { fontSize: 7.8, cellPadding: 3.5 }, headStyles: { fillColor: DARK, textColor: [230,230,230] },
         head: [['Hari / Tanggal','Jam','Platform','Status','GMV','Net','Produk','Penonton']],
-        body: L.length ? L.map(x => [WK_DAYS[x.di] + ' ' + wkFmtD(new Date(x.date + 'T00:00:00')), x.start + '–' + x.end, x.platform || '-', x.cat === 'ada' ? 'Ada penjualan' : x.cat === 'nol' ? 'Tanpa penjualan' : 'Belum lapor', wkRp(x.gross), wkRp(x.net), x.products, x.viewers])
-          .concat([['TOTAL', '', '', '', wkRp(h.gross), wkRp(h.net), h.products, h.viewers]]) : [['Tidak ada sesi pada minggu ini', '', '', '', '', '', '', '']],
+        body: L.length ? L.map(x => [wkDayName(x.date) + ' ' + wkFmtD(new Date(x.date + 'T00:00:00')), x.start + '–' + x.end, x.platform || '-', x.cat === 'ada' ? 'Ada penjualan' : x.cat === 'nol' ? 'Tanpa penjualan' : 'Belum lapor', wkRp(x.gross), wkRp(x.net), x.products, x.viewers])
+          .concat([['TOTAL', '', '', '', wkRp(h.gross), wkRp(h.net), h.products, h.viewers]]) : [['Tidak ada sesi pada ' + d.unit + ' ini', '', '', '', '', '', '', '']],
         didParseCell: (c) => { if (c.section !== 'body') return; if (L.length && c.row.index === L.length) { c.cell.styles.fontStyle = 'bold'; c.cell.styles.fillColor = [245,238,225]; }
           if (c.column.index === 3) { const v = c.cell.raw; c.cell.styles.fontStyle = 'bold'; c.cell.styles.textColor = v === 'Ada penjualan' ? GREEN : v === 'Tanpa penjualan' ? RED : [190,120,30]; } } });
     });
     const n = doc.internal.getNumberOfPages();
-    for (let p = 1; p <= n; p++) { doc.setPage(p); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(140,140,140); doc.text('DHP Creative · Laporan Mingguan Live · Halaman ' + p + ' / ' + n, W / 2, H - 20, { align: 'center' }); }
-    doc.save('DHP_Laporan_Mingguan_Live_' + d.from + '_sd_' + d.to + '.pdf');
-    toast('✓ Laporan mingguan (PDF) diunduh');
-    try { pushActivity('Live Dashboard: PDF laporan mingguan ' + d.from, 'info'); } catch (e) {}
+    for (let p = 1; p <= n; p++) { doc.setPage(p); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(140,140,140); doc.text('DHP Creative · Laporan ' + d.Unit + ' Live · Halaman ' + p + ' / ' + n, W / 2, H - 20, { align: 'center' }); }
+    doc.save('DHP_Laporan_' + d.Unit + '_Live_' + d.from + '_sd_' + d.to + '.pdf');
+    toast('✓ Laporan ' + d.unit + 'an (PDF) diunduh');
+    try { pushActivity('Live Dashboard: PDF laporan ' + d.unit + 'an ' + d.from, 'info'); } catch (e) {}
   } catch (e) { console.error('[DHP] wkExportPdf', e); toast('Gagal export PDF: ' + (e.message || e)); }
   finally { _wkBusy = false; }
 }
-window.openWeeklyReport = openWeeklyReport; window.wkShift = wkShift; window.wkExportExcel = wkExportExcel; window.wkExportPdf = wkExportPdf;
+window.openWeeklyReport = openWeeklyReport; window.openMonthlyReport = openMonthlyReport; window.wkShift = wkShift; window.wkExportExcel = wkExportExcel; window.wkExportPdf = wkExportPdf;
+
+
+/* ═══ v125 — WA INBOX: percakapan WhatsApp (Cloud API) + pembagian leads ke agen + AI yang bisa dilatih ═══ */
+const WAI = { tab: 'inbox', scope: 'mine', status: 'open', search: '', convs: [], cur: null, thread: null, timer: null, sig: '', ready: false, agents: [], badgeTimer: null };
+const WAI_KINDS = { template: 'Template balasan', faq: 'FAQ', product: 'Produk & harga', example: 'Contoh percakapan bagus' };
+const WAI_KIND_HELP = {
+  template: 'Kalimat balasan resmi. AI memakai kalimat ini bila pertanyaannya cocok, lalu menyesuaikan seperlunya.',
+  faq: 'Pertanyaan yang sering muncul beserta jawabannya.',
+  product: 'Daftar produk, ukuran, harga, stok. Ini satu-satunya sumber harga untuk AI — dia tidak akan mengarang.',
+  example: 'Tempel contoh percakapan terbaik tim kamu. AI akan meniru gaya dan alurnya.'
+};
+
+function waiIsMod() { return !!(currentUser && can.isMod(currentUser.role)); }
+function waiMe() { return currentUser && currentUser.id; }
+async function waiRpc(name, args) {
+  const r = await dbQ(d => d.rpc(name, args));
+  if (!r) throw new Error('Database tidak terjangkau');
+  if (r.error) throw new Error(r.error.message);
+  return r.data;
+}
+function waiErr(e) {
+  const m = (e && e.message) || String(e);
+  if (/WINDOW_EXPIRED/.test(m)) return 'Gagal: sudah lewat 24 jam sejak pelanggan terakhir chat — hanya template Meta yang boleh dikirim.';
+  if (/Could not find the function|schema cache/i.test(m)) return 'Gagal: jalankan migration SQL v125 dulu (fungsi WA belum ada di database).';
+  return 'Gagal: ' + m;
+}
+function waiTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso), n = new Date();
+  if (d.toDateString() === n.toDateString()) return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+  return d.getDate() + '/' + (d.getMonth() + 1);
+}
+function waiDayLabel(iso) {
+  const d = new Date(iso), n = new Date(), y = new Date(); y.setDate(n.getDate() - 1);
+  if (d.toDateString() === n.toDateString()) return 'Hari ini';
+  if (d.toDateString() === y.toDateString()) return 'Kemarin';
+  return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+function waiPhone(d) { return '+' + String(d || ''); }
+function waiHeatChip(h) { if (!h) return ''; const c = String(h).toLowerCase(); return `<span class="wai-chip ${c === 'hot' ? 'hot' : c === 'warm' ? 'warm' : 'cold'}">${escHtml(h)}</span>`; }
+function waiTick(m) {
+  if (m.dir !== 'out') return '';
+  if (m.status === 'failed') return '<span class="er">✕ gagal</span>';
+  if (m.status === 'read') return '<span class="rd">✓✓</span>';
+  if (m.status === 'delivered') return '✓✓';
+  if (m.status === 'sent') return '✓';
+  return '⏳';
+}
+
+/* ───────── Buka halaman ───────── */
+function waiOpen() {
+  WAI.tab = WAI.tab || 'inbox';
+  if (!WAI.ready) { WAI.scope = waiIsMod() ? 'all' : 'mine'; WAI.ready = true; }
+  waiRenderShell();
+  waiStartPoll();
+}
+function waiStartPoll() {
+  clearInterval(WAI.timer);
+  WAI.timer = setInterval(() => {
+    const pg = document.getElementById('pg-wa_inbox');
+    if (!pg || !pg.classList.contains('active') || document.hidden) return;
+    if (WAI.tab === 'inbox') waiRefresh(true);
+  }, 6000);
+}
+function waiRenderShell() {
+  const root = document.getElementById('wai-root'); if (!root) return;
+  const mod = waiIsMod();
+  const tabs = [['inbox', 'Inbox']].concat(mod ? [['agents', 'Agen'], ['ai', 'Latih AI'], ['numbers', 'Nomor & Webhook'], ['sim', 'Simulasi']] : []);
+  root.innerHTML = `
+    <div class="wai-tabs">${tabs.map(t => `<button class="wai-tab ${WAI.tab === t[0] ? 'on' : ''}" onclick="waiTab('${t[0]}')">${t[1]}</button>`).join('')}</div>
+    <div id="wai-body"></div>`;
+  const acts = document.getElementById('wai-acts');
+  if (acts) acts.innerHTML = '<button class="btn-sm btn-gold" onclick="waiRefresh()">⟲ Muat Ulang</button>';
+  waiRenderTab();
+}
+function waiTab(t) { WAI.tab = t; WAI.cur = null; WAI.thread = null; waiRenderShell(); }
+function waiRenderTab() {
+  ({ inbox: waiRenderInbox, agents: waiRenderAgents, ai: waiRenderAi, numbers: waiRenderNumbers, sim: waiRenderSim }[WAI.tab] || waiRenderInbox)();
+}
+
+/* ───────── INBOX ───────── */
+function waiRenderInbox() {
+  const mod = waiIsMod();
+  document.getElementById('wai-body').innerHTML = `
+    <div class="wai-app" id="wai-app">
+      <aside class="wai-list">
+        <div class="wai-lhead">
+          ${mod ? `<div class="wai-seg" id="wai-scope">
+            <button data-v="all" class="${WAI.scope === 'all' ? 'on' : ''}">Semua</button>
+            <button data-v="unassigned" class="${WAI.scope === 'unassigned' ? 'on' : ''}">Belum ditugaskan</button>
+            <button data-v="mine" class="${WAI.scope === 'mine' ? 'on' : ''}">Milikku</button></div>` : ''}
+          <div class="wai-seg" id="wai-status">
+            <button data-v="open" class="${WAI.status === 'open' ? 'on' : ''}">Terbuka</button>
+            <button data-v="closed" class="${WAI.status === 'closed' ? 'on' : ''}">Selesai</button></div>
+          <input class="fi" id="wai-search" placeholder="Cari nama / nomor…" value="${escHtml(WAI.search)}" style="padding:8px 10px;font-size:12px"/>
+          <div id="wai-avail"></div>
+        </div>
+        <div class="wai-items" id="wai-items"><div class="wai-empty">Memuat…</div></div>
+      </aside>
+      <section class="wai-chat" id="wai-chat"><div class="wai-empty" style="margin:auto">Pilih percakapan di sebelah kiri</div></section>
+      <aside class="wai-info" id="wai-info"></aside>
+    </div>`;
+  document.querySelectorAll('#wai-scope button').forEach(b => b.onclick = () => { WAI.scope = b.dataset.v; waiRenderInbox(); });
+  document.querySelectorAll('#wai-status button').forEach(b => b.onclick = () => { WAI.status = b.dataset.v; waiRenderInbox(); });
+  let st; document.getElementById('wai-search').oninput = e => { WAI.search = e.target.value; clearTimeout(st); st = setTimeout(() => waiRefresh(), 300); };
+  waiRenderAvail();
+  waiRefresh();
+  if (WAI.cur) waiOpenConv(WAI.cur, true);
+}
+async function waiRenderAvail() {
+  const box = document.getElementById('wai-avail'); if (!box) return;
+  try {
+    const { data } = await dbQ(d => d.from('wa_agents').select('is_active').eq('user_id', waiMe()).maybeSingle()) || {};
+    if (!data) { box.innerHTML = waiIsMod() ? '' : '<div style="font-size:10.5px;color:var(--muted)">Kamu belum terdaftar sebagai agen WA. Minta moderator menambahkan.</div>'; return; }
+    box.innerHTML = `<label class="wai-sw"><input type="checkbox" ${data.is_active ? 'checked' : ''} onchange="waiSetAvail(this.checked)"/> Terima lead baru <span style="color:var(--muted)">(matikan saat istirahat/libur)</span></label>`;
+  } catch (e) { /* tabel belum ada */ }
+}
+async function waiSetAvail(v) {
+  try { await waiRpc('wa_set_availability', { p_user_id: waiMe(), p_active: v }); toast(v ? '✓ Kamu menerima lead baru' : '✓ Kamu tidak menerima lead baru (chat lama tetap milikmu)'); } catch (e) { toast(waiErr(e)); }
+}
+async function waiRefresh(silent) {
+  if (WAI.tab !== 'inbox') { waiRenderTab(); return; }
+  try {
+    const rows = await waiRpc('wa_list_conversations', { p_user_id: waiMe(), p_scope: WAI.scope, p_status: WAI.status, p_search: WAI.search || null, p_limit: 150 });
+    WAI.convs = rows || [];
+    waiRenderList();
+    waiBadge(WAI.convs);
+    if (WAI.cur) { const c = WAI.convs.find(x => x.id === WAI.cur); if (c) waiLoadThread(WAI.cur, true); }
+  } catch (e) { if (!silent) { const it = document.getElementById('wai-items'); if (it) it.innerHTML = `<div class="wai-empty">${escHtml(waiErr(e))}</div>`; } }
+}
+function waiBadge(list) {
+  const el = document.getElementById('wai-nav-badge'); if (!el) return;
+  const n = (list || []).filter(c => c.assigned_to === waiMe()).reduce((t, c) => t + (c.unread || 0), 0);
+  el.textContent = n > 99 ? '99+' : n; el.style.display = n > 0 ? '' : 'none';
+}
+function waiRenderList() {
+  const box = document.getElementById('wai-items'); if (!box) return;
+  if (!WAI.convs.length) {
+    box.innerHTML = `<div class="wai-empty">${WAI.status === 'closed' ? 'Belum ada percakapan selesai.' : 'Belum ada chat masuk.<br>Chat dari iklan akan muncul di sini dan dibagi otomatis ke agen.'}</div>`; return;
+  }
+  const mod = waiIsMod();
+  box.innerHTML = WAI.convs.map(c => `
+    <div class="wai-it ${WAI.cur === c.id ? 'on' : ''}" onclick="waiOpenConv('${c.id}')">
+      <div class="wai-av">${escHtml((c.name || '?').trim().charAt(0).toUpperCase())}</div>
+      <div class="wai-it-main">
+        <div class="wai-it-top"><span class="wai-it-name">${escHtml(c.name)}</span><span class="wai-it-time">${waiTime(c.last_at)}</span></div>
+        <div class="wai-it-txt">${escHtml(c.last_text || '')}</div>
+        <div class="wai-it-meta">
+          ${c.needs_human ? '<span class="wai-chip hum">🔔 Butuh manusia</span>' : ''}
+          ${waiHeatChip(c.ai_heat || c.heat)}
+          ${mod ? `<span class="wai-chip">${c.agent_name ? escHtml(c.agent_name) : '⚠ belum ditugaskan'}</span>` : ''}
+          ${c.unread > 0 ? `<span class="wai-unread">${c.unread}</span>` : ''}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+async function waiOpenConv(id, keep) {
+  WAI.cur = id;
+  document.getElementById('wai-app')?.classList.add('show-chat');
+  waiRenderList();
+  await waiLoadThread(id, !!keep);
+}
+async function waiLoadThread(id, quiet) {
+  try {
+    const t = await waiRpc('wa_get_thread', { p_user_id: waiMe(), p_conv_id: id, p_limit: 300 });
+    if (WAI.cur !== id) return;
+    const msgs = t.messages || [];
+    const sig = id + '|' + msgs.length + '|' + (msgs.length ? msgs[msgs.length - 1].id + msgs[msgs.length - 1].status : '') + '|' + (t.draft ? t.draft.id : '') + '|' + t.conversation.assigned_to + t.conversation.status + t.conversation.ai_mode + t.conversation.needs_human;
+    if (quiet && sig === WAI.sig) return;
+    WAI.sig = sig; WAI.thread = t;
+    waiRenderThread(!quiet || msgs.length !== (WAI._n || 0));
+    WAI._n = msgs.length;
+  } catch (e) { if (!quiet) toast(waiErr(e)); }
+}
+function waiWindowOpen(c) {
+  if (c.account_mode !== 'live') return true;
+  return !!c.last_inbound_at && (Date.now() - new Date(c.last_inbound_at).getTime()) < 24 * 3600 * 1000;
+}
+function waiRenderThread(scroll) {
+  const t = WAI.thread; if (!t) return;
+  const c = t.conversation, mod = waiIsMod();
+  const chat = document.getElementById('wai-chat'); if (!chat) return;
+  const keepTxt = (document.getElementById('wai-txt') || {}).value || '';
+  let day = '', html = '';
+  (t.messages || []).forEach(m => {
+    const dl = waiDayLabel(m.created_at);
+    if (dl !== day) { day = dl; html += `<div class="wai-day">${dl}</div>`; }
+    const isAi = m.sender === 'ai';
+    const by = m.dir === 'out' ? `<div class="by">${isAi ? '🤖 AI' : escHtml(m.sender_name || 'Agen')}</div>` : '';
+    html += `<div class="wai-b ${m.dir} ${isAi ? 'ai' : ''}">${by}${escHtml(m.body || '')}<div class="ft">${waiTime(m.created_at)} ${waiTick(m)}${m.error ? `<div class="er">${escHtml(m.error)}</div>` : ''}</div></div>`;
+  });
+  const open = waiWindowOpen(c);
+  const agentOpts = (WAI.agents || []).map(a => `<option value="${a.user_id}" ${a.user_id === c.assigned_to ? 'selected' : ''}>${escHtml(a.name)}</option>`).join('');
+  chat.innerHTML = `
+    <div class="wai-chead">
+      <button class="btn-sm btn-cancel wai-back" onclick="document.getElementById('wai-app').classList.remove('show-chat')">‹</button>
+      <div class="t"><div class="n">${escHtml(c.name)}</div><div class="s">${waiPhone(c.wa_phone)} · ${c.agent_name ? 'Agen: ' + escHtml(c.agent_name) : 'belum ditugaskan'}${c.account_mode === 'demo' ? ' · <b style="color:#b9791f">DEMO</b>' : ''}</div></div>
+      <select class="fi" onchange="waiSetAi(this.value)" title="Mode AI untuk chat ini">
+        <option value="off" ${c.ai_mode === 'off' ? 'selected' : ''}>AI mati</option>
+        <option value="draft" ${c.ai_mode === 'draft' ? 'selected' : ''}>AI usul (draf)</option>
+        <option value="auto" ${c.ai_mode === 'auto' ? 'selected' : ''}>AI otomatis</option></select>
+      ${mod ? `<select class="fi" onchange="waiAssign(this.value)" title="Pindahkan ke agen"><option value="">— pindahkan —</option>${agentOpts}</select>` : ''}
+      ${c.status === 'open' ? '<button class="btn-sm btn-cancel" onclick="waiClose(true)">Selesai</button>' : '<button class="btn-sm btn-gold" onclick="waiClose(false)">Buka lagi</button>'}
+    </div>
+    <div class="wai-msgs" id="wai-msgs">${html || '<div class="wai-empty">Belum ada pesan.</div>'}</div>
+    ${c.needs_human ? `<div class="wai-notice" style="background:rgba(185,121,31,.1);border-color:rgba(185,121,31,.4);color:#b9791f">🔔 AI meminta kamu mengambil alih${c.handover_reason ? ': ' + escHtml(c.handover_reason) : ''}</div>` : ''}
+    ${t.draft ? `<div class="wai-draft"><div class="h">🤖 SARAN AI — belum terkirim</div><div class="b">${escHtml(t.draft.body)}</div>
+        <div class="a"><button class="btn-sm btn-gold" onclick="waiSendDraft()">Kirim</button><button class="btn-sm btn-cancel" onclick="waiEditDraft()">Edit dulu</button><button class="btn-sm btn-cancel" onclick="waiDiscardDraft()">Buang</button></div></div>` : ''}
+    ${!open ? '<div class="wai-notice">Sudah lewat 24 jam sejak pelanggan terakhir chat. Meta hanya mengizinkan pesan <b>template</b> yang sudah disetujui. Tunggu pelanggan membalas.</div>' : ''}
+    <div class="wai-comp">
+      <textarea id="wai-txt" rows="1" placeholder="${open ? 'Ketik pesan… (Enter kirim, Shift+Enter baris baru)' : 'Tidak bisa membalas di luar 24 jam'}" ${open ? '' : 'disabled'}>${escHtml(keepTxt)}</textarea>
+      <button class="btn-sm btn-cancel" onclick="waiAskAi()" title="Minta AI menyusun balasan">🤖 Saran AI</button>
+      <button class="btn-sm btn-gold" onclick="waiSend()" ${open ? '' : 'disabled'}>Kirim</button>
+    </div>`;
+  const ta = document.getElementById('wai-txt');
+  if (ta) ta.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); waiSend(); } };
+  if (scroll) { const m = document.getElementById('wai-msgs'); if (m) m.scrollTop = m.scrollHeight; }
+  waiRenderInfo();
+  if (mod && !(WAI.agents || []).length) waiLoadAgents().then(() => { if (WAI.thread) waiRenderThread(false); });
+}
+function waiRenderInfo() {
+  const t = WAI.thread, box = document.getElementById('wai-info'); if (!t || !box) return;
+  const c = t.conversation, cu = t.customer;
+  const rp = n => (typeof crmFmtRupiah === 'function' ? crmFmtRupiah(Math.round(n || 0)) : 'Rp ' + Math.round(n || 0).toLocaleString('id-ID'));
+  box.innerHTML = `
+    <h4>Pelanggan</h4>
+    ${cu ? `
+      <div class="wai-kv"><span>ID Customer</span><span>${escHtml(cu.cust_code || '-')}</span></div>
+      <div class="wai-kv"><span>Nama di CRM</span><span>${escHtml(cu.name || '-')}</span></div>
+      <div class="wai-kv"><span>Status</span><span>${escHtml(cu.status || '-')}</span></div>
+      <div class="wai-kv"><span>Panas/Dingin</span><span>${waiHeatChip(cu.heat) || '-'}</span></div>
+      <div class="wai-kv"><span>Total order</span><span>${cu.total_order || 0}</span></div>
+      <div class="wai-kv"><span>Total belanja</span><span>${rp(cu.total_spend)}</span></div>
+      <div class="wai-kv"><span>Pemilik</span><span>${escHtml(cu.owner_name || '-')}</span></div>
+      ${cu.fav_product ? `<div class="wai-kv"><span>Produk favorit</span><span>${escHtml(cu.fav_product)}</span></div>` : ''}
+      ${cu.note ? `<div style="font-size:11px;color:var(--text2);margin-top:8px;white-space:pre-wrap">${escHtml(cu.note)}</div>` : ''}`
+      : '<div style="font-size:11.5px;color:var(--muted);line-height:1.55">Belum tercatat di CRM.</div>'}
+    <h4 style="margin-top:16px">Analisis AI</h4>
+    <div class="wai-kv"><span>Tingkat minat</span><span>${waiHeatChip(c.ai_heat) || '-'}</span></div>
+    <div class="wai-kv"><span>Mode AI</span><span>${c.ai_mode === 'auto' ? 'Otomatis' : c.ai_mode === 'draft' ? 'Usul (draf)' : 'Mati'}</span></div>
+    ${c.handover_reason ? `<div style="font-size:11px;color:#b9791f;margin-top:8px">Alasan serah ke manusia: ${escHtml(c.handover_reason)}</div>` : ''}`;
+}
+
+/* ───────── Aksi chat ───────── */
+async function waiSend() {
+  const ta = document.getElementById('wai-txt'); if (!ta || !WAI.cur) return;
+  const body = ta.value.trim(); if (!body) return;
+  ta.disabled = true;
+  try { await waiQueue(body); ta.value = ''; } catch (e) { toast(waiErr(e)); } finally { ta.disabled = false; }
+}
+async function waiQueue(body) {
+  const r = await waiRpc('wa_queue_message', { p_user_id: waiMe(), p_conv_id: WAI.cur, p_body: body });
+  if (r && r.mode === 'live') {
+    const f = await dbQ(d => d.functions.invoke('wa-send', { body: { message_id: r.message_id } }));
+    if (!f || f.error) toast('Gagal: pesan tersimpan tapi belum terkirim — pastikan Edge Function wa-send sudah di-deploy.');
+    else if (f.data && f.data.ok === false) toast('Gagal kirim: ' + f.data.error);
+  }
+  WAI.sig = ''; await waiLoadThread(WAI.cur, false); waiRefresh(true);
+}
+async function waiSendDraft() {
+  const d = WAI.thread && WAI.thread.draft; if (!d) return;
+  try { await waiQueue(d.body); } catch (e) { toast(waiErr(e)); }
+}
+function waiEditDraft() {
+  const d = WAI.thread && WAI.thread.draft; if (!d) return;
+  const ta = document.getElementById('wai-txt'); if (ta) { ta.value = d.body; ta.focus(); }
+  waiDiscardDraft(true);
+}
+async function waiDiscardDraft(silent) {
+  try { await waiRpc('wa_discard_draft', { p_user_id: waiMe(), p_conv_id: WAI.cur }); WAI.sig = ''; await waiLoadThread(WAI.cur, false); if (!silent) toast('✓ Saran AI dibuang'); } catch (e) { toast(waiErr(e)); }
+}
+async function waiAskAi() {
+  if (!WAI.cur) return;
+  toast('🤖 AI sedang menyusun balasan…');
+  const f = await dbQ(d => d.functions.invoke('wa-ai', { body: { conversation_id: WAI.cur, user_id: waiMe() } }));
+  if (!f || f.error) { toast('Gagal: Edge Function wa-ai belum di-deploy atau belum aktif. Lihat tab "Nomor & Webhook" untuk langkahnya.'); return; }
+  if (f.data && f.data.ok === false) { toast('Gagal: ' + f.data.error); return; }
+  if (f.data && f.data.skipped) { toast(String(f.data.skipped)); return; }
+  WAI.sig = ''; await waiLoadThread(WAI.cur, false);
+}
+async function waiSetAi(mode) {
+  if (mode === 'auto' && !confirm('AI akan membalas pelanggan SENDIRI tanpa menunggu persetujuan. Lanjutkan?')) { waiRenderThread(false); return; }
+  try { await waiRpc('wa_set_conv', { p_user_id: waiMe(), p_conv_id: WAI.cur, p_status: null, p_ai_mode: mode }); WAI.sig = ''; await waiLoadThread(WAI.cur, false); toast('✓ Mode AI diubah'); } catch (e) { toast(waiErr(e)); }
+}
+async function waiClose(done) {
+  try { await waiRpc('wa_set_conv', { p_user_id: waiMe(), p_conv_id: WAI.cur, p_status: done ? 'closed' : 'open', p_ai_mode: null }); toast(done ? '✓ Percakapan ditandai selesai' : '✓ Percakapan dibuka lagi'); WAI.sig = ''; if (done) { WAI.cur = null; WAI.thread = null; renderEmptyChat(); } await waiRefresh(true); if (!done) waiLoadThread(WAI.cur, false); } catch (e) { toast(waiErr(e)); }
+}
+function renderEmptyChat() { const c = document.getElementById('wai-chat'); if (c) c.innerHTML = '<div class="wai-empty" style="margin:auto">Pilih percakapan di sebelah kiri</div>'; const i = document.getElementById('wai-info'); if (i) i.innerHTML = ''; document.getElementById('wai-app')?.classList.remove('show-chat'); }
+async function waiAssign(agentId) {
+  if (!agentId) return;
+  try { await waiRpc('wa_assign_conversation', { p_user_id: waiMe(), p_conv_id: WAI.cur, p_agent_id: agentId }); toast('✓ Percakapan dipindahkan'); WAI.sig = ''; await waiLoadThread(WAI.cur, false); waiRefresh(true); } catch (e) { toast(waiErr(e)); }
+}
+async function waiLoadAgents() {
+  try { WAI.agents = await waiRpc('wa_agents_overview', { p_user_id: waiMe() }) || []; } catch (e) { WAI.agents = []; }
+  return WAI.agents;
+}
+
+/* ───────── TAB AGEN (moderator) ───────── */
+async function waiRenderAgents() {
+  const body = document.getElementById('wai-body');
+  body.innerHTML = '<div class="wai-empty">Memuat…</div>';
+  const list = await waiLoadAgents();
+  const have = new Set(list.map(a => a.user_id));
+  const cands = Object.keys(LOCAL_USERS).filter(id => !have.has(id) && ['cs_hunter', 'admin', 'b2b_marketing', 'moderator'].includes(LOCAL_USERS[id].role));
+  body.innerHTML = `
+    <div class="wai-card">
+      <h3>Agen WhatsApp</h3>
+      <p class="s">Lead baru dari iklan dibagi <b>bergiliran</b> ke agen yang aktif (yang paling lama tidak mendapat lead didahulukan), selama chat terbukanya belum mencapai batas. Customer lama otomatis kembali ke agen pemiliknya di CRM (follow-up database masing-masing).</p>
+      <table class="wai-tbl"><thead><tr><th>Agen</th><th>Terima lead</th><th>Chat terbuka</th><th>Batas</th><th>Belum dibaca</th><th></th></tr></thead><tbody>
+        ${list.length ? list.map(a => `<tr>
+          <td><b>${escHtml(a.name)}</b><div style="font-size:10px;color:var(--muted)">${escHtml(a.role)}${a.user_active ? '' : ' · akun nonaktif'}</div></td>
+          <td><label class="wai-sw"><input type="checkbox" ${a.is_active ? 'checked' : ''} onchange="waiAgentToggle('${a.user_id}',this.checked)"/> ${a.is_active ? 'Aktif' : 'Istirahat'}</label></td>
+          <td style="min-width:120px">${a.open_count}<div class="wai-bar"><i style="width:${Math.min(100, a.open_count / Math.max(1, a.max_open) * 100)}%"></i></div></td>
+          <td><input class="fi" type="number" min="1" max="500" value="${a.max_open}" style="width:72px;padding:6px 8px" onchange="waiAgentMax('${a.user_id}',this.value)"/></td>
+          <td>${a.unread}</td>
+          <td><button class="btn-sm btn-cancel" onclick="waiAgentRemove('${a.user_id}','${escHtml(a.name)}')">Hapus</button></td></tr>`).join('') : '<tr><td colspan="6" class="wai-empty">Belum ada agen. Tambahkan di bawah.</td></tr>'}
+      </tbody></table>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <select class="fi" id="wai-add-agent" style="max-width:280px"><option value="">— pilih akun untuk dijadikan agen —</option>${cands.map(id => `<option value="${id}">${escHtml(LOCAL_USERS[id].name)} (${LOCAL_USERS[id].role})</option>`).join('')}</select>
+        <button class="btn-sm btn-gold" onclick="waiAgentAdd()">+ Tambah Agen</button>
+        <button class="btn-sm btn-cancel" onclick="waiDistribute()" title="Bagikan chat yang belum punya agen ke agen aktif">Bagi chat yang belum ditugaskan</button>
+      </div>
+    </div>`;
+}
+async function waiAgentAdd() {
+  const id = document.getElementById('wai-add-agent').value; if (!id) { toast('Pilih akun dulu'); return; }
+  const r = await dbQ(d => d.from('wa_agents').insert({ user_id: id }));
+  if (!r || r.error) { toast(waiErr(r && r.error)); return; }
+  toast('✓ Agen ditambahkan'); waiRenderAgents();
+}
+async function waiAgentToggle(id, v) { const r = await dbQ(d => d.from('wa_agents').update({ is_active: v }).eq('user_id', id)); if (!r || r.error) toast(waiErr(r && r.error)); else waiRenderAgents(); }
+async function waiAgentMax(id, v) { const n = Math.max(1, Math.min(500, parseInt(v, 10) || 30)); const r = await dbQ(d => d.from('wa_agents').update({ max_open: n }).eq('user_id', id)); if (!r || r.error) toast(waiErr(r && r.error)); else toast('✓ Batas chat diperbarui'); }
+async function waiAgentRemove(id, name) {
+  if (!confirm(`Hapus ${name} dari agen WA?\nChat terbuka miliknya dikembalikan ke "belum ditugaskan" (tidak dihapus).`)) return;
+  try { const n = await waiRpc('wa_remove_agent', { p_user_id: waiMe(), p_agent_id: id }); toast(`✓ ${name} dihapus dari agen · ${n} chat dikembalikan ke antrean`); waiRenderAgents(); } catch (e) { toast(waiErr(e)); }
+}
+async function waiDistribute() {
+  try { const n = await waiRpc('wa_distribute_unassigned', { p_user_id: waiMe() }); toast(n ? `✓ ${n} chat dibagikan ke agen` : 'Tidak ada chat yang perlu dibagikan (atau tidak ada agen aktif)'); } catch (e) { toast(waiErr(e)); }
+}
+
+/* ───────── TAB LATIH AI (moderator) ───────── */
+async function waiRenderAi() {
+  const body = document.getElementById('wai-body');
+  body.innerHTML = '<div class="wai-empty">Memuat…</div>';
+  const [s, k] = await Promise.all([dbQ(d => d.from('wa_settings').select('*').eq('id', 1).maybeSingle()), dbQ(d => d.from('wa_knowledge').select('*').order('sort_order').order('created_at'))]);
+  if (!s || s.error || !s.data) { body.innerHTML = `<div class="wai-empty">${escHtml(waiErr(s && s.error || new Error('Could not find the function — tabel WA belum ada')))}</div>`; return; }
+  const st = s.data, rows = (k && k.data) || [];
+  window._waiK = rows;
+  body.innerHTML = `
+    <div class="wai-card">
+      <h3>Pengaturan AI</h3>
+      <p class="s">AI membaca semua pengetahuan di bawah setiap kali pelanggan chat. Makin lengkap template dan contoh yang kamu isi, makin tepat jawabannya. <b>Mode "usul (draf)"</b> dianjurkan di awal: AI menulis, agen menyetujui dengan satu klik.</p>
+      <div class="wai-row">
+        <div><label class="wai-sw"><input type="checkbox" id="wai-s-en" ${st.ai_enabled ? 'checked' : ''}/> AI aktif</label></div>
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Mode untuk chat baru</div>
+          <select class="fi" id="wai-s-mode"><option value="off" ${st.default_ai_mode === 'off' ? 'selected' : ''}>Mati</option><option value="draft" ${st.default_ai_mode === 'draft' ? 'selected' : ''}>Usul (draf) — agen setujui</option><option value="auto" ${st.default_ai_mode === 'auto' ? 'selected' : ''}>Otomatis — AI balas sendiri</option></select></div>
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Nama bisnis</div><input class="fi" id="wai-s-name" value="${escHtml(st.business_name)}"/></div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin:10px 0 3px">Gaya bicara & aturan umum</div>
+      <textarea class="fi" id="wai-s-persona" rows="4">${escHtml(st.persona)}</textarea>
+      <div style="font-size:10px;color:var(--muted);margin:10px 0 3px">Kapan AI harus menyerahkan ke manusia</div>
+      <textarea class="fi" id="wai-s-hand" rows="3">${escHtml(st.handover_rules)}</textarea>
+      <div style="margin-top:10px"><button class="btn-sm btn-gold" onclick="waiSaveSettings()">Simpan Pengaturan</button></div>
+    </div>
+    ${Object.keys(WAI_KINDS).map(kind => `
+      <div class="wai-card">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap"><div><h3>${WAI_KINDS[kind]}</h3><p class="s" style="margin-bottom:10px">${WAI_KIND_HELP[kind]}</p></div>
+          <button class="btn-sm btn-gold" onclick="waiKEdit('${kind}')">+ Tambah</button></div>
+        ${rows.filter(r => r.kind === kind).map(r => `<div class="wai-k" style="${r.is_active ? '' : 'opacity:.5'}"><div class="tx"><b>${escHtml(r.title)}</b>${r.question ? `<div style="color:var(--muted);font-size:11px">Jika ditanya: ${escHtml(r.question)}</div>` : ''}<span>${escHtml(r.answer)}</span></div>
+          <div style="display:flex;gap:6px;flex-direction:column"><button class="btn-sm btn-cancel" onclick="waiKEdit('${kind}','${r.id}')">Ubah</button><button class="btn-sm btn-cancel" onclick="waiKDel('${r.id}')">Hapus</button></div></div>`).join('') || '<div style="font-size:11.5px;color:var(--muted)">Belum ada.</div>'}
+      </div>`).join('')}`;
+}
+async function waiSaveSettings() {
+  const v = id => document.getElementById(id);
+  const r = await dbQ(d => d.from('wa_settings').update({ ai_enabled: v('wai-s-en').checked, default_ai_mode: v('wai-s-mode').value, business_name: v('wai-s-name').value.trim() || 'Toko', persona: v('wai-s-persona').value.trim(), handover_rules: v('wai-s-hand').value.trim(), updated_at: new Date().toISOString() }).eq('id', 1));
+  toast(!r || r.error ? waiErr(r && r.error) : '✓ Pengaturan AI disimpan');
+}
+function waiKEdit(kind, id) {
+  const r = id ? (window._waiK || []).find(x => x.id === id) : null;
+  document.getElementById('m-title').textContent = (r ? 'Ubah ' : 'Tambah ') + WAI_KINDS[kind];
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg"><label>Judul</label><input class="fi" id="wk-title" value="${escHtml(r ? r.title : '')}" placeholder="${kind === 'product' ? 'mis. Sprei Katun Jepang 160x200' : kind === 'example' ? 'mis. Closing pelanggan ragu harga' : 'mis. Cara order'}"/></div>
+    ${kind === 'faq' || kind === 'template' ? `<div class="fg"><label>${kind === 'faq' ? 'Pertanyaan' : 'Dipakai kalau pelanggan menanyakan'}</label><input class="fi" id="wk-q" value="${escHtml(r ? r.question || '' : '')}" placeholder="mis. Ongkir ke Surabaya berapa?"/></div>` : '<input type="hidden" id="wk-q" value=""/>'}
+    <div class="fg"><label>${kind === 'example' ? 'Isi percakapan' : kind === 'product' ? 'Detail (harga, ukuran, stok, bahan)' : 'Jawaban'}</label><textarea class="fi" id="wk-a" rows="${kind === 'example' ? 9 : 5}" placeholder="${kind === 'example' ? 'Pelanggan: …\nCS: …' : ''}">${escHtml(r ? r.answer : '')}</textarea></div>
+    <label class="wai-sw"><input type="checkbox" id="wk-on" ${!r || r.is_active ? 'checked' : ''}/> Aktif (dipakai AI)</label>`;
+  document.getElementById('m-foot').innerHTML = `<button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button><button class="btn-sm btn-gold" onclick="waiKSave('${kind}','${id || ''}')">Simpan</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+async function waiKSave(kind, id) {
+  const title = document.getElementById('wk-title').value.trim(), answer = document.getElementById('wk-a').value.trim(), q = (document.getElementById('wk-q').value || '').trim();
+  if (!title || !answer) { toast('Judul dan isi wajib diisi'); return; }
+  const row = { kind, title, question: q || null, answer, is_active: document.getElementById('wk-on').checked };
+  const r = await dbQ(d => id ? d.from('wa_knowledge').update(row).eq('id', id) : d.from('wa_knowledge').insert(Object.assign(row, { created_by: waiMe() })));
+  if (!r || r.error) { toast(waiErr(r && r.error)); return; }
+  closeModal(); toast('✓ Tersimpan'); waiRenderAi();
+}
+async function waiKDel(id) { if (!confirm('Hapus entri ini?')) return; const r = await dbQ(d => d.from('wa_knowledge').delete().eq('id', id)); if (!r || r.error) toast(waiErr(r && r.error)); else waiRenderAi(); }
+
+/* ───────── TAB NOMOR & WEBHOOK (moderator) ───────── */
+async function waiRenderNumbers() {
+  const body = document.getElementById('wai-body');
+  const r = await dbQ(d => d.from('wa_accounts').select('*').order('created_at'));
+  if (!r || r.error) { body.innerHTML = `<div class="wai-empty">${escHtml(waiErr(r && r.error))}</div>`; return; }
+  const hook = (typeof SUPABASE_URL !== 'undefined' ? SUPABASE_URL : '') + '/functions/v1/wa-webhook';
+  window._waiAcc = r.data || [];
+  body.innerHTML = `
+    <div class="wai-card"><h3>Nomor WhatsApp</h3>
+      <p class="s">Mulai dengan mode <b>Demo</b> untuk mencoba semuanya tanpa Meta (tab Simulasi). Setelah nomor terdaftar di Meta, isi Phone Number ID lalu ubah ke <b>Live</b>.</p>
+      <table class="wai-tbl"><thead><tr><th>Label</th><th>Phone Number ID</th><th>WABA ID</th><th>Nomor</th><th>Mode</th><th></th></tr></thead><tbody>
+      ${window._waiAcc.map(a => `<tr><td><b>${escHtml(a.label)}</b></td><td>${escHtml(a.phone_number_id)}</td><td>${escHtml(a.waba_id || '-')}</td><td>${escHtml(a.display_phone || '-')}</td>
+        <td><span class="wai-pill ${a.is_active ? a.mode : 'off'}">${a.is_active ? a.mode.toUpperCase() : 'NONAKTIF'}</span></td><td><button class="btn-sm btn-cancel" onclick="waiAccEdit('${a.id}')">Ubah</button></td></tr>`).join('')}
+      </tbody></table>
+      <div style="margin-top:12px"><button class="btn-sm btn-gold" onclick="waiAccEdit()">+ Tambah Nomor</button></div></div>
+    <div class="wai-card"><h3>Langkah menghubungkan ke Meta (WhatsApp Cloud API)</h3>
+      <p class="s">Token Meta <b>tidak</b> disimpan di database atau halaman ini — disimpan sebagai secret di Supabase supaya aman.</p>
+      <ol style="font-size:12px;line-height:1.75;padding-left:18px;margin:0">
+        <li>Di <b>Meta for Developers</b> buat app, tambahkan produk <b>WhatsApp</b>, daftarkan nomor di WhatsApp Business Account. Catat <b>Phone Number ID</b> dan <b>WABA ID</b> → isi di tabel di atas.</li>
+        <li>Buat <b>System User</b> di Meta Business Settings, beri akses ke WABA, lalu generate <b>token permanen</b> (izin <code>whatsapp_business_messaging</code> &amp; <code>whatsapp_business_management</code>).</li>
+        <li>Di Supabase (CLI) isi secrets:
+          <span class="wai-code">supabase secrets set WA_ACCESS_TOKEN=… WA_VERIFY_TOKEN=(karangan bebas) META_APP_SECRET=… ANTHROPIC_API_KEY=…</span></li>
+        <li>Deploy fungsi:
+          <span class="wai-code">supabase functions deploy wa-webhook --no-verify-jwt<br>supabase functions deploy wa-send<br>supabase functions deploy wa-ai</span></li>
+        <li>Di Meta → WhatsApp → Configuration → Webhook: isi <b>Callback URL</b> dan <b>Verify token</b> (sama dengan WA_VERIFY_TOKEN), lalu subscribe ke field <code>messages</code>:
+          <span class="wai-code">${escHtml(hook)}</span></li>
+        <li>Ubah mode nomor di atas menjadi <b>Live</b>.</li>
+      </ol></div>`;
+}
+function waiAccEdit(id) {
+  const a = id ? (window._waiAcc || []).find(x => x.id === id) : null;
+  document.getElementById('m-title').textContent = a ? 'Ubah Nomor' : 'Tambah Nomor';
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg"><label>Label</label><input class="fi" id="wa-l" value="${escHtml(a ? a.label : '')}" placeholder="mis. Nomor Closing Leads"/></div>
+    <div class="fg"><label>Phone Number ID (dari Meta)</label><input class="fi" id="wa-p" value="${escHtml(a ? a.phone_number_id : '')}" placeholder="mis. 109876543210987"/></div>
+    <div class="fg"><label>WABA ID</label><input class="fi" id="wa-w" value="${escHtml(a ? a.waba_id || '' : '')}"/></div>
+    <div class="fg"><label>Nomor yang tampil (opsional)</label><input class="fi" id="wa-d" value="${escHtml(a ? a.display_phone || '' : '')}" placeholder="+62 812-xxxx-xxxx"/></div>
+    <div class="fg"><label>Mode</label><select class="fi" id="wa-m"><option value="demo" ${a && a.mode === 'demo' ? 'selected' : ''}>Demo (uji coba, tidak kirim ke Meta)</option><option value="live" ${a && a.mode === 'live' ? 'selected' : ''}>Live (kirim/terima lewat Meta)</option></select></div>
+    <label class="wai-sw"><input type="checkbox" id="wa-on" ${!a || a.is_active ? 'checked' : ''}/> Aktif</label>`;
+  document.getElementById('m-foot').innerHTML = `<button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button><button class="btn-sm btn-gold" onclick="waiAccSave('${id || ''}')">Simpan</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+async function waiAccSave(id) {
+  const g = x => document.getElementById(x).value.trim();
+  if (!g('wa-p')) { toast('Phone Number ID wajib diisi'); return; }
+  const mode = g('wa-m');
+  if (mode === 'live' && !confirm('Mode LIVE: pesan akan dikirim lewat Meta sungguhan.\nPastikan secret WA_ACCESS_TOKEN & Edge Function sudah dipasang. Lanjutkan?')) return;
+  const row = { label: g('wa-l') || 'Nomor', phone_number_id: g('wa-p'), waba_id: g('wa-w') || null, display_phone: g('wa-d') || null, mode, is_active: document.getElementById('wa-on').checked };
+  const r = await dbQ(d => id ? d.from('wa_accounts').update(row).eq('id', id) : d.from('wa_accounts').insert(row));
+  if (!r || r.error) { toast(waiErr(r && r.error)); return; }
+  closeModal(); toast('✓ Nomor disimpan'); waiRenderNumbers();
+}
+
+/* ───────── TAB SIMULASI (moderator) ───────── */
+function waiRenderSim() {
+  document.getElementById('wai-body').innerHTML = `
+    <div class="wai-card"><h3>Simulasi pesan masuk dari pelanggan</h3>
+      <p class="s">Untuk mencoba sistem sebelum nomor terdaftar di Meta. Pesan disimulasikan masuk ke nomor Demo: otomatis dibagi ke agen, masuk CRM sebagai Leads, dan AI menyiapkan saran balasan (bila Edge Function <code>wa-ai</code> sudah di-deploy).</p>
+      <div class="wai-row">
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Nomor pelanggan</div><input class="fi" id="ws-n" value="6281${Math.floor(10000000 + Math.random() * 89999999)}"/></div>
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Nama</div><input class="fi" id="ws-nm" value="Pelanggan Uji"/></div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin:10px 0 3px">Pesan</div>
+      <textarea class="fi" id="ws-m" rows="3">Halo kak, sprei katun jepang ukuran 160x200 harganya berapa?</textarea>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-sm btn-gold" onclick="waiSimSend()">Kirim sebagai pelanggan</button>
+        <button class="btn-sm btn-cancel" onclick="waiSimBulk()">Simulasikan 6 lead baru (uji pembagian merata)</button></div>
+      <div id="ws-out" style="margin-top:12px;font-size:12px;line-height:1.6"></div></div>`;
+}
+async function waiSimIngest(num, name, msg) {
+  const r = await waiRpc('wa_demo_ingest', { p_user_id: waiMe(), p_wa_id: num, p_name: name, p_body: msg });
+  if (r && r.conversation_id && r.ai_mode && r.ai_mode !== 'off') { dbQ(d => d.functions.invoke('wa-ai', { body: { conversation_id: r.conversation_id, user_id: waiMe() } })); }
+  return r;
+}
+async function waiSimSend() {
+  const out = document.getElementById('ws-out');
+  try {
+    const r = await waiSimIngest(document.getElementById('ws-n').value.trim(), document.getElementById('ws-nm').value.trim(), document.getElementById('ws-m').value.trim());
+    const nm = r.assigned_to && LOCAL_USERS[r.assigned_to] ? LOCAL_USERS[r.assigned_to].name : r.assigned_to;
+    out.innerHTML = `✓ Pesan masuk. ${r.is_new ? 'Chat baru' : 'Chat lama'} → <b>${nm ? escHtml(nm) : 'belum ada agen aktif (tambahkan agen dulu)'}</b>. <a href="#" onclick="WAI.tab='inbox';WAI.scope='all';waiRenderShell();return false">Buka Inbox</a>`;
+  } catch (e) { out.innerHTML = '<span style="color:#c84848">' + escHtml(waiErr(e)) + '</span>'; }
+}
+async function waiSimBulk() {
+  const out = document.getElementById('ws-out'), cnt = {};
+  try {
+    for (let i = 0; i < 6; i++) {
+      const r = await waiSimIngest('6285' + Math.floor(10000000 + Math.random() * 89999999), 'Lead Uji ' + (i + 1), 'Halo kak, saya lihat iklannya, boleh tanya produk?');
+      const nm = (r.assigned_to && LOCAL_USERS[r.assigned_to] && LOCAL_USERS[r.assigned_to].name) || '(belum ada agen aktif)';
+      cnt[nm] = (cnt[nm] || 0) + 1;
+    }
+    out.innerHTML = '✓ 6 lead baru dibagi: ' + Object.keys(cnt).map(k => `<b>${escHtml(k)}</b> ${cnt[k]}`).join(' · ');
+  } catch (e) { out.innerHTML = '<span style="color:#c84848">' + escHtml(waiErr(e)) + '</span>'; }
+}
+
+/* ───────── Badge sidebar (jumlah chat belum dibaca milik agen) ───────── */
+setInterval(async () => {
+  try {
+    if (!currentUser || !db || document.hidden) return;
+    const r = currentUser.role;
+    if (!(can.isMod(r) || can.isNdbStaff(r))) return;
+    const rows = await waiRpc('wa_list_conversations', { p_user_id: currentUser.id, p_scope: 'mine', p_status: 'open', p_search: null, p_limit: 150 });
+    waiBadge(rows);
+  } catch (e) { /* SQL v125 belum dijalankan — abaikan */ }
+}, 30000);
+window.waiOpen = waiOpen; window.waiTab = waiTab; window.waiRefresh = waiRefresh;
 
 </script>
 </body>
