@@ -31361,6 +31361,8 @@ window.openWeeklyReport = openWeeklyReport; window.openMonthlyReport = openMonth
 
 /* ═══ v125 — WA INBOX: percakapan WhatsApp (Cloud API) + pembagian leads ke agen + AI yang bisa dilatih ═══ */
 const WAI = { tab: 'inbox', scope: 'mine', status: 'open', search: '', convs: [], cur: null, thread: null, timer: null, sig: '', ready: false, agents: [], badgeTimer: null };
+// Nama fungsi di Supabase (nama acak dari dashboard)
+const WAI_FN = { send: 'smooth-worker', ai: 'clever-action', hook: 'quick-endpoint' };
 const WAI_KINDS = { template: 'Template balasan', faq: 'FAQ', product: 'Produk & harga', example: 'Contoh percakapan bagus' };
 const WAI_KIND_HELP = {
   template: 'Kalimat balasan resmi. AI memakai kalimat ini bila pertanyaannya cocok, lalu menyesuaikan seperlunya.',
@@ -31611,8 +31613,8 @@ async function waiSend() {
 async function waiQueue(body) {
   const r = await waiRpc('wa_queue_message', { p_user_id: waiMe(), p_conv_id: WAI.cur, p_body: body });
   if (r && r.mode === 'live') {
-    const f = await dbQ(d => d.functions.invoke('wa-send', { body: { message_id: r.message_id } }));
-    if (!f || f.error) toast('Gagal: pesan tersimpan tapi belum terkirim — pastikan Edge Function wa-send sudah di-deploy.');
+    const f = await dbQ(d => d.functions.invoke(WAI_FN.send, { body: { message_id: r.message_id } }));
+    if (!f || f.error) toast('Gagal: pesan tersimpan tapi belum terkirim — pastikan Edge Function pengirim (smooth-worker) sudah di-deploy.');
     else if (f.data && f.data.ok === false) toast('Gagal kirim: ' + f.data.error);
   }
   WAI.sig = ''; await waiLoadThread(WAI.cur, false); waiRefresh(true);
@@ -31632,8 +31634,8 @@ async function waiDiscardDraft(silent) {
 async function waiAskAi() {
   if (!WAI.cur) return;
   toast('🤖 AI sedang menyusun balasan…');
-  const f = await dbQ(d => d.functions.invoke('wa-ai', { body: { conversation_id: WAI.cur, user_id: waiMe() } }));
-  if (!f || f.error) { toast('Gagal: Edge Function wa-ai belum di-deploy atau belum aktif. Lihat tab "Nomor & Webhook" untuk langkahnya.'); return; }
+  const f = await dbQ(d => d.functions.invoke(WAI_FN.ai, { body: { conversation_id: WAI.cur, user_id: waiMe() } }));
+  if (!f || f.error) { toast('Gagal: Edge Function AI (clever-action) belum di-deploy atau belum aktif. Lihat tab "Nomor & Webhook" untuk langkahnya.'); return; }
   if (f.data && f.data.ok === false) { toast('Gagal: ' + f.data.error); return; }
   if (f.data && f.data.skipped) { toast(String(f.data.skipped)); return; }
   WAI.sig = ''; await waiLoadThread(WAI.cur, false);
@@ -31892,7 +31894,7 @@ async function waiRenderNumbers() {
   const body = document.getElementById('wai-body');
   const r = await dbQ(d => d.from('wa_accounts').select('*').order('created_at'));
   if (!r || r.error) { body.innerHTML = `<div class="wai-empty">${escHtml(waiErr(r && r.error))}</div>`; return; }
-  const hook = (typeof SUPABASE_URL !== 'undefined' ? SUPABASE_URL : '') + '/functions/v1/wa-webhook';
+  const hook = (typeof SUPABASE_URL !== 'undefined' ? SUPABASE_URL : '') + '/functions/v1/' + WAI_FN.hook;
   window._waiAcc = r.data || [];
   body.innerHTML = `
     <div class="wai-card"><h3>Nomor WhatsApp</h3>
@@ -31958,7 +31960,7 @@ function waiRenderSim() {
 }
 async function waiSimIngest(num, name, msg) {
   const r = await waiRpc('wa_demo_ingest', { p_user_id: waiMe(), p_wa_id: num, p_name: name, p_body: msg });
-  if (r && r.conversation_id && r.ai_mode && r.ai_mode !== 'off') { dbQ(d => d.functions.invoke('wa-ai', { body: { conversation_id: r.conversation_id, user_id: waiMe() } })); }
+  if (r && r.conversation_id && r.ai_mode && r.ai_mode !== 'off') { dbQ(d => d.functions.invoke(WAI_FN.ai, { body: { conversation_id: r.conversation_id, user_id: waiMe() } })); }
   return r;
 }
 async function waiSimSend() {
