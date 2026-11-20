@@ -5318,6 +5318,18 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
     </div>
 
     <div class="sb-nav" id="sb-nav">
+      <!-- ══ v125: WA INBOX ══ -->
+      <div class="nav-sec-lbl" id="ns-wa" style="display:none">
+        <span class="sec-name">WhatsApp</span>
+        <span class="sec-scope">Agen · Moderator · Owner</span>
+      </div>
+      <button class="nav-item" onclick="navTo('wa_inbox',this)" id="n-wa-inbox" style="display:none">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2.5 13.5l.9-3A5.6 5.6 0 1 1 6 12.7l-3.5.8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M6 6.5c.2 1.4 1.6 2.8 3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </span>
+        <span>WA Inbox</span>
+        <span class="nav-badge" id="wai-nav-badge" style="display:none">0</span>
+      </button>
       <!-- ══ PERFORMA SAYA — tersedia untuk SEMUA role, dashboard bulanan bergrafik ══ -->
       <button class="nav-item" onclick="navTo('my_performance',this)" id="n-my-performance">
         <span class="nav-icon">
@@ -5377,18 +5389,6 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
           </svg>
         </span>
         <span>Leaderboard</span>
-      </button>
-      <!-- ══ v125: WA INBOX ══ -->
-      <div class="nav-sec-lbl" id="ns-wa" style="display:none">
-        <span class="sec-name">WhatsApp</span>
-        <span class="sec-scope">Agen · Moderator</span>
-      </div>
-      <button class="nav-item" onclick="navTo('wa_inbox',this)" id="n-wa-inbox" style="display:none">
-        <span class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2.5 13.5l.9-3A5.6 5.6 0 1 1 6 12.7l-3.5.8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M6 6.5c.2 1.4 1.6 2.8 3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-        </span>
-        <span>WA Inbox</span>
-        <span class="nav-badge" id="wai-nav-badge" style="display:none">0</span>
       </button>
       <!-- ══ v56: BANTUAN — FAQ & Quick Reply, khusus role cs_hunter/admin/b2b_marketing
            (+ Mod/Owner lihat semua). Isi hanya bisa ditambah/diubah oleh Moderator. ══ -->
@@ -9081,8 +9081,8 @@ async function initDashboard() {
   navShow('n-tracking-report', can.canTrackingReport(r) || isMod || isOwner); // v47: Tracking Report — laporan jam 12:00 & 17:00 (cs_hunter + b2b_marketing + admin, + rekap tim utk Mod/Owner)
   navShow('n-leaderboard',    true); // v87: Leaderboard sekarang bisa dilihat SEMUA role (termasuk Host Live, Content Creator, dll) — bukan cuma cs_hunter/admin/b2b/Mod/Owner
   // v56: Bantuan — FAQ & Quick Reply (cs_hunter + b2b_marketing + admin lihat, Mod/Owner lihat semua; isi hanya editable Moderator)
-  navShow('ns-wa',            isMod || can.isNdbStaff(r)); // v125
-  navShow('n-wa-inbox',       isMod || can.isNdbStaff(r));
+  navShow('ns-wa',            isMod || isOwner || can.isNdbStaff(r)); // v125
+  navShow('n-wa-inbox',       isMod || isOwner || can.isNdbStaff(r));
   navShow('ns-help',          can.canFaqQuickReply(r) || isMod || isOwner);
   navShow('n-faq',            can.canFaqQuickReply(r) || isMod || isOwner);
   navShow('n-quick-reply',    can.canFaqQuickReply(r) || isMod || isOwner);
@@ -24047,7 +24047,7 @@ function navTo(page, btn) {
   // Schedule, Manage Customer CRM, dan Budget Marketing. Di luar daftar
   // ini (halaman kerja mentah moderator seperti Progress Tugas Tim,
   // Target, Users, Settings, Ads Customers/Task) tetap terkunci.
-  const OWNER_ALLOWED_PAGES = ['content_studio','live_studio','live_dashboard','ad_scheduler','crm','budget_marketing','cs_hunter','tracking_report','faq','quick_reply','leaderboard']; // v63: 'all_dashboard' & 'followup' dihapus dari akses Owner
+  const OWNER_ALLOWED_PAGES = ['wa_inbox','content_studio','live_studio','live_dashboard','ad_scheduler','crm','budget_marketing','cs_hunter','tracking_report','faq','quick_reply','leaderboard']; // v63: 'all_dashboard' & 'followup' dihapus dari akses Owner
   if (isOwnerNav && !OWNER_ALLOWED_PAGES.includes(page)) {
     toast('👁 Akun Owner hanya bisa melihat halaman: Laporan Tim, Content Studio, Live Studio, Live Dashboard, Ads Schedule, Manage CRM & Budget Marketing.');
     return;
@@ -24071,7 +24071,7 @@ function navTo(page, btn) {
   if (page === 'cs_hunter'      && !can.isCsHunter(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Moderator access required'); return; }
   if (page === 'followup'       && !can.canFollowup(r)) { toast('CS Hunter / B2B Marketing / Admin access required'); return; } // v63: Moderator & Owner tidak lagi punya akses Follow Up
   if (page === 'tracking_report' && !can.canTrackingReport(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Admin / B2B Marketing / Moderator access required'); return; }
-  if (page === 'wa_inbox'       && !can.isMod(r) && !can.isNdbStaff(r)) { toast('Khusus agen WA / Moderator'); return; }
+  if (page === 'wa_inbox'       && !can.isMod(r) && !can.isNdbStaff(r) && !isOwnerNav) { toast('Khusus agen WA / Moderator / Owner'); return; }
   if (page === 'faq'            && !can.canFaqQuickReply(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Admin / B2B Marketing / Moderator access required'); return; }
   if (page === 'quick_reply'    && !can.canFaqQuickReply(r) && !can.isMod(r) && !isOwnerNav) { toast('CS Hunter / Admin / B2B Marketing / Moderator access required'); return; }
   // v87: Leaderboard sekarang terbuka untuk SEMUA role yang login (termasuk Host Live) — gerbang role lama dihapus.
@@ -31371,6 +31371,7 @@ const WAI_KIND_HELP = {
   example: 'Tempel contoh percakapan terbaik tim kamu. AI akan meniru gaya dan alurnya.'
 };
 
+function waiIsOwner() { return !!(currentUser && currentUser.role === 'owner'); }
 function waiIsMod() { return !!(currentUser && can.isMod(currentUser.role)); }
 function waiMe() { return currentUser && currentUser.id; }
 async function waiRpc(name, args) {
@@ -31411,7 +31412,7 @@ function waiTick(m) {
 /* ───────── Buka halaman ───────── */
 function waiOpen() {
   WAI.tab = WAI.tab || 'inbox';
-  if (!WAI.ready) { WAI.scope = waiIsMod() ? 'all' : 'mine'; WAI.ready = true; }
+  if (!WAI.ready) { WAI.scope = (waiIsMod() || waiIsOwner()) ? 'all' : 'mine'; WAI.ready = true; }
   waiRenderShell();
   waiStartPoll();
 }
@@ -31421,7 +31422,7 @@ function waiStartPoll() {
     const pg = document.getElementById('pg-wa_inbox');
     if (!pg || !pg.classList.contains('active') || document.hidden) return;
     if (WAI.tab === 'inbox') waiRefresh(true);
-  }, 6000);
+  }, 3000);
 }
 function waiRenderShell() {
   const root = document.getElementById('wai-root'); if (!root) return;
@@ -31446,7 +31447,7 @@ function waiRenderInbox() {
     <div class="wai-app" id="wai-app">
       <aside class="wai-list">
         <div class="wai-lhead">
-          ${mod ? `<div class="wai-seg" id="wai-scope">
+          ${(mod || waiIsOwner()) ? `<div class="wai-seg" id="wai-scope">
             <button data-v="all" class="${WAI.scope === 'all' ? 'on' : ''}">Semua</button>
             <button data-v="unassigned" class="${WAI.scope === 'unassigned' ? 'on' : ''}">Belum ditugaskan</button>
             <button data-v="mine" class="${WAI.scope === 'mine' ? 'on' : ''}">Milikku</button></div>` : ''}
@@ -31470,6 +31471,7 @@ function waiRenderInbox() {
 }
 async function waiRenderAvail() {
   const box = document.getElementById('wai-avail'); if (!box) return;
+  if (waiIsOwner()) { box.innerHTML = '<div style="font-size:10.5px;color:var(--muted)">👁 Mode lihat saja (Owner)</div>'; return; }
   try {
     const { data } = await dbQ(d => d.from('wa_agents').select('is_active').eq('user_id', waiMe()).maybeSingle()) || {};
     if (!data) { box.innerHTML = waiIsMod() ? '' : '<div style="font-size:10.5px;color:var(--muted)">Kamu belum terdaftar sebagai agen WA. Minta moderator menambahkan.</div>'; return; }
@@ -31486,8 +31488,19 @@ async function waiRefresh(silent) {
     WAI.convs = rows || [];
     waiRenderList();
     waiBadge(WAI.convs);
+    waiAlert(WAI.convs);
     if (WAI.cur) { const c = WAI.convs.find(x => x.id === WAI.cur); if (c) waiLoadThread(WAI.cur, true); }
   } catch (e) { if (!silent) { const it = document.getElementById('wai-items'); if (it) it.innerHTML = `<div class="wai-empty">${escHtml(waiErr(e))}</div>`; } }
+}
+function waiBeep() {
+  try { const A = window.AudioContext || window.webkitAudioContext; if (!A) return; const c = new A(), o = c.createOscillator(), g = c.createGain();
+    o.type = 'sine'; o.frequency.value = 880; g.gain.value = 0.06; o.connect(g); g.connect(c.destination); o.start(); setTimeout(() => { o.stop(); c.close(); }, 180); } catch (e) { /* diam */ }
+}
+function waiAlert(list) {
+  const mine = (list || []).filter(c => c.assigned_to === waiMe());
+  const n = mine.reduce((t, c) => t + (c.unread || 0), 0);
+  if (WAI._lastUnread != null && n > WAI._lastUnread) { waiBeep(); toast('💬 Chat WhatsApp baru masuk'); }
+  WAI._lastUnread = n;
 }
 function waiBadge(list) {
   const el = document.getElementById('wai-nav-badge'); if (!el) return;
@@ -31557,23 +31570,23 @@ function waiRenderThread(scroll) {
     <div class="wai-chead">
       <button class="btn-sm btn-cancel wai-back" onclick="document.getElementById('wai-app').classList.remove('show-chat')">‹</button>
       <div class="t"><div class="n">${escHtml(c.name)}</div><div class="s">${waiPhone(c.wa_phone)} · ${c.agent_name ? 'Agen: ' + escHtml(c.agent_name) : 'belum ditugaskan'}${c.account_mode === 'demo' ? ' · <b style="color:#b9791f">DEMO</b>' : ''}</div></div>
-      <select class="fi" onchange="waiSetAi(this.value)" title="Mode AI untuk chat ini">
+      <select class="fi" onchange="waiSetAi(this.value)" title="Mode AI untuk chat ini" ${waiIsOwner() ? 'disabled' : ''}>
         <option value="off" ${c.ai_mode === 'off' ? 'selected' : ''}>AI mati</option>
         <option value="draft" ${c.ai_mode === 'draft' ? 'selected' : ''}>AI usul (draf)</option>
         <option value="auto" ${c.ai_mode === 'auto' ? 'selected' : ''}>AI otomatis</option></select>
       ${mod ? `<select class="fi" onchange="waiAssign(this.value)" title="Pindahkan ke agen"><option value="">— pindahkan —</option>${agentOpts}</select>` : ''}
-      ${c.status === 'open' ? '<button class="btn-sm btn-cancel" onclick="waiClose(true)">Selesai</button>' : '<button class="btn-sm btn-gold" onclick="waiClose(false)">Buka lagi</button>'}
+      ${waiIsOwner() ? '' : (c.status === 'open' ? '<button class="btn-sm btn-cancel" onclick="waiClose(true)">Selesai</button>' : '<button class="btn-sm btn-gold" onclick="waiClose(false)">Buka lagi</button>')}
     </div>
     <div class="wai-msgs" id="wai-msgs">${html || '<div class="wai-empty">Belum ada pesan.</div>'}</div>
     ${c.needs_human ? `<div class="wai-notice" style="background:rgba(185,121,31,.1);border-color:rgba(185,121,31,.4);color:#b9791f">🔔 AI meminta kamu mengambil alih${c.handover_reason ? ': ' + escHtml(c.handover_reason) : ''}</div>` : ''}
-    ${t.draft ? `<div class="wai-draft"><div class="h">🤖 SARAN AI — belum terkirim</div><div class="b">${escHtml(t.draft.body)}</div>
+    ${t.draft && !waiIsOwner() ? `<div class="wai-draft"><div class="h">🤖 SARAN AI — belum terkirim</div><div class="b">${escHtml(t.draft.body)}</div>
         <div class="a"><button class="btn-sm btn-gold" onclick="waiSendDraft()">Kirim</button><button class="btn-sm btn-cancel" onclick="waiEditDraft()">Edit dulu</button><button class="btn-sm btn-cancel" onclick="waiDiscardDraft()">Buang</button></div></div>` : ''}
     ${!open ? '<div class="wai-notice">Sudah lewat 24 jam sejak pelanggan terakhir chat. Meta hanya mengizinkan pesan <b>template</b> yang sudah disetujui. Tunggu pelanggan membalas.</div>' : ''}
-    <div class="wai-comp">
+    ${waiIsOwner() ? '<div class="wai-notice">👁 Akun Owner hanya bisa melihat percakapan.</div>' : `<div class="wai-comp">
       <textarea id="wai-txt" rows="1" placeholder="${open ? 'Ketik pesan… (Enter kirim, Shift+Enter baris baru)' : 'Tidak bisa membalas di luar 24 jam'}" ${open ? '' : 'disabled'}>${escHtml(keepTxt)}</textarea>
       <button class="btn-sm btn-cancel" onclick="waiAskAi()" title="Minta AI menyusun balasan">🤖 Saran AI</button>
       <button class="btn-sm btn-gold" onclick="waiSend()" ${open ? '' : 'disabled'}>Kirim</button>
-    </div>`;
+    </div>`}`;
   const ta = document.getElementById('wai-txt');
   if (ta) ta.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); waiSend(); } };
   if (scroll) { const m = document.getElementById('wai-msgs'); if (m) m.scrollTop = m.scrollHeight; }
@@ -31605,6 +31618,7 @@ function waiRenderInfo() {
 
 /* ───────── Aksi chat ───────── */
 async function waiSend() {
+  if (blockIfOwner()) return;
   const ta = document.getElementById('wai-txt'); if (!ta || !WAI.cur) return;
   const body = ta.value.trim(); if (!body) return;
   ta.disabled = true;
@@ -31620,6 +31634,7 @@ async function waiQueue(body) {
   WAI.sig = ''; await waiLoadThread(WAI.cur, false); waiRefresh(true);
 }
 async function waiSendDraft() {
+  if (blockIfOwner()) return;
   const d = WAI.thread && WAI.thread.draft; if (!d) return;
   try { await waiQueue(d.body); } catch (e) { toast(waiErr(e)); }
 }
@@ -31629,9 +31644,11 @@ function waiEditDraft() {
   waiDiscardDraft(true);
 }
 async function waiDiscardDraft(silent) {
+  if (blockIfOwner()) return;
   try { await waiRpc('wa_discard_draft', { p_user_id: waiMe(), p_conv_id: WAI.cur }); WAI.sig = ''; await waiLoadThread(WAI.cur, false); if (!silent) toast('✓ Saran AI dibuang'); } catch (e) { toast(waiErr(e)); }
 }
 async function waiAskAi() {
+  if (blockIfOwner()) return;
   if (!WAI.cur) return;
   toast('🤖 AI sedang menyusun balasan…');
   const f = await dbQ(d => d.functions.invoke(WAI_FN.ai, { body: { conversation_id: WAI.cur, user_id: waiMe() } }));
@@ -31641,14 +31658,17 @@ async function waiAskAi() {
   WAI.sig = ''; await waiLoadThread(WAI.cur, false);
 }
 async function waiSetAi(mode) {
+  if (blockIfOwner()) { waiRenderThread(false); return; }
   if (mode === 'auto' && !confirm('AI akan membalas pelanggan SENDIRI tanpa menunggu persetujuan. Lanjutkan?')) { waiRenderThread(false); return; }
   try { await waiRpc('wa_set_conv', { p_user_id: waiMe(), p_conv_id: WAI.cur, p_status: null, p_ai_mode: mode }); WAI.sig = ''; await waiLoadThread(WAI.cur, false); toast('✓ Mode AI diubah'); } catch (e) { toast(waiErr(e)); }
 }
 async function waiClose(done) {
+  if (blockIfOwner()) return;
   try { await waiRpc('wa_set_conv', { p_user_id: waiMe(), p_conv_id: WAI.cur, p_status: done ? 'closed' : 'open', p_ai_mode: null }); toast(done ? '✓ Percakapan ditandai selesai' : '✓ Percakapan dibuka lagi'); WAI.sig = ''; if (done) { WAI.cur = null; WAI.thread = null; renderEmptyChat(); } await waiRefresh(true); if (!done) waiLoadThread(WAI.cur, false); } catch (e) { toast(waiErr(e)); }
 }
 function renderEmptyChat() { const c = document.getElementById('wai-chat'); if (c) c.innerHTML = '<div class="wai-empty" style="margin:auto">Pilih percakapan di sebelah kiri</div>'; const i = document.getElementById('wai-info'); if (i) i.innerHTML = ''; document.getElementById('wai-app')?.classList.remove('show-chat'); }
 async function waiAssign(agentId) {
+  if (blockIfOwner()) return;
   if (!agentId) return;
   try { await waiRpc('wa_assign_conversation', { p_user_id: waiMe(), p_conv_id: WAI.cur, p_agent_id: agentId }); toast('✓ Percakapan dipindahkan'); WAI.sig = ''; await waiLoadThread(WAI.cur, false); waiRefresh(true); } catch (e) { toast(waiErr(e)); }
 }
@@ -31989,10 +32009,11 @@ setInterval(async () => {
     if (!currentUser || !db || document.hidden) return;
     const r = currentUser.role;
     if (!(can.isMod(r) || can.isNdbStaff(r))) return;
+    if (document.getElementById('pg-wa_inbox')?.classList.contains('active')) return;
     const rows = await waiRpc('wa_list_conversations', { p_user_id: currentUser.id, p_scope: 'mine', p_status: 'open', p_search: null, p_limit: 150 });
-    waiBadge(rows);
+    waiBadge(rows); waiAlert(rows);
   } catch (e) { /* SQL v125 belum dijalankan — abaikan */ }
-}, 30000);
+}, 12000);
 window.waiOpen = waiOpen; window.waiTab = waiTab; window.waiRefresh = waiRefresh;
 
 </script>
