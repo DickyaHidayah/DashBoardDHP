@@ -31363,8 +31363,11 @@ window.openWeeklyReport = openWeeklyReport; window.openMonthlyReport = openMonth
 const WAI = { tab: 'inbox', scope: 'mine', status: 'open', search: '', convs: [], cur: null, thread: null, timer: null, sig: '', ready: false, agents: [], badgeTimer: null };
 // Nama fungsi di Supabase (nama acak dari dashboard)
 const WAI_FN = { send: 'smooth-worker', ai: 'clever-action', hook: 'quick-endpoint' };
-const WAI_KINDS = { template: 'Template balasan', faq: 'FAQ', product: 'Produk & harga', example: 'Contoh percakapan bagus' };
+const WAI_KINDS = { flow: 'Alur percakapan (flow)', template: 'Template balasan', faq: 'FAQ', product: 'Produk & harga', example: 'Contoh percakapan bagus', doc: 'Dokumen referensi' };
+const WAI_FLOW_SAMPLE = '1. SAPA: sapa hangat, tanya kebutuhan.\n2. GALI KEBUTUHAN: tanyakan ukuran, motif, jumlah.\n3. REKOMENDASI: tawarkan produk yang cocok + harga.\n4. KEBERATAN: jelaskan nilai produk / tawarkan alternatif.\n5. CLOSING: rangkum pesanan, minta nama, no HP, alamat, kurir.\n6. SETELAH ORDER: konfirmasi & ucapkan terima kasih.\nSerahkan ke manusia: (tulis kondisinya di sini)';
 const WAI_KIND_HELP = {
+  flow: 'Urutan langkah percakapan yang harus diikuti AI (sapa → gali kebutuhan → rekomendasi → closing, dst). Bisa kamu ubah kapan saja; AI langsung memakai versi terbaru.',
+  doc: 'Dokumen panjang sebagai bahan tambahan (SOP, katalog, panduan ukuran, kebijakan retur). Bisa diunggah dari file PDF / Word / Excel / teks.',
   template: 'Kalimat balasan resmi. AI memakai kalimat ini bila pertanyaannya cocok, lalu menyesuaikan seperlunya.',
   faq: 'Pertanyaan yang sering muncul beserta jawabannya.',
   product: 'Daftar produk, ukuran, harga, stok. Ini satu-satunya sumber harga untuk AI — dia tidak akan mengarang.',
@@ -31760,6 +31763,8 @@ async function waiRenderAi() {
         <button class="btn-sm btn-cancel" onclick="waiImpText('product')">Impor produk (Excel / CSV / tempel)</button>
         <button class="btn-sm btn-cancel" onclick="waiImpText('faq')">Impor FAQ (Excel / CSV / tempel)</button>
         <button class="btn-sm btn-cancel" onclick="waiImpText('template')">Impor template (Excel / CSV / tempel)</button>
+        <button class="btn-sm btn-cancel" onclick="waiKEdit('flow')">+ Alur percakapan</button>
+        <button class="btn-sm btn-cancel" onclick="waiKEdit('doc')">Unggah dokumen (PDF / Word)</button>
       </div></div>
     ${Object.keys(WAI_KINDS).map(kind => `
       <div class="wai-card">
@@ -31774,13 +31779,55 @@ async function waiSaveSettings() {
   const r = await dbQ(d => d.from('wa_settings').update({ ai_enabled: v('wai-s-en').checked, default_ai_mode: v('wai-s-mode').value, business_name: v('wai-s-name').value.trim() || 'Toko', persona: v('wai-s-persona').value.trim(), handover_rules: v('wai-s-hand').value.trim(), heat_rules: v('wai-s-heat').value.trim(), reply_delay_sec: Math.max(0, Math.min(90, parseInt(v('wai-s-delay').value, 10) || 0)), product_sheet_url: v('wai-s-sheet').value.trim() || null, updated_at: new Date().toISOString() }).eq('id', 1));
   toast(!r || r.error ? (/heat_rules|reply_delay|product_sheet/.test((r && r.error && r.error.message) || '') ? 'Gagal: jalankan migration SQL v126 dulu.' : waiErr(r && r.error)) : '✓ Pengaturan AI disimpan');
 }
+function waiLoadScript(src) {
+  return new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = () => rej(new Error('Gagal memuat pustaka pembaca file (cek koneksi internet)')); document.head.appendChild(el); });
+}
+async function waiReadFile(file, tableOnly) {
+  const name = (file.name || '').toLowerCase();
+  if (/\.(txt|md|csv|tsv|json)$/.test(name)) return await file.text();
+  if (/\.(xlsx|xls)$/.test(name)) {
+    if (typeof XLSX === 'undefined') throw new Error('Pembaca Excel belum termuat, muat ulang halaman');
+    const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+    const names = tableOnly ? [wb.SheetNames[0]] : wb.SheetNames;
+    return names.map(n => (tableOnly ? '' : '## Sheet: ' + n + '\n') + XLSX.utils.sheet_to_csv(wb.Sheets[n])).join('\n\n');
+  }
+  if (tableOnly) throw new Error('Untuk impor tabel pakai file Excel (.xlsx) atau CSV');
+  if (/\.docx$/.test(name)) {
+    if (typeof mammoth === 'undefined') await waiLoadScript('https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js');
+    return (await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() })).value;
+  }
+  if (/\.pdf$/.test(name)) {
+    if (typeof pdfjsLib === 'undefined') await waiLoadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+    let out = '';
+    for (let i = 1; i <= pdf.numPages; i++) { const tc = await (await pdf.getPage(i)).getTextContent(); out += tc.items.map(x => x.str).join(' ') + '\n\n'; }
+    return out.trim();
+  }
+  throw new Error('Format file belum didukung. Pakai PDF, Word (.docx), Excel, CSV, atau teks (.txt/.md).');
+}
+async function waiPickFile(inp) {
+  const f = inp.files && inp.files[0]; if (!f) return;
+  const st = document.getElementById('wk-file-st'); st.textContent = 'Membaca ' + f.name + '…';
+  try {
+    let t = (await waiReadFile(f, false)).replace(/\r/g, '').trim();
+    if (!t) throw new Error('Tidak ada teks yang terbaca (mungkin PDF hasil scan/gambar)');
+    let note = '';
+    if (t.length > 12000) { t = t.slice(0, 12000); note = ' (dipotong 12.000 karakter pertama)'; }
+    document.getElementById('wk-a').value = t;
+    const ti = document.getElementById('wk-title'); if (!ti.value.trim()) ti.value = f.name.replace(/\.[^.]+$/, '').slice(0, 80);
+    st.textContent = '✓ ' + f.name + ' terbaca' + note + '. Periksa isinya lalu Simpan.';
+  } catch (e) { st.textContent = '⚠ ' + (e.message || e); }
+}
 function waiKEdit(kind, id) {
   const r = id ? (window._waiK || []).find(x => x.id === id) : null;
   document.getElementById('m-title').textContent = (r ? 'Ubah ' : 'Tambah ') + WAI_KINDS[kind];
   document.getElementById('m-body').innerHTML = `
     <div class="fg"><label>Judul</label><input class="fi" id="wk-title" value="${escHtml(r ? r.title : '')}" placeholder="${kind === 'product' ? 'mis. Sprei Katun Jepang 160x200' : kind === 'example' ? 'mis. Closing pelanggan ragu harga' : 'mis. Cara order'}"/></div>
     ${kind === 'faq' || kind === 'template' ? `<div class="fg"><label>${kind === 'faq' ? 'Pertanyaan' : 'Dipakai kalau pelanggan menanyakan'}</label><input class="fi" id="wk-q" value="${escHtml(r ? r.question || '' : '')}" placeholder="mis. Ongkir ke Surabaya berapa?"/></div>` : '<input type="hidden" id="wk-q" value=""/>'}
-    <div class="fg"><label>${kind === 'example' ? 'Isi percakapan' : kind === 'product' ? 'Detail (harga, ukuran, stok, bahan)' : 'Jawaban'}</label><textarea class="fi" id="wk-a" rows="${kind === 'example' ? 9 : 5}" placeholder="${kind === 'example' ? 'Pelanggan: …\nCS: …' : ''}">${escHtml(r ? r.answer : '')}</textarea></div>
+    <div class="fg"><label>${kind === 'flow' ? 'Langkah-langkah alur (satu langkah per baris)' : kind === 'doc' ? 'Isi dokumen' : kind === 'example' ? 'Isi percakapan' : kind === 'product' ? 'Detail (harga, ukuran, stok, bahan)' : 'Jawaban'}</label><textarea class="fi" id="wk-a" rows="${kind === 'flow' || kind === 'doc' ? 13 : kind === 'example' ? 9 : 5}" placeholder="${kind === 'example' ? 'Pelanggan: …\nCS: …' : ''}">${escHtml(r ? r.answer : (kind === 'flow' ? WAI_FLOW_SAMPLE : ''))}</textarea>
+      <div style="margin-top:6px;font-size:11px;color:var(--muted)">Atau isi dari file (PDF, Word, Excel, CSV, teks) — isi di atas akan diganti:
+        <input type="file" accept=".pdf,.docx,.xlsx,.xls,.csv,.txt,.md" onchange="waiPickFile(this)" style="display:block;margin-top:4px;font-size:12px"/><span id="wk-file-st"></span></div></div>
     <label class="wai-sw"><input type="checkbox" id="wk-on" ${!r || r.is_active ? 'checked' : ''}/> Aktif (dipakai AI)</label>`;
   document.getElementById('m-foot').innerHTML = `<button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button><button class="btn-sm btn-gold" onclick="waiKSave('${kind}','${id || ''}')">Simpan</button>`;
   document.getElementById('modal-ov').classList.add('open');
@@ -31790,7 +31837,7 @@ async function waiKSave(kind, id) {
   if (!title || !answer) { toast('Judul dan isi wajib diisi'); return; }
   const row = { kind, title, question: q || null, answer, is_active: document.getElementById('wk-on').checked };
   const r = await dbQ(d => id ? d.from('wa_knowledge').update(row).eq('id', id) : d.from('wa_knowledge').insert(Object.assign(row, { created_by: waiMe() })));
-  if (!r || r.error) { toast(waiErr(r && r.error)); return; }
+  if (!r || r.error) { toast(/kind_check|violates check/.test((r && r.error && r.error.message) || '') ? 'Gagal: jalankan migration SQL v128 dulu.' : waiErr(r && r.error)); return; }
   closeModal(); toast('✓ Tersimpan'); waiRenderAi();
 }
 async function waiKDel(id) { if (!confirm('Hapus entri ini?')) return; const r = await dbQ(d => d.from('wa_knowledge').delete().eq('id', id)); if (!r || r.error) toast(waiErr(r && r.error)); else waiRenderAi(); }
@@ -31844,7 +31891,7 @@ function waiImpText(kind) {
       : kind === 'faq' ? 'Dua kolom: <b>Pertanyaan</b> dan <b>Jawaban</b> (baris pertama = judul kolom).'
       : 'Dua kolom: <b>Judul</b> dan <b>Isi balasan</b> (baris pertama = judul kolom).'}
       Buka Excel / Google Sheet → blok semua sel → Copy → Paste di bawah. Atau pilih file .csv.</p>
-    <input type="file" id="wi-file" accept=".csv,.txt,.tsv" style="font-size:12px;margin-bottom:8px"/>
+    <input type="file" id="wi-file" accept=".csv,.txt,.tsv,.xlsx,.xls" style="font-size:12px;margin-bottom:8px"/>
     <textarea class="fi" id="wi-txt" rows="8" placeholder="Tempel data di sini…"></textarea>
     <div id="wi-prev" style="font-size:11.5px;margin-top:8px;color:var(--text2)"></div>`;
   document.getElementById('m-foot').innerHTML = `<button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button><button class="btn-sm btn-gold" id="wi-go" onclick="waiImpTextGo()" disabled>Impor</button>`;
@@ -31855,7 +31902,7 @@ function waiImpText(kind) {
     document.getElementById('wi-go').disabled = !rows.length;
   };
   document.getElementById('wi-txt').oninput = upd;
-  document.getElementById('wi-file').onchange = e => { const f = e.target.files[0]; if (!f) return; const rd = new FileReader(); rd.onload = () => { document.getElementById('wi-txt').value = rd.result; upd(); }; rd.readAsText(f); };
+  document.getElementById('wi-file').onchange = async e => { const f = e.target.files[0]; if (!f) return; try { document.getElementById('wi-txt').value = await waiReadFile(f, true); upd(); } catch (er) { document.getElementById('wi-prev').textContent = '⚠ ' + (er.message || er); } };
   document.getElementById('modal-ov').classList.add('open');
 }
 async function waiImpInsert(rows) {
