@@ -31631,7 +31631,7 @@ async function waiQueue(body) {
   const r = await waiRpc('wa_queue_message', { p_user_id: waiMe(), p_conv_id: WAI.cur, p_body: body });
   if (r && r.mode === 'live') {
     const f = await dbQ(d => d.functions.invoke(WAI_FN.send, { body: { message_id: r.message_id } }));
-    if (!f || f.error) toast('Gagal: pesan tersimpan tapi belum terkirim — pastikan Edge Function pengirim (smooth-worker) sudah di-deploy.');
+    if (!f || f.error) toast('Pesan tersimpan tapi belum terkirim: ' + await waiFnError(f) + ' — jika 401, matikan Enforce JWT Verification di fungsi smooth-worker.');
     else if (f.data && f.data.ok === false) toast('Gagal kirim: ' + f.data.error);
   }
   WAI.sig = ''; await waiLoadThread(WAI.cur, false); waiRefresh(true);
@@ -31650,12 +31650,17 @@ async function waiDiscardDraft(silent) {
   if (blockIfOwner()) return;
   try { await waiRpc('wa_discard_draft', { p_user_id: waiMe(), p_conv_id: WAI.cur }); WAI.sig = ''; await waiLoadThread(WAI.cur, false); if (!silent) toast('✓ Saran AI dibuang'); } catch (e) { toast(waiErr(e)); }
 }
+async function waiFnError(f) {
+  let msg = '';
+  try { const c = f && f.error && f.error.context; if (c && c.text) { const t = await c.text(); try { const j = JSON.parse(t); msg = j.error || j.message || t; } catch (e) { msg = t; } if (c.status) msg = '[' + c.status + '] ' + msg; } } catch (e) { /* abaikan */ }
+  return msg || (f && f.error && f.error.message) || 'fungsi tidak merespons';
+}
 async function waiAskAi() {
   if (blockIfOwner()) return;
   if (!WAI.cur) return;
   toast('🤖 AI sedang menyusun balasan…');
   const f = await dbQ(d => d.functions.invoke(WAI_FN.ai, { body: { conversation_id: WAI.cur, user_id: waiMe() } }));
-  if (!f || f.error) { toast('Gagal: Edge Function AI (clever-action) belum di-deploy atau belum aktif. Lihat tab "Nomor & Webhook" untuk langkahnya.'); return; }
+  if (!f || f.error) { toast('Gagal memanggil AI: ' + await waiFnError(f) + ' — jika 401, matikan Enforce JWT Verification di fungsi clever-action.'); return; }
   if (f.data && f.data.ok === false) { toast('Gagal: ' + f.data.error); return; }
   if (f.data && f.data.skipped) { toast(String(f.data.skipped)); return; }
   WAI.sig = ''; await waiLoadThread(WAI.cur, false);
