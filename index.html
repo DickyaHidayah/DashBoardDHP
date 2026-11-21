@@ -32019,7 +32019,8 @@ function waiKEdit(kind, id) {
     ${kind === 'faq' || kind === 'template' ? `<div class="fg" style="margin-top:10px;padding:10px;border:1px dashed var(--border);border-radius:8px"><label>Kata kunci pemicu (pisahkan koma / baris) — opsional</label>
       <textarea class="fi" id="wk-trig" rows="2" placeholder="mis. katalog, lihat produk, ada foto">${escHtml(r ? r.triggers || '' : '')}</textarea>
       <label class="wai-sw" style="margin-top:6px"><input type="checkbox" id="wk-direct" ${r && r.direct_reply ? 'checked' : ''}/> Kirim jawaban ini langsung tanpa AI bila pesan pelanggan pendek dan mengandung kata kunci</label>
-      <div style="font-size:10.5px;color:var(--muted);margin-top:4px">Pesan panjang / rumit tetap diserahkan ke AI. Tulis <b>{nama}</b> di jawaban untuk menyapa nama pelanggan (otomatis dikosongkan bila tidak ada).</div></div>` : '<input type="hidden" id="wk-trig" value=""/><input type="hidden" id="wk-direct" value=""/>'}
+      <div style="display:flex;gap:8px;align-items:center;margin-top:6px;font-size:11px"><span>Maksimal kata dalam pesan pelanggan</span><input class="fi" type="number" min="0" max="14" id="wk-maxw" value="${r ? r.max_words || 0 : 0}" style="width:70px;padding:5px 8px"/><span style="color:var(--muted)">(0 = otomatis, pesan pendek saja)</span></div>
+      <div style="font-size:10.5px;color:var(--muted);margin-top:4px">Pesan panjang / rumit tetap diserahkan ke AI. Tulis <b>{nama}</b> di jawaban untuk menyapa nama pelanggan (otomatis dikosongkan bila tidak ada).</div></div>` : '<input type="hidden" id="wk-trig" value=""/><input type="hidden" id="wk-direct" value=""/><input type="hidden" id="wk-maxw" value="0"/>'}
     <label class="wai-sw"><input type="checkbox" id="wk-on" ${!r || r.is_active ? 'checked' : ''}/> Aktif (dipakai AI)</label>`;
   document.getElementById('m-foot').innerHTML = `<button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button><button class="btn-sm btn-gold" onclick="waiKSave('${kind}','${id || ''}')">Simpan</button>`;
   document.getElementById('modal-ov').classList.add('open');
@@ -32029,9 +32030,9 @@ async function waiKSave(kind, id) {
   if (!title || !answer) { toast('Judul dan isi wajib diisi'); return; }
   const trig = (document.getElementById('wk-trig').value || '').trim(), dEl = document.getElementById('wk-direct');
   const row = { kind, title, question: q || null, answer, is_active: document.getElementById('wk-on').checked };
-  if (kind === 'faq' || kind === 'template') { row.triggers = trig || null; row.direct_reply = !!(dEl && dEl.checked && trig); }
+  if (kind === 'faq' || kind === 'template') { row.triggers = trig || null; row.direct_reply = !!(dEl && dEl.checked && trig); row.max_words = Math.max(0, Math.min(14, parseInt((document.getElementById('wk-maxw') || {}).value, 10) || 0)); }
   const r = await dbQ(d => id ? d.from('wa_knowledge').update(row).eq('id', id) : d.from('wa_knowledge').insert(Object.assign(row, { created_by: waiMe() })));
-  if (!r || r.error) { toast(/kind_check|violates check/.test((r && r.error && r.error.message) || '') ? 'Gagal: jalankan migration SQL v128 dulu.' : /triggers|direct_reply/.test((r && r.error && r.error.message) || '') ? 'Gagal: jalankan migration SQL v129 dulu.' : waiErr(r && r.error)); return; }
+  if (!r || r.error) { toast(/kind_check|violates check/.test((r && r.error && r.error.message) || '') ? 'Gagal: jalankan migration SQL v128 dulu.' : /triggers|direct_reply|max_words/.test((r && r.error && r.error.message) || '') ? 'Gagal: jalankan migration SQL v129 dulu.' : waiErr(r && r.error)); return; }
   closeModal(); toast('✓ Tersimpan'); waiRenderAi();
 }
 async function waiKDel(id) { if (!confirm('Hapus entri ini?')) return; const r = await dbQ(d => d.from('wa_knowledge').delete().eq('id', id)); if (!r || r.error) toast(waiErr(r && r.error)); else waiRenderAi(); }
