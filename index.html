@@ -8919,6 +8919,7 @@ function loginSuccess(id, role, name, tutSeenAt) {
   currentUser = { id, role, name, tutSeenAt: tutSeenAt || null };
   _authEpoch++; // v52-FIX: sesi baru — semua fetch dari sesi sebelumnya jadi basi
   acctWatchStart(); // v113: pantau status aktif akun sendiri
+  tabLockClaim(); // v130: tab lama untuk akun ini otomatis keluar
   // v49-FIX: reset TOTAL semua state Database Customer (CRM) & Follow Up
   // dari sesi akun sebelumnya. Sebelumnya variabel-variabel ini (crmData,
   // crmGlobalAgg, crmTotalCount, followupDoneTodayIds, dst) TIDAK PERNAH
@@ -8990,6 +8991,7 @@ function loginSuccess(id, role, name, tutSeenAt) {
 
 function handleLogout() {
   acctWatchStop(); // v113
+  try { tabLockRelease(); } catch (e) {}
   // Tandai tab ini "baru saja logout manual" — supaya auto-login (remember-me)
   // tidak langsung menyeret balik ke akun yg sama di tab yg sama. Kredensial
   // tersimpan tetap ada; tanda ini otomatis hilang saat tab/browser ditutup.
@@ -31445,8 +31447,21 @@ function waiTick(m) {
 }
 
 /* ───────── Buka halaman ───────── */
+
+// Bila akun berganti (logout → login akun lain tanpa muat ulang halaman), buang semua state inbox milik akun sebelumnya.
+function waiSyncUser() {
+  const me = waiMe() || '';
+  if (WAI.uid === me) return;
+  clearInterval(WAI.timer); clearInterval(WAI.badgeTimer);
+  Object.assign(WAI, { uid: me, tab: 'inbox', scope: (waiIsMod() || waiIsOwner()) ? 'all' : 'mine', status: 'open', search: '', convs: [], cur: null, thread: null, sig: '', ready: true, agents: [], _lastUnread: null, _n: 0 });
+  const b = document.getElementById('wai-nav-badge'); if (b) b.style.display = 'none';
+}
+async function waiWhoami() {
+  try { return await waiRpc('wa_whoami', { p_user_id: waiMe() }); } catch (e) { return { error: e.message }; }
+}
 function waiOpen() {
   WAI.tab = WAI.tab || 'inbox';
+  waiSyncUser();
   if (!WAI.ready) { WAI.scope = (waiIsMod() || waiIsOwner()) ? 'all' : 'mine'; WAI.ready = true; }
   waiRenderShell();
   waiStartPoll();
@@ -31591,7 +31606,19 @@ function waiBadge(list) {
 function waiRenderList() {
   const box = document.getElementById('wai-items'); if (!box) return;
   if (!WAI.convs.length) {
-    box.innerHTML = `<div class="wai-empty">${WAI.status === 'closed' ? 'Belum ada percakapan selesai.' : 'Belum ada chat masuk.<br>Chat dari iklan akan muncul di sini dan dibagi otomatis ke agen.'}</div>`; return;
+    box.innerHTML = `<div class="wai-empty">${WAI.status === 'closed' ? 'Belum ada percakapan selesai.' : 'Belum ada chat di daftar ini.<br>Chat dari iklan akan muncul di sini dan dibagi otomatis ke agen.'}<div id="wai-why" style="margin-top:10px;font-size:11px;text-align:left"></div></div>`;
+    if (!WAI.search && WAI.status === 'open') waiWhoami().then(w => {
+      const el = document.getElementById('wai-why'); if (!el || !w) return;
+      let m = '';
+      if (w.error) m = /wa_whoami|function|schema/.test(w.error) ? 'Jalankan migration SQL v129 dulu.' : w.error;
+      else if (!w.found) m = `⚠ Akun <b>${escHtml(w.user_id || '')}</b> tidak ada di tabel pengguna database, jadi dianggap bukan staf WA. Moderator perlu menyimpan akun ini di menu Users (sinkron ke database).`;
+      else if (!w.is_active) m = `⚠ Akun <b>${escHtml(w.user_id)}</b> berstatus nonaktif di database.`;
+      else if (w.is_mod || w.is_viewer) m = (WAI.scope === 'all' ? `Akun terbaca sebagai <b>${escHtml(w.role)}</b> dan bisa melihat semua chat — memang belum ada chat terbuka (${w.total_open} total).` : `Filter sekarang "${WAI.scope === 'mine' ? 'Milikku' : 'Belum ditugaskan'}". Klik <b>Semua</b> untuk melihat seluruh chat (${w.total_open} terbuka).`);
+      else if (!w.is_agent) m = `⚠ Akun <b>${escHtml(w.user_id)}</b> (${escHtml(w.role)}) belum terdaftar sebagai <b>agen WA</b>. Minta moderator menambahkannya di tab <b>Agen</b>, lalu chat baru akan dibagi ke akun ini.`;
+      else m = `Kamu terdaftar sebagai agen, tapi belum ada chat yang ditugaskan ke kamu (${w.mine_open} terbuka). Chat baru dibagi bergiliran.`;
+      el.innerHTML = m;
+    });
+    return;
   }
   const mod = waiIsMod();
   box.innerHTML = WAI.convs.map(c => `
@@ -32251,12 +32278,41 @@ setInterval(async () => {
     if (!currentUser || !db || document.hidden) return;
     const r = currentUser.role;
     if (!(can.isMod(r) || can.isNdbStaff(r))) return;
+    waiSyncUser();
     if (document.getElementById('pg-wa_inbox')?.classList.contains('active')) return;
     const rows = await waiRpc('wa_list_conversations', { p_user_id: currentUser.id, p_scope: 'mine', p_status: 'open', p_search: null, p_limit: 150 });
     waiBadge(rows); waiAlert(rows);
   } catch (e) { /* SQL v125 belum dijalankan — abaikan */ }
 }, 12000);
 window.waiOpen = waiOpen; window.waiTab = waiTab; window.waiRefresh = waiRefresh;
+
+/* ───────── Satu akun = satu tab per perangkat ─────────
+   Tab yang login lebih dulu otomatis keluar bila akun yang sama dibuka di tab lain pada browser/perangkat ini.
+   Perangkat lain (mis. HP) punya penyimpanan sendiri, jadi tetap boleh login bersamaan. */
+const TABLOCK_ID = Math.random().toString(36).slice(2) + Date.now().toString(36);
+function tabLockKey(uid) { return 'dhp_tab_' + uid; }
+function tabLockClaim() {
+  try {
+    if (!currentUser || currentUser.role === 'guest') return;
+    localStorage.setItem(tabLockKey(currentUser.id), TABLOCK_ID + '|' + Date.now());
+  } catch (e) { /* penyimpanan diblokir: abaikan */ }
+}
+function tabLockRelease() {
+  try {
+    if (!currentUser) return;
+    const v = localStorage.getItem(tabLockKey(currentUser.id));
+    if (v && v.split('|')[0] === TABLOCK_ID) localStorage.removeItem(tabLockKey(currentUser.id));
+  } catch (e) { /* abaikan */ }
+}
+window.addEventListener('storage', ev => {
+  try {
+    if (!currentUser || currentUser.role === 'guest' || ev.key !== tabLockKey(currentUser.id) || !ev.newValue) return;
+    if (ev.newValue.split('|')[0] === TABLOCK_ID) return;
+    const nm = currentUser.name || currentUser.id;
+    handleLogout();
+    setTimeout(() => toast('🔒 Akun ' + nm + ' dibuka di tab lain — tab ini otomatis keluar.'), 400);
+  } catch (e) { console.warn('tab-lock', e); }
+});
 
 </script>
 </body>
