@@ -4848,6 +4848,18 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
 .wai-hud-warn{grid-column:1/-1;font-size:11.5px;background:rgba(212,160,23,.13);border-radius:8px;padding:7px 10px}
 @media(max-width:820px){.wai-hud{grid-template-columns:1fr}.wai-hud-sw{grid-template-columns:1fr}}
 
+.wai-quota{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:18px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.wai-qrow{margin:10px 0}.wai-qtop{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px}.wai-qtop a{margin-left:auto;font-size:10.5px}
+.wai-qtag{font-size:9.5px;padding:1px 7px;border-radius:99px;background:var(--surface2);color:var(--muted)}.wai-qtag.real{background:rgba(26,127,55,.14);color:#1a7f37}
+.wai-qbar{height:9px;border-radius:99px;background:var(--surface2);overflow:hidden;margin:5px 0 3px}.wai-qbar i{display:block;height:100%;border-radius:99px;transition:width .4s}
+.wai-qinfo{font-size:11px;color:var(--muted)}
+.wai-donut{width:140px;height:140px;border-radius:50%;margin:10px auto;display:flex;align-items:center;justify-content:center}
+.wai-donut>div{width:92px;height:92px;border-radius:50%;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.wai-donut b{font-size:22px}.wai-donut span{font-size:9.5px;color:var(--muted)}
+.wai-legend{font-size:11px;display:grid;gap:3px}.wai-legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+.wai-limgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px}.wai-lim{font-size:10.5px;color:var(--muted)}.wai-lim input{margin-top:2px;padding:6px 8px;font-size:12px}
+@media(max-width:820px){.wai-quota{grid-template-columns:1fr}}
+
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@1,6..96,500&family=Fraunces:ital,opsz,wght@1,9..144,300..700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 <style id="lsr-net-css">
@@ -31934,11 +31946,52 @@ async function waiAiStatus() {
     }).join('');
     const t = d.today || {};
     const log = (d.log || []).map(l => `<tr><td>${fmt(l.at)}</td><td>${escHtml(l.kind)}</td><td>${escHtml(l.provider || '')}</td><td>${l.latency_ms != null ? l.latency_ms + ' ms' : ''}</td><td style="color:${l.ok ? 'var(--muted)' : '#c0392b'}">${escHtml(l.detail || '')}</td></tr>`).join('');
-    box.innerHTML = `<div style="margin-bottom:8px">Hari ini: <b>${t.rule || 0}</b> dijawab template · <b>${t.cache || 0}</b> dari cache · <b>${t.ai || 0}</b> oleh AI · <b>${t.handoff || 0}</b> diserahkan ke manusia · <b>${t.error || 0}</b> error provider · cache tersimpan ${d.cache_rows || 0}</div>
+    const quotaHtml = waiQuotaHtml(d, cfg, (f && f.data && f.data.live) || {}, names, st);
+    box.innerHTML = quotaHtml + `<div style="margin-bottom:8px">Hari ini: <b>${t.rule || 0}</b> dijawab template · <b>${t.cache || 0}</b> dari cache · <b>${t.ai || 0}</b> oleh AI · <b>${t.handoff || 0}</b> diserahkan ke manusia · <b>${t.error || 0}</b> error provider · cache tersimpan ${d.cache_rows || 0}</div>
       <table style="width:100%;border-collapse:collapse;font-size:11.5px"><tbody>${rows}</tbody></table>
       <div style="margin:10px 0 4px;font-weight:600">Log terakhir</div>
       <div style="max-height:240px;overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:11px"><tbody>${log || '<tr><td style="color:var(--muted)">Belum ada.</td></tr>'}</tbody></table></div>`;
   } catch (e) { box.innerHTML = '<div style="color:#c0392b">' + escHtml(/function|schema|wa_ai_status/.test(e.message) ? 'Jalankan migration SQL v129 dulu.' : waiErr(e)) + '</div>'; }
+}
+
+const WAI_PROV_COL = { rule: '#2e86de', cache: '#7f8c8d', cloudflare: '#f38020', groq: '#e84393', nvidia: '#76b900', gemini: '#8e44ad', openrouter: '#16a085', mistral: '#e67e22', anthropic: '#c0392b' };
+const WAI_PROV_LINK = { cloudflare: 'https://dash.cloudflare.com/', groq: 'https://console.groq.com/', nvidia: 'https://build.nvidia.com/', gemini: 'https://aistudio.google.com/', openrouter: 'https://openrouter.ai/credits', mistral: 'https://console.mistral.ai/', anthropic: 'https://console.anthropic.com/' };
+function waiQuotaHtml(d, cfg, live, names, st) {
+  const usage = {}; (d.usage || []).forEach(u => usage[u.provider] = u);
+  const lim = d.limits || {}; const t = d.today || {};
+  const nf = n => Number(n || 0).toLocaleString('id-ID');
+  // Diagram donat: komposisi balasan hari ini
+  const parts = [['Template (tanpa AI)', t.rule || 0, WAI_PROV_COL.rule], ['Cache', t.cache || 0, WAI_PROV_COL.cache]];
+  names.forEach(n => { const u = usage[n]; if (u && u.req_today) parts.push([(cfg[n] && cfg[n].label) || n, u.req_today, WAI_PROV_COL[n] || '#999']); });
+  const total = parts.reduce((a, p) => a + p[1], 0);
+  let acc = 0; const stops = parts.map(p => { const a0 = acc / (total || 1) * 100; acc += p[1]; return `${p[2]} ${a0}% ${acc / (total || 1) * 100}%`; }).join(',');
+  const donut = total ? `<div class="wai-donut" style="background:conic-gradient(${stops})"><div><b>${total}</b><span>balasan hari ini</span></div></div>
+    <div class="wai-legend">${parts.filter(p => p[1]).map(p => `<div><i style="background:${p[2]}"></i>${escHtml(p[0])} <b>${p[1]}</b> (${Math.round(p[1] / total * 100)}%)</div>`).join('')}</div>` : '<div style="color:var(--muted);font-size:11.5px">Belum ada balasan hari ini.</div>';
+  // Bar kuota per provider
+  const bars = names.filter(n => !cfg[n] || cfg[n].configured).map(n => {
+    const c = cfg[n] || {}, u = usage[n] || { req_today: 0, tokens_today: 0 }, q = (st[n] && st[n].quota) || null;
+    let pct = null, label = '', kind = 'perkiraan';
+    if (n === 'groq' && q && q.req_limit) { pct = Math.round((1 - q.req_left / q.req_limit) * 100); label = `sisa ${nf(q.req_left)} dari ${nf(q.req_limit)} permintaan` + (q.tok_limit ? ` · token/menit sisa ${nf(q.tok_left)}` : ''); kind = 'asli'; }
+    else if (n === 'openrouter' && live.openrouter && live.openrouter.limit) { pct = Math.round(live.openrouter.usage / live.openrouter.limit * 100); label = `terpakai ${live.openrouter.usage} dari batas ${live.openrouter.limit}`; kind = 'asli'; }
+    else { const L = Number(lim[n]) || 0; if (L) { pct = Math.min(100, Math.round(u.req_today / L * 100)); label = `${nf(u.req_today)} dari ±${nf(L)} permintaan/hari`; } else label = nf(u.req_today) + ' permintaan hari ini'; }
+    const left = pct == null ? null : Math.max(0, 100 - pct);
+    const col = left == null ? '#999' : left > 40 ? '#1a7f37' : left > 15 ? '#d4a017' : '#c0392b';
+    return `<div class="wai-qrow"><div class="wai-qtop"><b>${escHtml(c.label || n)}</b><span class="wai-qtag ${kind === 'asli' ? 'real' : ''}">${kind === 'asli' ? 'data asli' : 'perkiraan'}</span><a href="${WAI_PROV_LINK[n] || '#'}" target="_blank" rel="noopener">cek kredit asli ↗</a></div>
+      <div class="wai-qbar"><i style="width:${pct == null ? 0 : pct}%;background:${col}"></i></div>
+      <div class="wai-qinfo">${left == null ? '' : '<b style="color:' + col + '">' + left + '% tersisa</b> · '}${label}${u.tokens_today ? ' · ' + nf(u.tokens_today) + ' token hari ini' : ''}</div></div>`;
+  }).join('');
+  const limInputs = names.map(n => `<label class="wai-lim">${escHtml((cfg[n] && cfg[n].label) || n)}<input class="fi" type="number" min="0" data-lim="${n}" value="${Number(lim[n]) || 0}"/></label>`).join('');
+  return `<div class="wai-quota"><div class="wai-qcol"><div class="wai-sub" style="margin-top:0;border:0;padding:0">Sisa kuota AI <span>hari ini · reset tengah malam</span></div>${bars || '<div style="color:var(--muted)">Belum ada provider yang kuncinya terisi.</div>'}
+      <details style="margin-top:8px"><summary style="cursor:pointer;font-size:11px;color:var(--muted)">Atur batas harian perkiraan (untuk bar "perkiraan")</summary><div class="wai-limgrid">${limInputs}</div>
+        <button class="btn-sm btn-cancel" style="margin-top:6px" onclick="waiSaveLimits()">Simpan batas</button>
+        <div style="font-size:10.5px;color:var(--muted);margin-top:4px">Bar "data asli" diambil langsung dari Groq/OpenRouter. Lainnya (Cloudflare, Gemini, NVIDIA, Mistral) tidak menyediakan sisa kuota lewat API, jadi dihitung dari pemakaian sistem ini — angka batasnya silakan samakan dengan dashboard masing-masing lewat tautan "cek kredit asli".</div></details></div>
+    <div class="wai-qcol wai-dcol"><div class="wai-sub" style="margin-top:0;border:0;padding:0">Siapa yang menjawab hari ini</div>${donut}</div></div>`;
+}
+async function waiSaveLimits() {
+  if (blockIfOwner()) return;
+  const o = {}; document.querySelectorAll('[data-lim]').forEach(i => o[i.dataset.lim] = Math.max(0, parseInt(i.value, 10) || 0));
+  const r = await dbQ(d => d.from('wa_settings').update({ provider_limits: o }).eq('id', 1));
+  toast(!r || r.error ? waiErr(r && r.error) : '✓ Batas disimpan'); if (r && !r.error) waiAiStatus();
 }
 async function waiAiTest() {
   if (blockIfOwner()) return;
