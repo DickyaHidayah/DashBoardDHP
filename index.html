@@ -4828,6 +4828,8 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
   .wai-back{display:inline-flex}.wai-b{max-width:88%}
 }
 
+.wai-sub{font-size:12px;font-weight:700;margin:16px 0 8px;padding-top:12px;border-top:1px solid var(--border)}.wai-sub span{font-weight:400;font-size:10.5px;color:var(--muted);margin-left:6px}
+
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@1,6..96,500&family=Fraunces:ital,opsz,wght@1,9..144,300..700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 <style id="lsr-net-css">
@@ -31736,6 +31738,7 @@ async function waiRenderAi() {
   if (!s || s.error || !s.data) { body.innerHTML = `<div class="wai-empty">${escHtml(waiErr(s && s.error || new Error('Could not find the function — tabel WA belum ada')))}</div>`; return; }
   const st = s.data, rows = (k && k.data) || [];
   window._waiK = rows;
+  setTimeout(waiAiStatus, 0);
   body.innerHTML = `
     <div class="wai-card">
       <h3>Pengaturan AI</h3>
@@ -31753,12 +31756,38 @@ async function waiRenderAi() {
       <div style="font-size:10px;color:var(--muted);margin:10px 0 3px">Aturan label minat pelanggan (Cold / Warm / Hot)</div>
       <textarea class="fi" id="wai-s-heat" rows="4">${escHtml(st.heat_rules || 'Cold: pelanggan baru menyapa / bertanya 1x saja.\nWarm: pelanggan sudah menanyakan produk atau harga.\nHot: pelanggan sudah memesan / minta cara bayar.')}</textarea>
       <div class="wai-row" style="margin-top:10px">
-        <div><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Jeda balasan AI otomatis (detik)</div><input class="fi" type="number" min="0" max="90" id="wai-s-delay" value="${st.reply_delay_sec ?? 30}" style="max-width:120px"/></div>
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Jeda tambahan AI otomatis (detik, 0 = langsung)</div><input class="fi" type="number" min="0" max="90" id="wai-s-delay" value="${st.reply_delay_sec ?? 0}" style="max-width:120px"/></div>
         <div style="flex:1;min-width:260px"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Link Google Sheet produk (AI membacanya langsung)</div><input class="fi" id="wai-s-sheet" value="${escHtml(st.product_sheet_url || '')}" placeholder="https://docs.google.com/spreadsheets/d/…"/></div>
       </div>
       <p class="s" style="margin:6px 0 0;font-size:10.5px">Sheet harus dibagikan "Siapa saja yang memiliki link → Pelihat". Baris pertama = judul kolom (mis. Produk, Ukuran, Harga, Stok). Perubahan di Sheet terbaca AI maksimal 1 menit kemudian.
         <a href="#" onclick="waiSheetTest();return false">Tes baca Sheet</a></p><div id="wai-sheet-out" style="font-size:11px;margin-top:6px"></div>
+      <div class="wai-sub">Mesin balasan <span>urutan: template → cache → AI → serah ke manusia</span></div>
+      <div class="wai-row">
+        <div><label class="wai-sw"><input type="checkbox" id="wai-s-rule" ${st.rule_replies_enabled !== false ? 'checked' : ''}/> Template berkata kunci dijawab langsung (tanpa AI)</label></div>
+        <div><label class="wai-sw"><input type="checkbox" id="wai-s-cache" ${st.cache_enabled !== false ? 'checked' : ''}/> Cache: pertanyaan pembuka yang sama tidak dikirim ke AI lagi</label></div>
+      </div>
+      <div class="wai-row" style="margin-top:10px">
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Debounce (detik) — pesan beruntun digabung jadi 1 balasan</div><input class="fi" type="number" min="0" max="15" id="wai-s-deb" value="${st.ai_debounce_sec ?? 4}" style="max-width:120px"/></div>
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Riwayat chat yang dikirim ke AI (6–10 pesan)</div><input class="fi" type="number" min="4" max="20" id="wai-s-hist" value="${st.history_limit ?? 8}" style="max-width:120px"/></div>
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Data pribadi (nama, alamat, no HP)</div>
+          <select class="fi" id="wai-s-priv"><option value="strict" ${st.privacy_mode === 'strict' ? 'selected' : ''}>Ketat — hanya provider yang tidak melatih dari data (Cloudflare/Claude)</option><option value="masked" ${(st.privacy_mode || 'masked') === 'masked' ? 'selected' : ''}>Campuran — chat berisi alamat/HP hanya ke provider privat; sisanya nama disamarkan</option><option value="open" ${st.privacy_mode === 'open' ? 'selected' : ''}>Bebas — semua provider, tanpa penyamaran</option></select></div>
+      </div>
+      <div class="wai-row" style="margin-top:10px">
+        <div style="grid-column:1/-1"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Pesan serah-terima sopan (dikirim ke pelanggan saat AI gagal / tidak yakin — error teknis TIDAK pernah tampil di chat)</div><input class="fi" id="wai-s-hand-msg" value="${escHtml(st.handoff_message || 'Sebentar ya Kak, tim kami segera balas 🙏')}"/></div>
+        <div style="grid-column:1/-1"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Urutan provider AI (pisahkan koma): cloudflare, groq, gemini, openrouter, mistral, anthropic</div><input class="fi" id="wai-s-order" value="${escHtml(st.ai_provider_order || 'cloudflare,groq,gemini,openrouter,mistral,anthropic')}"/></div>
+      </div>
       <div style="margin-top:10px"><button class="btn-sm btn-gold" onclick="waiSaveSettings()">Simpan Pengaturan</button></div>
+    </div>
+    <div class="wai-card">
+      <h3>Status AI & log</h3>
+      <p class="s">Provider yang kena batas (429) dilewati otomatis sampai reset. Error teknis hanya terlihat di sini, tidak di chat pelanggan.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <button class="btn-sm btn-gold" onclick="waiAiTest()">Tes semua provider</button>
+        <button class="btn-sm btn-cancel" onclick="waiAiStatus()">Muat ulang</button>
+        <button class="btn-sm btn-cancel" onclick="waiAiReset('providers')">Reset penghenti (breaker)</button>
+        <button class="btn-sm btn-cancel" onclick="waiAiReset('cache')">Kosongkan cache</button>
+      </div>
+      <div id="wai-ai-status" style="font-size:11.5px"><div style="color:var(--muted)">Memuat…</div></div>
     </div>
         <div class="wai-card">
       <h3>Impor pengetahuan dari data yang sudah ada</h3>
@@ -31775,14 +31804,14 @@ async function waiRenderAi() {
       <div class="wai-card">
         <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap"><div><h3>${WAI_KINDS[kind]}</h3><p class="s" style="margin-bottom:10px">${WAI_KIND_HELP[kind]}</p></div>
           <button class="btn-sm btn-gold" onclick="waiKEdit('${kind}')">+ Tambah</button></div>
-        ${rows.filter(r => r.kind === kind).map(r => `<div class="wai-k" style="${r.is_active ? '' : 'opacity:.5'}"><div class="tx"><b>${escHtml(r.title)}</b>${r.question ? `<div style="color:var(--muted);font-size:11px">Jika ditanya: ${escHtml(r.question)}</div>` : ''}<span>${escHtml(r.answer)}</span></div>
+        ${rows.filter(r => r.kind === kind).map(r => `<div class="wai-k" style="${r.is_active ? '' : 'opacity:.5'}"><div class="tx"><b>${escHtml(r.title)}</b>${r.question ? `<div style="color:var(--muted);font-size:11px">Jika ditanya: ${escHtml(r.question)}</div>` : ''}${r.direct_reply ? `<div style="font-size:11px;color:#1a7f37">⚡ Dijawab langsung tanpa AI · kata kunci: ${escHtml(String(r.triggers || '').replace(/\n/g, ', '))}</div>` : ''}<span>${escHtml(r.answer)}</span></div>
           <div style="display:flex;gap:6px;flex-direction:column"><button class="btn-sm btn-cancel" onclick="waiKEdit('${kind}','${r.id}')">Ubah</button><button class="btn-sm btn-cancel" onclick="waiKDel('${r.id}')">Hapus</button></div></div>`).join('') || '<div style="font-size:11.5px;color:var(--muted)">Belum ada.</div>'}
       </div>`).join('')}`;
 }
 async function waiSaveSettings() {
   const v = id => document.getElementById(id);
-  const r = await dbQ(d => d.from('wa_settings').update({ ai_enabled: v('wai-s-en').checked, default_ai_mode: v('wai-s-mode').value, business_name: v('wai-s-name').value.trim() || 'Toko', persona: v('wai-s-persona').value.trim(), handover_rules: v('wai-s-hand').value.trim(), heat_rules: v('wai-s-heat').value.trim(), reply_delay_sec: Math.max(0, Math.min(90, parseInt(v('wai-s-delay').value, 10) || 0)), product_sheet_url: v('wai-s-sheet').value.trim() || null, updated_at: new Date().toISOString() }).eq('id', 1));
-  toast(!r || r.error ? (/heat_rules|reply_delay|product_sheet/.test((r && r.error && r.error.message) || '') ? 'Gagal: jalankan migration SQL v126 dulu.' : waiErr(r && r.error)) : '✓ Pengaturan AI disimpan');
+  const r = await dbQ(d => d.from('wa_settings').update({ ai_enabled: v('wai-s-en').checked, default_ai_mode: v('wai-s-mode').value, business_name: v('wai-s-name').value.trim() || 'Toko', persona: v('wai-s-persona').value.trim(), handover_rules: v('wai-s-hand').value.trim(), heat_rules: v('wai-s-heat').value.trim(), reply_delay_sec: Math.max(0, Math.min(90, parseInt(v('wai-s-delay').value, 10) || 0)), rule_replies_enabled: v('wai-s-rule').checked, cache_enabled: v('wai-s-cache').checked, ai_debounce_sec: Math.max(0, Math.min(15, parseInt(v('wai-s-deb').value, 10) || 0)), history_limit: Math.max(4, Math.min(20, parseInt(v('wai-s-hist').value, 10) || 8)), privacy_mode: v('wai-s-priv').value, handoff_message: v('wai-s-hand-msg').value.trim() || 'Sebentar ya Kak, tim kami segera balas 🙏', ai_provider_order: v('wai-s-order').value.replace(/\s+/g, '').toLowerCase() || 'cloudflare,groq,gemini,openrouter,mistral,anthropic', product_sheet_url: v('wai-s-sheet').value.trim() || null, updated_at: new Date().toISOString() }).eq('id', 1));
+  toast(!r || r.error ? (/heat_rules|reply_delay|product_sheet|debounce|history_limit|privacy_mode|handoff_message|provider_order|rule_replies|cache_enabled/.test((r && r.error && r.error.message) || '') ? 'Gagal: jalankan migration SQL v126 dulu.' : waiErr(r && r.error)) : '✓ Pengaturan AI disimpan');
 }
 function waiLoadScript(src) {
   return new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = () => rej(new Error('Gagal memuat pustaka pembaca file (cek koneksi internet)')); document.head.appendChild(el); });
@@ -31824,6 +31853,43 @@ async function waiPickFile(inp) {
     st.textContent = '✓ ' + f.name + ' terbaca' + note + '. Periksa isinya lalu Simpan.';
   } catch (e) { st.textContent = '⚠ ' + (e.message || e); }
 }
+
+async function waiAiStatus() {
+  const box = document.getElementById('wai-ai-status'); if (!box) return;
+  try {
+    const d = await waiRpc('wa_ai_status', { p_user_id: waiMe() });
+    const f = await dbQ(x => x.functions.invoke(WAI_FN.ai, { body: { action: 'status', user_id: waiMe() } }));
+    const cfg = (f && f.data && f.data.providers) || {};
+    const st = {}; (d.providers || []).forEach(p => st[p.provider] = p);
+    const names = Object.keys(cfg).length ? Object.keys(cfg) : ['cloudflare', 'groq', 'gemini', 'openrouter', 'mistral', 'anthropic'];
+    const fmt = t => t ? new Date(t).toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }) : '-';
+    const rows = names.map(n => {
+      const c = cfg[n] || {}, p = st[n] || {}; const open = p.open_until && new Date(p.open_until) > new Date();
+      const tag = !Object.keys(cfg).length ? '' : (c.configured ? '<span style="color:#1a7f37">kunci terisi</span>' : '<span style="color:var(--muted)">belum diisi</span>');
+      return `<tr><td><b>${escHtml(c.label || n)}</b>${c.private ? ' <span title="Tidak melatih dari data Anda" style="color:#1a7f37">🔒</span>' : ''}</td><td>${tag}</td><td>${open ? '<span style="color:#c0392b">⏸ dilewati sampai ' + fmt(p.open_until) + '</span>' : (p.last_ok_at ? '<span style="color:#1a7f37">OK ' + fmt(p.last_ok_at) + '</span>' : '-')}</td><td style="color:var(--muted)">${escHtml(p.last_error || '')}</td></tr>`;
+    }).join('');
+    const t = d.today || {};
+    const log = (d.log || []).map(l => `<tr><td>${fmt(l.at)}</td><td>${escHtml(l.kind)}</td><td>${escHtml(l.provider || '')}</td><td>${l.latency_ms != null ? l.latency_ms + ' ms' : ''}</td><td style="color:${l.ok ? 'var(--muted)' : '#c0392b'}">${escHtml(l.detail || '')}</td></tr>`).join('');
+    box.innerHTML = `<div style="margin-bottom:8px">Hari ini: <b>${t.rule || 0}</b> dijawab template · <b>${t.cache || 0}</b> dari cache · <b>${t.ai || 0}</b> oleh AI · <b>${t.handoff || 0}</b> diserahkan ke manusia · <b>${t.error || 0}</b> error provider · cache tersimpan ${d.cache_rows || 0}</div>
+      <table style="width:100%;border-collapse:collapse;font-size:11.5px"><tbody>${rows}</tbody></table>
+      <div style="margin:10px 0 4px;font-weight:600">Log terakhir</div>
+      <div style="max-height:240px;overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:11px"><tbody>${log || '<tr><td style="color:var(--muted)">Belum ada.</td></tr>'}</tbody></table></div>`;
+  } catch (e) { box.innerHTML = '<div style="color:#c0392b">' + escHtml(/function|schema|wa_ai_status/.test(e.message) ? 'Jalankan migration SQL v129 dulu.' : waiErr(e)) + '</div>'; }
+}
+async function waiAiTest() {
+  if (blockIfOwner()) return;
+  const box = document.getElementById('wai-ai-status'); if (box) box.innerHTML = '<div style="color:var(--muted)">Menguji setiap provider yang kuncinya terisi…</div>';
+  const f = await dbQ(d => d.functions.invoke(WAI_FN.ai, { body: { action: 'test', user_id: waiMe() } }));
+  if (!f || f.error) { toast('Tes gagal: ' + await waiFnError(f) + ' — pastikan kode fungsi clever-action sudah diganti versi baru.'); waiAiStatus(); return; }
+  const res = (f.data && f.data.results) || [];
+  await waiAiStatus();
+  const out = document.getElementById('wai-ai-status');
+  if (out) out.insertAdjacentHTML('afterbegin', '<div style="border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:8px">' + res.map(r => !r.configured ? `• ${escHtml(r.label)}: belum ada kunci` : r.ok ? `• ${escHtml(r.label)}: ✅ ${r.ms} ms (${escHtml(r.model || '')})` : `• ${escHtml(r.label)}: ❌ ${escHtml(r.error || '')}`).join('<br>') + '</div>');
+}
+async function waiAiReset(what) {
+  if (blockIfOwner()) return;
+  try { await waiRpc('wa_ai_reset', { p_user_id: waiMe(), p_what: what }); toast('✓ Direset'); waiAiStatus(); } catch (e) { toast(waiErr(e)); }
+}
 function waiKEdit(kind, id) {
   const r = id ? (window._waiK || []).find(x => x.id === id) : null;
   document.getElementById('m-title').textContent = (r ? 'Ubah ' : 'Tambah ') + WAI_KINDS[kind];
@@ -31833,6 +31899,10 @@ function waiKEdit(kind, id) {
     <div class="fg"><label>${kind === 'flow' ? 'Langkah-langkah alur (satu langkah per baris)' : kind === 'doc' ? 'Isi dokumen' : kind === 'example' ? 'Isi percakapan' : kind === 'product' ? 'Detail (harga, ukuran, stok, bahan)' : 'Jawaban'}</label><textarea class="fi" id="wk-a" rows="${kind === 'flow' || kind === 'doc' ? 13 : kind === 'example' ? 9 : 5}" placeholder="${kind === 'example' ? 'Pelanggan: …\nCS: …' : ''}">${escHtml(r ? r.answer : (kind === 'flow' ? WAI_FLOW_SAMPLE : ''))}</textarea>
       <div style="margin-top:6px;font-size:11px;color:var(--muted)">Atau isi dari file (PDF, Word, Excel, CSV, teks) — isi di atas akan diganti:
         <input type="file" accept=".pdf,.docx,.xlsx,.xls,.csv,.txt,.md" onchange="waiPickFile(this)" style="display:block;margin-top:4px;font-size:12px"/><span id="wk-file-st"></span></div></div>
+    ${kind === 'faq' || kind === 'template' ? `<div class="fg" style="margin-top:10px;padding:10px;border:1px dashed var(--border);border-radius:8px"><label>Kata kunci pemicu (pisahkan koma / baris) — opsional</label>
+      <textarea class="fi" id="wk-trig" rows="2" placeholder="mis. katalog, lihat produk, ada foto">${escHtml(r ? r.triggers || '' : '')}</textarea>
+      <label class="wai-sw" style="margin-top:6px"><input type="checkbox" id="wk-direct" ${r && r.direct_reply ? 'checked' : ''}/> Kirim jawaban ini langsung tanpa AI bila pesan pelanggan pendek dan mengandung kata kunci</label>
+      <div style="font-size:10.5px;color:var(--muted);margin-top:4px">Pesan panjang / rumit tetap diserahkan ke AI. Tulis <b>{nama}</b> di jawaban untuk menyapa nama pelanggan (otomatis dikosongkan bila tidak ada).</div></div>` : '<input type="hidden" id="wk-trig" value=""/><input type="hidden" id="wk-direct" value=""/>'}
     <label class="wai-sw"><input type="checkbox" id="wk-on" ${!r || r.is_active ? 'checked' : ''}/> Aktif (dipakai AI)</label>`;
   document.getElementById('m-foot').innerHTML = `<button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button><button class="btn-sm btn-gold" onclick="waiKSave('${kind}','${id || ''}')">Simpan</button>`;
   document.getElementById('modal-ov').classList.add('open');
@@ -31840,9 +31910,11 @@ function waiKEdit(kind, id) {
 async function waiKSave(kind, id) {
   const title = document.getElementById('wk-title').value.trim(), answer = document.getElementById('wk-a').value.trim(), q = (document.getElementById('wk-q').value || '').trim();
   if (!title || !answer) { toast('Judul dan isi wajib diisi'); return; }
+  const trig = (document.getElementById('wk-trig').value || '').trim(), dEl = document.getElementById('wk-direct');
   const row = { kind, title, question: q || null, answer, is_active: document.getElementById('wk-on').checked };
+  if (kind === 'faq' || kind === 'template') { row.triggers = trig || null; row.direct_reply = !!(dEl && dEl.checked && trig); }
   const r = await dbQ(d => id ? d.from('wa_knowledge').update(row).eq('id', id) : d.from('wa_knowledge').insert(Object.assign(row, { created_by: waiMe() })));
-  if (!r || r.error) { toast(/kind_check|violates check/.test((r && r.error && r.error.message) || '') ? 'Gagal: jalankan migration SQL v128 dulu.' : waiErr(r && r.error)); return; }
+  if (!r || r.error) { toast(/kind_check|violates check/.test((r && r.error && r.error.message) || '') ? 'Gagal: jalankan migration SQL v128 dulu.' : /triggers|direct_reply/.test((r && r.error && r.error.message) || '') ? 'Gagal: jalankan migration SQL v129 dulu.' : waiErr(r && r.error)); return; }
   closeModal(); toast('✓ Tersimpan'); waiRenderAi();
 }
 async function waiKDel(id) { if (!confirm('Hapus entri ini?')) return; const r = await dbQ(d => d.from('wa_knowledge').delete().eq('id', id)); if (!r || r.error) toast(waiErr(r && r.error)); else waiRenderAi(); }
