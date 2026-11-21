@@ -4861,13 +4861,15 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
 @media(max-width:820px){.wai-quota{grid-template-columns:1fr}}
 
 
-/* ── Grup menu yang bisa dilipat (Administrasi) ── */
+/* ── Modul sidebar yang bisa dilipat ── */
 .nav-sec-lbl[data-grp]{display:none!important}
-.nav-grp{margin-top:16px;padding-top:12px;border-top:1px solid rgba(201,169,110,.12)}
+.nav-grp{margin-top:6px}
+.nav-grp:first-of-type{margin-top:0}
 .nav-grp-head{position:relative;justify-content:flex-start}
 .nav-grp-name{flex:1;min-width:0;text-align:left;display:flex;flex-direction:column;line-height:1.2}
 .nav-grp-name small{font-size:9.5px;color:var(--muted);font-weight:400;letter-spacing:.02em;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nav-grp-count{font-size:9.5px;font-weight:700;min-width:18px;height:18px;padding:0 5px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;background:rgba(201,169,110,.14);color:var(--gold);flex-shrink:0}
+.nav-grp-dot{width:7px;height:7px;border-radius:50%;background:#e0584c;flex-shrink:0;box-shadow:0 0 0 3px rgba(224,88,76,.18)}
 .nav-grp-chev{flex-shrink:0;opacity:.6;transition:transform .25s ease}
 .nav-grp.open .nav-grp-chev{transform:rotate(180deg);opacity:1}
 .nav-grp.open>.nav-grp-head{background:rgba(201,169,110,.07);color:var(--text)}
@@ -5404,10 +5406,19 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
       <!-- ══ TOOLS — Follow Up, khusus role cs_hunter (+ Mod/Owner lihat semua) ══
            v45: menggantikan widget "Follow Up Ads Customer" yang dulu nempel di
            Tugas Harian — sekarang halaman tersendiri, tabel + target 50/hari. -->
-      <div class="nav-sec-lbl" id="ns-cs-tools" style="display:none">
+      <div class="nav-sec-lbl" id="ns-cs-tools" style="display:none" data-grp="1">
         <span class="sec-name" data-i18n="navTools">Tools</span>
         <span class="sec-scope">CS Hunter</span>
       </div>
+      <div class="nav-grp" id="ng-tools">
+        <button class="nav-item nav-grp-head" id="n-ng-tools" style="display:none" onclick="navGrpToggle('ng-tools')" aria-expanded="false">
+          <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10.2 2.2a3.4 3.4 0 00-3.1 4.6L2.4 11.5a1.3 1.3 0 001.9 1.9l4.7-4.7a3.4 3.4 0 004.6-3.1l-2.2 2.2-1.7-.4-.4-1.7 2.2-2.2c-.4-.2-.8-.3-1.3-.3z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg></span>
+          <span class="nav-grp-name"><span data-i18n="navTools">Tools</span><small id="ng-tools-sub"></small></span>
+          <i class="nav-grp-dot" id="ng-tools-dot" style="display:none"></i>
+          <span class="nav-grp-count" id="ng-tools-count">0</span>
+          <svg class="nav-grp-chev" width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-grp-body"><div class="nav-grp-inner">
       <button class="nav-item" onclick="navTo('followup',this)" id="n-followup" style="display:none">
         <span class="nav-icon">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -5442,6 +5453,8 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
         </span>
         <span>Leaderboard</span>
       </button>
+        </div></div>
+      </div>
       <!-- ══ v56: BANTUAN — FAQ & Quick Reply, khusus role cs_hunter/admin/b2b_marketing
            (+ Mod/Owner lihat semua). Isi hanya bisa ditambah/diubah oleh Moderator. ══ -->
       <div class="nav-sec-lbl" id="ns-help" style="display:none">
@@ -5499,10 +5512,19 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
         <span data-i18n="contentStudio">Studio Konten</span>
       </button>
       <!-- ══ LIVE — khusus Host Live (+ Moderator memantau) ══ -->
-      <div class="nav-sec-lbl" id="ns-live" style="display:none">
+      <div class="nav-sec-lbl" id="ns-live" style="display:none" data-grp="1">
         <span class="sec-name" data-i18n="navLive">Live</span>
         <span class="sec-scope" data-i18n="secScopeHost">Host Live</span>
       </div>
+      <div class="nav-grp" id="ng-live">
+        <button class="nav-item nav-grp-head" id="n-ng-live" style="display:none" onclick="navGrpToggle('ng-live')" aria-expanded="false">
+          <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="1.8" fill="currentColor"/><path d="M4.9 5.1a4.4 4.4 0 000 5.8M11.1 5.1a4.4 4.4 0 010 5.8M2.8 3a7.4 7.4 0 000 10M13.2 3a7.4 7.4 0 010 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+          <span class="nav-grp-name"><span data-i18n="navLive">Live</span><small id="ng-live-sub"></small></span>
+          <i class="nav-grp-dot" id="ng-live-dot" style="display:none"></i>
+          <span class="nav-grp-count" id="ng-live-count">0</span>
+          <svg class="nav-grp-chev" width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-grp-body"><div class="nav-grp-inner">
       <button class="nav-item" onclick="navTo('live_studio',this)" id="n-live-studio" style="display:none">
         <span class="nav-icon">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -5523,11 +5545,22 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
         </span>
         <span data-i18n="liveDashboard">Live Dashboard</span>
       </button>
+        </div></div>
+      </div>
       <!-- ══ MANAGE ADS — Moderator / Admin / B2B Marketing ══ -->
-      <div class="nav-sec-lbl" id="ns-manage" style="display:none">
+      <div class="nav-sec-lbl" id="ns-manage" style="display:none" data-grp="1">
         <span class="sec-name" data-i18n="manageAds">Manage Ads</span>
         <span class="sec-scope" data-i18n="secScopeAds">Ads Team</span>
       </div>
+      <div class="nav-grp" id="ng-ads">
+        <button class="nav-item nav-grp-head" id="n-ng-ads" style="display:none" onclick="navGrpToggle('ng-ads')" aria-expanded="false">
+          <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 6.2v3.6c0 .5.4.9.9.9H4l1 3h1.6l-.8-3H7l5.6 2.6V3.3L7 6H2.9c-.5 0-.9.3-.9.8" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/><path d="M14.3 6.4c.6.4.9.9.9 1.6s-.3 1.2-.9 1.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+          <span class="nav-grp-name"><span data-i18n="manageAds">Manage Ads</span><small id="ng-ads-sub"></small></span>
+          <i class="nav-grp-dot" id="ng-ads-dot" style="display:none"></i>
+          <span class="nav-grp-count" id="ng-ads-count">0</span>
+          <svg class="nav-grp-chev" width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-grp-body"><div class="nav-grp-inner">
       <button class="nav-item mod-only" onclick="navTo('ad_scheduler',this)" id="n-ad-scheduler" style="display:none">
         <span class="nav-icon">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -5561,12 +5594,23 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
         <span data-i18n="adsTask">Task Iklan</span>
         <span class="nav-badge" id="ad-task-badge" style="display:none">0</span>
       </button>
+        </div></div>
+      </div>
 
       <!-- ══ MANAGE CRM — Moderator / Admin / B2B Marketing ══ -->
-      <div class="nav-sec-lbl" id="ns-crm" style="display:none">
+      <div class="nav-sec-lbl" id="ns-crm" style="display:none" data-grp="1">
         <span class="sec-name" data-i18n="manageCRM">Manage CRM</span>
         <span class="sec-scope" data-i18n="secScopeCRM">CRM Team</span>
       </div>
+      <div class="nav-grp" id="ng-crm">
+        <button class="nav-item nav-grp-head" id="n-ng-crm" style="display:none" onclick="navGrpToggle('ng-crm')" aria-expanded="false">
+          <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><ellipse cx="8" cy="3.6" rx="5.2" ry="2.1" stroke="currentColor" stroke-width="1.4"/><path d="M2.8 3.6v4.4c0 1.2 2.3 2.1 5.2 2.1s5.2-.9 5.2-2.1V3.6" stroke="currentColor" stroke-width="1.4"/><path d="M2.8 8v4.4c0 1.2 2.3 2.1 5.2 2.1s5.2-.9 5.2-2.1V8" stroke="currentColor" stroke-width="1.4"/></svg></span>
+          <span class="nav-grp-name"><span data-i18n="manageCRM">Manage CRM</span><small id="ng-crm-sub"></small></span>
+          <i class="nav-grp-dot" id="ng-crm-dot" style="display:none"></i>
+          <span class="nav-grp-count" id="ng-crm-count">0</span>
+          <svg class="nav-grp-chev" width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-grp-body"><div class="nav-grp-inner">
       <button class="nav-item mod-only" onclick="navTo('crm',this)" id="n-crm" style="display:none">
         <span class="nav-icon">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -5592,6 +5636,8 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
         <span>Nomor Ditandai</span>
         <span class="nav-badge" id="crm-unreach-nav-badge" style="display:none">0</span>
       </button>
+        </div></div>
+      </div>
 
       <!-- ══ ADMINISTRASI — Moderator only (paling privileged, taruh paling bawah) ══ -->
       <div class="nav-sec-lbl" id="ns-admin" style="display:none" data-grp="1">
@@ -5599,16 +5645,10 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
         <span class="sec-scope scope-mod" data-i18n="secScopeAdmin">Moderator</span>
       </div>
       <div class="nav-grp" id="ng-admin">
-        <button class="nav-item nav-grp-head" id="n-admin-grp" style="display:none" onclick="navGrpToggle('ng-admin')" aria-expanded="false">
-          <span class="nav-icon">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <rect x="1.8" y="1.8" width="5" height="5" rx="1.3" stroke="currentColor" stroke-width="1.4"/>
-              <rect x="9.2" y="1.8" width="5" height="5" rx="1.3" stroke="currentColor" stroke-width="1.4"/>
-              <rect x="1.8" y="9.2" width="5" height="5" rx="1.3" stroke="currentColor" stroke-width="1.4"/>
-              <rect x="9.2" y="9.2" width="5" height="5" rx="1.3" stroke="currentColor" stroke-width="1.4"/>
-            </svg>
-          </span>
+        <button class="nav-item nav-grp-head" id="n-ng-admin" style="display:none" onclick="navGrpToggle('ng-admin')" aria-expanded="false">
+          <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1.8" y="1.8" width="5" height="5" rx="1.3" stroke="currentColor" stroke-width="1.4"/><rect x="9.2" y="1.8" width="5" height="5" rx="1.3" stroke="currentColor" stroke-width="1.4"/><rect x="1.8" y="9.2" width="5" height="5" rx="1.3" stroke="currentColor" stroke-width="1.4"/><rect x="9.2" y="9.2" width="5" height="5" rx="1.3" stroke="currentColor" stroke-width="1.4"/></svg></span>
           <span class="nav-grp-name"><span data-i18n="administration">Administrasi</span><small id="ng-admin-sub"></small></span>
+          <i class="nav-grp-dot" id="ng-admin-dot" style="display:none"></i>
           <span class="nav-grp-count" id="ng-admin-count">0</span>
           <svg class="nav-grp-chev" width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
@@ -9165,8 +9205,7 @@ async function initDashboard() {
   // Administration — Progress Tugas/Target/Users tetap khusus Moderator.
   // Budget Marketing dibuka untuk Owner (view-only) sesuai permintaan.
   navShow('ns-admin',         isMod || isOwner);
-  navShow('n-admin-grp',      isMod || isOwner);
-  try { navGrpUpdate('ng-admin'); } catch (e) {}
+  try { navGrpAll(); } catch (e) {}
   navShow('n-team-tasks',     isMod);
   navShow('n-mod-target',     isMod);
   navShow('n-budget-marketing', isMod || isOwner);
@@ -32357,15 +32396,22 @@ window.addEventListener('storage', ev => {
 });
 
 
-/* ── Grup menu sidebar yang bisa dilipat ── */
+/* ── Modul sidebar yang bisa dilipat ── */
+const NAV_GROUPS = { 'ng-ads': ['n-ad-task'], 'ng-crm': ['n-crm-unreach'], 'ng-live': [], 'ng-tools': [], 'ng-admin': [] };
+function navGrpText(el, t) { if (el && el.textContent !== t) el.textContent = t; }
 function navGrpUpdate(id) {
   const g = document.getElementById(id); if (!g) return;
   const kids = [...g.querySelectorAll('.nav-grp-inner .nav-item')].filter(b => b.style.display !== 'none');
-  const cnt = document.getElementById(id + '-count'); if (cnt) cnt.textContent = kids.length;
-  const sub = document.getElementById(id + '-sub');
-  if (sub) sub.textContent = kids.slice(0, 2).map(b => (b.querySelector('span:last-child') || b).textContent.trim()).join(' · ') + (kids.length > 2 ? ' …' : '');
+  const head = g.querySelector('.nav-grp-head');
+  const want = kids.length ? '' : 'none';
+  if (head && head.style.display !== want) head.style.display = want;      // modul hanya tampil bila ada fitur yang boleh dibuka
+  navGrpText(document.getElementById(id + '-count'), String(kids.length));
+  navGrpText(document.getElementById(id + '-sub'), kids.slice(0, 2).map(b => (b.querySelector(':scope > span:not(.nav-icon):not(.nav-badge)') || b).textContent.trim()).join(' · ') + (kids.length > 2 ? ' …' : ''));
+  const alert = (NAV_GROUPS[id] || []).some(i => { const b = document.getElementById(i); const nb = b && b.querySelector('.nav-badge'); return b && b.style.display !== 'none' && nb && nb.style.display !== 'none' && nb.textContent.trim() && nb.textContent.trim() !== '0'; });
+  const dot = document.getElementById(id + '-dot'); const dw = alert && !g.classList.contains('open') ? '' : 'none';
+  if (dot && dot.style.display !== dw) dot.style.display = dw;
   const act = !!g.querySelector('.nav-grp-inner .nav-item.active');
-  g.classList.toggle('has-active', act);
+  if (g.classList.contains('has-active') !== act) g.classList.toggle('has-active', act);
   if (act && !g.classList.contains('open')) navGrpSet(id, true, false);
 }
 function navGrpSet(id, open, save) {
@@ -32373,16 +32419,20 @@ function navGrpSet(id, open, save) {
   g.classList.toggle('open', !!open);
   const h = g.querySelector('.nav-grp-head'); if (h) h.setAttribute('aria-expanded', open ? 'true' : 'false');
   if (save !== false) { try { localStorage.setItem('dhp_' + id, open ? '1' : '0'); } catch (e) {} }
+  navGrpUpdate(id);
 }
 function navGrpToggle(id) { const g = document.getElementById(id); if (g) navGrpSet(id, !g.classList.contains('open')); }
+function navGrpAll() { Object.keys(NAV_GROUPS).forEach(navGrpUpdate); }
 (function navGrpInit() {
   const run = () => {
-    const g = document.getElementById('ng-admin'); if (!g) return;
-    let o = '0'; try { o = localStorage.getItem('dhp_ng-admin') || '0'; } catch (e) {}
-    navGrpSet('ng-admin', o === '1', false);
-    const mo = new MutationObserver(() => navGrpUpdate('ng-admin'));
-    mo.observe(g, { subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
-    navGrpUpdate('ng-admin');
+    Object.keys(NAV_GROUPS).forEach(id => {
+      const g = document.getElementById(id); if (!g) return;
+      let o = '0'; try { o = localStorage.getItem('dhp_' + id) || '0'; } catch (e) {}
+      g.classList.toggle('open', o === '1');
+      const inner = g.querySelector('.nav-grp-inner');
+      new MutationObserver(() => navGrpUpdate(id)).observe(inner, { subtree: true, attributes: true, attributeFilter: ['class', 'style'], childList: true, characterData: true });
+      navGrpUpdate(id);
+    });
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
 })();
