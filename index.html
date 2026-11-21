@@ -4830,6 +4830,24 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
 
 .wai-sub{font-size:12px;font-weight:700;margin:16px 0 8px;padding-top:12px;border-top:1px solid var(--border)}.wai-sub span{font-weight:400;font-size:10.5px;color:var(--muted);margin-left:6px}
 
+.wai-hud{border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:14px;margin-bottom:14px;display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:14px}
+.wai-hud-lbl{font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.wai-hud-now{font-size:11px;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--surface2)}
+.wai-hud-sw{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.wai-hud-sw button{text-align:left;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);border-radius:10px;padding:10px 12px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;gap:3px}
+.wai-hud-sw button b{font-size:13px}.wai-hud-sw button span{font-size:10.5px;color:var(--muted);line-height:1.4}
+.wai-hud-sw button.on.m-auto{border-color:#1a7f37;background:rgba(26,127,55,.12)}
+.wai-hud-sw button.on.m-draft{border-color:#d4a017;background:rgba(212,160,23,.13)}
+.wai-hud-sw button.on.m-off{border-color:var(--muted);background:var(--surface2)}
+.wai-hud-sw button:not(.on):hover:not(:disabled){border-color:var(--text2)}
+.wai-hud-sw.ro button{cursor:default;opacity:.85}
+.wai-hud-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;align-content:center}
+.wai-hud-stats div{text-align:center;background:var(--surface2);border-radius:10px;padding:10px 4px}
+.wai-hud-stats b{display:block;font-size:20px}.wai-hud-stats span{font-size:10px;color:var(--muted);line-height:1.3;display:block}
+.wai-hud-stats .hot b{color:#c0392b}
+.wai-hud-warn{grid-column:1/-1;font-size:11.5px;background:rgba(212,160,23,.13);border-radius:8px;padding:7px 10px}
+@media(max-width:820px){.wai-hud{grid-template-columns:1fr}.wai-hud-sw{grid-template-columns:1fr}}
+
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@1,6..96,500&family=Fraunces:ital,opsz,wght@1,9..144,300..700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 <style id="lsr-net-css">
@@ -31421,12 +31439,14 @@ function waiOpen() {
   waiRenderShell();
   waiStartPoll();
 }
+WAI._hudTick = 0;
 function waiStartPoll() {
   clearInterval(WAI.timer);
   WAI.timer = setInterval(() => {
     const pg = document.getElementById('pg-wa_inbox');
     if (!pg || !pg.classList.contains('active') || document.hidden) return;
     if (WAI.tab === 'inbox') waiRefresh(true);
+    if (++WAI._hudTick % 5 === 0) waiHud();
   }, 3000);
 }
 function waiRenderShell() {
@@ -31434,15 +31454,59 @@ function waiRenderShell() {
   const mod = waiIsMod();
   const tabs = [['inbox', 'Inbox']].concat(mod ? [['agents', 'Agen'], ['ai', 'Latih AI'], ['numbers', 'Nomor & Webhook'], ['sim', 'Simulasi']] : []);
   root.innerHTML = `
+    ${(mod || waiIsOwner()) ? '<div id="wai-hud" class="wai-hud"></div>' : ''}
     <div class="wai-tabs">${tabs.map(t => `<button class="wai-tab ${WAI.tab === t[0] ? 'on' : ''}" onclick="waiTab('${t[0]}')">${t[1]}</button>`).join('')}</div>
     <div id="wai-body"></div>`;
   const acts = document.getElementById('wai-acts');
   if (acts) acts.innerHTML = '<button class="btn-sm btn-gold" onclick="waiRefresh()">⟲ Muat Ulang</button>';
   waiRenderTab();
+  waiHud();
 }
 function waiTab(t) { WAI.tab = t; WAI.cur = null; WAI.thread = null; waiRenderShell(); }
 function waiRenderTab() {
   ({ inbox: waiRenderInbox, agents: waiRenderAgents, ai: waiRenderAi, numbers: waiRenderNumbers, sim: waiRenderSim }[WAI.tab] || waiRenderInbox)();
+}
+
+
+/* ───────── HUD: saklar AI ───────── */
+const WAI_HUD_MODES = [
+  ['auto', '🟢', 'Otomatis', 'AI membalas pelanggan langsung, tanpa menunggu persetujuan'],
+  ['draft', '🟡', 'Usul', 'AI menulis balasan, agen tinggal klik Kirim'],
+  ['off', '⚪', 'Manual', 'AI mati, semua dibalas agen']
+];
+async function waiHud() {
+  const box = document.getElementById('wai-hud'); if (!box) return;
+  try {
+    const d = await waiRpc('wa_ai_hud', { p_user_id: waiMe() });
+    const ro = waiIsOwner() && !waiIsMod();
+    const cur = WAI_HUD_MODES.find(m => m[0] === d.mode) || WAI_HUD_MODES[1];
+    const t = d.today || {};
+    const answered = (t.rule || 0) + (t.cache || 0) + (t.ai || 0);
+    const warn = d.providers_paused > 0 ? `<div class="wai-hud-warn">⏸ ${d.providers_paused} layanan AI sedang istirahat (kena batas) — sistem pindah ke cadangan otomatis</div>` : '';
+    box.innerHTML = `
+      <div class="wai-hud-main">
+        <div class="wai-hud-lbl">Balasan otomatis <span class="wai-hud-now wai-hud-${cur[0]}">${cur[1]} ${cur[2]}</span></div>
+        <div class="wai-hud-sw ${ro ? 'ro' : ''}">${WAI_HUD_MODES.map(m => `<button class="${d.mode === m[0] ? 'on m-' + m[0] : ''}" ${ro ? 'disabled' : ''} onclick="waiHudSet('${m[0]}')"><b>${m[1]} ${m[2]}</b><span>${m[3]}</span></button>`).join('')}</div>
+      </div>
+      <div class="wai-hud-stats">
+        <div><b>${answered}</b><span>dibalas sistem hari ini</span></div>
+        <div class="${d.needs_human ? 'hot' : ''}"><b>${d.needs_human}</b><span>chat butuh dibantu manusia</span></div>
+        <div><b>${d.open_chats}</b><span>chat terbuka</span></div>
+      </div>${warn}`;
+  } catch (e) { box.innerHTML = `<div class="wai-hud-warn">${escHtml(/function|schema|wa_ai_hud/.test(e.message) ? 'Jalankan migration SQL v129 dulu untuk mengaktifkan saklar AI.' : waiErr(e))}</div>`; }
+}
+async function waiHudSet(mode) {
+  if (blockIfOwner()) return;
+  const m = WAI_HUD_MODES.find(x => x[0] === mode);
+  if (mode === 'auto' && !confirm('AI akan membalas SEMUA chat yang masuk (juga chat yang sedang berjalan) tanpa menunggu persetujuan agen. Lanjutkan?')) return;
+  if (mode === 'off' && !confirm('Matikan AI? Semua chat harus dibalas manual oleh agen.')) return;
+  try {
+    const n = await waiRpc('wa_ai_set_global', { p_user_id: waiMe(), p_mode: mode });
+    toast('✓ Mode ' + m[2] + ' aktif' + (n ? ' untuk ' + n + ' chat berjalan' : ''));
+    WAI.sig = ''; await waiHud();
+    if (WAI.tab === 'inbox') { waiRefresh(true); if (WAI.cur) waiLoadThread(WAI.cur, false); }
+    if (WAI.tab === 'ai') waiRenderAi();
+  } catch (e) { toast(waiErr(e)); }
 }
 
 /* ───────── INBOX ───────── */
@@ -31774,7 +31838,7 @@ async function waiRenderAi() {
       </div>
       <div class="wai-row" style="margin-top:10px">
         <div style="grid-column:1/-1"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Pesan serah-terima sopan (dikirim ke pelanggan saat AI gagal / tidak yakin — error teknis TIDAK pernah tampil di chat)</div><input class="fi" id="wai-s-hand-msg" value="${escHtml(st.handoff_message || 'Sebentar ya Kak, tim kami segera balas 🙏')}"/></div>
-        <div style="grid-column:1/-1"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Urutan provider AI (pisahkan koma): cloudflare, groq, gemini, openrouter, mistral, anthropic</div><input class="fi" id="wai-s-order" value="${escHtml(st.ai_provider_order || 'cloudflare,groq,gemini,openrouter,mistral,anthropic')}"/></div>
+        <div style="grid-column:1/-1"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Urutan provider AI (pisahkan koma): cloudflare, groq, nvidia, gemini, openrouter, mistral, anthropic</div><input class="fi" id="wai-s-order" value="${escHtml(st.ai_provider_order || 'cloudflare,groq,nvidia,gemini,openrouter,mistral,anthropic')}"/></div>
       </div>
       <div style="margin-top:10px"><button class="btn-sm btn-gold" onclick="waiSaveSettings()">Simpan Pengaturan</button></div>
     </div>
@@ -31810,7 +31874,7 @@ async function waiRenderAi() {
 }
 async function waiSaveSettings() {
   const v = id => document.getElementById(id);
-  const r = await dbQ(d => d.from('wa_settings').update({ ai_enabled: v('wai-s-en').checked, default_ai_mode: v('wai-s-mode').value, business_name: v('wai-s-name').value.trim() || 'Toko', persona: v('wai-s-persona').value.trim(), handover_rules: v('wai-s-hand').value.trim(), heat_rules: v('wai-s-heat').value.trim(), reply_delay_sec: Math.max(0, Math.min(90, parseInt(v('wai-s-delay').value, 10) || 0)), rule_replies_enabled: v('wai-s-rule').checked, cache_enabled: v('wai-s-cache').checked, ai_debounce_sec: Math.max(0, Math.min(15, parseInt(v('wai-s-deb').value, 10) || 0)), history_limit: Math.max(4, Math.min(20, parseInt(v('wai-s-hist').value, 10) || 8)), privacy_mode: v('wai-s-priv').value, handoff_message: v('wai-s-hand-msg').value.trim() || 'Sebentar ya Kak, tim kami segera balas 🙏', ai_provider_order: v('wai-s-order').value.replace(/\s+/g, '').toLowerCase() || 'cloudflare,groq,gemini,openrouter,mistral,anthropic', product_sheet_url: v('wai-s-sheet').value.trim() || null, updated_at: new Date().toISOString() }).eq('id', 1));
+  const r = await dbQ(d => d.from('wa_settings').update({ ai_enabled: v('wai-s-en').checked, default_ai_mode: v('wai-s-mode').value, business_name: v('wai-s-name').value.trim() || 'Toko', persona: v('wai-s-persona').value.trim(), handover_rules: v('wai-s-hand').value.trim(), heat_rules: v('wai-s-heat').value.trim(), reply_delay_sec: Math.max(0, Math.min(90, parseInt(v('wai-s-delay').value, 10) || 0)), rule_replies_enabled: v('wai-s-rule').checked, cache_enabled: v('wai-s-cache').checked, ai_debounce_sec: Math.max(0, Math.min(15, parseInt(v('wai-s-deb').value, 10) || 0)), history_limit: Math.max(4, Math.min(20, parseInt(v('wai-s-hist').value, 10) || 8)), privacy_mode: v('wai-s-priv').value, handoff_message: v('wai-s-hand-msg').value.trim() || 'Sebentar ya Kak, tim kami segera balas 🙏', ai_provider_order: v('wai-s-order').value.replace(/\s+/g, '').toLowerCase() || 'cloudflare,groq,nvidia,gemini,openrouter,mistral,anthropic', product_sheet_url: v('wai-s-sheet').value.trim() || null, updated_at: new Date().toISOString() }).eq('id', 1));
   toast(!r || r.error ? (/heat_rules|reply_delay|product_sheet|debounce|history_limit|privacy_mode|handoff_message|provider_order|rule_replies|cache_enabled/.test((r && r.error && r.error.message) || '') ? 'Gagal: jalankan migration SQL v126 dulu.' : waiErr(r && r.error)) : '✓ Pengaturan AI disimpan');
 }
 function waiLoadScript(src) {
