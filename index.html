@@ -4759,6 +4759,25 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
   .lb-row-right{grid-column:1/-1;text-align:left;padding-left:58px}
 }
 
+/* ── Topbar & konten di HP ── */
+@media (max-width:640px){
+  .topbar{gap:8px;padding:10px 12px}
+  #nav-burger{margin-right:auto}
+  .topbar-greeting{display:none}
+  .topbar-right{gap:6px;min-width:0}
+  #tut-replay-btn,.topbar-clock .clock-date{display:none}
+  .topbar-right .tb-btn{width:36px;height:36px;padding:0;display:inline-flex;align-items:center;justify-content:center}
+  .topbar-right .theme-toggle{transform:scale(.9);transform-origin:center}
+  .clock-time{font-size:13px;letter-spacing:.02em}
+  .content{padding:12px 12px calc(20px + env(safe-area-inset-bottom,0px))}
+  .ph{flex-wrap:wrap;gap:10px}.ph-acts{width:100%;flex-wrap:wrap}
+  .modal,.m-box{max-width:calc(100vw - 24px)}
+}
+@media (max-width:360px){.topbar-right .theme-toggle{display:none}}
+@media (max-width:768px){body:not(.nav-on) .sb{box-shadow:none!important}}
+/* Menu Bantuan (FAQ & Quick Reply) dihapus dari sidebar */
+#ns-help,#n-faq,#n-quick-reply{display:none!important}
+
 /* v125 WA Inbox */
 /* ═══ v125 — WA INBOX (prefix wai-) ═══ */
 .wai-tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:14px;flex-wrap:wrap}
@@ -4822,11 +4841,7 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
 .wai-sw{display:inline-flex;align-items:center;gap:6px;font-size:11px;cursor:pointer}
 .wai-pill{font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:20px;letter-spacing:.05em}.wai-pill.demo{background:rgba(185,121,31,.14);color:#b9791f}.wai-pill.live{background:rgba(26,122,62,.14);color:#1a7a3e}.wai-pill.off{background:var(--surface3);color:var(--muted)}
 @media (max-width:1180px){.wai-app{grid-template-columns:300px minmax(0,1fr)}.wai-info{display:none}}
-@media (max-width:760px){
-  .wai-app{grid-template-columns:1fr;height:calc(100vh - 190px)}
-  .wai-app .wai-chat{display:none}.wai-app.show-chat .wai-list{display:none}.wai-app.show-chat .wai-chat{display:flex}
-  .wai-back{display:inline-flex}.wai-b{max-width:88%}
-}
+
 
 .wai-sub{font-size:12px;font-weight:700;margin:16px 0 8px;padding-top:12px;border-top:1px solid var(--border)}.wai-sub span{font-weight:400;font-size:10.5px;color:var(--muted);margin-left:6px}
 
@@ -4859,6 +4874,79 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
 .wai-legend{font-size:11px;display:grid;gap:3px}.wai-legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
 .wai-limgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px}.wai-lim{font-size:10.5px;color:var(--muted)}.wai-lim input{margin-top:2px;padding:6px 8px;font-size:12px}
 @media(max-width:820px){.wai-quota{grid-template-columns:1fr}}
+
+/* ═══ Tampilan HP & tablet ═══ */
+.wai-infobtn,.wai-info-x{display:none}
+.wai-brk{display:none}
+.wai-hud-desc{display:none}
+.wai-tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media (max-width:1180px){
+  .wai-infobtn{display:inline-flex}
+  .wai-app.show-info .wai-info{display:block;position:fixed;inset:0;z-index:60;border:0;padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px));overflow-y:auto}
+  .wai-app.show-info .wai-info-x{display:inline-flex;margin-bottom:14px}
+}
+@media (max-width:760px){
+  #pg-wa_inbox .ph{margin-bottom:10px;gap:8px}
+  #pg-wa_inbox .ph .ps{display:none}
+  #pg-wa_inbox .ph .pt{font-size:22px}
+  /* HUD ringkas */
+  .wai-hud{grid-template-columns:1fr;gap:10px;padding:12px;margin-bottom:10px}
+  .wai-hud-lbl{margin-bottom:6px}
+  .wai-hud-sw{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .wai-hud-sw button{padding:9px 6px;align-items:center;text-align:center;gap:0}
+  .wai-hud-sw button b{font-size:12px;white-space:nowrap}
+  .wai-hud-sw button span{display:none}
+  .wai-hud-desc{display:block;font-size:11px;color:var(--muted);line-height:1.45;margin:-2px 0 8px}
+  .wai-hud-stats{gap:6px}.wai-hud-stats div{padding:8px 2px}.wai-hud-stats b{font-size:17px}.wai-hud-stats span{font-size:9.5px}
+  .wai-hud-warn{font-size:11px;padding:6px 9px}
+  /* tab bisa digeser, tidak turun baris */
+  .wai-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-bottom:10px;gap:0;-webkit-overflow-scrolling:touch}
+  .wai-tabs::-webkit-scrollbar{display:none}
+  .wai-tab{flex:0 0 auto;padding:10px 13px;white-space:nowrap}
+  /* inbox: satu panel, chat layar penuh */
+  .wai-app{grid-template-columns:minmax(0,1fr);height:calc(100dvh - 230px);min-height:420px;border-radius:10px}
+  .wai-app .wai-chat{display:none}
+  .wai-app.show-chat .wai-list{display:none}.wai-app.show-chat .wai-chat{display:flex}
+  #pg-wa_inbox.wai-chatting .ph,#pg-wa_inbox.wai-chatting #wai-hud,#pg-wa_inbox.wai-chatting .wai-tabs{display:none}
+  #pg-wa_inbox.wai-chatting .wai-app{height:calc(100dvh - 92px);border-radius:10px}
+  .wai-back{display:inline-flex;align-items:center;justify-content:center;min-width:38px;min-height:38px;font-size:18px;padding:0}
+  .wai-chead{padding:8px 10px;gap:8px}
+  .wai-chead .t{flex:1 1 0;min-width:0}
+  .wai-chead>*{order:4}.wai-chead>.wai-back{order:0}.wai-chead>.t{order:1}.wai-chead>.wai-infobtn{order:2}
+  .wai-brk{display:block!important;order:3!important;flex:0 0 100%;height:0;margin:-2px 0}
+  .wai-chead .n,.wai-chead .s{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wai-chead select{flex:1 1 0;max-width:none;min-width:0;font-size:12px;min-height:36px}
+  .wai-chead .btn-sm{min-height:36px}
+  .wai-msgs{padding:10px 10px}
+  .wai-b{max-width:88%;font-size:13.5px}
+  .wai-draft{margin:0 8px 8px}.wai-notice{margin:0 8px 8px}
+  .wai-comp{padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px));gap:6px;flex-wrap:wrap}
+  .wai-comp textarea{flex:1 1 100%;font-size:16px;min-height:42px}
+  .wai-comp .btn-sm{flex:1 1 0;min-height:40px}
+  .wai-list .wai-lhead{padding:8px}
+  .wai-seg button{padding:8px 4px;font-size:10px}
+  .wai-lhead input{font-size:16px}
+  .wai-it{padding:12px 10px}
+  /* kartu pengaturan, tabel, input */
+  .wai-card{padding:12px;margin-bottom:10px}
+  .wai-row{grid-template-columns:minmax(0,1fr)}
+  .wai-quota{gap:12px}
+  .wai-card .fi,.wai-card select,.wai-card input,.wai-card textarea,#m-body .fi{font-size:16px;max-width:100%;box-sizing:border-box}
+  .wai-card input[type=number]{max-width:140px!important}
+  .wai-card .btn-sm{min-height:38px}
+  .wai-limgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .wai-tbl,.wai-tbl tbody{display:block;width:100%;min-width:0!important}
+  .wai-tbl thead{display:none}
+  .wai-tbl tr{display:block;border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin-bottom:8px;background:var(--surface2)}
+  .wai-tbl td{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:5px 0!important;border:0!important;font-size:12.5px;text-align:right;word-break:break-word}
+  .wai-tbl td::before{content:attr(data-label);flex:0 0 38%;text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .wai-tbl td:empty{display:none}
+  .wai-k{flex-direction:column;gap:6px}
+  .wai-code{font-size:10.5px}
+  #wai-ai-status table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  #wai-ai-status td{white-space:normal;word-break:break-word}
+}
+@media (max-width:380px){.wai-hud-sw button b{font-size:11px}.wai-chead select{flex-basis:100%}}
 
 
 /* ── Modul sidebar yang bisa dilipat ── */
@@ -31570,8 +31658,16 @@ function waiRenderShell() {
   waiHud();
 }
 function waiTab(t) { WAI.tab = t; WAI.cur = null; WAI.thread = null; waiRenderShell(); }
+function waiLabelTables() {
+  document.querySelectorAll('#wai-root .wai-tbl').forEach(t => {
+    const hs = [...t.querySelectorAll('thead th')].map(h => h.textContent.trim());
+    t.querySelectorAll('tbody tr').forEach(tr => [...tr.children].forEach((td, i) => { if (hs[i] && td.getAttribute('data-label') !== hs[i]) td.setAttribute('data-label', hs[i]); }));
+  });
+}
 function waiRenderTab() {
   ({ inbox: waiRenderInbox, agents: waiRenderAgents, ai: waiRenderAi, numbers: waiRenderNumbers, sim: waiRenderSim }[WAI.tab] || waiRenderInbox)();
+  if (!WAI._tblObs && document.getElementById('wai-root')) { WAI._tblObs = new MutationObserver(waiLabelTables); WAI._tblObs.observe(document.getElementById('wai-root'), { childList: true, subtree: true }); }
+  setTimeout(waiLabelTables, 0);
 }
 
 
@@ -31593,6 +31689,7 @@ async function waiHud() {
     box.innerHTML = `
       <div class="wai-hud-main">
         <div class="wai-hud-lbl">Balasan otomatis <span class="wai-hud-now wai-hud-${cur[0]}">${cur[1]} ${cur[2]}</span></div>
+        <div class="wai-hud-desc">${cur[3]}</div>
         <div class="wai-hud-sw ${ro ? 'ro' : ''}">${WAI_HUD_MODES.map(m => `<button class="${d.mode === m[0] ? 'on m-' + m[0] : ''}" ${ro ? 'disabled' : ''} onclick="waiHudSet('${m[0]}')"><b>${m[1]} ${m[2]}</b><span>${m[3]}</span></button>`).join('')}</div>
       </div>
       <div class="wai-hud-stats">
@@ -31718,9 +31815,13 @@ function waiRenderList() {
     </div>`).join('');
 }
 
+
+function waiBack() { document.getElementById('wai-app')?.classList.remove('show-chat', 'show-info'); document.getElementById('pg-wa_inbox')?.classList.remove('wai-chatting'); WAI.cur = null; WAI.sig = ''; waiRenderList(); }
+function waiInfoSheet(on) { document.getElementById('wai-app')?.classList.toggle('show-info', !!on); }
 async function waiOpenConv(id, keep) {
   WAI.cur = id;
   document.getElementById('wai-app')?.classList.add('show-chat');
+  document.getElementById('pg-wa_inbox')?.classList.add('wai-chatting');
   waiRenderList();
   await waiLoadThread(id, !!keep);
 }
@@ -31757,12 +31858,14 @@ function waiRenderThread(scroll) {
   const agentOpts = (WAI.agents || []).map(a => `<option value="${a.user_id}" ${a.user_id === c.assigned_to ? 'selected' : ''}>${escHtml(a.name)}</option>`).join('');
   chat.innerHTML = `
     <div class="wai-chead">
-      <button class="btn-sm btn-cancel wai-back" onclick="document.getElementById('wai-app').classList.remove('show-chat')">‹</button>
+      <button class="btn-sm btn-cancel wai-back" onclick="waiBack()" aria-label="Kembali ke daftar chat">‹</button>
       <div class="t"><div class="n">${escHtml(c.name)}</div><div class="s">${waiPhone(c.wa_phone)} · ${c.agent_name ? 'Agen: ' + escHtml(c.agent_name) : 'belum ditugaskan'}${c.account_mode === 'demo' ? ' · <b style="color:#b9791f">DEMO</b>' : ''}</div></div>
       <select class="fi" onchange="waiSetAi(this.value)" title="Mode AI untuk chat ini" ${waiIsOwner() ? 'disabled' : ''}>
         <option value="off" ${c.ai_mode === 'off' ? 'selected' : ''}>AI mati</option>
         <option value="draft" ${c.ai_mode === 'draft' ? 'selected' : ''}>AI usul (draf)</option>
         <option value="auto" ${c.ai_mode === 'auto' ? 'selected' : ''}>AI otomatis</option></select>
+      <button class="btn-sm btn-cancel wai-infobtn" onclick="waiInfoSheet(true)" aria-label="Info pelanggan">ℹ Info</button>
+      <span class="wai-brk"></span>
       ${mod ? `<select class="fi" onchange="waiAssign(this.value)" title="Pindahkan ke agen"><option value="">— pindahkan —</option>${agentOpts}</select>` : ''}
       ${waiIsOwner() ? '' : (c.status === 'open' ? '<button class="btn-sm btn-cancel" onclick="waiClose(true)">Selesai</button>' : '<button class="btn-sm btn-gold" onclick="waiClose(false)">Buka lagi</button>')}
     </div>
@@ -31772,7 +31875,7 @@ function waiRenderThread(scroll) {
         <div class="a"><button class="btn-sm btn-gold" onclick="waiSendDraft()">Kirim</button><button class="btn-sm btn-cancel" onclick="waiEditDraft()">Edit dulu</button><button class="btn-sm btn-cancel" onclick="waiDiscardDraft()">Buang</button></div></div>` : ''}
     ${!open ? '<div class="wai-notice">Sudah lewat 24 jam sejak pelanggan terakhir chat. Meta hanya mengizinkan pesan <b>template</b> yang sudah disetujui. Tunggu pelanggan membalas.</div>' : ''}
     ${waiIsOwner() ? '<div class="wai-notice">👁 Akun Owner hanya bisa melihat percakapan.</div>' : `<div class="wai-comp">
-      <textarea id="wai-txt" rows="1" placeholder="${open ? 'Ketik pesan… (Enter kirim, Shift+Enter baris baru)' : 'Tidak bisa membalas di luar 24 jam'}" ${open ? '' : 'disabled'}>${escHtml(keepTxt)}</textarea>
+      <textarea id="wai-txt" rows="1" placeholder="${open ? 'Ketik pesan…' : 'Tidak bisa membalas di luar 24 jam'}" ${open ? '' : 'disabled'}>${escHtml(keepTxt)}</textarea>
       <button class="btn-sm btn-cancel" onclick="waiAskAi()" title="Minta AI menyusun balasan">🤖 Saran AI</button>
       <button class="btn-sm btn-gold" onclick="waiSend()" ${open ? '' : 'disabled'}>Kirim</button>
     </div>`}`;
@@ -31787,6 +31890,7 @@ function waiRenderInfo() {
   const c = t.conversation, cu = t.customer;
   const rp = n => (typeof crmFmtRupiah === 'function' ? crmFmtRupiah(Math.round(n || 0)) : 'Rp ' + Math.round(n || 0).toLocaleString('id-ID'));
   box.innerHTML = `
+    <button class="btn-sm btn-cancel wai-info-x" onclick="waiInfoSheet(false)">✕ Tutup</button>
     <h4>Pelanggan</h4>
     ${cu ? `
       <div class="wai-kv"><span>ID Customer</span><span>${escHtml(cu.cust_code || '-')}</span></div>
@@ -31860,7 +31964,7 @@ async function waiClose(done) {
   if (blockIfOwner()) return;
   try { await waiRpc('wa_set_conv', { p_user_id: waiMe(), p_conv_id: WAI.cur, p_status: done ? 'closed' : 'open', p_ai_mode: null }); toast(done ? '✓ Percakapan ditandai selesai' : '✓ Percakapan dibuka lagi'); WAI.sig = ''; if (done) { WAI.cur = null; WAI.thread = null; renderEmptyChat(); } await waiRefresh(true); if (!done) waiLoadThread(WAI.cur, false); } catch (e) { toast(waiErr(e)); }
 }
-function renderEmptyChat() { const c = document.getElementById('wai-chat'); if (c) c.innerHTML = '<div class="wai-empty" style="margin:auto">Pilih percakapan di sebelah kiri</div>'; const i = document.getElementById('wai-info'); if (i) i.innerHTML = ''; document.getElementById('wai-app')?.classList.remove('show-chat'); }
+function renderEmptyChat() { const c = document.getElementById('wai-chat'); if (c) c.innerHTML = '<div class="wai-empty" style="margin:auto">Pilih percakapan di sebelah kiri</div>'; const i = document.getElementById('wai-info'); if (i) i.innerHTML = ''; document.getElementById('wai-app')?.classList.remove('show-chat'); document.getElementById('pg-wa_inbox')?.classList.remove('wai-chatting'); }
 async function waiAssign(agentId) {
   if (blockIfOwner()) return;
   if (!agentId) return;
@@ -31954,11 +32058,12 @@ async function waiRenderAi() {
         <div><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Debounce (detik) — pesan beruntun digabung jadi 1 balasan</div><input class="fi" type="number" min="0" max="15" id="wai-s-deb" value="${st.ai_debounce_sec ?? 4}" style="max-width:120px"/></div>
         <div><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Riwayat chat yang dikirim ke AI (6–10 pesan)</div><input class="fi" type="number" min="4" max="20" id="wai-s-hist" value="${st.history_limit ?? 8}" style="max-width:120px"/></div>
         <div><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Data pribadi (nama, alamat, no HP)</div>
-          <select class="fi" id="wai-s-priv"><option value="strict" ${st.privacy_mode === 'strict' ? 'selected' : ''}>Ketat — hanya provider yang tidak melatih dari data (Cloudflare/Claude)</option><option value="masked" ${(st.privacy_mode || 'masked') === 'masked' ? 'selected' : ''}>Campuran — chat berisi alamat/HP hanya ke provider privat; sisanya nama disamarkan</option><option value="open" ${st.privacy_mode === 'open' ? 'selected' : ''}>Bebas — semua provider, tanpa penyamaran</option></select></div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;line-height:1.45">Ketat = semua chat hanya ke Cloudflare/Claude. Campuran = chat berisi alamat/HP hanya ke provider privat, sisanya nama disamarkan.</div>
+          <select class="fi" id="wai-s-priv"><option value="strict" ${st.privacy_mode === 'strict' ? 'selected' : ''}>Ketat — hanya provider privat</option><option value="masked" ${(st.privacy_mode || 'masked') === 'masked' ? 'selected' : ''}>Campuran (disarankan)</option><option value="open" ${st.privacy_mode === 'open' ? 'selected' : ''}>Bebas — semua provider</option></select></div>
       </div>
       <div class="wai-row" style="margin-top:10px">
         <div style="grid-column:1/-1"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Pesan serah-terima sopan (dikirim ke pelanggan saat AI gagal / tidak yakin — error teknis TIDAK pernah tampil di chat)</div><input class="fi" id="wai-s-hand-msg" value="${escHtml(st.handoff_message || 'Sebentar ya Kak, tim kami segera balas 🙏')}"/></div>
-        <div style="grid-column:1/-1"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Urutan provider AI (pisahkan koma): cloudflare, groq, nvidia, gemini, openrouter, mistral, anthropic</div><input class="fi" id="wai-s-order" value="${escHtml(st.ai_provider_order || 'cloudflare,groq,nvidia,gemini,openrouter,mistral,anthropic')}"/></div>
+        <div style="grid-column:1/-1"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Urutan provider AI (pisahkan koma): cloudflare, groq, nvidia, gemini, openrouter, mistral, anthropic</div><textarea class="fi" id="wai-s-order" rows="2">${escHtml(st.ai_provider_order || 'cloudflare,groq,nvidia,gemini,openrouter,mistral,anthropic')}</textarea></div>
       </div>
       <div style="margin-top:10px"><button class="btn-sm btn-gold" onclick="waiSaveSettings()">Simpan Pengaturan</button></div>
     </div>
@@ -32279,10 +32384,12 @@ async function waiRenderNumbers() {
       <ol style="font-size:12px;line-height:1.75;padding-left:18px;margin:0">
         <li>Di <b>Meta for Developers</b> buat app, tambahkan produk <b>WhatsApp</b>, daftarkan nomor di WhatsApp Business Account. Catat <b>Phone Number ID</b> dan <b>WABA ID</b> → isi di tabel di atas.</li>
         <li>Buat <b>System User</b> di Meta Business Settings, beri akses ke WABA, lalu generate <b>token permanen</b> (izin <code>whatsapp_business_messaging</code> &amp; <code>whatsapp_business_management</code>).</li>
-        <li>Di Supabase (CLI) isi secrets:
-          <span class="wai-code">supabase secrets set WA_ACCESS_TOKEN=… WA_VERIFY_TOKEN=(karangan bebas) META_APP_SECRET=… ANTHROPIC_API_KEY=…</span></li>
-        <li>Deploy fungsi:
-          <span class="wai-code">supabase functions deploy wa-webhook --no-verify-jwt<br>supabase functions deploy wa-send<br>supabase functions deploy wa-ai</span></li>
+        <li>Di Supabase → <b>Edge Functions → Secrets</b>, tambahkan (nama harus persis):
+          <span class="wai-code">WA_ACCESS_TOKEN = token System User Meta<br>META_APP_SECRET = App Secret dari Meta<br>WA_VERIFY_TOKEN = kata bebas (samakan dengan di Meta)</span>
+          Kunci AI (isi minimal satu, Cloudflare disarankan):
+          <span class="wai-code">CF_ACCOUNT_ID + CF_API_TOKEN (Cloudflare)<br>GROQ_API_KEY · NVIDIA_API_KEY · GEMINI_API_KEY<br>OPENROUTER_API_KEY · MISTRAL_API_KEY (opsional)</span></li>
+        <li>Di <b>Edge Functions</b> pasang tiga fungsi (satu file per fungsi, lalu Deploy):
+          <span class="wai-code">quick-endpoint → kode wa-webhook.ts (Verify JWT: OFF)<br>smooth-worker → kode wa-send.ts (Verify JWT: OFF)<br>clever-action → kode wa-ai.ts (Verify JWT: OFF)</span></li>
         <li>Di Meta → WhatsApp → Configuration → Webhook: isi <b>Callback URL</b> dan <b>Verify token</b> (sama dengan WA_VERIFY_TOKEN), lalu subscribe ke field <code>messages</code>:
           <span class="wai-code">${escHtml(hook)}</span></li>
         <li>Ubah mode nomor di atas menjadi <b>Live</b>.</li>
