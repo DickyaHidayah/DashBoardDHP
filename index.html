@@ -31581,6 +31581,7 @@ async function waiRefresh(silent) {
   if (WAI.tab !== 'inbox') { waiRenderTab(); return; }
   try {
     const rows = await waiRpc('wa_list_conversations', { p_user_id: waiMe(), p_scope: WAI.scope, p_status: WAI.status, p_search: WAI.search || null, p_limit: 150 });
+    if (rows && !Array.isArray(rows)) throw new Error('Respons inbox tidak terduga — jalankan ulang migration SQL v129.');
     WAI.convs = rows || [];
     waiRenderList();
     waiBadge(WAI.convs);
@@ -31620,7 +31621,7 @@ function waiRenderList() {
     });
     return;
   }
-  const mod = waiIsMod();
+  const mod = waiIsMod() || waiIsOwner();   // moderator & owner melihat siapa yang menangani tiap chat
   box.innerHTML = WAI.convs.map(c => `
     <div class="wai-it ${WAI.cur === c.id ? 'on' : ''}" onclick="waiOpenConv('${c.id}')">
       <div class="wai-av">${escHtml((c.name || '?').trim().charAt(0).toUpperCase())}</div>
@@ -31630,7 +31631,7 @@ function waiRenderList() {
         <div class="wai-it-meta">
           ${c.needs_human ? '<span class="wai-chip hum">🔔 Butuh manusia</span>' : ''}
           ${waiHeatChip(c.ai_heat || c.heat)}
-          ${mod ? `<span class="wai-chip">${c.agent_name ? escHtml(c.agent_name) : '⚠ belum ditugaskan'}</span>` : ''}
+          ${mod ? `<span class="wai-chip">${c.agent_name ? '👤 ' + escHtml(c.agent_name) : '⚠ belum ditugaskan'}</span>` : ''}
           ${c.unread > 0 ? `<span class="wai-unread">${c.unread}</span>` : ''}
         </div>
       </div>
