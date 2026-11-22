@@ -4994,6 +4994,25 @@ body:not(.light) #pg-wa_inbox .wai-b.out:not(.ai){background:rgba(37,211,102,.16
 .ng-wa .nav-grp-inner .nav-item.active .nav-icon{color:#25D366!important}
 .ng-wa .nav-badge{background:#25D366!important;color:#fff!important}
 
+/* ── Penyempurnaan modul AI WhatsApp ── */
+.ng-wa>.nav-grp-head,.ng-wa>.nav-grp-head *,.ng-wa.open>.nav-grp-head,.ng-wa.has-active>.nav-grp-head,.ng-wa.has-active>.nav-grp-head .nav-icon{color:#fff!important}
+.ng-wa>.nav-grp-head svg,.ng-wa>.nav-grp-head svg path{fill:#fff}.ng-wa>.nav-grp-head .nav-grp-chev,.ng-wa>.nav-grp-head .nav-grp-chev path{fill:none!important;stroke:#fff!important}
+.ng-wa>.nav-grp-head{transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}
+.ng-wa>.nav-grp-head:hover{transform:translateY(-1px);filter:brightness(1.07) saturate(1.05);box-shadow:0 8px 22px rgba(37,211,102,.42)}
+.ng-wa>.nav-grp-head:active{transform:translateY(0);filter:brightness(.97)}
+/* ikon fitur di dalam modul: hijau WhatsApp */
+.ng-wa .nav-grp-inner .nav-item .nav-icon,.ng-wa .nav-grp-inner .nav-item .nav-icon svg{color:#25D366!important}
+.ng-wa .nav-grp-inner .nav-item{position:relative;transition:background .16s ease,color .16s ease,transform .16s ease,padding .16s ease}
+.ng-wa .nav-grp-inner .nav-item:hover{background:rgba(37,211,102,.10)!important;color:#128C7E!important;transform:translateX(3px)}
+.ng-wa .nav-grp-inner .nav-item:hover .nav-icon{transform:scale(1.12)}
+.ng-wa .nav-grp-inner .nav-item .nav-icon{transition:transform .16s ease}
+.ng-wa .nav-grp-inner .nav-item.active{background:linear-gradient(90deg,rgba(37,211,102,.22),rgba(37,211,102,.06))!important;color:#0e7a6e!important;font-weight:700;transform:none}
+.ng-wa .nav-grp-inner .nav-item.active::before{content:'';position:absolute;left:-10px;top:7px;bottom:7px;width:3px;border-radius:3px;background:#25D366}
+/* My Performance dihapus dari sidebar */
+#n-my-performance{display:none!important}
+body.light .ng-wa .nav-grp-inner .nav-item .nav-icon svg,body.light .ng-wa .nav-grp-inner .nav-item.active .nav-icon svg{filter:none!important;opacity:1!important}
+body.light .ng-wa>.nav-grp-head .nav-icon svg{filter:none!important;opacity:1!important}
+
 
 /* ── Modul sidebar yang bisa dilipat ── */
 .nav-sec-lbl[data-grp]{display:none!important}
