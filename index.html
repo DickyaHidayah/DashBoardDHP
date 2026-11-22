@@ -4817,6 +4817,18 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
 .wai-b.in{align-self:flex-start;background:var(--surface);border:1px solid var(--border);border-top-left-radius:3px}
 .wai-b.out{align-self:flex-end;background:rgba(176,125,46,.14);border:1px solid rgba(176,125,46,.28);border-top-right-radius:3px}
 .wai-b.out.ai{background:rgba(74,123,168,.12);border-color:rgba(74,123,168,.3)}
+.wai-dots{display:inline-flex;gap:4px;align-items:center;height:16px;padding:2px 2px}
+.wai-dots i{width:6px;height:6px;border-radius:50%;background:var(--muted);opacity:.35;animation:waiDot 1.1s infinite ease-in-out}
+.wai-dots i:nth-child(2){animation-delay:.16s}.wai-dots i:nth-child(3){animation-delay:.32s}
+@keyframes waiDot{0%,60%,100%{transform:translateY(0);opacity:.35}30%{transform:translateY(-4px);opacity:1}}
+.wai-b.typing-ind,.wai-b.typing{animation:waiPop .22s ease-out}
+@keyframes waiPop{from{opacity:0;transform:translateY(6px) scale(.97)}to{opacity:1;transform:none}}
+.wai-b.typing::after{content:'';display:inline-block;width:1px;height:1em;background:currentColor;margin-left:1px;vertical-align:-2px;animation:waiCaret .7s steps(1) infinite}
+.wai-b.typing:has(.wai-dots)::after{display:none}
+@keyframes waiCaret{50%{opacity:0}}
+.wai-b a{color:inherit;text-decoration:underline;word-break:break-all}
+.wai-doc{display:inline-flex;flex-direction:column;gap:1px;padding:6px 10px;border:1px solid var(--border-hi);border-radius:8px;background:rgba(0,0,0,.04)}.wai-doc small{font-size:10px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.wai-dots i,.wai-b.typing::after,.wai-b.typing-ind,.wai-b.typing{animation:none}}
 .wai-b .by{font-size:9.5px;font-weight:700;color:var(--gold);margin-bottom:2px}.wai-b.ai .by{color:#4a7ba8}
 .wai-b .ft{font-size:9px;color:var(--muted);text-align:right;margin-top:3px}
 .wai-b .ft .rd{color:#3a86d1}.wai-b .ft .er{color:#c84848}
@@ -31846,13 +31858,14 @@ function waiRenderThread(scroll) {
   const c = t.conversation, mod = waiIsMod();
   const chat = document.getElementById('wai-chat'); if (!chat) return;
   const keepTxt = (document.getElementById('wai-txt') || {}).value || '';
+  waiTypingInit(t);
   let day = '', html = '';
   (t.messages || []).forEach(m => {
     const dl = waiDayLabel(m.created_at);
     if (dl !== day) { day = dl; html += `<div class="wai-day">${dl}</div>`; }
     const isAi = m.sender === 'ai';
     const by = m.dir === 'out' ? `<div class="by">${isAi ? '🤖 AI' : escHtml(m.sender_name || 'Agen')}</div>` : '';
-    html += `<div class="wai-b ${m.dir} ${isAi ? 'ai' : ''}">${by}${escHtml(m.body || '')}<div class="ft">${waiTime(m.created_at)} ${waiTick(m)}${m.error ? `<div class="er">${escHtml(m.error)}</div>` : ''}</div></div>`;
+    html += `<div class="wai-b ${m.dir} ${isAi ? 'ai' : ''}" data-mid="${m.id}"${isAi && waiIsFresh(m) ? ' data-fresh="1"' : ''}>${by}<span class="bt">${waiBody(m.body)}</span><div class="ft">${waiTime(m.created_at)} ${waiTick(m)}${m.error ? `<div class="er">${escHtml(m.error)}</div>` : ''}</div></div>`;
   });
   const open = waiWindowOpen(c);
   const agentOpts = (WAI.agents || []).map(a => `<option value="${a.user_id}" ${a.user_id === c.assigned_to ? 'selected' : ''}>${escHtml(a.name)}</option>`).join('');
@@ -31882,8 +31895,9 @@ function waiRenderThread(scroll) {
   const ta = document.getElementById('wai-txt');
   if (ta) ta.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); waiSend(); } };
   if (scroll) { const m = document.getElementById('wai-msgs'); if (m) m.scrollTop = m.scrollHeight; }
+  waiTypingRun(); waiTypingIndicator();
   waiRenderInfo();
-  if (mod && !(WAI.agents || []).length) waiLoadAgents().then(() => { if (WAI.thread) waiRenderThread(false); });
+  if (mod && !(WAI.agents || []).length && !WAI._agAsked) { WAI._agAsked = true; waiLoadAgents().then(() => { if (WAI.thread) waiRenderThread(false); }); }
 }
 function waiRenderInfo() {
   const t = WAI.thread, box = document.getElementById('wai-info'); if (!t || !box) return;
@@ -32501,6 +32515,64 @@ window.addEventListener('storage', ev => {
     setTimeout(() => toast('🔒 Akun ' + nm + ' dibuka di tab lain — tab ini otomatis keluar.'), 400);
   } catch (e) { console.warn('tab-lock', e); }
 });
+
+
+// ── Bubble AI: efek "sedang mengetik" ─────────────────────────────────────────
+// Pesan AI yang baru masuk (<20 dtk, belum pernah dianimasikan) tampil dengan titik-titik lalu diketik huruf per huruf.
+// Chat yang baru dibuka tidak dianimasikan. Pelanggan tidak melihat apa pun — ini hanya tampilan di portal.
+WAI.seen = WAI.seen || {}; WAI.seenConv = null;
+function waiBody(b) {
+  const s = String(b || '');
+  const d = s.trim().match(/^\[dokumen:(https?:\/\/[^\s|\]]+)(?:\|([^\]]+))?\]$/i);
+  if (d) return `<span class="wai-doc">📎 <b>${escHtml((d[2] || 'Katalog.pdf').trim())}</b><small>dikirim sebagai file</small></span>`;
+  return escHtml(s).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+}
+function waiIsFresh(m) {
+  if (WAI.seen[m.id] || WAI.seenConv !== WAI.thread.conversation.id) return false;
+  return Date.now() - new Date(m.created_at).getTime() < 20000;
+}
+function waiTypingInit(t) {
+  const id = t.conversation.id;
+  if (WAI.seenConv !== id) { WAI.seenConv = id; WAI.seen = {}; (t.messages || []).forEach(m => { WAI.seen[m.id] = 1; }); WAI._pend = null; return; }
+}
+function waiTypingRun() {
+  const chat = document.getElementById('wai-chat'); if (!chat) return;
+  const nodes = chat.querySelectorAll('.wai-b[data-fresh="1"]');
+  let delay = 0;
+  nodes.forEach(n => {
+    const id = n.getAttribute('data-mid'); n.removeAttribute('data-fresh');
+    if (WAI.seen[id]) return; WAI.seen[id] = 1;
+    const bt = n.querySelector('.bt'), ft = n.querySelector('.ft'), full = bt.innerHTML;
+    if (n.querySelector('.wai-doc')) return;
+    const plain = bt.textContent;
+    n.classList.add('typing'); bt.innerHTML = '<span class="wai-dots"><i></i><i></i><i></i></span>'; if (ft) ft.style.visibility = 'hidden';
+    const dots = 700 + Math.min(1400, plain.length * 8);
+    setTimeout(() => {
+      let i = 0; const step = Math.max(1, Math.ceil(plain.length / 90));
+      const tick = () => {
+        if (!n.isConnected) return;
+        i = Math.min(plain.length, i + step); bt.textContent = plain.slice(0, i);
+        const c = document.getElementById('wai-msgs'); if (c && c.scrollHeight - c.scrollTop - c.clientHeight < 160) c.scrollTop = c.scrollHeight;
+        if (i < plain.length) setTimeout(tick, 22); else { bt.innerHTML = full; n.classList.remove('typing'); if (ft) ft.style.visibility = ''; }
+      };
+      tick();
+    }, delay + dots);
+    delay += dots + plain.length * 22 / step_for(plain) + 300;
+  });
+}
+function step_for(p) { return Math.max(1, Math.ceil(p.length / 90)); }
+// "Sedang mengetik…" saat pesan pelanggan terakhir baru masuk & AI otomatis aktif
+function waiTypingIndicator() {
+  const t = WAI.thread, chat = document.getElementById('wai-chat'); if (!t || !chat) return;
+  const c = t.conversation, ms = t.messages || [], last = ms[ms.length - 1];
+  const old = document.querySelectorAll('.wai-b.typing-ind').forEach(x => x.remove()), _x = 0; const old2 = null; //; if (old) old.remove();
+  if (!last || last.dir !== 'in' || c.ai_mode !== 'auto' || c.needs_human || Date.now() - new Date(last.created_at).getTime() > 25000) return;
+  const box = document.getElementById('wai-msgs'); if (!box) return;
+  const d = document.createElement('div'); d.className = 'wai-b out ai typing-ind';
+  d.innerHTML = '<div class="by">🤖 AI</div><span class="wai-dots"><i></i><i></i><i></i></span>';
+  box.appendChild(d); box.scrollTop = box.scrollHeight;
+  setTimeout(() => { if (d.isConnected) d.remove(); }, Math.max(1500, 25000 - (Date.now() - new Date(last.created_at).getTime())));
+}
 
 
 /* ── Modul sidebar yang bisa dilipat ── */
