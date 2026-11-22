@@ -4,6 +4,12 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
 <meta name="dhp-build" content="2026-10-16T18-00-00-v107"/>
+<meta name="theme-color" content="#0d0d0d"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<link rel="manifest" id="pwa-manifest" href="manifest.webmanifest"/>
+<link rel="apple-touch-icon" id="pwa-touch" href="icon-192.png"/>
 <title>DHP Creative — Command Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Shippori+Mincho:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
@@ -4982,6 +4988,30 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
 .nav-grp.open .nav-grp-inner{opacity:1;padding-top:3px;padding-bottom:3px}
 .nav-grp-inner .nav-item{padding:8px 9px;font-size:12.5px}
 .nav-grp-inner .nav-item .nav-icon{transform:scale(.92)}
+
+/* ── Pasang di HP (PWA) ── */
+#pwa-btn{display:none}
+@media (max-width:820px){body.pwa-can #pwa-btn{display:inline-flex}}
+#pwa-sheet{position:fixed;inset:0;z-index:99990;display:none;align-items:flex-end;justify-content:center;background:rgba(8,8,8,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+#pwa-sheet.on{display:flex;animation:pwaFade .2s ease-out}
+.pwa-card{width:100%;max-width:460px;background:var(--surface,#fff);color:var(--text,#111);border-radius:22px 22px 0 0;padding:22px 20px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -12px 40px rgba(0,0,0,.35);animation:pwaUp .28s cubic-bezier(.2,.9,.3,1);position:relative;border-top:2px solid var(--gold,#c9a96e)}
+@keyframes pwaUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}@keyframes pwaFade{from{opacity:0}to{opacity:1}}
+.pwa-x{position:absolute;top:10px;right:12px;width:34px;height:34px;border:0;background:transparent;font-size:22px;color:var(--muted,#888);cursor:pointer;border-radius:50%}
+.pwa-hd{display:flex;gap:14px;align-items:center;margin-bottom:14px}
+.pwa-ic{width:64px;height:64px;border-radius:16px;flex:0 0 64px;box-shadow:0 4px 14px rgba(0,0,0,.28);background:#0d0d0d}
+.pwa-hd b{display:block;font-size:17px;font-family:'Cormorant Garamond',serif;font-weight:600;letter-spacing:.02em}
+.pwa-hd span{display:block;font-size:12px;color:var(--muted,#888);margin-top:2px;line-height:1.4}
+.pwa-perks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 16px}
+.pwa-perks div{text-align:center;font-size:10.5px;color:var(--muted,#888);background:var(--surface2,#f4f4f4);border-radius:10px;padding:9px 4px;line-height:1.35}
+.pwa-perks em{display:block;font-style:normal;font-size:17px;margin-bottom:2px}
+.pwa-go{width:100%;padding:14px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--gold-hi,#e8cc99),var(--gold,#c9a96e) 55%,var(--gold-lo,#a06840));color:#1a1206;font-weight:700;font-size:13px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.pwa-later{display:block;width:100%;margin-top:8px;padding:10px;border:0;background:transparent;color:var(--muted,#888);font-size:12px;cursor:pointer}
+.pwa-steps{margin:0 0 6px;padding:0;list-style:none;counter-reset:s}
+.pwa-steps li{counter-increment:s;display:flex;gap:11px;align-items:flex-start;font-size:13px;line-height:1.5;padding:8px 0;border-bottom:1px solid var(--border,#eee)}
+.pwa-steps li:last-child{border:0}
+.pwa-steps li::before{content:counter(s);flex:0 0 24px;height:24px;border-radius:50%;background:var(--gold,#c9a96e);color:#1a1206;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center}
+.pwa-steps svg{width:16px;height:16px;vertical-align:-3px;margin:0 2px}
+.pwa-arrow{text-align:center;font-size:22px;margin-top:2px;animation:pwaBob 1s infinite}@keyframes pwaBob{50%{transform:translateY(5px)}}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@1,6..96,500&family=Fraunces:ital,opsz,wght@1,9..144,300..700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 <style id="lsr-net-css">
@@ -5871,6 +5901,7 @@ body.light .lb-pod-bar{background:linear-gradient(180deg,#f7f7f8,#efefef)}
       </div>
       <div class="topbar-right">
         <!-- Replay onboarding tutorial -->
+        <button class="tb-btn" id="pwa-btn" onclick="pwaOpen(true)" title="Pasang aplikasi di HP" aria-label="Pasang aplikasi di HP"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></button>
         <button class="tb-btn" id="tut-replay-btn" onclick="startTutorial(true)" title="Tampilkan tutorial lagi">✦</button>
         <!-- Theme / Lang (inside dash) -->
         <button class="theme-toggle tt-sm" onclick="toggleMode()" id="mode-btn-dash" title="Toggle theme" aria-label="Toggle theme">
@@ -9097,7 +9128,8 @@ async function handleForgot() {
 function loginSuccess(id, role, name, tutSeenAt) {
   currentUser = { id, role, name, tutSeenAt: tutSeenAt || null };
   _authEpoch++; // v52-FIX: sesi baru — semua fetch dari sesi sebelumnya jadi basi
-  acctWatchStart(); // v113: pantau status aktif akun sendiri
+  acctWatchStart();
+  try { pwaAuto(); } catch (e) {} // v113: pantau status aktif akun sendiri
   tabLockClaim(); // v130: tab lama untuk akun ini otomatis keluar
   // v49-FIX: reset TOTAL semua state Database Customer (CRM) & Follow Up
   // dari sesi akun sebelumnya. Sebelumnya variabel-variabel ini (crmData,
@@ -32616,6 +32648,103 @@ function navGrpAll() { Object.keys(NAV_GROUPS).forEach(navGrpUpdate); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
 })();
 
+
+// ── Pasang di HP (PWA): ikon & nama mengikuti Brand Identity ──────────────────
+(function () {
+  var deferred = null, shownAuto = false;
+  var $ = function (id) { return document.getElementById(id); };
+  var store = { get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+  var standalone = function () { return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true; };
+  var isIOS = function () { return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); };
+  var isMobile = function () { return /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && innerWidth <= 900); };
+  var brandName = function () { return (typeof _brandCache !== 'undefined' && _brandCache && _brandCache.name) || 'DHP Creative'; };
+
+  // Ikon: foto brand bila ada, kalau tidak lambang heksagon "DH" emas di latar gelap
+  function drawMark(c, s) {
+    var x = c.getContext('2d'); c.width = c.height = s;
+    var g = x.createLinearGradient(0, 0, s, s); g.addColorStop(0, '#1a1712'); g.addColorStop(1, '#0a0a0a');
+    x.fillStyle = g; x.fillRect(0, 0, s, s);
+    var k = s / 32, P = function (a, b) { return [a * k, b * k]; };
+    x.beginPath(); [[16,2],[28,9],[28,23],[16,30],[4,23],[4,9]].forEach(function (p, i) { var q = P(p[0], p[1]); i ? x.lineTo(q[0], q[1]) : x.moveTo(q[0], q[1]); }); x.closePath();
+    x.fillStyle = 'rgba(201,169,110,.10)'; x.fill(); x.strokeStyle = 'rgba(201,169,110,.75)'; x.lineWidth = .8 * k * 1.2; x.stroke();
+    x.strokeStyle = '#c9a96e'; x.lineWidth = 1.3 * k; x.lineCap = 'round'; x.lineJoin = 'round';
+    x.beginPath(); x.moveTo(10*k,11*k); x.lineTo(10*k,21*k); x.lineTo(14*k,21*k); x.quadraticCurveTo(18*k,21*k,18*k,16*k); x.quadraticCurveTo(18*k,11*k,14*k,11*k); x.closePath(); x.stroke();
+    [[20,11,20,21],[24,11,24,21],[20,16,24,16]].forEach(function (l) { x.beginPath(); x.moveTo(l[0]*k,l[1]*k); x.lineTo(l[2]*k,l[3]*k); x.stroke(); });
+  }
+  function iconFor(size, photo) {
+    return new Promise(function (res) {
+      var c = document.createElement('canvas');
+      if (!photo) { drawMark(c, size); return res(c.toDataURL('image/png')); }
+      var im = new Image(); im.crossOrigin = 'anonymous';
+      im.onload = function () {
+        try {
+          c.width = c.height = size; var x = c.getContext('2d'); x.fillStyle = '#0d0d0d'; x.fillRect(0, 0, size, size);
+          var pad = size * .12, w = size - pad * 2, r = Math.min(im.width, im.height);
+          x.drawImage(im, (im.width - r) / 2, (im.height - r) / 2, r, r, pad, pad, w, w); res(c.toDataURL('image/png'));
+        } catch (e) { drawMark(c, size); res(c.toDataURL('image/png')); }
+      };
+      im.onerror = function () { drawMark(c, size); res(c.toDataURL('image/png')); };
+      im.src = photo;
+    });
+  }
+  window.pwaRefresh = async function () {
+    try {
+      var b = (typeof _brandCache !== 'undefined' && _brandCache) || {}, photo = b.photo && String(b.photo).trim() ? b.photo : '';
+      var i192 = await iconFor(192, photo), i512 = await iconFor(512, photo), name = brandName();
+      var base = location.href.split('#')[0].split('?')[0];
+      var man = { name: name + ' — Command Portal', short_name: name.length > 12 ? name.split(' ')[0] : name, description: 'Portal ' + name, start_url: base, scope: base.replace(/[^/]*$/, ''), display: 'standalone', orientation: 'portrait', background_color: '#0d0d0d', theme_color: '#0d0d0d',
+        icons: [{ src: i192, sizes: '192x192', type: 'image/png', purpose: 'any' }, { src: i512, sizes: '512x512', type: 'image/png', purpose: 'any' }, { src: i512, sizes: '512x512', type: 'image/png', purpose: 'maskable' }] };
+      var url = URL.createObjectURL(new Blob([JSON.stringify(man)], { type: 'application/manifest+json' }));
+      var l = $('pwa-manifest'); if (l) l.href = url;
+      var t = $('pwa-touch'); if (t) t.href = i192;
+      var im = $('pwa-ic'); if (im) im.src = i192;
+      var tt = $('pwa-ttl'); if (tt) tt.textContent = 'Pasang ' + name;
+    } catch (e) { /* abaikan */ }
+  };
+  function body() {
+    var el = $('pwa-body'); if (!el) return;
+    if (deferred) {
+      el.innerHTML = '<button class="pwa-go" onclick="pwaInstall()">⬇ Pasang sekarang</button><button class="pwa-later" onclick="pwaClose(true)">Nanti saja</button>';
+    } else if (isIOS()) {
+      el.innerHTML = '<ol class="pwa-steps"><li><span>Buka halaman ini di <b>Safari</b>, lalu ketuk tombol <b>Bagikan</b> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg> di bawah layar.</span></li><li><span>Gulir lalu pilih <b>Tambah ke Layar Utama</b> (Add to Home Screen).</span></li><li><span>Ketuk <b>Tambah</b>. Ikon ' + brandName().replace(/</g, '') + ' muncul di layar utama.</span></li></ol><div class="pwa-arrow">👇</div><button class="pwa-later" onclick="pwaClose(true)">Mengerti</button>';
+    } else {
+      el.innerHTML = '<ol class="pwa-steps"><li><span>Ketuk menu <b>⋮</b> (titik tiga) di pojok kanan atas Chrome.</span></li><li><span>Pilih <b>Instal aplikasi</b> atau <b>Tambahkan ke layar utama</b>.</span></li><li><span>Ketuk <b>Instal</b>. Selesai — buka dari ikon di layar utama.</span></li></ol><button class="pwa-later" onclick="pwaClose(true)">Mengerti</button>';
+    }
+  }
+  window.pwaOpen = function (manual) { if (standalone()) return; body(); var s = $('pwa-sheet'); if (s) s.classList.add('on'); };
+  window.pwaClose = function (remember) { var s = $('pwa-sheet'); if (s) s.classList.remove('on'); if (remember) store.set('dhp_pwa_dismiss', String(Date.now())); };
+  window.pwaInstall = async function () {
+    if (!deferred) return pwaOpen();
+    try { deferred.prompt(); var r = await deferred.userChoice; if (r && r.outcome === 'accepted') { pwaClose(false); document.body.classList.remove('pwa-can'); } else pwaClose(true); } catch (e) { pwaClose(true); }
+    deferred = null;
+  };
+  // Muncul otomatis sekali setelah login di HP (ditunda 7 hari bila ditutup)
+  window.pwaAuto = function () {
+    if (shownAuto || standalone() || !isMobile()) return;
+    var d = parseInt(store.get('dhp_pwa_dismiss') || '0', 10); if (d && Date.now() - d < 7 * 86400e3) return;
+    shownAuto = true; setTimeout(function () { var dash = $('dash'); if (dash && dash.classList.contains('active')) pwaOpen(false); }, 3500);
+  };
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferred = e; });
+  window.addEventListener('appinstalled', function () { deferred = null; document.body.classList.remove('pwa-can'); pwaClose(false); try { if (window.toast) toast('Aplikasi terpasang ✓'); } catch (e) {} });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') pwaClose(true); });
+  function init() {
+    if (standalone() || !isMobile()) return;
+    document.body.classList.add('pwa-can'); pwaRefresh();
+    if ('serviceWorker' in navigator && /^https:/.test(location.protocol)) { fetch('sw.js', { method: 'HEAD' }).then(function (r) { if (r.ok) navigator.serviceWorker.register('sw.js').catch(function () {}); }).catch(function () {}); }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  var oa = window.applyBrandIdentity; if (typeof oa === 'function') window.applyBrandIdentity = function (d) { var r = oa.apply(this, arguments); try { pwaRefresh(); } catch (e) {} return r; };
+})();
+
 </script>
+
+<div id="pwa-sheet" role="dialog" aria-modal="true" aria-labelledby="pwa-ttl" onclick="if(event.target===this)pwaClose(true)">
+  <div class="pwa-card">
+    <button class="pwa-x" onclick="pwaClose(true)" aria-label="Tutup">×</button>
+    <div class="pwa-hd"><img class="pwa-ic" id="pwa-ic" alt="" width="64" height="64"/><div><b id="pwa-ttl">Pasang aplikasi</b><span id="pwa-sub">Buka lebih cepat langsung dari layar utama HP.</span></div></div>
+    <div class="pwa-perks"><div><em>⚡</em>Buka sekali ketuk</div><div><em>🖥️</em>Layar penuh tanpa bilah browser</div><div><em>🔔</em>Selalu siap dipakai</div></div>
+    <div id="pwa-body"></div>
+  </div>
+</div>
 </body>
 </html>
