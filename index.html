@@ -5059,6 +5059,9 @@ body.light .ng-wa>.nav-grp-head .nav-icon svg{filter:none!important;opacity:1!im
 .pwa-steps li::before{content:counter(s);flex:0 0 24px;height:24px;border-radius:50%;background:var(--gold,#c9a96e);color:#1a1206;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center}
 .pwa-steps svg{width:16px;height:16px;vertical-align:-3px;margin:0 2px}
 .pwa-arrow{text-align:center;font-size:22px;margin-top:2px;animation:pwaBob 1s infinite}@keyframes pwaBob{50%{transform:translateY(5px)}}
+.ccm-table td{vertical-align:top;min-width:150px}.ccm-sum{font-size:11px;color:var(--text2)}
+@media(max-width:640px){.ccm-table{min-width:560px}}
+.wai-img{max-width:240px;max-height:300px;border-radius:8px;display:block;cursor:zoom-in;background:rgba(0,0,0,.05)}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@1,6..96,500&family=Fraunces:ital,opsz,wght@1,9..144,300..700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 <style id="lsr-net-css">
@@ -6570,6 +6573,18 @@ body.light .ng-wa>.nav-grp-head .nav-icon svg{filter:none!important;opacity:1!im
                 <th id="cc-day-act-col">Aksi</th>
               </tr></thead>
               <tbody id="cc-day-tbl"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="tbl-wrap" id="cc-month-anchor" style="margin-top:18px">
+          <div class="tbl-head">
+            <div class="tbl-title" id="cc-month-title">Rekap Sebulan Penuh</div>
+            <div class="ccm-sum" id="cc-month-sum"></div>
+          </div>
+          <div class="tbl-scroll">
+            <table class="ccm-table">
+              <thead><tr><th style="width:110px">Tanggal</th><th>Slot 1</th><th>Slot 2</th><th>Slot 3</th></tr></thead>
+              <tbody id="cc-month-tbl"></tbody>
             </table>
           </div>
         </div>
@@ -10004,8 +10019,45 @@ async function loadCcMonth() {
   }
   renderCcCalendar();
   renderCcDayTable();
+  renderCcMonthTable();
   renderCcCards();
   renderCcDashboard();
+}
+
+/* v132: rekap sebulan penuh (semua tanggal sekaligus) untuk Owner/Moderator/Creator */
+function renderCcMonthTable() {
+  const tb = document.getElementById('cc-month-tbl');
+  if (!tb) return;
+  const months = currentLang === 'id' ? MONTHS_ID : MONTHS_EN;
+  const dn = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+  const y = ccCursor.getFullYear(), m = ccCursor.getMonth();
+  const n = new Date(y, m + 1, 0).getDate();
+  const name = LOCAL_USERS[ccTargetId]?.name || ccTargetId || '—';
+  const tEl = document.getElementById('cc-month-title');
+  if (tEl) tEl.textContent = `Rekap Sebulan Penuh — ${name} — ${months[m]} ${y}`;
+  let filled = 0, done = 0;
+  const todayKey = ymdKey(new Date());
+  let rows = '';
+  for (let d = 1; d <= n; d++) {
+    const dt = new Date(y, m, d), ymd = ymdKey(dt);
+    const by = {};
+    (ccMonthCache[ymd] || []).forEach(x => { by[x.slot_no] = x; });
+    const cells = CC_SLOTS.map(no => {
+      const x = by[no];
+      if (!x) return `<td style="color:var(--text2)">—</td>`;
+      filled++;
+      if (x.progress_status === 'done_upload') done++;
+      const pr = CC_PROGRESS[x.progress_status] || CC_PROGRESS.belum_dikerjakan || { label:'', color:'#888' };
+      const jam = x.upload_time ? ' · ' + x.upload_time.slice(0,5) : '';
+      return `<td><div style="font-weight:600;color:var(--text);font-size:12.5px">${escHtml(x.theme || '(Tanpa judul)')}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px">${x.content_theme ? escHtml(x.content_theme) + ' · ' : ''}<span style="color:${pr.color}">● ${escHtml(pr.label || '')}</span>${jam}</div></td>`;
+    }).join('');
+    rows += `<tr onclick="ccSelectDate('${ymd}')" style="cursor:pointer${ymd===todayKey?';background:rgba(201,169,110,.08)':''}">
+      <td style="font-weight:700;color:var(--gold);white-space:nowrap">${dn[dt.getDay()]}, ${d}</td>${cells}</tr>`;
+  }
+  tb.innerHTML = rows;
+  const sm = document.getElementById('cc-month-sum');
+  if (sm) sm.textContent = `${filled} slot terisi · ${done} tayang (Done Upload)`;
 }
 
 function renderCcCalendar() {
@@ -32044,9 +32096,10 @@ function waiRenderThread(scroll) {
     ${c.needs_human ? `<div class="wai-notice" style="background:rgba(185,121,31,.1);border-color:rgba(185,121,31,.4);color:#b9791f">🔔 AI meminta kamu mengambil alih${c.handover_reason ? ': ' + escHtml(c.handover_reason) : ''}</div>` : ''}
     ${t.draft && !waiIsOwner() ? `<div class="wai-draft"><div class="h">🤖 SARAN AI — belum terkirim</div><div class="b">${escHtml(t.draft.body)}</div>
         <div class="a"><button class="btn-sm btn-gold" onclick="waiSendDraft()">Kirim</button><button class="btn-sm btn-cancel" onclick="waiEditDraft()">Edit dulu</button><button class="btn-sm btn-cancel" onclick="waiDiscardDraft()">Buang</button></div></div>` : ''}
-    ${!open ? '<div class="wai-notice">Sudah lewat 24 jam sejak pelanggan terakhir chat. Meta hanya mengizinkan pesan <b>template</b> yang sudah disetujui. Tunggu pelanggan membalas.</div>' : ''}
+    ${!open ? '<div class="wai-notice">Sudah lewat 24 jam sejak pelanggan terakhir chat. Meta hanya mengizinkan pesan <b>template</b> yang sudah disetujui — pakai tombol <b>📨 Template</b> di bawah, atau tunggu pelanggan membalas.</div>' : ''}
     ${waiIsOwner() ? '<div class="wai-notice">👁 Akun Owner hanya bisa melihat percakapan.</div>' : `<div class="wai-comp">
       <textarea id="wai-txt" rows="1" placeholder="${open ? 'Ketik pesan…' : 'Tidak bisa membalas di luar 24 jam'}" ${open ? '' : 'disabled'}>${escHtml(keepTxt)}</textarea>
+      <button class="btn-sm btn-cancel" onclick="waiTplPick()" title="Kirim template Meta (boleh di luar 24 jam)">📨 Template</button>
       <button class="btn-sm btn-cancel" onclick="waiAskAi()" title="Minta AI menyusun balasan">🤖 Saran AI</button>
       <button class="btn-sm btn-gold" onclick="waiSend()" ${open ? '' : 'disabled'}>Kirim</button>
     </div>`}`;
@@ -32198,7 +32251,7 @@ async function waiRenderAi() {
   if (!s || s.error || !s.data) { body.innerHTML = `<div class="wai-empty">${escHtml(waiErr(s && s.error || new Error('Could not find the function — tabel WA belum ada')))}</div>`; return; }
   const st = s.data, rows = (k && k.data) || [];
   window._waiK = rows;
-  setTimeout(waiAiStatus, 0);
+  setTimeout(waiAiStatus, 0); setTimeout(waiTplLoad, 0);
   body.innerHTML = `
     <div class="wai-card">
       <h3>Pengaturan AI</h3>
@@ -32255,6 +32308,12 @@ async function waiRenderAi() {
         <button class="btn-sm btn-cancel" onclick="waiAiReset('cache')">Kosongkan cache</button>
       </div>
       <div id="wai-ai-status" style="font-size:11.5px"><div style="color:var(--muted)">Memuat…</div></div>
+    </div>
+    <div class="wai-card" id="wai-tpl-card">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap"><div><h3>Template Meta (untuk chat lewat 24 jam)</h3>
+        <p class="s">Di luar 24 jam sejak pelanggan terakhir chat, WhatsApp hanya mengizinkan template yang sudah disetujui Meta. Buat → Ajukan ke Meta → Sinkron status → pakai lewat tombol 📨 Template di chat.</p></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-sm btn-gold" onclick="waiTplEdit()">+ Template baru</button><button class="btn-sm btn-cancel" onclick="waiTplSync()">Sinkron status</button></div></div>
+      <div id="wai-tpl-body"><div style="color:var(--muted)">Memuat…</div></div>
     </div>
         <div class="wai-card">
       <h3>Impor pengetahuan dari data yang sudah ada</h3>
@@ -32597,6 +32656,123 @@ async function waiAccSave(id) {
   closeModal(); toast('✓ Nomor disimpan'); waiRenderNumbers();
 }
 
+/* ───────── v133: gambar pelanggan + Template Meta (chat > 24 jam) ───────── */
+function waiTplBadge(s) {
+  const m = { APPROVED: ['#1f8f4e', 'Disetujui'], PENDING: ['#b9791f', 'Menunggu Meta'], REJECTED: ['#c0392b', 'Ditolak'], draft: ['#777', 'Draf'], PAUSED: ['#b9791f', 'Dijeda'], DISABLED: ['#c0392b', 'Nonaktif'] }[s] || ['#777', s];
+  return `<span style="font-size:10px;padding:2px 8px;border-radius:10px;border:1px solid ${m[0]};color:${m[0]};white-space:nowrap">${m[1]}</span>`;
+}
+async function waiTplLoad() {
+  const box = document.getElementById('wai-tpl-body'); if (!box) return;
+  try {
+    const r = await waiRpc('wa_tpl_list', { p_user_id: waiMe() });
+    window._waiTpl = r || [];
+    box.innerHTML = window._waiTpl.length ? window._waiTpl.map(t => {
+      const editable = t.status === 'draft' || t.status === 'REJECTED';
+      return `<div class="wai-k"><div class="tx"><b>${escHtml(t.name)}</b> <span style="font-size:10px;color:var(--muted)">${escHtml(t.category)} · ${escHtml(t.language)}</span> ${waiTplBadge(t.status)}
+        <div style="font-size:12px;color:var(--text2);margin-top:4px;white-space:pre-wrap">${escHtml(t.body)}</div>
+        ${t.reject_reason ? `<div style="font-size:11px;color:#c0392b;margin-top:4px">Alasan ditolak: ${escHtml(t.reject_reason)}</div>` : ''}</div>
+        <div style="display:flex;gap:6px;flex-direction:column">${editable ? `<button class="btn-sm btn-gold" onclick="waiTplSubmit('${t.id}')">Ajukan ke Meta</button><button class="btn-sm btn-cancel" onclick="waiTplEdit('${t.id}')">Ubah</button><button class="btn-sm btn-cancel" onclick="waiTplDel('${t.id}')">Hapus</button>` : ''}</div></div>`;
+    }).join('') : '<div class="wai-empty">Belum ada template. Jalankan SQL v132 atau klik “+ Template baru”.</div>';
+  } catch (e) { box.innerHTML = '<div style="color:#c0392b">' + escHtml(/function|schema|wa_tpl/.test(e.message) ? 'Jalankan migration SQL v132 dulu.' : waiErr(e)) + '</div>'; }
+}
+function waiTplEdit(id) {
+  const t = id ? (window._waiTpl || []).find(x => x.id === id) : null;
+  document.getElementById('m-title').textContent = t ? 'Ubah Template' : 'Template Meta Baru';
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg"><label>Nama (huruf kecil, angka, garis bawah)</label><input class="fi" id="wt-n" value="${escHtml(t ? t.name : '')}" placeholder="mis. followup_umum"/></div>
+    <div class="fg"><label>Kategori</label><select class="fi" id="wt-c"><option value="MARKETING" ${t && t.category === 'MARKETING' ? 'selected' : ''}>MARKETING — promo, follow-up, katalog</option><option value="UTILITY" ${t && t.category === 'UTILITY' ? 'selected' : ''}>UTILITY — status pesanan, pembayaran</option></select></div>
+    <div class="fg"><label>Isi pesan — pakai {{1}}, {{2}} untuk bagian yang berubah</label><textarea class="fi" id="wt-b" rows="5">${escHtml(t ? t.body : '')}</textarea></div>
+    <div class="fg"><label>Contoh isi tiap variabel (satu per baris, urut {{1}}, {{2}}…) — wajib untuk Meta</label><textarea class="fi" id="wt-e" rows="3">${escHtml(t ? (t.examples || []).join('\n') : '')}</textarea></div>
+    <div class="fg"><label>Nama variabel untuk formulir kirim (satu per baris, mis. Nama pelanggan)</label><textarea class="fi" id="wt-l" rows="3">${escHtml(t ? (t.var_labels || []).join('\n') : '')}</textarea></div>
+    <div style="font-size:11px;color:var(--muted);line-height:1.5">Aturan Meta: isi tidak boleh diawali/diakhiri variabel, dua variabel tidak boleh berdempetan, dan template yang sudah diajukan tidak bisa diubah.</div>`;
+  document.getElementById('m-foot').innerHTML = `<button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button><button class="btn-sm btn-gold" onclick="waiTplSave('${id || ''}')">Simpan</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+async function waiTplSave(id) {
+  const g = x => document.getElementById(x).value;
+  const lines = x => g(x).split('\n').map(s => s.trim()).filter(Boolean);
+  try {
+    await waiRpc('wa_tpl_save', { p_user_id: waiMe(), p_id: id || null, p_name: g('wt-n'), p_language: 'id', p_category: g('wt-c'), p_body: g('wt-b'), p_examples: lines('wt-e'), p_var_labels: lines('wt-l') });
+    closeModal(); toast('✓ Template disimpan'); waiTplLoad();
+  } catch (e) { toast(waiErr(e)); }
+}
+async function waiTplDel(id) {
+  if (!confirm('Hapus template ini?')) return;
+  try { await waiRpc('wa_tpl_delete', { p_user_id: waiMe(), p_id: id }); waiTplLoad(); } catch (e) { toast(waiErr(e)); }
+}
+async function waiTplFn(action, id) {
+  const f = await dbQ(d => d.functions.invoke(WAI_FN.ai, { body: { action, user_id: waiMe(), template_id: id || null } }));
+  if (!f || f.error) { toast('Gagal memanggil fungsi: ' + await waiFnError(f)); return null; }
+  if (f.data && f.data.ok === false) { toast('Meta: ' + f.data.error); return null; }
+  return f.data;
+}
+async function waiTplSubmit(id) {
+  if (!confirm('Ajukan template ini ke Meta? Setelah diajukan isinya tidak bisa diubah. Persetujuan biasanya beberapa menit sampai 24 jam.')) return;
+  toast('Mengajukan ke Meta…');
+  const r = await waiTplFn('tpl_submit', id); if (r) { toast('✓ Diajukan — status: ' + r.status); waiTplLoad(); }
+}
+async function waiTplSync() {
+  toast('Mengambil status dari Meta…');
+  const r = await waiTplFn('tpl_sync'); if (r) { toast('✓ Status diperbarui (' + (r.updated || 0) + ' template)'); waiTplLoad(); }
+}
+
+/* Kirim template dari chat (boleh di luar 24 jam) */
+async function waiTplPick() {
+  if (blockIfOwner() || !WAI.cur) return;
+  const c = WAI.thread.conversation;
+  let list = [];
+  try { list = await waiRpc('wa_tpl_list', { p_user_id: waiMe() }) || []; } catch (e) { toast(/function|schema|wa_tpl/.test(e.message) ? 'Jalankan migration SQL v132 dulu.' : waiErr(e)); return; }
+  list = list.filter(t => c.account_mode !== 'live' || t.status === 'APPROVED');
+  if (!list.length) { toast('Belum ada template yang disetujui Meta. Buat & ajukan di tab Latih AI → Template Meta.'); return; }
+  const s = await dbQ(d => d.from('wa_settings').select('business_name,brand_profile').eq('id', 1).maybeSingle());
+  const bp = (s && s.data && s.data.brand_profile) || {}, brand = (s && s.data && (bp.brand || s.data.business_name)) || '';
+  const first = String(c.name || '').trim().split(/\s+/)[0] || '';
+  window._waiTplPick = { list, first, brand, link: bp.catalog || bp.katalog || bp.catalog_link || '' };
+  document.getElementById('m-title').textContent = 'Kirim template Meta';
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg"><label>Template</label><select class="fi" id="wtp-t" onchange="waiTplPickRender()">${list.map(t => `<option value="${t.id}">${escHtml(t.name)}${t.status !== 'APPROVED' ? ' (' + t.status + ')' : ''}</option>`).join('')}</select></div>
+    <div id="wtp-vars"></div>
+    <div class="fg"><label>Pratinjau</label><div id="wtp-pv" style="white-space:pre-wrap;font-size:12.5px;padding:10px;border:1px solid var(--border-hi);border-radius:8px"></div></div>`;
+  document.getElementById('m-foot').innerHTML = `<button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button><button class="btn-sm btn-gold" onclick="waiTplSend()">Kirim</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+  waiTplPickRender();
+}
+function waiTplCur() { const P = window._waiTplPick; const id = document.getElementById('wtp-t').value; return P.list.find(t => t.id === id); }
+function waiTplPickRender() {
+  const P = window._waiTplPick, t = waiTplCur(); if (!t) return;
+  const n = new Set([...String(t.body).matchAll(/\{\{(\d+)\}\}/g)].map(x => x[1])).size;
+  const labels = t.var_labels || [];
+  let h = '';
+  for (let i = 0; i < n; i++) {
+    const lb = labels[i] || ('Isi ' + (i + 1));
+    const v = /nama/i.test(lb) ? P.first : /brand|toko|bisnis/i.test(lb) ? P.brand : /katalog|link|tautan/i.test(lb) ? P.link : '';
+    h += `<div class="fg"><label>{{${i + 1}}} ${escHtml(lb)}</label><input class="fi wtp-v" value="${escHtml(v)}" oninput="waiTplPreview()"/></div>`;
+  }
+  document.getElementById('wtp-vars').innerHTML = h;
+  waiTplPreview();
+}
+function waiTplVals() { return [...document.querySelectorAll('.wtp-v')].map(i => i.value.trim()); }
+function waiTplPreview() {
+  const t = waiTplCur(); if (!t) return; let b = t.body;
+  waiTplVals().forEach((v, i) => { b = b.split('{{' + (i + 1) + '}}').join(v || '…'); });
+  document.getElementById('wtp-pv').textContent = b;
+}
+async function waiTplSend() {
+  const t = waiTplCur(), vars = waiTplVals();
+  if (vars.some(v => !v)) { toast('Lengkapi semua isian'); return; }
+  try {
+    const r = await waiRpc('wa_queue_template', { p_user_id: waiMe(), p_conv_id: WAI.cur, p_tpl_id: t.id, p_vars: vars });
+    closeModal();
+    if (r && r.mode === 'live') {
+      const f = await dbQ(d => d.functions.invoke(WAI_FN.send, { body: { message_id: r.message_id } }));
+      if (!f || f.error) toast('Tersimpan tapi belum terkirim: ' + await waiFnError(f));
+      else if (f.data && f.data.ok === false) toast('Gagal kirim: ' + f.data.error);
+      else toast('✓ Template terkirim');
+    }
+    WAI.sig = ''; await waiLoadThread(WAI.cur, false); waiRefresh(true);
+  } catch (e) { toast(waiErr(e)); }
+}
+
 /* ───────── TAB SIMULASI (moderator) ───────── */
 function waiRenderSim() {
   document.getElementById('wai-body').innerHTML = `
@@ -32689,6 +32865,10 @@ function waiBody(b) {
   const s = String(b || '');
   const d = s.trim().match(/^\[dokumen:(https?:\/\/[^\s|\]]+)(?:\|([^\]]+))?\]$/i);
   if (d) return `<span class="wai-doc">📎 <b>${escHtml((d[2] || 'Katalog.pdf').trim())}</b><small>dikirim sebagai file</small></span>`;
+  const im = s.match(/^\[gambar:(https?:\/\/[^\s\]]+)\]\n?([\s\S]*)$/);
+  if (im) return `<a href="${escHtml(im[1])}" target="_blank" rel="noopener"><img class="wai-img" loading="lazy" src="${escHtml(im[1])}" alt="Gambar dari pelanggan"/></a>` + (im[2].trim() ? `<div style="margin-top:4px">${escHtml(im[2].trim())}</div>` : '');
+  const bf = s.match(/^\[berkas:(https?:\/\/[^\s|\]]+)\|?([^\]]*)\]\n?([\s\S]*)$/);
+  if (bf) return `<a class="wai-doc" href="${escHtml(bf[1])}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">📎 <b>${escHtml((bf[2] || 'Berkas').trim())}</b><small>ketuk untuk membuka</small></a>` + (bf[3].trim() ? `<div style="margin-top:4px">${escHtml(bf[3].trim())}</div>` : '');
   return escHtml(s).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
 }
 function waiIsFresh(m) {
@@ -32707,7 +32887,7 @@ function waiTypingRun() {
     const id = n.getAttribute('data-mid'); n.removeAttribute('data-fresh');
     if (WAI.seen[id]) return; WAI.seen[id] = 1;
     const bt = n.querySelector('.bt'), ft = n.querySelector('.ft'), full = bt.innerHTML;
-    if (n.querySelector('.wai-doc')) return;
+    if (n.querySelector('.wai-doc, .wai-img')) return;
     const plain = bt.textContent;
     n.classList.add('typing'); bt.innerHTML = '<span class="wai-dots"><i></i><i></i><i></i></span>'; if (ft) ft.style.visibility = 'hidden';
     const dots = 700 + Math.min(1400, plain.length * 8);
