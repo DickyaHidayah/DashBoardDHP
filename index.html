@@ -32251,7 +32251,7 @@ async function waiRenderAi() {
   if (!s || s.error || !s.data) { body.innerHTML = `<div class="wai-empty">${escHtml(waiErr(s && s.error || new Error('Could not find the function — tabel WA belum ada')))}</div>`; return; }
   const st = s.data, rows = (k && k.data) || [];
   window._waiK = rows;
-  setTimeout(waiAiStatus, 0); setTimeout(waiTplLoad, 0);
+  setTimeout(waiAiStatus, 0); setTimeout(waiTplLoad, 0); setTimeout(waiGalLoad, 0);
   body.innerHTML = `
     <div class="wai-card">
       <h3>Pengaturan AI</h3>
@@ -32308,6 +32308,12 @@ async function waiRenderAi() {
         <button class="btn-sm btn-cancel" onclick="waiAiReset('cache')">Kosongkan cache</button>
       </div>
       <div id="wai-ai-status" style="font-size:11.5px"><div style="color:var(--muted)">Memuat…</div></div>
+    </div>
+    <div class="wai-card" id="wai-gal-card">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap"><div><h3>Galeri foto motif</h3>
+        <p class="s">Foto tidak disimpan di Supabase. Cukup tempel <b>link folder GitHub</b> (atau daftar link gambar langsung). Saat pelanggan minta foto, AI memilih 1–3 gambar dan mengirimnya.</p></div>
+        <div><button class="btn-sm btn-gold" onclick="waiGalEdit()">+ Galeri baru</button></div></div>
+      <div id="wai-gal-body"><div style="color:var(--muted)">Memuat…</div></div>
     </div>
     <div class="wai-card" id="wai-tpl-card">
       <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap"><div><h3>Template Meta (untuk chat lewat 24 jam)</h3>
@@ -32771,6 +32777,49 @@ async function waiTplSend() {
     }
     WAI.sig = ''; await waiLoadThread(WAI.cur, false); waiRefresh(true);
   } catch (e) { toast(waiErr(e)); }
+}
+
+/* ───────── v136: Galeri foto motif ───────── */
+async function waiGalLoad() {
+  const box = document.getElementById('wai-gal-body'); if (!box) return;
+  try {
+    const r = await waiRpc('wa_gal_list', { p_user_id: waiMe() }); window._waiGal = r || [];
+    box.innerHTML = window._waiGal.length ? window._waiGal.map(g => `<div class="wai-k"><div class="tx"><b>${escHtml(g.name)}</b> ${g.is_active ? '' : '<span style="font-size:10px;color:#c0392b">nonaktif</span>'}
+      <div style="font-size:11.5px;color:var(--text2);margin-top:3px">Kata kunci: ${escHtml(g.keywords || g.name)} · kirim ${g.max_send} foto</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px;word-break:break-all">${escHtml(String(g.source).split('\n')[0].slice(0, 90))}${String(g.source).includes('\n') ? ' …' : ''}</div></div>
+      <div style="display:flex;gap:6px;flex-direction:column"><button class="btn-sm btn-gold" onclick="waiGalTest('${g.id}')">Tes ambil foto</button><button class="btn-sm btn-cancel" onclick="waiGalEdit('${g.id}')">Ubah</button><button class="btn-sm btn-cancel" onclick="waiGalDel('${g.id}')">Hapus</button></div></div>`).join('')
+      : '<div class="wai-empty">Belum ada galeri. Klik “+ Galeri baru”, mis. Minimalis, Bunga, Anak.</div>';
+  } catch (e) { box.innerHTML = '<div style="color:#c0392b">' + escHtml(/function|schema|wa_gal/.test(e.message) ? 'Jalankan migration SQL v136 dulu.' : waiErr(e)) + '</div>'; }
+}
+function waiGalEdit(id) {
+  const g = id ? (window._waiGal || []).find(x => x.id === id) : null;
+  document.getElementById('m-title').textContent = g ? 'Ubah Galeri' : 'Galeri Foto Baru';
+  document.getElementById('m-body').innerHTML = `
+    <div class="fg"><label>Nama galeri</label><input class="fi" id="wg-n" value="${escHtml(g ? g.name : '')}" placeholder="mis. Minimalis"/></div>
+    <div class="fg"><label>Kata kunci dari pelanggan (pisahkan koma)</label><input class="fi" id="wg-k" value="${escHtml(g ? g.keywords : '')}" placeholder="minimalis, polos, simple"/></div>
+    <div class="fg"><label>Sumber foto — link folder GitHub, atau link gambar langsung (satu per baris)</label><textarea class="fi" id="wg-s" rows="4" placeholder="https://github.com/akunanda/motif/tree/main/minimalis">${escHtml(g ? g.source : '')}</textarea></div>
+    <div class="fg"><label>Jumlah foto sekali kirim</label><select class="fi" id="wg-m">${[1, 2, 3].map(n => `<option ${g && g.max_send === n || (!g && n === 3) ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+    <label style="display:flex;gap:8px;align-items:center;font-size:12px"><input type="checkbox" id="wg-a" ${!g || g.is_active ? 'checked' : ''}/> Aktif</label>
+    <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-top:8px">Foto harus JPG/PNG, maksimal 5 MB, dan link-nya bisa dibuka publik. Folder GitHub harus berstatus <b>public</b>. Link Google Drive per file juga bisa, tapi kurang stabil.</div>`;
+  document.getElementById('m-foot').innerHTML = `<button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button><button class="btn-sm btn-gold" onclick="waiGalSave('${id || ''}')">Simpan</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+}
+async function waiGalSave(id) {
+  const g = x => document.getElementById(x).value;
+  try {
+    await waiRpc('wa_gal_save', { p_user_id: waiMe(), p_id: id || null, p_name: g('wg-n'), p_keywords: g('wg-k'), p_source: g('wg-s'), p_max: Number(g('wg-m')), p_active: document.getElementById('wg-a').checked });
+    closeModal(); toast('✓ Galeri disimpan'); waiGalLoad();
+  } catch (e) { toast(waiErr(e)); }
+}
+async function waiGalDel(id) { if (!confirm('Hapus galeri ini?')) return; try { await waiRpc('wa_gal_delete', { p_user_id: waiMe(), p_id: id }); waiGalLoad(); } catch (e) { toast(waiErr(e)); } }
+async function waiGalTest(id) {
+  toast('Mengambil foto…');
+  const f = await dbQ(d => d.functions.invoke(WAI_FN.ai, { body: { action: 'gal_test', user_id: waiMe(), template_id: id } }));
+  if (!f || f.error) { toast('Gagal memanggil fungsi: ' + await waiFnError(f)); return; }
+  const r = f.data || {}; if (r.ok === false) { toast(r.error); return; }
+  if (!r.count) { toast('Tidak ada foto yang terbaca. Cek link/folder (harus public).'); return; }
+  const bad = (r.checks || []).filter(c => !c.ok).length, big = (r.checks || []).some(c => c.size > 5 * 1024 * 1024);
+  toast(`✓ ${r.count} foto terbaca` + (bad ? ` — ${bad} dari 3 contoh tidak bisa dibuka` : '') + (big ? ' — ada yang >5 MB (ditolak WhatsApp)' : ''));
 }
 
 /* ───────── TAB SIMULASI (moderator) ───────── */
