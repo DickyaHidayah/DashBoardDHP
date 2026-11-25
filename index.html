@@ -32779,35 +32779,69 @@ async function waiTplSend() {
   } catch (e) { toast(waiErr(e)); }
 }
 
-/* ───────── v136: Galeri foto motif ───────── */
+/* ───────── v137: Galeri foto motif bertingkat (Galeri → Variasi → Foto bernama) ───────── */
 async function waiGalLoad() {
   const box = document.getElementById('wai-gal-body'); if (!box) return;
   try {
     const r = await waiRpc('wa_gal_list', { p_user_id: waiMe() }); window._waiGal = r || [];
-    box.innerHTML = window._waiGal.length ? window._waiGal.map(g => `<div class="wai-k"><div class="tx"><b>${escHtml(g.name)}</b> ${g.is_active ? '' : '<span style="font-size:10px;color:#c0392b">nonaktif</span>'}
+    box.innerHTML = window._waiGal.length ? window._waiGal.map(g => {
+      const vs = Array.isArray(g.variants) ? g.variants : [];
+      const nPic = vs.reduce((n, v) => n + (v.images || []).length, 0);
+      return `<div class="wai-k"><div class="tx"><b>${escHtml(g.name)}</b> ${g.is_active ? '' : '<span style="font-size:10px;color:#c0392b">nonaktif</span>'}
       <div style="font-size:11.5px;color:var(--text2);margin-top:3px">Kata kunci: ${escHtml(g.keywords || g.name)} · kirim ${g.max_send} foto</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:2px;word-break:break-all">${escHtml(String(g.source).split('\n')[0].slice(0, 90))}${String(g.source).includes('\n') ? ' …' : ''}</div></div>
-      <div style="display:flex;gap:6px;flex-direction:column"><button class="btn-sm btn-gold" onclick="waiGalTest('${g.id}')">Tes ambil foto</button><button class="btn-sm btn-cancel" onclick="waiGalEdit('${g.id}')">Ubah</button><button class="btn-sm btn-cancel" onclick="waiGalDel('${g.id}')">Hapus</button></div></div>`).join('')
-      : '<div class="wai-empty">Belum ada galeri. Klik “+ Galeri baru”, mis. Minimalis, Bunga, Anak.</div>';
-  } catch (e) { box.innerHTML = '<div style="color:#c0392b">' + escHtml(/function|schema|wa_gal/.test(e.message) ? 'Jalankan migration SQL v136 dulu.' : waiErr(e)) + '</div>'; }
+      <div style="font-size:11.5px;color:var(--muted);margin-top:2px">${vs.length ? vs.map(v => escHtml(v.title || '(tanpa judul)')).join(' · ') + ` — ${vs.length} variasi, ${nPic} foto manual` : ''}${g.source ? (vs.length ? ' + ' : '') + 'folder/link: ' + escHtml(String(g.source).split('\n')[0].slice(0, 60)) : ''}</div></div>
+      <div style="display:flex;gap:6px;flex-direction:column"><button class="btn-sm btn-gold" onclick="waiGalTest('${g.id}')">Tes ambil foto</button><button class="btn-sm btn-cancel" onclick="waiGalEdit('${g.id}')">Ubah</button><button class="btn-sm btn-cancel" onclick="waiGalDel('${g.id}')">Hapus</button></div></div>`;
+    }).join('')
+      : '<div class="wai-empty">Belum ada galeri. Klik “+ Galeri baru”, mis. Bunga → variasi Mawar, Melati; atau Minimalis, Anak.</div>';
+  } catch (e) { box.innerHTML = '<div style="color:#c0392b">' + escHtml(/function|schema|wa_gal/.test(e.message) ? 'Jalankan migration SQL v136 dan v137 dulu.' : waiErr(e)) + '</div>'; }
 }
+function wgSync() {
+  const box = document.getElementById('wg-vars'); if (!box) return;
+  window._wgVars = [...box.querySelectorAll('.wg-v')].map(v => ({
+    title: v.querySelector('.wg-vt').value.trim(), keywords: v.querySelector('.wg-vk').value.trim(), source: v.querySelector('.wg-vs').value.trim(),
+    images: [...v.querySelectorAll('.wg-i')].map(i => ({ name: i.querySelector('.wg-in').value.trim(), url: i.querySelector('.wg-iu').value.trim() }))
+  }));
+}
+function wgRender() {
+  const box = document.getElementById('wg-vars'); if (!box) return;
+  const vs = window._wgVars || [];
+  box.innerHTML = vs.length ? vs.map((v, vi) => `<div class="wg-v" style="border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:10px;background:var(--bg2,transparent)">
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px"><input class="fi wg-vt" style="flex:1;font-weight:600" placeholder="Judul variasi, mis. Mawar" value="${escHtml(v.title)}"/><button class="btn-sm btn-cancel" onclick="wgDelVar(${vi})">Hapus variasi</button></div>
+    <input class="fi wg-vk" style="margin-bottom:6px" placeholder="Kata kunci variasi (koma), mis. mawar, rose" value="${escHtml(v.keywords)}"/>
+    <div style="font-size:11px;color:var(--muted);margin:4px 0">Foto (nama tampil sebagai keterangan di WhatsApp)</div>
+    ${(v.images || []).map((im, ii) => `<div class="wg-i" style="display:flex;gap:6px;margin-bottom:5px"><input class="fi wg-in" style="flex:1" placeholder="Nama foto, mis. Mawar Merah" value="${escHtml(im.name)}"/><input class="fi wg-iu" style="flex:2" placeholder="Link gambar langsung (https://...)" value="${escHtml(im.url)}"/><button class="btn-sm btn-cancel" onclick="wgDelImg(${vi},${ii})">×</button></div>`).join('')}
+    <button class="btn-sm btn-cancel" onclick="wgAddImg(${vi})">+ Foto</button>
+    <details style="margin-top:8px"${v.source ? ' open' : ''}><summary style="font-size:11.5px;cursor:pointer;color:var(--muted)">Atau ambil otomatis dari folder GitHub / daftar link (opsional)</summary>
+      <textarea class="fi wg-vs" rows="2" style="margin-top:5px" placeholder="https://github.com/akun/repo/tree/main/bunga/mawar">${escHtml(v.source || '')}</textarea>
+      <div style="font-size:10.5px;color:var(--muted)">Nama foto otomatis dari nama file (mawar-merah.jpg → “mawar merah”).</div></details>
+  </div>`).join('') : '<div style="font-size:12px;color:var(--muted);margin-bottom:8px">Belum ada variasi. Boleh dikosongkan bila cukup memakai “Sumber foto” di atas.</div>';
+}
+function wgAddVar() { wgSync(); (window._wgVars = window._wgVars || []).push({ title: '', keywords: '', source: '', images: [{ name: '', url: '' }] }); wgRender(); }
+function wgDelVar(i) { wgSync(); window._wgVars.splice(i, 1); wgRender(); }
+function wgAddImg(vi) { wgSync(); window._wgVars[vi].images.push({ name: '', url: '' }); wgRender(); }
+function wgDelImg(vi, ii) { wgSync(); window._wgVars[vi].images.splice(ii, 1); wgRender(); }
 function waiGalEdit(id) {
   const g = id ? (window._waiGal || []).find(x => x.id === id) : null;
+  window._wgVars = JSON.parse(JSON.stringify(g && Array.isArray(g.variants) ? g.variants : []));
   document.getElementById('m-title').textContent = g ? 'Ubah Galeri' : 'Galeri Foto Baru';
   document.getElementById('m-body').innerHTML = `
-    <div class="fg"><label>Nama galeri</label><input class="fi" id="wg-n" value="${escHtml(g ? g.name : '')}" placeholder="mis. Minimalis"/></div>
-    <div class="fg"><label>Kata kunci dari pelanggan (pisahkan koma)</label><input class="fi" id="wg-k" value="${escHtml(g ? g.keywords : '')}" placeholder="minimalis, polos, simple"/></div>
-    <div class="fg"><label>Sumber foto — link folder GitHub, atau link gambar langsung (satu per baris)</label><textarea class="fi" id="wg-s" rows="4" placeholder="https://github.com/akunanda/motif/tree/main/minimalis">${escHtml(g ? g.source : '')}</textarea></div>
-    <div class="fg"><label>Jumlah foto sekali kirim</label><select class="fi" id="wg-m">${[1, 2, 3].map(n => `<option ${g && g.max_send === n || (!g && n === 3) ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+    <div class="fg"><label>Nama galeri</label><input class="fi" id="wg-n" value="${escHtml(g ? g.name : '')}" placeholder="mis. Bunga"/></div>
+    <div class="fg"><label>Kata kunci galeri dari pelanggan (pisahkan koma)</label><input class="fi" id="wg-k" value="${escHtml(g ? g.keywords : '')}" placeholder="bunga, floral"/></div>
+    <div class="fg"><label>Sumber foto umum — folder GitHub atau link gambar (opsional bila memakai variasi)</label><textarea class="fi" id="wg-s" rows="2" placeholder="https://github.com/akunanda/motif/tree/main/minimalis">${escHtml(g ? (g.source || '') : '')}</textarea></div>
+    <div class="fg"><label>Variasi (bebas tambah, tiap variasi punya judul &amp; foto bernama)</label><div id="wg-vars"></div><button class="btn-sm btn-gold" onclick="wgAddVar()">+ Tambah variasi</button></div>
+    <div class="fg" style="margin-top:12px"><label>Jumlah foto sekali kirim</label><select class="fi" id="wg-m">${[1, 2, 3].map(n => `<option ${g && g.max_send === n || (!g && n === 3) ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
     <label style="display:flex;gap:8px;align-items:center;font-size:12px"><input type="checkbox" id="wg-a" ${!g || g.is_active ? 'checked' : ''}/> Aktif</label>
-    <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-top:8px">Foto harus JPG/PNG, maksimal 5 MB, dan link-nya bisa dibuka publik. Folder GitHub harus berstatus <b>public</b>. Link Google Drive per file juga bisa, tapi kurang stabil.</div>`;
+    <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-top:8px">Cara kerja: pelanggan minta foto “bunga” → AI menawarkan variasi (Mawar, Melati, …) → pelanggan memilih → AI mengirim foto variasi itu lengkap dengan namanya. Foto harus JPG/PNG ≤ 5 MB dan link-nya publik. Link <b>raw.githubusercontent.com</b> paling stabil.</div>`;
   document.getElementById('m-foot').innerHTML = `<button class="btn-sm btn-cancel" onclick="closeModal()">Batal</button><button class="btn-sm btn-gold" onclick="waiGalSave('${id || ''}')">Simpan</button>`;
-  document.getElementById('modal-ov').classList.add('open');
+  document.getElementById('modal-ov').classList.add('open'); wgRender();
 }
 async function waiGalSave(id) {
   const g = x => document.getElementById(x).value;
+  wgSync();
+  const vars = (window._wgVars || []).map(v => ({ ...v, images: (v.images || []).filter(i => i.url) })).filter(v => v.title || v.images.length || v.source);
+  if (vars.some(v => !v.title)) { toast('Setiap variasi perlu judul'); return; }
   try {
-    await waiRpc('wa_gal_save', { p_user_id: waiMe(), p_id: id || null, p_name: g('wg-n'), p_keywords: g('wg-k'), p_source: g('wg-s'), p_max: Number(g('wg-m')), p_active: document.getElementById('wg-a').checked });
+    await waiRpc('wa_gal_save', { p_user_id: waiMe(), p_id: id || null, p_name: g('wg-n'), p_keywords: g('wg-k'), p_source: g('wg-s'), p_max: Number(g('wg-m')), p_active: document.getElementById('wg-a').checked, p_variants: vars });
     closeModal(); toast('✓ Galeri disimpan'); waiGalLoad();
   } catch (e) { toast(waiErr(e)); }
 }
@@ -32819,7 +32853,7 @@ async function waiGalTest(id) {
   const r = f.data || {}; if (r.ok === false) { toast(r.error); return; }
   if (!r.count) { toast('Tidak ada foto yang terbaca. Cek link/folder (harus public).'); return; }
   const bad = (r.checks || []).filter(c => !c.ok).length, big = (r.checks || []).some(c => c.size > 5 * 1024 * 1024);
-  toast(`✓ ${r.count} foto terbaca` + (bad ? ` — ${bad} dari 3 contoh tidak bisa dibuka` : '') + (big ? ' — ada yang >5 MB (ditolak WhatsApp)' : ''));
+  toast(`✓ ${r.count} foto terbaca` + ((r.variants || []).length > 1 ? ' (' + r.variants.map(v => (v.title || 'umum') + ' ' + v.count).join(', ') + ')' : '') + (bad ? ` — ${bad} dari 3 contoh tidak bisa dibuka` : '') + (big ? ' — ada yang >5 MB (ditolak WhatsApp)' : ''));
 }
 
 /* ───────── TAB SIMULASI (moderator) ───────── */
