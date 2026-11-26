@@ -31856,7 +31856,7 @@ function waiRenderShell() {
     ${tabs.length > 1 ? `<div class="wai-tabs">${tabs.map(t => `<button class="wai-tab ${WAI.tab === t[0] ? 'on' : ''}" onclick="waiTab('${t[0]}')">${t[1]}</button>`).join('')}</div>` : ''}
     <div id="wai-body"></div>`;
   const acts = document.getElementById('wai-acts');
-  if (acts) acts.innerHTML = WAI.tab === 'inbox' || WAI.tab === 'hud' ? '<button class="btn-sm btn-gold" onclick="waiRefresh()">⟲ Muat Ulang</button>' : '';
+  if (acts) acts.innerHTML = WAI.tab === 'inbox' || WAI.tab === 'hud' ? '<button class="btn-sm btn-gold" onclick="waiRefresh()">⟲ Muat Ulang</button>' + (WAI.tab === 'inbox' && waiIsMod() ? ' <button class="btn-sm btn-cancel" style="color:#c0392b;border-color:#c0392b" onclick="waiPurge()">🗑 Hapus Semua Chat</button>' : '') : '';
   const sub = document.getElementById('wai-sub'), cur = WAI_TABS.find(t => t[0] === WAI.tab);
   if (sub && cur) sub.textContent = (cur[0] === 'inbox' ? '' : cur[1] + ' — ') + cur[2];
   waiRenderTab();
@@ -32777,6 +32777,22 @@ async function waiTplSend() {
     }
     WAI.sig = ''; await waiLoadThread(WAI.cur, false); waiRefresh(true);
   } catch (e) { toast(waiErr(e)); }
+}
+
+/* ───────── v140: hapus semua chat (moderator) ───────── */
+async function waiPurge() {
+  if (!waiIsMod()) { toast('Khusus moderator'); return; }
+  const scope = confirm('Hapus SEMUA chat WhatsApp yang sudah masuk?\n\nOK = hapus semua (terbuka + selesai)\nBatal = lanjut ke pilihan lain') ? 'all'
+    : (confirm('Hapus hanya chat yang sudah SELESAI?') ? 'closed' : null);
+  if (!scope) return;
+  const t = prompt('Tindakan ini TIDAK bisa dibatalkan. Ketik HAPUS untuk melanjutkan.');
+  if (t !== 'HAPUS') { toast('Dibatalkan'); return; }
+  try {
+    const r = await waiRpc('wa_chat_purge', { p_user_id: waiMe(), p_scope: scope });
+    WAI.cur = null; WAI.convs = [];
+    toast('✓ ' + (r && r.conversations != null ? r.conversations + ' chat & ' + r.messages + ' pesan dihapus' : 'Chat dihapus'));
+    waiRefresh();
+  } catch (e) { toast(/function|schema|wa_chat_purge/.test(e.message) ? 'Jalankan migration SQL v140 dulu.' : waiErr(e)); }
 }
 
 /* ───────── v137: Galeri foto motif bertingkat (Galeri → Variasi → Foto bernama) ───────── */
