@@ -2562,6 +2562,9 @@ body.light .ads-vt-btn.active{background:#0d0d0d;color:#ffffff;border-color:#0d0
 .wa-prefix{display:flex;align-items:center;padding:0 12px;background:var(--surface3);
   color:var(--gold);font-weight:700;font-size:13px;border-right:1px solid var(--border)}
 .wa-input{border:none!important;border-radius:0!important;flex:1}
+.wa-cc{appearance:none;-webkit-appearance:none;border:0;border-right:1px solid var(--border);background:var(--surface3);color:var(--gold);font-weight:700;font-size:12.5px;padding:0 26px 0 12px;cursor:pointer;font-family:inherit;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23999' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center}
+.wa-cc:focus{outline:none;background-color:var(--surface2)}
+body.light .wa-cc{background-color:#f0f0f0;color:#0d0d0d}
 .wa-hint{font-size:10px;color:var(--muted);margin-top:4px;letter-spacing:.02em}
 .wa-hint.ok{color:var(--green)}
 .wa-hint.err{color:var(--red)}
@@ -18131,16 +18134,38 @@ async function completeTask(id) {
    ═══════════════════════════════════════════════════════════ */
 let activeLeadTask = null;
 
-/* Validasi & normalisasi nomor WA → +62XXXXXXXXX (sisi klien) */
-function normalizeWA(raw) {
+/* Validasi & normalisasi nomor WA (sisi klien): Indonesia +62, Malaysia +60, Singapura +65 */
+const WA_CC = { '62': { n: 'Indonesia', c: 'ID', ph: '81234567890' }, '60': { n: 'Malaysia', c: 'MY', ph: '123456789' }, '65': { n: 'Singapura', c: 'SG', ph: '81234567' } };
+function normalizeWA(raw, cc) {
   let v = String(raw||'').replace(/[^0-9+]/g, '');
-  if (v.startsWith('0'))    v = '+62' + v.slice(1);
-  if (v.startsWith('62'))   v = '+' + v;
-  if (v.startsWith('+620')) v = '+62' + v.slice(4);
-  if (!v.startsWith('+62') && /^[0-9]/.test(v)) v = '+62' + v;
-  return v;
+  const ex = v.match(/^\+(62|60|65)/); if (ex) cc = ex[1];
+  if (!v.startsWith('+') && !cc) { if (/^601[0-9]{8,9}$/.test(v) || /^65[89][0-9]{7}$/.test(v)) return '+' + v; }   // tanpa tanda + tapi sudah berkode MY/SG
+  cc = cc || '62';
+  if (cc === '62') {
+    if (v.startsWith('0'))    v = '+62' + v.slice(1);
+    if (v.startsWith('62'))   v = '+' + v;
+    if (v.startsWith('+620')) v = '+62' + v.slice(4);
+    if (!v.startsWith('+62') && /^[0-9]/.test(v)) v = '+62' + v;
+    return v;
+  }
+  v = v.replace(/^\+/, '');
+  if (v.startsWith(cc)) v = v.slice(cc.length);
+  return '+' + cc + v.replace(/^0+/, '');
 }
-function isValidWA(v) { return /^\+628[0-9]{7,12}$/.test(v); }
+function isValidWA(v) { return /^\+(628[0-9]{7,12}|601[0-9]{8,9}|65[89][0-9]{7})$/.test(v); }
+// gabungkan input lokal + kode negara terpilih → nomor penuh (+62… / +60… / +65…)
+function waFull(raw, cc) {
+  const r = String(raw||'').trim(); cc = cc || '62';
+  if (/^\+/.test(r)) return normalizeWA(r, cc);
+  return normalizeWA('+' + cc + r.replace(new RegExp('^' + cc), ''), cc);
+}
+function waCcOf(v) { const m = String(v||'').replace(/[^0-9+]/g, '').match(/^\+?(62|60|65)/); return m ? m[1] : '62'; }
+function waLocal(v) { const s = String(v||'').replace(/[^0-9+]/g, ''); const cc = waCcOf(s); if (s.startsWith('+' + cc)) return s.slice(cc.length + 1); if (s.startsWith(cc)) return s.slice(cc.length); if (s.startsWith('0')) return s.slice(1); return s; }
+function waCcSelect(id, cc, onchange) {
+  return `<select class="wa-cc" id="${id}" onchange="${onchange}" title="Kode negara">${Object.keys(WA_CC).map(k => `<option value="${k}" ${k === cc ? 'selected' : ''}>${WA_CC[k].c} +${k}</option>`).join('')}</select>`;
+}
+function waCcVal(id) { const el = document.getElementById(id); return el ? el.value : '62'; }
+function waHintCc(cc) { return (currentLang === 'en' ? 'Enter the number after +' + cc : 'Masukkan nomor setelah +' + cc) + ' (' + (currentLang === 'en' ? 'e.g. ' : 'cth. ') + (WA_CC[cc] || WA_CC['62']).ph + ')'; }
 
 /* v25: helper terpusat — dipakai di mana pun nomor WA customer CRM ditampilkan
    (tabel Database Customer & daftar "Belum di-follow up" di My Task).
@@ -18207,7 +18232,7 @@ async function openLeadsModal(taskId) {
         <input class="fi" id="lead-name" placeholder="${t('leadNamePh')}"/></div>
       <div class="fg"><label>${t('leadWA')} *</label>
         <div class="wa-wrap">
-          <span class="wa-prefix">+62</span>
+          ${waCcSelect('lead-cc', '62', "validateWAField()")}
           <input class="fi wa-input" id="lead-wa" inputmode="numeric" placeholder="81234567890" oninput="validateWAField()"/>
         </div>
         <div class="wa-hint" id="wa-hint">${t('waHint')}</div>
@@ -18315,8 +18340,9 @@ function validateWAField() {
   const input = document.getElementById('lead-wa');
   const hint  = document.getElementById('wa-hint');
   if (!input || !hint) return true;
-  const full = normalizeWA('+62' + input.value.replace(/^\+?62/, ''));
-  if (!input.value) { hint.textContent = t('waHint'); hint.className = 'wa-hint'; return false; }
+  const cc = waCcVal('lead-cc'); input.placeholder = (WA_CC[cc] || WA_CC['62']).ph;
+  const full = waFull(input.value, cc);
+  if (!input.value) { hint.textContent = waHintCc(cc); hint.className = 'wa-hint'; return false; }
   if (isValidWA(full)) { hint.textContent = `✓ ${full}`; hint.className = 'wa-hint ok'; return true; }
   hint.textContent = `✕ ${t('waInvalid')}`; hint.className = 'wa-hint err'; return false;
 }
@@ -18342,8 +18368,8 @@ async function submitLead() {
   const note   = document.getElementById('lead-note').value.trim();
 
   if (!name)   { toast(t('leadNeedName'));   return; }
-  // Gabungkan dengan prefix +62 yang ditampilkan
-  const wa = normalizeWA('+62' + waRaw.replace(/^\+?62/, ''));
+  // Gabungkan dengan kode negara yang dipilih (+62 / +60 / +65)
+  const wa = waFull(waRaw, waCcVal('lead-cc'));
   if (!isValidWA(wa)) { toast(t('waInvalidToast')); shake(document.getElementById('lead-wa')); return; }
   if (!region) { toast(t('leadNeedRegion')); return; }
 
@@ -18658,8 +18684,8 @@ async function editAdCustomerLead(leadId) {
   document.getElementById('m-body').innerHTML = `${modNote}
     <div class="fg"><label>Nama *</label><input class="fi" id="el-name" value="${escHtml(row.name||'')}"/></div>
     <div class="fg"><label>WhatsApp</label>
-      <div class="wa-wrap"><span class="wa-prefix">+62</span>
-        <input class="fi wa-input" id="el-wa" inputmode="numeric" value="${escHtml((row.wa_phone||'').replace(/^\+62/,''))}" oninput="validateWAField()"/>
+      <div class="wa-wrap">${waCcSelect('el-cc', waCcOf(row.wa_phone), "")}
+        <input class="fi wa-input" id="el-wa" inputmode="numeric" value="${escHtml(waLocal(row.wa_phone||''))}"/>
       </div>
     </div>
     <div class="fg"><label>Wilayah *</label><input class="fi" id="el-region" value="${escHtml(row.region||'')}"/></div>
@@ -18687,7 +18713,7 @@ async function saveAdCustomerLead(leadId) {
   const note   = document.getElementById('el-note')?.value.trim();
   if (!name)   { toast('Nama wajib diisi'); return; }
   if (!region) { toast('Wilayah wajib diisi'); return; }
-  const wa = waRaw ? normalizeWA('+62' + waRaw.replace(/^\+?62/,'')) : '';
+  const wa = waRaw ? waFull(waRaw, waCcVal('el-cc')) : '';
   if (waRaw && !isValidWA(wa)) { toast(t('waInvalidToast')); return; }
 
   if (db) {
@@ -23190,10 +23216,10 @@ function openCRMModal(idx) {
     <div class="fg"><label>${t('crmColName')} *</label><input class="fi" id="crm-f-nama" value="${escHtml(c.nama||'')}"/></div>
     <div class="fg"><label>${t('crmColWA')}</label>
       <div class="wa-wrap">
-        <span class="wa-prefix">+62</span>
-        <input class="fi wa-input" id="crm-f-wa" inputmode="numeric" placeholder="81234567890" value="${escHtml(crmStripWaPrefix(c.wa||''))}" oninput="crmValidateWAField()"/>
+        ${waCcSelect('crm-f-cc', waCcOf(c.wa), "crmValidateWAField()")}
+        <input class="fi wa-input" id="crm-f-wa" inputmode="numeric" placeholder="${(WA_CC[waCcOf(c.wa)]||WA_CC['62']).ph}" value="${escHtml(waLocal(c.wa||''))}" oninput="crmValidateWAField()"/>
       </div>
-      <div id="crm-wa-hint" class="wa-hint">${t('waHint')}</div>
+      <div id="crm-wa-hint" class="wa-hint">${waHintCc(waCcOf(c.wa))}</div>
     </div>
     <div class="fg"><label>${t('crmColCity')}</label><input class="fi" id="crm-f-kota" value="${escHtml(c.kota||'')}"/></div>
     <div class="fg"><label>${t('crmColChannel')}</label>
@@ -23274,7 +23300,7 @@ async function saveCRMCustomer(idx) {
   const _waLocalRaw = document.getElementById('crm-f-wa').value.trim();
   let _waFull = '';
   if (_waLocalRaw) {
-    _waFull = normalizeWA('+62' + _waLocalRaw.replace(/^\+?62/, ''));
+    _waFull = waFull(_waLocalRaw, waCcVal('crm-f-cc'));
     if (!isValidWA(_waFull)) { toast(t('waInvalid')); shake(document.getElementById('crm-f-wa')); return; }
   }
   const _existingEntry = idx >= 0 ? crmData[idx] : null;
@@ -24164,9 +24190,10 @@ function crmValidateWAField() {
   const input = document.getElementById('crm-f-wa');
   const hint  = document.getElementById('crm-wa-hint');
   if (!input || !hint) return true;
-  const full = normalizeWA('+62' + input.value.replace(/^\+?62/, ''));
+  const cc = waCcVal('crm-f-cc'); input.placeholder = (WA_CC[cc] || WA_CC['62']).ph;
+  const full = waFull(input.value, cc);
   // Beda dari Leads: nomor WA di CRM opsional (boleh kosong).
-  if (!input.value.trim()) { hint.textContent = t('waHint'); hint.className = 'wa-hint'; return true; }
+  if (!input.value.trim()) { hint.textContent = waHintCc(cc); hint.className = 'wa-hint'; return true; }
   if (isValidWA(full)) { hint.textContent = `✓ ${full}`; hint.className = 'wa-hint ok'; return true; }
   hint.textContent = `✕ ${t('waInvalid')}`; hint.className = 'wa-hint err'; return false;
 }
@@ -32168,6 +32195,7 @@ function waiRenderThread(scroll) {
   if (scroll) { const m = document.getElementById('wai-msgs'); if (m) m.scrollTop = m.scrollHeight; }
   waiTypingRun(); waiTypingIndicator();
   waiRenderInfo();
+  waiOrderCard();
   if (mod && !(WAI.agents || []).length && !WAI._agAsked) { WAI._agAsked = true; waiLoadAgents().then(() => { if (WAI.thread) waiRenderThread(false); }); }
 }
 function waiRenderInfo() {
@@ -32891,6 +32919,25 @@ function waiIconize(root) {
   const start = () => { new MutationObserver(run).observe(document.body, { childList: true, subtree: true }); run(); };
   if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
 })();
+
+/* ───────── v145: Data pesanan di panel info chat ───────── */
+async function waiOrderCard() {
+  const box = document.getElementById('wai-info'), th = WAI.thread; if (!box || !th || !th.conversation) return;
+  const id = th.conversation.id;
+  let r = WAI._ord && WAI._ord.id === id && Date.now() - WAI._ord.at < 8000 ? WAI._ord.r : undefined;
+  if (r === undefined) { try { r = await waiRpc('wa_order_get', { p_user_id: waiMe(), p_conv_id: id }); } catch (e) { r = null; } WAI._ord = { id, at: Date.now(), r }; }
+  const el = document.getElementById('wai-info'); if (!el || !r || !r.exists || !WAI.thread || WAI.thread.conversation.id !== id) return;
+  el.querySelectorAll('.wai-ordcard').forEach(x => x.remove());
+  const f = r.form || {}, row = (k, v) => `<div class="wai-kv"><span>${k}</span><b style="text-align:right;max-width:60%;word-break:break-word">${v ? escHtml(String(v)) : '<span style="color:#c0392b;font-weight:600">belum ada</span>'}</b></div>`;
+  const prod = r.kind ? ((r.gallery || (r.kind === 'polos' ? 'Polos' : 'Motif')) + (r.motif ? ' – ' + r.motif : '')) : '';
+  const size = r.w ? (r.l ? r.w + '×' + r.l + (r.h ? '×' + r.h : '') + ' cm' : 'ukuran ' + r.w) : '';
+  const miss = ['penerima', 'hp', 'alamat', 'kec', 'kota', 'pos'].filter(k => !f[k]).length;
+  const card = document.createElement('div'); card.className = 'wai-ordcard';
+  card.innerHTML = `<div class="wai-sub" style="margin-top:16px">Data pesanan ${r.stage === 'form-lengkap' ? '<span class="wai-pill" style="background:rgba(37,211,102,.15);color:#1faa59;margin-left:6px">LENGKAP</span>' : miss && (f.penerima || f.alamat || f.hp) ? '<span class="wai-pill" style="background:rgba(212,160,23,.18);color:#b9791f;margin-left:6px">' + miss + ' BELUM</span>' : ''}</div>
+    ${row('Produk / motif', prod)}${row('Ukuran', size)}${row('Jumlah', r.qty ? r.qty + ' pcs' : '')}
+    ${(f.penerima || f.hp || f.alamat) ? row('Penerima', f.penerima) + row('No. HP', f.hp) + row('Alamat', [f.alamat, f.rumah && 'No. ' + f.rumah, f.kec && 'Kec. ' + f.kec, f.kota, f.pos].filter(Boolean).join(', ')) + (f.pengirim ? row('Pengirim', f.pengirim) : '') : ''}`;
+  el.appendChild(card);
+}
 
 /* ───────── v143: dialog konfirmasi sistem, notifikasi chat masuk (suara + kartu + notifikasi browser) ───────── */
 function waiConfirm(o) {
