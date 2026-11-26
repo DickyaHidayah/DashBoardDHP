@@ -5063,6 +5063,37 @@ body.light .ng-wa>.nav-grp-head .nav-icon svg{filter:none!important;opacity:1!im
 @media(max-width:640px){.ccm-table{min-width:560px}}
 .wai-img{max-width:240px;max-height:300px;border-radius:8px;display:block;cursor:zoom-in;background:rgba(0,0,0,.05)}
 
+/* ───────── v143: dialog konfirmasi, notifikasi chat masuk, suara ───────── */
+.wai-dlg-ov{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(10,12,16,.45);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);animation:waiFade .16s ease}
+.wai-dlg{width:min(420px,100%);background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:18px;padding:22px 22px 18px;box-shadow:0 30px 70px -24px rgba(0,0,0,.55);animation:waiPop .2s cubic-bezier(.2,.9,.3,1.2)}
+.wai-dlg-ic{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;background:rgba(37,211,102,.14);color:#1faa59}
+.wai-dlg.danger .wai-dlg-ic{background:rgba(214,69,65,.13);color:#d64541}
+.wai-dlg-ic svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.wai-dlg h4{margin:0 0 6px;font-size:16px;font-weight:700;letter-spacing:.005em}
+.wai-dlg p{margin:0 0 14px;font-size:12.5px;line-height:1.6;color:var(--text2);white-space:pre-line}
+.wai-dlg-opts{display:grid;gap:8px;margin:0 0 14px}
+.wai-dlg-opt{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:12px;cursor:pointer;font-size:12.5px;transition:border-color .15s,background .15s}
+.wai-dlg-opt:hover{border-color:var(--text2)}.wai-dlg-opt.on{border-color:#d64541;background:rgba(214,69,65,.07)}
+.wai-dlg-opt input{accent-color:#d64541}
+.wai-dlg-type{width:100%;box-sizing:border-box;margin:0 0 14px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface2);color:var(--text);font:inherit;font-size:13px;letter-spacing:.12em;text-align:center}
+.wai-dlg-type:focus{outline:none;border-color:#d64541;box-shadow:0 0 0 3px rgba(214,69,65,.15)}
+.wai-dlg-hint{font-size:11px;color:var(--muted);margin:-8px 0 12px}
+.wai-dlg-act{display:flex;gap:8px;justify-content:flex-end}
+.wai-dlg-act button{font:inherit;font-size:12px;font-weight:700;letter-spacing:.03em;padding:9px 16px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;transition:transform .12s,filter .15s,opacity .15s}
+.wai-dlg-act button:hover{transform:translateY(-1px)}
+.wai-dlg-act .ok{border:0;color:#fff;background:linear-gradient(135deg,#34e57f,#25D366 55%,#1faa59);box-shadow:0 8px 18px -10px rgba(37,211,102,.8)}
+.wai-dlg.danger .ok{background:linear-gradient(135deg,#ef6a66,#d64541 60%,#b8302d);box-shadow:0 8px 18px -10px rgba(214,69,65,.8)}
+.wai-dlg-act .ok:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+@keyframes waiFade{from{opacity:0}to{opacity:1}}@keyframes waiPop{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}
+#wai-toasts{position:fixed;top:74px;right:18px;z-index:99990;display:flex;flex-direction:column;gap:10px;width:min(340px,calc(100vw - 36px));pointer-events:none}
+.wai-nt{pointer-events:auto;display:flex;gap:11px;align-items:center;padding:12px 14px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-left:4px solid #25D366;border-radius:14px;box-shadow:0 18px 40px -18px rgba(0,0,0,.5);cursor:pointer;animation:waiIn .28s cubic-bezier(.2,.9,.3,1.1);transition:opacity .25s,transform .25s}
+.wai-nt.out{opacity:0;transform:translateX(24px)}
+.wai-nt-av{flex:0 0 38px;height:38px;border-radius:50%;background:rgba(37,211,102,.15);color:#1faa59;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px}
+.wai-nt-b{min-width:0;flex:1}.wai-nt-t{font-size:10px;font-weight:800;letter-spacing:.09em;color:#1faa59;text-transform:uppercase}
+.wai-nt-n{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wai-nt-m{font-size:11.5px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wai-nt-x{flex:0 0 auto;border:0;background:none;color:var(--muted);cursor:pointer;font-size:15px;padding:2px 4px;line-height:1}
+@keyframes waiIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
+
 /* ───────── v142: ikon vektor & tampilan modul AI WhatsApp lebih elegan ───────── */
 .wai-ic{width:1.15em;height:1.15em;vertical-align:-.2em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
 .wai-dot{display:inline-block;width:.62em;height:.62em;border-radius:50%;vertical-align:.02em;margin-right:1px;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 0%,transparent)}
@@ -31882,7 +31913,7 @@ function waiTabsAllowed() {
 }
 function waiRenderActs() {
   const acts = document.getElementById('wai-acts');
-  if (acts) acts.innerHTML = WAI.tab === 'inbox' || WAI.tab === 'hud' ? '<button class="btn-sm btn-gold" onclick="waiRefresh()">⟲ Muat Ulang</button>' + (WAI.tab === 'inbox' && waiIsMod() ? ' <button class="btn-sm btn-cancel" onclick="waiSelToggle()">' + (WAI.sel ? '✕ Batal Pilih' : '☑ Pilih Chat') + '</button> <button class="btn-sm btn-cancel" style="color:#c0392b;border-color:#c0392b" onclick="waiPurge()">🗑 Hapus Semua</button>' : '') : '';
+  if (acts) acts.innerHTML = WAI.tab === 'inbox' || WAI.tab === 'hud' ? '<button class="btn-sm btn-cancel" onclick="waiSoundToggle()" title="Bunyi saat chat masuk">' + (waiSoundOn() ? '🔔 Suara: Aktif' : '🔕 Suara: Mati') + '</button> <button class="btn-sm btn-gold" onclick="waiRefresh()">⟲ Muat Ulang</button>' + (WAI.tab === 'inbox' && waiIsMod() ? ' <button class="btn-sm btn-cancel" onclick="waiSelToggle()">' + (WAI.sel ? '✕ Batal Pilih' : '☑ Pilih Chat') + '</button> <button class="btn-sm btn-cancel" style="color:#c0392b;border-color:#c0392b" onclick="waiPurge()">🗑 Hapus Semua</button>' : '') : '';
 }
 function waiRenderShell() {
   const root = document.getElementById('wai-root'); if (!root) return;
@@ -31959,8 +31990,8 @@ async function waiHud() {
 async function waiHudSet(mode) {
   if (blockIfOwner()) return;
   const m = WAI_HUD_MODES.find(x => x[0] === mode);
-  if (mode === 'auto' && !confirm('AI akan membalas SEMUA chat yang masuk (juga chat yang sedang berjalan) tanpa menunggu persetujuan agen. Lanjutkan?')) return;
-  if (mode === 'off' && !confirm('Matikan AI? Semua chat harus dibalas manual oleh agen.')) return;
+  if (mode === 'auto' && !(await waiAsk('AI akan membalas SEMUA chat yang masuk (juga chat yang sedang berjalan) tanpa menunggu persetujuan agen. Lanjutkan?'))) return;
+  if (mode === 'off' && !(await waiAsk('Matikan AI? Semua chat harus dibalas manual oleh agen.'))) return;
   try {
     const n = await waiRpc('wa_ai_set_global', { p_user_id: waiMe(), p_mode: mode });
     toast('✓ Mode ' + m[2] + ' aktif' + (n ? ' untuk ' + n + ' chat berjalan' : ''));
@@ -32022,16 +32053,6 @@ async function waiRefresh(silent) {
     waiAlert(WAI.convs);
     if (WAI.cur) { const c = WAI.convs.find(x => x.id === WAI.cur); if (c) waiLoadThread(WAI.cur, true); }
   } catch (e) { if (!silent) { const it = document.getElementById('wai-items'); if (it) it.innerHTML = `<div class="wai-empty">${escHtml(waiErr(e))}</div>`; } }
-}
-function waiBeep() {
-  try { const A = window.AudioContext || window.webkitAudioContext; if (!A) return; const c = new A(), o = c.createOscillator(), g = c.createGain();
-    o.type = 'sine'; o.frequency.value = 880; g.gain.value = 0.06; o.connect(g); g.connect(c.destination); o.start(); setTimeout(() => { o.stop(); c.close(); }, 180); } catch (e) { /* diam */ }
-}
-function waiAlert(list) {
-  const mine = (list || []).filter(c => c.assigned_to === waiMe());
-  const n = mine.reduce((t, c) => t + (c.unread || 0), 0);
-  if (WAI._lastUnread != null && n > WAI._lastUnread) { waiBeep(); toast('💬 Chat WhatsApp baru masuk'); }
-  WAI._lastUnread = n;
 }
 function waiBadge(list) {
   const el = document.getElementById('wai-nav-badge'); if (!el) return;
@@ -32221,7 +32242,7 @@ async function waiAskAi() {
 }
 async function waiSetAi(mode) {
   if (blockIfOwner()) { waiRenderThread(false); return; }
-  if (mode === 'auto' && !confirm('AI akan membalas pelanggan SENDIRI tanpa menunggu persetujuan. Lanjutkan?')) { waiRenderThread(false); return; }
+  if (mode === 'auto' && !(await waiAsk('AI akan membalas pelanggan SENDIRI tanpa menunggu persetujuan. Lanjutkan?'))) { waiRenderThread(false); return; }
   try { await waiRpc('wa_set_conv', { p_user_id: waiMe(), p_conv_id: WAI.cur, p_status: null, p_ai_mode: mode }); WAI.sig = ''; await waiLoadThread(WAI.cur, false); toast('✓ Mode AI diubah'); } catch (e) { toast(waiErr(e)); }
 }
 async function waiClose(done) {
@@ -32275,7 +32296,7 @@ async function waiAgentAdd() {
 async function waiAgentToggle(id, v) { const r = await dbQ(d => d.from('wa_agents').update({ is_active: v }).eq('user_id', id)); if (!r || r.error) toast(waiErr(r && r.error)); else waiRenderAgents(); }
 async function waiAgentMax(id, v) { const n = Math.max(1, Math.min(500, parseInt(v, 10) || 30)); const r = await dbQ(d => d.from('wa_agents').update({ max_open: n }).eq('user_id', id)); if (!r || r.error) toast(waiErr(r && r.error)); else toast('✓ Batas chat diperbarui'); }
 async function waiAgentRemove(id, name) {
-  if (!confirm(`Hapus ${name} dari agen WA?\nChat terbuka miliknya dikembalikan ke "belum ditugaskan" (tidak dihapus).`)) return;
+  if (!(await waiAsk(`Hapus ${name} dari agen WA?\nChat terbuka miliknya dikembalikan ke "belum ditugaskan" (tidak dihapus).`))) return;
   try { const n = await waiRpc('wa_remove_agent', { p_user_id: waiMe(), p_agent_id: id }); toast(`✓ ${name} dihapus dari agen · ${n} chat dikembalikan ke antrean`); waiRenderAgents(); } catch (e) { toast(waiErr(e)); }
 }
 async function waiDistribute() {
@@ -32530,7 +32551,7 @@ async function waiKSave(kind, id) {
   if (!r || r.error) { toast(/kind_check|violates check/.test((r && r.error && r.error.message) || '') ? 'Gagal: jalankan migration SQL v128 dulu.' : /triggers|direct_reply|max_words/.test((r && r.error && r.error.message) || '') ? 'Gagal: jalankan migration SQL v129 dulu.' : waiErr(r && r.error)); return; }
   closeModal(); toast('✓ Tersimpan'); waiRenderAi();
 }
-async function waiKDel(id) { if (!confirm('Hapus entri ini?')) return; const r = await dbQ(d => d.from('wa_knowledge').delete().eq('id', id)); if (!r || r.error) toast(waiErr(r && r.error)); else waiRenderAi(); }
+async function waiKDel(id) { if (!(await waiAsk('Hapus entri ini?'))) return; const r = await dbQ(d => d.from('wa_knowledge').delete().eq('id', id)); if (!r || r.error) toast(waiErr(r && r.error)); else waiRenderAi(); }
 
 
 /* ───────── IMPOR PENGETAHUAN ───────── */
@@ -32694,7 +32715,7 @@ async function waiAccSave(id) {
   const g = x => document.getElementById(x).value.trim();
   if (!g('wa-p')) { toast('Phone Number ID wajib diisi'); return; }
   const mode = g('wa-m');
-  if (mode === 'live' && !confirm('Mode LIVE: pesan akan dikirim lewat Meta sungguhan.\nPastikan secret WA_ACCESS_TOKEN & Edge Function sudah dipasang. Lanjutkan?')) return;
+  if (mode === 'live' && !(await waiAsk('Mode LIVE: pesan akan dikirim lewat Meta sungguhan.\nPastikan secret WA_ACCESS_TOKEN & Edge Function sudah dipasang. Lanjutkan?'))) return;
   const row = { label: g('wa-l') || 'Nomor', phone_number_id: g('wa-p'), waba_id: g('wa-w') || null, display_phone: g('wa-d') || null, mode, is_active: document.getElementById('wa-on').checked };
   const r = await dbQ(d => id ? d.from('wa_accounts').update(row).eq('id', id) : d.from('wa_accounts').insert(row));
   if (!r || r.error) { toast(waiErr(r && r.error)); return; }
@@ -32742,7 +32763,7 @@ async function waiTplSave(id) {
   } catch (e) { toast(waiErr(e)); }
 }
 async function waiTplDel(id) {
-  if (!confirm('Hapus template ini?')) return;
+  if (!(await waiAsk('Hapus template ini?'))) return;
   try { await waiRpc('wa_tpl_delete', { p_user_id: waiMe(), p_id: id }); waiTplLoad(); } catch (e) { toast(waiErr(e)); }
 }
 async function waiTplFn(action, id) {
@@ -32752,7 +32773,7 @@ async function waiTplFn(action, id) {
   return f.data;
 }
 async function waiTplSubmit(id) {
-  if (!confirm('Ajukan template ini ke Meta? Setelah diajukan isinya tidak bisa diubah. Persetujuan biasanya beberapa menit sampai 24 jam.')) return;
+  if (!(await waiAsk('Ajukan template ini ke Meta? Setelah diajukan isinya tidak bisa diubah. Persetujuan biasanya beberapa menit sampai 24 jam.'))) return;
   toast('Mengajukan ke Meta…');
   const r = await waiTplFn('tpl_submit', id); if (r) { toast('✓ Diajukan — status: ' + r.status); waiTplLoad(); }
 }
@@ -32839,6 +32860,7 @@ const WAI_IC = {
   '↗': '<path d="M7 7h10v10"/><path d="M7 17 17 7"/>',
   '✅': '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
   '❌': '<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>',
+  '🔕': '<path d="M8.7 3A6 6 0 0 1 18 8c0 2.2.3 3.9.8 5.2"/><path d="M17 17H3s3-2 3-9c0-.6.1-1.2.3-1.7"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="m2 2 20 20"/>',
   '‹': '<path d="m15 18-6-6 6-6"/>'
 };
 const WAI_DOT = { '🟢': 'g', '🟡': 'y', '⚪': 'w' };
@@ -32870,6 +32892,116 @@ function waiIconize(root) {
   if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
 })();
 
+/* ───────── v143: dialog konfirmasi sistem, notifikasi chat masuk (suara + kartu + notifikasi browser) ───────── */
+function waiConfirm(o) {
+  return new Promise(res => {
+    o = o || {};
+    const ov = document.createElement('div'); ov.className = 'wai-dlg-ov';
+    const danger = !!o.danger;
+    const ic = danger ? '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/>' : '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>';
+    const opts = Array.isArray(o.options) && o.options.length ? o.options : null;
+    ov.innerHTML = `<div class="wai-dlg ${danger ? 'danger' : ''}" role="dialog" aria-modal="true">
+      <div class="wai-dlg-ic"><svg viewBox="0 0 24 24">${ic}</svg></div>
+      <h4>${escHtml(o.title || 'Konfirmasi')}</h4>${o.text ? `<p>${escHtml(o.text)}</p>` : ''}
+      ${opts ? `<div class="wai-dlg-opts">${opts.map((x, i) => `<label class="wai-dlg-opt ${i === 0 ? 'on' : ''}"><input type="radio" name="wdc" value="${escHtml(x.v)}" ${i === 0 ? 'checked' : ''}/> ${escHtml(x.l)}</label>`).join('')}</div>` : ''}
+      ${o.type ? `<div class="wai-dlg-hint">Ketik <b>${escHtml(o.type)}</b> untuk melanjutkan</div><input class="wai-dlg-type" autocomplete="off" spellcheck="false" placeholder="${escHtml(o.type)}"/>` : ''}
+      <div class="wai-dlg-act"><button type="button" class="no">${escHtml(o.cancel || 'Batal')}</button><button type="button" class="ok" ${o.type ? 'disabled' : ''}>${escHtml(o.confirm || 'Lanjutkan')}</button></div></div>`;
+    document.body.appendChild(ov);
+    const ok = ov.querySelector('.ok'), no = ov.querySelector('.no'), ty = ov.querySelector('.wai-dlg-type');
+    const done = v => { document.removeEventListener('keydown', key, true); ov.remove(); res(v); };
+    const val = () => { const r = ov.querySelector('input[name=wdc]:checked'); return { choice: r ? r.value : null }; };
+    const key = e => { if (e.key === 'Escape') { e.stopPropagation(); done(null); } else if (e.key === 'Enter' && !ok.disabled) { e.preventDefault(); done(val()); } };
+    document.addEventListener('keydown', key, true);
+    ov.addEventListener('mousedown', e => { if (e.target === ov) done(null); });
+    no.onclick = () => done(null); ok.onclick = () => done(val());
+    ov.querySelectorAll('.wai-dlg-opt input').forEach(r => r.onchange = () => ov.querySelectorAll('.wai-dlg-opt').forEach(l => l.classList.toggle('on', l.querySelector('input').checked)));
+    if (ty) { ty.oninput = () => { ok.disabled = ty.value.trim() !== o.type; }; setTimeout(() => ty.focus(), 30); } else setTimeout(() => ok.focus(), 30);
+  });
+}
+// pembungkus untuk confirm() lama: teks panjang jadi isi dialog
+async function waiAsk(msg) {
+  msg = String(msg || '');
+  const short = msg.length <= 64 && !msg.includes('\n');
+  const danger = /^hapus|matikan|tidak bisa dibatalkan/i.test(msg);
+  return !!(await waiConfirm({ title: short ? msg : (/^hapus/i.test(msg) ? 'Hapus?' : 'Konfirmasi'), text: short ? '' : msg, danger, confirm: /^hapus/i.test(msg) ? 'Hapus' : (danger ? 'Ya, lanjutkan' : 'Lanjutkan') }));
+}
+
+/* ----- suara & notifikasi ----- */
+const WAI_SND = { ctx: null };
+function waiPref(k, d) { try { const v = localStorage.getItem('wai_' + k); return v == null ? d : v; } catch (e) { return d; } }
+function waiSetPref(k, v) { try { localStorage.setItem('wai_' + k, v); } catch (e) { /* abaikan */ } }
+function waiSoundOn() { return waiPref('sound', '1') === '1'; }
+function waiAudio() {
+  const A = window.AudioContext || window.webkitAudioContext; if (!A) return null;
+  if (!WAI_SND.ctx) WAI_SND.ctx = new A();
+  if (WAI_SND.ctx.state === 'suspended') WAI_SND.ctx.resume().catch(() => {});
+  return WAI_SND.ctx;
+}
+['pointerdown', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, () => { try { waiAudio(); } catch (e) { /* abaikan */ } }, { once: true, capture: true }));
+function waiBeep(force) {
+  if (!force && !waiSoundOn()) return;
+  try {
+    const c = waiAudio(); if (!c) return; const t0 = c.currentTime + 0.02;
+    [[784, 0], [1046.5, .13], [1318.5, .26]].forEach(([f, d]) => {            // nada naik: G5 → C6 → E6 (chime lembut)
+      const o = c.createOscillator(), o2 = c.createOscillator(), g = c.createGain();
+      o.type = 'sine'; o.frequency.value = f; o2.type = 'triangle'; o2.frequency.value = f * 2;
+      g.gain.setValueAtTime(0.0001, t0 + d); g.gain.exponentialRampToValueAtTime(0.3, t0 + d + 0.025); g.gain.exponentialRampToValueAtTime(0.0001, t0 + d + 0.5);
+      o.connect(g); o2.connect(g); g.connect(c.destination); o.start(t0 + d); o2.start(t0 + d); o.stop(t0 + d + 0.55); o2.stop(t0 + d + 0.55);
+    });
+  } catch (e) { /* diam */ }
+}
+function waiNotify(c, more) {
+  let box = document.getElementById('wai-toasts');
+  if (!box) { box = document.createElement('div'); box.id = 'wai-toasts'; document.body.appendChild(box); }
+  while (box.children.length >= 3) box.firstChild.remove();
+  const el = document.createElement('div'); el.className = 'wai-nt';
+  const name = c.name || c.contact_name || 'Pelanggan';
+  el.innerHTML = `<div class="wai-nt-av">${escHtml(name.trim().charAt(0).toUpperCase() || '?')}</div>
+    <div class="wai-nt-b"><div class="wai-nt-t">Chat WhatsApp baru${more > 1 ? ' · ' + more + ' chat' : ''}</div><div class="wai-nt-n">${escHtml(name)}</div><div class="wai-nt-m">${escHtml(String(c.last_text || '').replace(/\[(gambar|berkas|dokumen):[^\]]*\]/g, '📷 Foto/berkas').slice(0, 80))}</div></div>
+    <button class="wai-nt-x" title="Tutup">×</button>`;
+  const close = () => { el.classList.add('out'); setTimeout(() => el.remove(), 260); };
+  el.onclick = e => {
+    if (e.target.classList.contains('wai-nt-x')) { close(); return; }
+    close();
+    try { WAI.status = 'open'; if (document.getElementById('pg-wa_inbox')?.classList.contains('active')) waiOpenConv(c.id); else { navTo('wa_inbox'); setTimeout(() => waiOpenConv(c.id), 700); } } catch (er) { /* abaikan */ }
+  };
+  box.appendChild(el); setTimeout(close, 8000);
+}
+function waiDesktop(c) {
+  try {
+    if (!document.hidden || !('Notification' in window) || Notification.permission !== 'granted') return;
+    const n = new Notification('Chat WhatsApp baru', { body: (c.name || 'Pelanggan') + ': ' + String(c.last_text || '').slice(0, 90), tag: 'wai-new', renotify: true });
+    n.onclick = () => { window.focus(); n.close(); };
+  } catch (e) { /* abaikan */ }
+}
+function waiTitleFlash(n) {
+  if (!document.hidden) return;
+  if (!WAI._title0) WAI._title0 = document.title;
+  clearInterval(WAI._flash); let on = false;
+  WAI._flash = setInterval(() => { document.title = (on = !on) ? '💬 (' + n + ') Chat baru!' : WAI._title0; }, 1000);
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && WAI._flash) { clearInterval(WAI._flash); WAI._flash = null; if (WAI._title0) document.title = WAI._title0; } });
+function waiAlert(list) {
+  list = list || [];
+  const unread = list.filter(c => (c.unread || 0) > 0);
+  const n = unread.reduce((t, c) => t + c.unread, 0);
+  const seen = WAI._seen || {};
+  const fresh = unread.filter(c => c.unread > (seen[c.id] || 0));
+  if (WAI._lastUnread != null && fresh.length) {
+    waiBeep(); waiNotify(fresh[0], fresh.length); waiDesktop(fresh[0]); waiTitleFlash(n);
+  }
+  WAI._seen = {}; unread.forEach(c => { WAI._seen[c.id] = c.unread; });
+  WAI._lastUnread = n;
+}
+async function waiSoundToggle() {
+  const on = !waiSoundOn(); waiSetPref('sound', on ? '1' : '0');
+  if (on) {
+    waiBeep(true);
+    try { if ('Notification' in window && Notification.permission === 'default') await Notification.requestPermission(); } catch (e) { /* abaikan */ }
+  }
+  toast(on ? '✓ Notifikasi suara aktif' : 'Notifikasi suara dimatikan'); waiRenderActs();
+}
+
 /* ───────── v141: hapus chat (moderator): semua / pilihan / per pesan ───────── */
 function waiSelToggle() { WAI.sel = WAI.sel ? null : new Set(); waiRenderList(); waiRenderActs(); }
 function waiSelOne(id) { if (!WAI.sel) return; WAI.sel.has(id) ? WAI.sel.delete(id) : WAI.sel.add(id); waiRenderList(); }
@@ -32880,7 +33012,8 @@ async function waiDeleteCall(convIds, msgIds) {
 async function waiDelSel() {
   if (!waiIsMod()) { toast('Khusus moderator'); return; }
   const ids = [...(WAI.sel || [])]; if (!ids.length) { toast('Belum ada chat yang dipilih'); return; }
-  if (!confirm('Hapus ' + ids.length + ' chat terpilih beserta seluruh pesannya?\n\nTidak bisa dibatalkan.')) return;
+  const ok = await waiConfirm({ title: 'Hapus ' + ids.length + ' chat terpilih?', text: 'Seluruh pesan di chat tersebut ikut terhapus dan tidak bisa dikembalikan.', confirm: 'Hapus ' + ids.length + ' chat', danger: true });
+  if (!ok) return;
   try {
     const r = await waiDeleteCall(ids, []);
     if (ids.includes(WAI.cur)) WAI.cur = null;
@@ -32889,19 +33022,20 @@ async function waiDelSel() {
 }
 async function waiDelMsg(id) {
   if (!waiIsMod()) { toast('Khusus moderator'); return; }
-  if (!confirm('Hapus pesan ini?')) return;
+  const ok = await waiConfirm({ title: 'Hapus pesan ini?', text: 'Pesan hanya terhapus dari portal dan tidak bisa dikembalikan.', confirm: 'Hapus pesan', danger: true });
+  if (!ok) return;
   try { await waiDeleteCall([], [id]); toast('✓ Pesan dihapus'); if (WAI.cur) waiLoadThread(WAI.cur, true); waiRefresh(true); }
   catch (e) { toast(/function|schema|wa_chat_delete/.test(e.message) ? 'Jalankan migration SQL v141 dulu.' : waiErr(e)); }
 }
 async function waiPurge() {
   if (!waiIsMod()) { toast('Khusus moderator'); return; }
-  const scope = confirm('Hapus SEMUA chat WhatsApp yang sudah masuk?\n\nOK = hapus semua (terbuka + selesai)\nBatal = lanjut ke pilihan lain') ? 'all'
-    : (confirm('Hapus hanya chat yang sudah SELESAI?') ? 'closed' : null);
-  if (!scope) return;
-  const t = prompt('Tindakan ini TIDAK bisa dibatalkan. Ketik HAPUS untuk melanjutkan.');
-  if (t !== 'HAPUS') { toast('Dibatalkan'); return; }
+  const r0 = await waiConfirm({
+    title: 'Hapus chat WhatsApp', text: 'Pilih cakupan penghapusan. Tindakan ini tidak bisa dibatalkan.', danger: true, confirm: 'Hapus permanen',
+    options: [{ v: 'all', l: 'Semua chat (terbuka + selesai)' }, { v: 'closed', l: 'Hanya chat yang sudah Selesai' }], type: 'HAPUS'
+  });
+  if (!r0) return;
   try {
-    const r = await waiRpc('wa_chat_purge', { p_user_id: waiMe(), p_scope: scope });
+    const r = await waiRpc('wa_chat_purge', { p_user_id: waiMe(), p_scope: r0.choice || 'all' });
     WAI.cur = null; WAI.convs = []; WAI.sel = null;
     toast('✓ ' + (r && r.conversations != null ? r.conversations + ' chat & ' + r.messages + ' pesan dihapus' : 'Chat dihapus'));
     waiRefresh();
@@ -32975,7 +33109,7 @@ async function waiGalSave(id) {
     closeModal(); toast('✓ Galeri disimpan'); waiGalLoad();
   } catch (e) { toast(waiErr(e)); }
 }
-async function waiGalDel(id) { if (!confirm('Hapus galeri ini?')) return; try { await waiRpc('wa_gal_delete', { p_user_id: waiMe(), p_id: id }); waiGalLoad(); } catch (e) { toast(waiErr(e)); } }
+async function waiGalDel(id) { if (!(await waiAsk('Hapus galeri ini?'))) return; try { await waiRpc('wa_gal_delete', { p_user_id: waiMe(), p_id: id }); waiGalLoad(); } catch (e) { toast(waiErr(e)); } }
 async function waiGalTest(id) {
   toast('Mengambil foto…');
   const f = await dbQ(d => d.functions.invoke(WAI_FN.ai, { body: { action: 'gal_test', user_id: waiMe(), template_id: id } }));
@@ -33030,15 +33164,16 @@ async function waiSimBulk() {
 /* ───────── Badge sidebar (jumlah chat belum dibaca milik agen) ───────── */
 setInterval(async () => {
   try {
-    if (!currentUser || !db || document.hidden) return;
+    if (!currentUser || !db) return;
     const r = currentUser.role;
     if (!(can.isMod(r) || can.isNdbStaff(r))) return;
     waiSyncUser();
-    if (document.getElementById('pg-wa_inbox')?.classList.contains('active')) return;
-    const rows = await waiRpc('wa_list_conversations', { p_user_id: currentUser.id, p_scope: 'mine', p_status: 'open', p_search: null, p_limit: 150 });
+    if (!document.hidden && document.getElementById('pg-wa_inbox')?.classList.contains('active')) return;   // halaman Chat sendiri sudah polling tiap 3 dtk
+    const scope = (can.isMod(r) || can.isOwnerView(r)) ? 'all' : 'mine';
+    const rows = await waiRpc('wa_list_conversations', { p_user_id: currentUser.id, p_scope: scope, p_status: 'open', p_search: null, p_limit: 150 });
     waiBadge(rows); waiAlert(rows);
   } catch (e) { /* SQL v125 belum dijalankan — abaikan */ }
-}, 12000);
+}, 6000);
 window.waiOpen = waiOpen; window.waiTab = waiTab; window.waiRefresh = waiRefresh;
 
 /* ───────── Satu akun = satu tab per perangkat ─────────
