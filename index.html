@@ -5062,6 +5062,38 @@ body.light .ng-wa>.nav-grp-head .nav-icon svg{filter:none!important;opacity:1!im
 .ccm-table td{vertical-align:top;min-width:150px}.ccm-sum{font-size:11px;color:var(--text2)}
 @media(max-width:640px){.ccm-table{min-width:560px}}
 .wai-img{max-width:240px;max-height:300px;border-radius:8px;display:block;cursor:zoom-in;background:rgba(0,0,0,.05)}
+
+/* ───────── v142: ikon vektor & tampilan modul AI WhatsApp lebih elegan ───────── */
+.wai-ic{width:1.15em;height:1.15em;vertical-align:-.2em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.wai-dot{display:inline-block;width:.62em;height:.62em;border-radius:50%;vertical-align:.02em;margin-right:1px;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 0%,transparent)}
+.wai-dot.g{background:#22a05a;box-shadow:0 0 0 3px rgba(34,160,90,.18)}.wai-dot.y{background:#e0a81c;box-shadow:0 0 0 3px rgba(224,168,28,.2)}.wai-dot.w{background:#aeb4bd;box-shadow:0 0 0 3px rgba(174,180,189,.2)}
+#wai-root,#wai-acts{--wai-r:14px}
+#wai-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#wai-acts .btn-sm,#wai-root .btn-sm{display:inline-flex;align-items:center;gap:6px;border-radius:10px;padding:7px 12px;font-weight:600;letter-spacing:.02em;transition:transform .12s ease,box-shadow .15s ease,background .15s ease,border-color .15s ease}
+#wai-acts .btn-sm:hover,#wai-root .btn-sm:hover{transform:translateY(-1px);box-shadow:0 6px 14px -8px rgba(0,0,0,.35)}
+#wai-acts .btn-sm:active,#wai-root .btn-sm:active{transform:none;box-shadow:none}
+.wai-card,.wai-hud,.wai-app{border-radius:var(--wai-r);box-shadow:0 1px 2px rgba(20,24,32,.04),0 10px 26px -18px rgba(20,24,32,.28);border-color:color-mix(in srgb,var(--border) 70%,transparent)}
+.wai-card h3{font-size:14px;letter-spacing:.01em;margin:0 0 4px}
+.wai-hud{padding:18px;gap:18px;background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface) 92%,var(--surface2)))}
+.wai-hud-sw button{border-radius:12px;padding:12px 14px;gap:4px;border-width:1px;transition:border-color .15s,background .15s,transform .12s,box-shadow .15s}
+.wai-hud-sw button:not(.on):hover:not(:disabled){transform:translateY(-1px);box-shadow:0 8px 18px -12px rgba(0,0,0,.35)}
+.wai-hud-sw button.on{box-shadow:0 8px 22px -14px rgba(0,0,0,.4)}
+.wai-hud-sw button b{display:flex;align-items:center;gap:7px;font-size:13px}
+.wai-hud-stats div{border-radius:12px;background:color-mix(in srgb,var(--surface2) 80%,transparent);border:1px solid color-mix(in srgb,var(--border) 55%,transparent)}
+.wai-hud-stats b{font-size:22px;letter-spacing:-.01em}
+.wai-hud-now{display:inline-flex;align-items:center;gap:6px;font-weight:600}
+.wai-seg{background:var(--surface2);padding:3px;border-radius:10px;gap:2px}
+.wai-seg button{border:0;border-radius:8px;padding:7px 4px;transition:background .15s,color .15s}
+.wai-seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.wai-it{transition:background .12s}.wai-it:hover{background:color-mix(in srgb,var(--gold) 6%,transparent)}
+.wai-it.on{box-shadow:inset 3px 0 0 var(--gold)}
+.wai-chip{display:inline-flex;align-items:center;gap:4px;border-radius:99px;padding:2px 8px}
+.wai-chip .wai-ic{width:1em;height:1em}
+.wai-b{border-radius:14px;box-shadow:0 1px 1px rgba(0,0,0,.04)}
+.wai-b .ft .wai-ic{width:.95em;height:.95em;stroke-width:2.2}
+.wai-tab{display:inline-flex;align-items:center;gap:6px}
+.wai-k{border-radius:12px;transition:box-shadow .15s}.wai-k:hover{box-shadow:0 8px 20px -16px rgba(0,0,0,.4)}
+.wai-empty .wai-ic{width:2em;height:2em;opacity:.45;display:block;margin:0 auto 8px}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@1,6..96,500&family=Fraunces:ital,opsz,wght@1,9..144,300..700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 <style id="lsr-net-css">
@@ -31848,6 +31880,10 @@ function waiTabsAllowed() {
   const mod = waiIsMod();
   return WAI_TABS.filter(t => t[0] === 'inbox' || (t[0] === 'hud' ? (mod || waiIsOwner()) : mod));
 }
+function waiRenderActs() {
+  const acts = document.getElementById('wai-acts');
+  if (acts) acts.innerHTML = WAI.tab === 'inbox' || WAI.tab === 'hud' ? '<button class="btn-sm btn-gold" onclick="waiRefresh()">⟲ Muat Ulang</button>' + (WAI.tab === 'inbox' && waiIsMod() ? ' <button class="btn-sm btn-cancel" onclick="waiSelToggle()">' + (WAI.sel ? '✕ Batal Pilih' : '☑ Pilih Chat') + '</button> <button class="btn-sm btn-cancel" style="color:#c0392b;border-color:#c0392b" onclick="waiPurge()">🗑 Hapus Semua</button>' : '') : '';
+}
 function waiRenderShell() {
   const root = document.getElementById('wai-root'); if (!root) return;
   const tabs = waiTabsAllowed();
@@ -31855,8 +31891,7 @@ function waiRenderShell() {
   root.innerHTML = `
     ${tabs.length > 1 ? `<div class="wai-tabs">${tabs.map(t => `<button class="wai-tab ${WAI.tab === t[0] ? 'on' : ''}" onclick="waiTab('${t[0]}')">${t[1]}</button>`).join('')}</div>` : ''}
     <div id="wai-body"></div>`;
-  const acts = document.getElementById('wai-acts');
-  if (acts) acts.innerHTML = WAI.tab === 'inbox' || WAI.tab === 'hud' ? '<button class="btn-sm btn-gold" onclick="waiRefresh()">⟲ Muat Ulang</button>' + (WAI.tab === 'inbox' && waiIsMod() ? ' <button class="btn-sm btn-cancel" style="color:#c0392b;border-color:#c0392b" onclick="waiPurge()">🗑 Hapus Semua Chat</button>' : '') : '';
+  waiRenderActs();
   const sub = document.getElementById('wai-sub'), cur = WAI_TABS.find(t => t[0] === WAI.tab);
   if (sub && cur) sub.textContent = (cur[0] === 'inbox' ? '' : cur[1] + ' — ') + cur[2];
   waiRenderTab();
@@ -32021,8 +32056,12 @@ function waiRenderList() {
     return;
   }
   const mod = waiIsMod() || waiIsOwner();   // moderator & owner melihat siapa yang menangani tiap chat
-  box.innerHTML = WAI.convs.map(c => `
-    <div class="wai-it ${WAI.cur === c.id ? 'on' : ''}" onclick="waiOpenConv('${c.id}')">
+  const selBar = WAI.sel ? `<div style="position:sticky;top:0;z-index:2;background:var(--bg,#fff);padding:8px;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+      <button class="btn-sm btn-cancel" onclick="waiSelAll()">Pilih semua</button>
+      <button class="btn-sm btn-gold" style="background:#c0392b;border-color:#c0392b" onclick="waiDelSel()">🗑 Hapus terpilih (${WAI.sel.size})</button></div>` : '';
+  box.innerHTML = selBar + WAI.convs.map(c => `
+    <div class="wai-it ${WAI.cur === c.id ? 'on' : ''}" onclick="${WAI.sel ? `waiSelOne('${c.id}')` : `waiOpenConv('${c.id}')`}">
+      ${WAI.sel ? `<input type="checkbox" ${WAI.sel.has(c.id) ? 'checked' : ''} style="margin:auto 8px auto 2px;pointer-events:none"/>` : ''}
       <div class="wai-av">${escHtml((c.name || '?').trim().charAt(0).toUpperCase())}</div>
       <div class="wai-it-main">
         <div class="wai-it-top"><span class="wai-it-name">${escHtml(c.name)}</span><span class="wai-it-time">${waiTime(c.last_at)}</span></div>
@@ -32075,7 +32114,7 @@ function waiRenderThread(scroll) {
     if (dl !== day) { day = dl; html += `<div class="wai-day">${dl}</div>`; }
     const isAi = m.sender === 'ai';
     const by = m.dir === 'out' ? `<div class="by">${isAi ? '🤖 AI' : escHtml(m.sender_name || 'Agen')}</div>` : '';
-    html += `<div class="wai-b ${m.dir} ${isAi ? 'ai' : ''}" data-mid="${m.id}"${isAi && waiIsFresh(m) ? ' data-fresh="1"' : ''}>${by}<span class="bt">${waiBody(m.body)}</span><div class="ft">${waiTime(m.created_at)} ${waiTick(m)}${m.error ? `<div class="er">${escHtml(m.error)}</div>` : ''}</div></div>`;
+    html += `<div class="wai-b ${m.dir} ${isAi ? 'ai' : ''}" data-mid="${m.id}"${isAi && waiIsFresh(m) ? ' data-fresh="1"' : ''}>${by}<span class="bt">${waiBody(m.body)}</span><div class="ft">${waiTime(m.created_at)} ${waiTick(m)}${waiIsMod() ? ` <span onclick="event.stopPropagation();waiDelMsg('${m.id}')" title="Hapus pesan ini" style="cursor:pointer;opacity:.5">🗑</span>` : ''}${m.error ? `<div class="er">${escHtml(m.error)}</div>` : ''}</div></div>`;
   });
   const open = waiWindowOpen(c);
   const agentOpts = (WAI.agents || []).map(a => `<option value="${a.user_id}" ${a.user_id === c.assigned_to ? 'selected' : ''}>${escHtml(a.name)}</option>`).join('');
@@ -32779,7 +32818,81 @@ async function waiTplSend() {
   } catch (e) { toast(waiErr(e)); }
 }
 
-/* ───────── v140: hapus semua chat (moderator) ───────── */
+/* ───────── v142: ikon vektor (pengganti emoji antarmuka; teks chat pelanggan/AI tidak disentuh) ───────── */
+const WAI_IC = {
+  '✓': '<path d="M20 6 9 17l-5-5"/>', '✔': '<path d="M20 6 9 17l-5-5"/>',
+  '⚠': '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  '🤖': '<path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>',
+  '🗑': '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/>',
+  '📨': '<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
+  '✕': '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  '⏸': '<rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/>',
+  '👁': '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+  '🔔': '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+  '⟲': '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
+  '☑': '<path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+  '💬': '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
+  '👤': '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  'ℹ': '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+  '⚡': '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+  '🔒': '<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  '↗': '<path d="M7 7h10v10"/><path d="M7 17 17 7"/>',
+  '✅': '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+  '❌': '<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>',
+  '‹': '<path d="m15 18-6-6 6-6"/>'
+};
+const WAI_DOT = { '🟢': 'g', '🟡': 'y', '⚪': 'w' };
+const WAI_IC_SRC = '(' + [...Object.keys(WAI_IC), ...Object.keys(WAI_DOT)].join('|') + ')\\uFE0F?';
+const WAI_IC_RX = new RegExp(WAI_IC_SRC, 'g'), WAI_IC_TEST = new RegExp(WAI_IC_SRC);
+const WAI_IC_SKIP = '.bt, .wai-it-txt, textarea, input, select, option, script, style, .wai-code, [contenteditable]';
+function waiIconize(root) {
+  if (!root) return;
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: n => WAI_IC_TEST.test(n.nodeValue) && !(n.parentElement && n.parentElement.closest(WAI_IC_SKIP)) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT });
+  const hit = []; while (w.nextNode()) hit.push(w.currentNode);
+  WAI_IC_RX.lastIndex = 0;
+  hit.forEach(n => {
+    const frag = document.createDocumentFragment(); let last = 0; const t = n.nodeValue; WAI_IC_RX.lastIndex = 0; let m;
+    while ((m = WAI_IC_RX.exec(t))) {
+      if (m.index > last) frag.appendChild(document.createTextNode(t.slice(last, m.index)));
+      const k = m[1], el = document.createElement('span');
+      if (WAI_DOT[k]) { el.className = 'wai-dot ' + WAI_DOT[k]; }
+      else { el.style.display = 'inline-flex'; el.innerHTML = '<svg class="wai-ic" viewBox="0 0 24 24" aria-hidden="true">' + WAI_IC[k] + '</svg>'; }
+      frag.appendChild(el); last = m.index + m[0].length;
+    }
+    if (last < t.length) frag.appendChild(document.createTextNode(t.slice(last)));
+    n.parentNode.replaceChild(frag, n);
+  });
+}
+(function waiIconWatch() {
+  let busy = false;
+  const run = () => { if (busy) return; busy = true; requestAnimationFrame(() => { busy = false; ['wai-root', 'wai-acts', 'm-body', 'm-foot', 'm-title'].forEach(id => waiIconize(document.getElementById(id))); }); };
+  const start = () => { new MutationObserver(run).observe(document.body, { childList: true, subtree: true }); run(); };
+  if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+})();
+
+/* ───────── v141: hapus chat (moderator): semua / pilihan / per pesan ───────── */
+function waiSelToggle() { WAI.sel = WAI.sel ? null : new Set(); waiRenderList(); waiRenderActs(); }
+function waiSelOne(id) { if (!WAI.sel) return; WAI.sel.has(id) ? WAI.sel.delete(id) : WAI.sel.add(id); waiRenderList(); }
+function waiSelAll() { if (!WAI.sel) return; if (WAI.sel.size === WAI.convs.length) WAI.sel.clear(); else WAI.convs.forEach(c => WAI.sel.add(c.id)); waiRenderList(); }
+async function waiDeleteCall(convIds, msgIds) {
+  return waiRpc('wa_chat_delete', { p_user_id: waiMe(), p_conv_ids: convIds || [], p_msg_ids: msgIds || [] });
+}
+async function waiDelSel() {
+  if (!waiIsMod()) { toast('Khusus moderator'); return; }
+  const ids = [...(WAI.sel || [])]; if (!ids.length) { toast('Belum ada chat yang dipilih'); return; }
+  if (!confirm('Hapus ' + ids.length + ' chat terpilih beserta seluruh pesannya?\n\nTidak bisa dibatalkan.')) return;
+  try {
+    const r = await waiDeleteCall(ids, []);
+    if (ids.includes(WAI.cur)) WAI.cur = null;
+    WAI.sel = null; toast('✓ ' + (r ? r.conversations : ids.length) + ' chat dihapus'); waiRefresh(); waiRenderActs();
+  } catch (e) { toast(/function|schema|wa_chat_delete/.test(e.message) ? 'Jalankan migration SQL v141 dulu.' : waiErr(e)); }
+}
+async function waiDelMsg(id) {
+  if (!waiIsMod()) { toast('Khusus moderator'); return; }
+  if (!confirm('Hapus pesan ini?')) return;
+  try { await waiDeleteCall([], [id]); toast('✓ Pesan dihapus'); if (WAI.cur) waiLoadThread(WAI.cur, true); waiRefresh(true); }
+  catch (e) { toast(/function|schema|wa_chat_delete/.test(e.message) ? 'Jalankan migration SQL v141 dulu.' : waiErr(e)); }
+}
 async function waiPurge() {
   if (!waiIsMod()) { toast('Khusus moderator'); return; }
   const scope = confirm('Hapus SEMUA chat WhatsApp yang sudah masuk?\n\nOK = hapus semua (terbuka + selesai)\nBatal = lanjut ke pilihan lain') ? 'all'
@@ -32789,7 +32902,7 @@ async function waiPurge() {
   if (t !== 'HAPUS') { toast('Dibatalkan'); return; }
   try {
     const r = await waiRpc('wa_chat_purge', { p_user_id: waiMe(), p_scope: scope });
-    WAI.cur = null; WAI.convs = [];
+    WAI.cur = null; WAI.convs = []; WAI.sel = null;
     toast('✓ ' + (r && r.conversations != null ? r.conversations + ' chat & ' + r.messages + ' pesan dihapus' : 'Chat dihapus'));
     waiRefresh();
   } catch (e) { toast(/function|schema|wa_chat_purge/.test(e.message) ? 'Jalankan migration SQL v140 dulu.' : waiErr(e)); }
