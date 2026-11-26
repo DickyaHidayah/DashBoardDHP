@@ -32798,7 +32798,7 @@ async function waiGalLoad() {
 function wgSync() {
   const box = document.getElementById('wg-vars'); if (!box) return;
   window._wgVars = [...box.querySelectorAll('.wg-v')].map(v => ({
-    title: v.querySelector('.wg-vt').value.trim(), keywords: v.querySelector('.wg-vk').value.trim(), source: v.querySelector('.wg-vs').value.trim(),
+    title: v.querySelector('.wg-vt').value.trim(), default: v.querySelector('.wg-vd').checked, keywords: v.querySelector('.wg-vk').value.trim(), source: v.querySelector('.wg-vs').value.trim(),
     images: [...v.querySelectorAll('.wg-i')].map(i => ({ name: i.querySelector('.wg-in').value.trim(), url: i.querySelector('.wg-iu').value.trim() }))
   }));
 }
@@ -32807,6 +32807,7 @@ function wgRender() {
   const vs = window._wgVars || [];
   box.innerHTML = vs.length ? vs.map((v, vi) => `<div class="wg-v" style="border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:10px;background:var(--bg2,transparent)">
     <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px"><input class="fi wg-vt" style="flex:1;font-weight:600" placeholder="Judul variasi, mis. Mawar" value="${escHtml(v.title)}"/><button class="btn-sm btn-cancel" onclick="wgDelVar(${vi})">Hapus variasi</button></div>
+    <label style="display:flex;gap:6px;align-items:center;font-size:11.5px;margin-bottom:6px"><input type="checkbox" class="wg-vd" ${v.default ? 'checked' : ''}/> Variasi pembuka — dikirim lebih dulu saat pelanggan bertanya umum (mis. “ada warna polos?”)</label>
     <input class="fi wg-vk" style="margin-bottom:6px" placeholder="Kata kunci variasi (koma), mis. mawar, rose" value="${escHtml(v.keywords)}"/>
     <div style="font-size:11px;color:var(--muted);margin:4px 0">Foto (nama tampil sebagai keterangan di WhatsApp)</div>
     ${(v.images || []).map((im, ii) => `<div class="wg-i" style="display:flex;gap:6px;margin-bottom:5px"><input class="fi wg-in" style="flex:1" placeholder="Nama foto, mis. Mawar Merah" value="${escHtml(im.name)}"/><input class="fi wg-iu" style="flex:2" placeholder="Link gambar langsung (https://...)" value="${escHtml(im.url)}"/><button class="btn-sm btn-cancel" onclick="wgDelImg(${vi},${ii})">×</button></div>`).join('')}
@@ -32816,7 +32817,7 @@ function wgRender() {
       <div style="font-size:10.5px;color:var(--muted)">Nama foto otomatis dari nama file (mawar-merah.jpg → “mawar merah”).</div></details>
   </div>`).join('') : '<div style="font-size:12px;color:var(--muted);margin-bottom:8px">Belum ada variasi. Boleh dikosongkan bila cukup memakai “Sumber foto” di atas.</div>';
 }
-function wgAddVar() { wgSync(); (window._wgVars = window._wgVars || []).push({ title: '', keywords: '', source: '', images: [{ name: '', url: '' }] }); wgRender(); }
+function wgAddVar() { wgSync(); (window._wgVars = window._wgVars || []).push({ title: '', keywords: '', source: '', images: [{ name: '', url: '' }], default: false }); wgRender(); }
 function wgDelVar(i) { wgSync(); window._wgVars.splice(i, 1); wgRender(); }
 function wgAddImg(vi) { wgSync(); window._wgVars[vi].images.push({ name: '', url: '' }); wgRender(); }
 function wgDelImg(vi, ii) { wgSync(); window._wgVars[vi].images.splice(ii, 1); wgRender(); }
