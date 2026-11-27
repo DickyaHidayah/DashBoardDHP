@@ -32150,10 +32150,32 @@ function waiWindowOpen(c) {
   if (c.account_mode !== 'live') return true;
   return !!c.last_inbound_at && (Date.now() - new Date(c.last_inbound_at).getTime()) < 24 * 3600 * 1000;
 }
+// v-stick: kunci tampilan chat ke bawah saat ada pesan baru; tidak lompat ke atas saat re-render
+function waiStickInit(m, toBottom, prevTop) {
+  if (!m) return;
+  const dist = () => m.scrollHeight - m.scrollTop - m.clientHeight;
+  if (toBottom) {
+    m.dataset.stick = '1';
+    const go = () => { if (m.isConnected && m.dataset.stick === '1') m.scrollTop = m.scrollHeight; };
+    go(); requestAnimationFrame(go); setTimeout(go, 150); setTimeout(go, 600);
+    m.querySelectorAll('img').forEach(im => { if (!im.complete) im.addEventListener('load', go, { once: true }); });
+  } else {
+    m.scrollTop = prevTop; m.dataset.stick = dist() < 120 ? '1' : '0';
+  }
+  m.addEventListener('scroll', () => { m.dataset.stick = dist() < 120 ? '1' : '0'; }, { passive: true });
+}
 function waiRenderThread(scroll) {
   const t = WAI.thread; if (!t) return;
   const c = t.conversation, mod = waiIsMod();
   const chat = document.getElementById('wai-chat'); if (!chat) return;
+  const _prevMsgs = document.getElementById('wai-msgs');
+  const _sameConv = WAI._rConv === c.id;
+  const _prevTop = _prevMsgs ? _prevMsgs.scrollTop : 0;
+  const _wasNear = !_prevMsgs || !_sameConv || (_prevMsgs.scrollHeight - _prevMsgs.scrollTop - _prevMsgs.clientHeight < 240);
+  const _cnt = (t.messages || []).length;
+  const _grew = _sameConv && _cnt > (WAI._rCount || 0);
+  WAI._rConv = c.id; WAI._rCount = _cnt;
+  const _toBottom = !!scroll || _wasNear || _grew || !_sameConv;
   const keepTxt = (document.getElementById('wai-txt') || {}).value || '';
   waiTypingInit(t);
   let day = '', html = '';
@@ -32192,7 +32214,7 @@ function waiRenderThread(scroll) {
     </div>`}`;
   const ta = document.getElementById('wai-txt');
   if (ta) ta.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); waiSend(); } };
-  if (scroll) { const m = document.getElementById('wai-msgs'); if (m) m.scrollTop = m.scrollHeight; }
+  waiStickInit(document.getElementById('wai-msgs'), _toBottom, _prevTop);
   waiTypingRun(); waiTypingIndicator();
   waiRenderInfo();
   waiOrderCard();
@@ -33308,7 +33330,7 @@ function waiTypingRun() {
       const tick = () => {
         if (!n.isConnected) return;
         i = Math.min(plain.length, i + step); bt.textContent = plain.slice(0, i);
-        const c = document.getElementById('wai-msgs'); if (c && c.scrollHeight - c.scrollTop - c.clientHeight < 160) c.scrollTop = c.scrollHeight;
+        const c = document.getElementById('wai-msgs'); if (c && (c.dataset.stick === '1' || c.scrollHeight - c.scrollTop - c.clientHeight < 240)) c.scrollTop = c.scrollHeight;
         if (i < plain.length) setTimeout(tick, 22); else { bt.innerHTML = full; n.classList.remove('typing'); if (ft) ft.style.visibility = ''; }
       };
       tick();
