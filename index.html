@@ -32339,7 +32339,7 @@ async function waiRenderAi() {
   if (!s || s.error || !s.data) { body.innerHTML = `<div class="wai-empty">${escHtml(waiErr(s && s.error || new Error('Could not find the function — tabel WA belum ada')))}</div>`; return; }
   const st = s.data, rows = (k && k.data) || [];
   window._waiK = rows;
-  setTimeout(waiAiStatus, 0); setTimeout(waiTplLoad, 0); setTimeout(waiGalLoad, 0);
+  setTimeout(waiAiStatus, 0); setTimeout(waiTplLoad, 0); setTimeout(waiGalLoad, 0); setTimeout(waiOngkirLoad, 0);
   body.innerHTML = `
     <div class="wai-card">
       <h3>Pengaturan AI</h3>
@@ -32402,6 +32402,12 @@ async function waiRenderAi() {
         <p class="s">Foto tidak disimpan di Supabase. Cukup tempel <b>link folder GitHub</b> (atau daftar link gambar langsung). Saat pelanggan minta foto, AI memilih 1–3 gambar dan mengirimnya.</p></div>
         <div><button class="btn-sm btn-gold" onclick="waiGalEdit()">+ Galeri baru</button></div></div>
       <div id="wai-gal-body"><div style="color:var(--muted)">Memuat…</div></div>
+    </div>
+    <div class="wai-card" id="wai-ongkir-card">
+      <h3>Tarif ongkir (manual, tanpa API)</h3>
+      <p class="s">Satu baris satu tujuan: <b>kata kunci kota/kecamatan | tarif kg pertama | tiap kg berikutnya | estimasi hari</b>. Contoh: <code>bandung, cimahi | 18000 | 9000 | 2-3</code>. Baris berawalan # diabaikan. Tujuan yang tidak ada di sini dijawab AI “ongkir dihitung tim”. Jabodetabek 1 kg tetap gratis; pesanan 10 pcs ke atas dicek tim. Ambil angkanya dari cek tarif di website kurir.</p>
+      <textarea class="fi" id="wai-ongkir-t" rows="10" style="font-family:monospace;font-size:12px" placeholder="Memuat…"></textarea>
+      <div style="margin-top:8px"><button class="btn-sm btn-gold" onclick="waiOngkirSave()">Simpan tarif</button></div>
     </div>
     <div class="wai-card" id="wai-tpl-card">
       <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap"><div><h3>Template Meta (untuk chat lewat 24 jam)</h3>
@@ -33089,6 +33095,17 @@ async function waiPurge() {
   } catch (e) { toast(/function|schema|wa_chat_purge/.test(e.message) ? 'Jalankan migration SQL v140 dulu.' : waiErr(e)); }
 }
 
+/* ───────── v146: Tarif ongkir manual ───────── */
+async function waiOngkirLoad() {
+  const t = document.getElementById('wai-ongkir-t'); if (!t) return;
+  try { t.value = (await waiRpc('wa_ongkir_get', { p_user_id: waiMe() })) || ''; }
+  catch (e) { t.placeholder = /function|schema|wa_ongkir/.test(e.message) ? 'Jalankan migration SQL v146 dulu.' : waiErr(e); }
+}
+async function waiOngkirSave() {
+  const t = document.getElementById('wai-ongkir-t'); if (!t) return;
+  try { await waiRpc('wa_ongkir_save', { p_user_id: waiMe(), p_rules: t.value }); toast('✓ Tarif ongkir disimpan'); }
+  catch (e) { toast(/function|schema|wa_ongkir/.test(e.message) ? 'Jalankan migration SQL v146 dulu.' : waiErr(e)); }
+}
 /* ───────── v137: Galeri foto motif bertingkat (Galeri → Variasi → Foto bernama) ───────── */
 async function waiGalLoad() {
   const box = document.getElementById('wai-gal-body'); if (!box) return;
